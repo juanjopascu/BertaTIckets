@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Google Anti-Gravity</title>
+    <!-- Incluimos el motor de física Matter.js desde CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.19.0/matter.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+            background-color: #ffffff;
+        }
+        /* Contenedor del canvas de física */
+        #canvas-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        /* Capa con los elementos reales de la interfaz */
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 2;
+            pointer-events: none; /* Permite que el mouse "atraviese" y toque las físicas */
+        }
+        /* Elementos DOM que se van a caer (falsos/clones visuales) */
+        .physics-element {
+            position: absolute;
+            user-select: none;
+            will-change: transform;
+            pointer-events: auto; /* Activamos el mouse para arrastrar */
+            cursor: grab;
+        }
+        .physics-element:active {
+            cursor: grabbing;
+        }
+        /* Estilos imitando a Google clásico */
+        .logo {
+            font-size: 80px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .logo span:nth-child(1) { color: #4285F4; }
+        .logo span:nth-child(2) { color: #EA4335; }
+        .logo span:nth-child(3) { color: #FBBC05; }
+        .logo span:nth-child(4) { color: #4285F4; }
+        .logo span:nth-child(5) { color: #34A853; }
+        .logo span:nth-child(6) { color: #EA4335; }
+
+        .search-box {
+            width: 580px;
+            height: 44px;
+            border: 1px solid #dfe1e5;
+            border-radius: 24px;
+            padding: 0 15px;
+            display: flex;
+            align-items: center;
+            background: #fff;
+            box-shadow: 0 1px 6px rgba(32,33,36,0.28);
+        }
+        .search-box input {
+            width: 100%;
+            border: none;
+            outline: none;
+            font-size: 16px;
+        }
+
+        .btn {
+            background-color: #f8f9fa;
+            border: 1px solid #f8f9fa;
+            border-radius: 4px;
+            color: #3c4043;
+            font-size: 14px;
+            padding: 10px 16px;
+            text-align: center;
+            white-space: nowrap;
+        }
+        
+        .footer-text {
+            color: #70757a;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="canvas-container"></div>
+
+    <div id="ui-layer">
+        <!-- Definimos los elementos en sus posiciones iniciales calculadas por CSS -->
+        <div id="el-logo" class="physics-element logo">
+            <span>G</span><span>o</span><span>o</span><span>g</span><span>l</span><span>e</span>
+        </div>
+        
+        <div id="el-search" class="physics-element search-box">
+            <input type="text" value="La gravedad ya no existe...">
+        </div>
+
+        <button id="el-btn1" class="physics-element btn">Buscar con Google</button>
+        <button id="el-btn2" class="physics-element btn">Me siento con suerte</button>
+        
+        <div id="el-foot" class="physics-element footer-text">Ofrecido por Google en: Español (Latinoamérica)</div>
+    </div>
+
+    <script>
+        // --- 1. CONFIGURACIÓN INICIAL DE POSICIONES ---
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        // Posicionamos los elementos manualmente en el centro antes de que caigan
+        const elementsData = {
+            'el-logo':   { x: width / 2, y: height * 0.3,  w: 270, h: 90 },
+            'el-search': { x: width / 2, y: height * 0.45, w: 580, h: 44 },
+            'el-btn1':   { x: width / 2 - 100, y: height * 0.55, w: 160, h: 40 },
+            'el-btn2':   { x: width / 2 + 100, y: height * 0.55, w: 160, h: 40 },
+            'el-foot':   { x: width / 2, y: height * 0.65, w: 300, h: 25 }
+        };
+
+        // Aplicamos posiciones iniciales de CSS
+        Object.keys(elementsData).forEach(id => {
+            const el = document.getElementById(id);
+            const data = elementsData[id];
+            el.style.width = data.w + 'px';
+            el.style.height = data.h + 'px';
+            el.style.left = (data.x - data.w / 2) + 'px';
+            el.style.top = (data.y - data.h / 2) + 'px';
+        });
+
+        // --- 2. CONFIGURACIÓN DEL MOTOR DE FÍSICA (MATTER.JS) ---
+        const { Engine, Render, World, Bodies, Mouse, MouseConstraint, Events } = Matter;
+
+        const engine = Engine.create({
+            gravity: { x: 0, y: 0 } // Arranca SIN gravedad
+        });
+
+        // Renderizador oculto (solo lo usa Matter para calcular, nosotros pintamos sobre el HTML)
+        const render = Render.create({
+            element: document.getElementById('canvas-container'),
+            engine: engine,
+            options: { width: width, height: height, wireframes: false, background: 'transparent' }
+        });
+        Render.run(render);
+        Engine.run(engine);
+
+        // Límites de la pantalla (Suelo, paredes)
+        const wallThickness = 100;
+        const ground = Bodies.rectangle(width / 2, height + wallThickness/2, width, wallThickness, { isStatic: true });
+        const leftWall = Bodies.rectangle(-wallThickness/2, height / 2, wallThickness, height, { isStatic: true });
+        const rightWall = Bodies.rectangle(width + wallThickness/2, height / 2, wallThickness, height, { isStatic: true });
+        const ceiling = Bodies.rectangle(width / 2, -wallThickness/2, width, wallThickness, { isStatic: true });
+        World.add(engine.world, [ground, leftWall, rightWall, ceiling]);
+
+        // Mapeo entre cuerpos rígidos de física y elementos HTML
+        const physicsPairs = [];
+
+        Object.keys(elementsData).forEach(id => {
+            const data = elementsData[id];
+            const domEl = document.getElementById(id);
+            
+            // Creamos el cuerpo físico rectangular
+            const body = Bodies.rectangle(data.x, data.y, data.w, data.h, {
+                restitution: 0.6, // Nivel de rebote
+                friction: 0.1,
+                frictionAir: 0.02
+            });
+
+            World.add(engine.world, body);
+            physicsPairs.push({ body: body, dom: domEl, w: data.w, h: data.h });
+        });
+
+        // Sincronizar las posiciones físicas con el CSS en cada frame
+        Events.on(engine, 'afterUpdate', () => {
+            physicsPairs.forEach(pair => {
+                const { body, dom, w, h } = pair;
+                // Usamos transform de CSS para rotar y mover los divs reales según la física
+                dom.style.transform = `translate(${body.position.x - dom.offsetLeft - w/2}px, ${body.position.y - dom.offsetTop - h/2}px) rotate(${body.angle}rad)`;
+            });
+        });
+
+        // --- 3. CONTROL DEL MOUSE (ARRASTRAR ELEMENTOS) ---
+        const mouse = Mouse.create(render.canvas);
+        const mouseConstraint = MouseConstraint.create(engine, {
+            mouse: mouse,
+            constraint: { stiffness: 0.2, render: { visible: false } }
+        });
+        World.add(engine.world, mouseConstraint);
+
+        // --- 4. ACTIVAR LA GRAVEDAD CON RETRASO ---
+        setTimeout(() => {
+            engine.gravity.y = 1; // Se activa la gravedad hacia abajo (fuerza normal de la tierra)
+        }, 1500); // Espera 1.5 segundos antes de caer
+
+        // Si el usuario hace clic o mueve antes del tiempo, se cae al toque
+        window.addEventListener('mousedown', () => engine.gravity.y = 1);
+
+        // Ajustar los bordes si se cambia el tamaño de la pantalla
+        window.addEventListener('resize', () => {
+            location.reload(); // Lo más limpio para reiniciar las cajas en el nuevo centro
+        });
+    </script>
+</body>
+</html>
