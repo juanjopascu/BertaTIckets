@@ -1,59 +1,99 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Roboto:wght@300;400;500;700;900&display=swap');
 
 :root {
-  /* Paleta de colores One UI 8.5 - Unificada con movilAPP */
-  --bg-color: #f8fafc;
-  --card-bg: #ffffff;
-  --text-main: #0f172a;
-  --text-muted: #64748b;
-  --primary: #0f766e; /* Teal Primary de movilAPP */
-  --primary-hover: #0d655e;
-  --primary-light: rgba(15, 118, 110, 0.12);
+  /* =========================================================
+     DACAS BRAND SYSTEM (https://stage.dacas.com/ar/)
+     ========================================================= */
+  --bg-color: #071524; /* Corporate Deep Tech Navy */
+  --card-bg: #0f2742; /* Oceanic Navy Surface */
+  --card-bg-hover: #143456;
+  --pill-bg: #12354c; /* Signature DACAS Pill Token */
+  --pill-hover: #26476e;
+  
+  --text-main: #ffffff; /* Crisp Pure White */
+  --text-muted: #94a3b8; /* Cool Icy Slate */
+  
+  /* Primary DACAS Electric Cyan & Sky */
+  --primary: #0fa4de; 
+  --primary-hover: #38bdf8;
+  --primary-dark: #0284c7;
+  --primary-light: rgba(15, 164, 222, 0.15);
+  --primary-glow: 0 0 20px rgba(15, 164, 222, 0.35);
+  
+  --accent-cyan: #0fa4de;
+  --accent-cyan-bright: #00c2ff;
+  --accent-sky: #4fc3f0;
+  
   --success: #10b981;
-  --success-bg: rgba(16, 185, 129, 0.12);
+  --success-bg: rgba(16, 185, 129, 0.15);
   --warning: #f59e0b;
-  --warning-bg: rgba(245, 158, 11, 0.12);
+  --warning-bg: rgba(245, 158, 11, 0.15);
   --danger: #ef4444;
-  --danger-bg: rgba(239, 68, 68, 0.12);
-  --info: #3b82f6;
-  --info-bg: rgba(59, 130, 246, 0.12);
-  --border-color: #cbd5e1;
-  --input-bg: #f8fafc;
+  --danger-bg: rgba(239, 68, 68, 0.15);
+  --info: #0fa4de;
+  --info-bg: rgba(15, 164, 222, 0.15);
+  
+  --border-color: rgba(15, 164, 222, 0.22);
+  --border-color-subtle: rgba(255, 255, 255, 0.08);
+  --input-bg: #0b1d33;
 
-  /* Redondeados Orgánicos */
-  --radius-xl: 28px; /* Modales, Contenedores principales */
-  --radius-lg: 20px; /* Tarjetas, Sidebar */
-  --radius-md: 16px; /* Botones, Inputs, Burbujas chat */
-  --radius-sm: 10px; /* Badges pequeños */
-  --radius-pill: 9999px; /* Botones cápsula, Badges tipo píldora */
+  /* Redondeados y Píldoras DACAS */
+  --radius-xl: 20px;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+  --radius-sm: 8px;
+  --radius-pill: 9999px;
 
-  /* Sombras ultra suaves y profundas */
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.02);
-  --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.04);
-  --shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.06);
+  /* Sombras y Resplandores Tecnológicos */
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.5);
+  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.7);
+  --shadow-glow: 0 0 25px rgba(15, 164, 222, 0.3);
 
-  /* Transición orgánica de Android */
-  --transition-bezier: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-  --purple-brand: #0284c7;
-  --expenses-gradient-end: #0369a1;
+  --transition-bezier: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  --purple-brand: #0fa4de;
+  --expenses-gradient-end: #0284c7;
 }
 
 body {
   margin: 0;
-  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background: var(--bg-color);
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
 }
 
-/* ==========================================
-   CABECERA ONE UI (REACHABILITY CONCEPT)
-   ========================================== */
+/* Ambient Radial Glow Hero de DACAS (stage.dacas.com) */
+body::before {
+  content: "";
+  position: fixed;
+  width: 90vw;
+  height: 60vh;
+  top: -12vh;
+  left: 50%;
+  transform: translateX(-50%);
+  background: radial-gradient(
+    circle at 50% 50%,
+    rgba(15, 164, 222, 0.18) 0%,
+    rgba(15, 164, 222, 0.08) 35%,
+    rgba(15, 164, 222, 0) 70%
+  );
+  filter: blur(45px);
+  opacity: 0.9;
+  z-index: 0;
+  pointer-events: none;
+}
+
 .crm-container {
-  max-width: 1400px;
+  max-width: 1440px;
   margin: 0 auto;
-  padding: 40px 24px;
+  padding: 32px 24px 60px;
+  position: relative;
+  z-index: 1;
 }
 
 /* Título de gran altura y margen superior generoso (One UI) */
@@ -94,14 +134,14 @@ body {
   font-weight: 500;
 }
 
-/* Botones con estilo de pastilla interactiva (Pill) */
+/* Botones con estilo de pastilla interactiva DACAS (Pill) */
 .nav-btn, .logout-btn {
-  padding: 12px 22px;
+  padding: 10px 20px;
   border: none;
   border-radius: var(--radius-pill);
   cursor: pointer;
   font-weight: 600;
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-family: inherit;
   transition: var(--transition-bezier);
   display: flex;
@@ -111,15 +151,17 @@ body {
 }
 
 .nav-btn {
-  background: var(--card-bg);
+  background: var(--pill-bg);
   color: var(--text-main);
   border: 1px solid var(--border-color);
 }
 
 .nav-btn:hover {
-  background: var(--input-bg);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  background: var(--pill-hover);
+  border-color: var(--primary);
+  color: var(--text-main);
+  transform: translateY(-1px);
+  box-shadow: var(--primary-glow);
 }
 
 .nav-btn:active {
@@ -127,18 +169,38 @@ body {
 }
 
 .logout-btn {
-  background: var(--danger-bg);
-  color: var(--danger);
+  background: #fee2e2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+}
+
+:root[data-theme='dark'] .logout-btn {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .logout-btn:hover {
-  background: #fbcaca;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
+  background: #fecaca;
+  color: #b91c1c;
+  transform: translateY(-1px);
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.25);
+}
+
+:root[data-theme='dark'] .logout-btn:hover {
+  background: rgba(239, 68, 68, 0.28);
+  color: #ffffff;
+  box-shadow: 0 0 15px rgba(239, 68, 68, 0.35);
 }
 
 .logout-btn:active {
   transform: scale(0.97);
+}
+
+.crm-header p {
+  color: var(--text-muted);
+  margin-top: 6px;
+  font-size: 0.92rem;
 }
 
 /* ==========================================
@@ -147,35 +209,36 @@ body {
 .crm-main-grid {
   display: flex;
   flex-direction: row;
-  gap: 30px;
+  gap: 28px;
   align-items: flex-start;
 }
 
-/* Sidebar Departamentos */
+/* Sidebar Departamentos DACAS */
 .sidebar-depts {
   background: var(--card-bg);
   padding: 24px;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   border: 1px solid var(--border-color);
-  width: 280px;
+  width: 290px;
   flex-shrink: 0;
   box-sizing: border-box;
 }
 
 .sidebar-depts h3 {
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
   font-family: 'Outfit', sans-serif;
-  font-size: 1.25rem;
+  font-size: 1.18rem;
   font-weight: 700;
   color: var(--text-main);
+  letter-spacing: -0.01em;
 }
 
 .sidebar-section-admin {
-  margin-bottom: 24px;
-  padding-bottom: 24px;
-  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 22px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid var(--border-color-subtle);
 }
 
 .admin-menu-list {
@@ -184,13 +247,13 @@ body {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .sidebar-menu-btn {
   width: 100%;
-  padding: 14px 18px;
-  border-radius: var(--radius-md);
+  padding: 11px 16px;
+  border-radius: var(--radius-pill);
   background: transparent;
   border: 1px solid transparent;
   color: var(--text-muted);
@@ -199,16 +262,17 @@ body {
   align-items: center;
   gap: 12px;
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-family: inherit;
   cursor: pointer;
   transition: var(--transition-bezier);
 }
 
 .sidebar-menu-btn:hover {
-  background: var(--bg-color);
-  color: var(--text-main);
-  transform: translateX(4px);
+  background: var(--pill-bg);
+  color: var(--primary);
+  border-color: var(--border-color);
+  transform: translateX(3px);
 }
 
 .sidebar-menu-btn:active {
@@ -216,7 +280,7 @@ body {
 }
 
 .sidebar-btn-icon {
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -228,47 +292,57 @@ body {
   margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
 }
 
 .dept-item {
-  padding: 14px 18px;
+  padding: 11px 16px;
   background: transparent;
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-pill);
   cursor: pointer;
   transition: var(--transition-bezier);
   font-weight: 600;
+  font-size: 0.9rem;
   color: var(--text-muted);
-  border-left: none;
+  border: 1px solid transparent;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .dept-item:hover {
-  background: var(--bg-color);
+  background: var(--pill-bg);
   color: var(--text-main);
-  transform: translateX(4px);
+  border-color: var(--border-color);
+  transform: translateX(3px);
 }
 
 .dept-item.active {
-  background: var(--primary-light);
-  color: var(--primary);
+  background: linear-gradient(135deg, #0fa4de 0%, #0284c7 100%);
+  color: #ffffff !important;
+  border-color: #0fa4de;
+  box-shadow: var(--primary-glow);
 }
 
-.dept-item span {
-  font-size: 0.8rem;
+.dept-item > span:first-child {
+  color: inherit;
+}
+
+.dept-item span.badge-count,
+.dept-item > span:last-child {
+  font-size: 0.78rem;
   font-weight: 700;
-  padding: 4px 10px;
+  padding: 3px 8px;
   border-radius: var(--radius-pill);
-  background: rgba(0, 0, 0, 0.05);
+  background: var(--pill-bg);
   color: var(--text-main);
   transition: var(--transition-bezier);
 }
 
-.dept-item.active span {
-  background: var(--primary);
-  color: white;
+.dept-item.active span.badge-count,
+.dept-item.active > span:last-child {
+  background: rgba(255, 255, 255, 0.25) !important;
+  color: #ffffff !important;
 }
 
 /* Board Wrapper */
@@ -298,11 +372,11 @@ body {
 }
 
 /* ==========================================
-   FORMULARIO COMPACTO & DISEÑO DE INPUTS
+   FORMULARIO COMPACTO & DISEÑO DE INPUTS DACAS
    ========================================== */
 .form-section-compact, .form-section {
   background: var(--card-bg);
-  padding: 28px;
+  padding: 26px;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
   border: 1px solid var(--border-color);
@@ -311,66 +385,71 @@ body {
 
 .form-section-compact h3, .form-section h3 {
   margin-top: 0;
-  margin-bottom: 20px;
+  margin-bottom: 18px;
   font-family: 'Outfit', sans-serif;
-  font-size: 1.3rem;
+  font-size: 1.22rem;
   font-weight: 700;
-  color: var(--text-main);
+  color: #ffffff;
 }
 
 .crm-form-inline {
   display: flex;
-  gap: 14px;
+  gap: 12px;
   align-items: center;
   flex-wrap: wrap;
 }
 
-/* Estilo Inputs One UI: fondo sólido suave, sin bordes toscos, bordes redondeados */
-.crm-form-inline input, .form-group input, .form-group select, .status-select {
+/* Estilo Inputs DACAS */
+.crm-form-inline input, .form-group input, .form-group select, .status-select, .crm-form input, .crm-form select, .crm-form textarea {
   flex: 1;
   min-width: 160px;
-  padding: 14px 18px;
-  background: var(--input-bg);
-  border: 1.5px solid var(--border-color);
-  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  background: var(--input-bg, #ffffff);
+  border: 1px solid var(--border-color, #cbd5e1);
+  border-radius: var(--radius-md, 12px);
   font-family: inherit;
-  font-size: 0.95rem;
-  font-weight: 500;
-  color: var(--text-main);
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-main, #071524);
   outline: none;
   box-sizing: border-box;
   transition: var(--transition-bezier);
 }
 
-.crm-form-inline input::placeholder {
-  color: #a0a0a5;
+.crm-form-inline select option, .form-group select option, .status-select option, .crm-form select option {
+  background: var(--card-bg, #ffffff);
+  color: var(--text-main, #071524);
 }
 
-.crm-form-inline input:focus, .form-group input:focus, .form-group select:focus, .status-select:focus {
-  background: var(--card-bg);
+.crm-form-inline input::placeholder, .form-group input::placeholder, .crm-form input::placeholder {
+  color: #94a3b8;
+}
+
+.crm-form-inline input:focus, .form-group input:focus, .form-group select:focus, .status-select:focus, .crm-form input:focus, .crm-form select:focus, .crm-form textarea:focus {
+  background: var(--card-bg-hover, #f8fafc);
   border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(58, 123, 246, 0.15);
+  box-shadow: 0 0 0 3px rgba(15, 164, 222, 0.25);
 }
 
 .btn-submit {
   width: 100%;
-  background: var(--primary);
-  color: white;
+  background: linear-gradient(135deg, #0fa4de 0%, #0284c7 100%);
+  color: #ffffff;
   border: none;
-  padding: 14px 24px;
-  border-radius: var(--radius-md);
+  padding: 12px 24px;
+  border-radius: var(--radius-pill);
   cursor: pointer;
   font-weight: 700;
-  font-size: 0.95rem;
+  font-size: 0.92rem;
   font-family: inherit;
   transition: var(--transition-bezier);
-  box-shadow: 0 4px 14px rgba(58, 123, 246, 0.3);
+  box-shadow: 0 4px 14px rgba(15, 164, 222, 0.35);
 }
 
 .btn-submit:hover {
-  background: var(--primary-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(58, 123, 246, 0.4);
+  background: linear-gradient(135deg, #38bdf8 0%, #0fa4de 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(15, 164, 222, 0.45);
 }
 
 .btn-submit:active {
@@ -382,21 +461,48 @@ body {
   flex: 0 0 auto;
 }
 
+/* Tab buttons */
+.tab-btn {
+  background: var(--pill-bg);
+  color: var(--text-muted);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  padding: 10px 22px;
+  font-weight: 600;
+  font-size: 0.88rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition-bezier);
+}
+
+.tab-btn:hover {
+  background: var(--pill-hover);
+  color: #ffffff;
+  border-color: var(--primary);
+  transform: translateY(-1px);
+}
+
+.tab-btn.active {
+  background: linear-gradient(135deg, #0fa4de 0%, #0284c7 100%);
+  color: #ffffff;
+  border-color: #0fa4de;
+  box-shadow: var(--primary-glow);
+}
+
 /* ==========================================
-   TABLA E INBOX (BANDEJA DE ENTRADA PREMIUM)
+   TABLA E INBOX (BANDEJA DE ENTRADA DACAS)
    ========================================== */
 .board-section {
   width: 100%;
-  overflow: hidden; /* Redondeado impecable */
+  overflow: hidden;
 }
 
-/* Sobrescribir estilos en línea de las tablas desde el CSS */
 .board-section, .users-table {
   background: var(--card-bg) !important;
   border-radius: var(--radius-xl) !important;
   box-shadow: var(--shadow-md) !important;
   border: 1px solid var(--border-color) !important;
-  padding: 15px 24px !important;
+  padding: 18px 22px !important;
   box-sizing: border-box;
   overflow-x: auto;
 }
@@ -408,22 +514,27 @@ body {
 }
 
 .board-section th, .users-table th {
-  padding: 18px 16px !important;
+  padding: 14px 14px !important;
   font-family: 'Outfit', sans-serif;
-  font-size: 0.9rem;
+  font-size: 0.84rem;
   font-weight: 700;
-  color: var(--text-muted);
+  color: var(--primary-dark) !important;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 2px solid var(--bg-color) !important;
-  background: transparent !important;
+  border-bottom: 2px solid rgba(15, 164, 222, 0.25) !important;
+  background: var(--pill-bg) !important;
+}
+
+:root[data-theme='dark'] .board-section th,
+:root[data-theme='dark'] .users-table th {
+  color: #38bdf8 !important;
 }
 
 .board-section td, .users-table td {
-  padding: 20px 16px !important;
-  border-bottom: 1px solid var(--bg-color) !important;
-  font-size: 0.95rem;
-  color: var(--text-main);
+  padding: 16px 14px !important;
+  border-bottom: 1px solid var(--border-color-subtle) !important;
+  font-size: 0.92rem;
+  color: var(--text-main) !important;
   transition: var(--transition-bezier);
 }
 
@@ -432,28 +543,46 @@ body {
 }
 
 .board-section tbody tr:hover, .users-table tbody tr:hover {
-  background-color: var(--bg-color);
-  transform: scale(1.002);
+  background-color: rgba(15, 164, 222, 0.08) !important;
 }
 
 /* Botones en filas de tablas */
-.board-section button, .users-table button:not(.btn-delete) {
-  background: var(--primary-light) !important;
+.board-section button:not(.btn-delete), .users-table button:not(.btn-delete) {
+  background: var(--pill-bg) !important;
   color: var(--primary) !important;
-  border: none !important;
-  padding: 10px 20px !important;
+  border: 1px solid var(--border-color) !important;
+  padding: 8px 16px !important;
   border-radius: var(--radius-pill) !important;
-  font-weight: 700 !important;
-  font-size: 0.85rem !important;
+  font-weight: 600 !important;
+  font-size: 0.82rem !important;
   cursor: pointer;
   transition: var(--transition-bezier) !important;
 }
 
-.board-section button:hover, .users-table button:not(.btn-delete):hover {
+.board-section button:not(.btn-delete):hover, .users-table button:not(.btn-delete):hover {
   background: var(--primary) !important;
-  color: white !important;
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
+  color: #ffffff !important;
+  border-color: var(--primary) !important;
+  transform: translateY(-1px);
+  box-shadow: var(--primary-glow);
+}
+
+.btn-delete {
+  background: rgba(239, 68, 68, 0.15) !important;
+  color: #f87171 !important;
+  border: 1px solid rgba(239, 68, 68, 0.3) !important;
+  padding: 8px 16px !important;
+  border-radius: var(--radius-pill) !important;
+  font-weight: 600 !important;
+  font-size: 0.82rem !important;
+  cursor: pointer;
+  transition: var(--transition-bezier) !important;
+}
+
+.btn-delete:hover {
+  background: rgba(239, 68, 68, 0.3) !important;
+  color: #ffffff !important;
+  transform: translateY(-1px);
 }
 
 /* ==========================================
@@ -1413,35 +1542,59 @@ span.prioridad-baja {
 }
 
 /* ==========================================
-   DARK MODE PREMIUM (BERTA TICKET)
+   DACAS THEME SYSTEM (DARK & LIGHT)
    ========================================== */
 :root[data-theme='dark'] {
-  --bg-color: #0b1329;
-  --card-bg: #1c2541;
-  --text-main: #f1f5f9;
+  --bg-color: #071524;
+  --card-bg: #0f2742;
+  --card-bg-hover: #143456;
+  --pill-bg: #12354c;
+  --pill-hover: #26476e;
+  
+  --text-main: #ffffff;
   --text-muted: #94a3b8;
   
-  --primary: #06b6d4; /* Cyan Accent/Primary de movilAPP en Modo Oscuro */
-  --primary-hover: #0891b2;
-  --primary-light: rgba(6, 182, 212, 0.12);
+  --primary: #0fa4de;
+  --primary-hover: #38bdf8;
+  --primary-dark: #0284c7;
+  --primary-light: rgba(15, 164, 222, 0.15);
+  --primary-glow: 0 0 20px rgba(15, 164, 222, 0.35);
   
   --success: #10b981;
-  --success-bg: rgba(16, 185, 129, 0.12);
+  --success-bg: rgba(16, 185, 129, 0.15);
   --warning: #f59e0b;
-  --warning-bg: rgba(245, 158, 11, 0.12);
+  --warning-bg: rgba(245, 158, 11, 0.15);
   --danger: #ef4444;
-  --danger-bg: rgba(239, 68, 68, 0.12);
-  --info: #3b82f6;
-  --info-bg: rgba(59, 130, 246, 0.12);
+  --danger-bg: rgba(239, 68, 68, 0.15);
+  --info: #0fa4de;
+  --info-bg: rgba(15, 164, 222, 0.15);
   
-  --border-color: #334155;
-  --input-bg: #0b1329;
-  --purple-brand: #e2e8f0;
-  --expenses-gradient-end: #475569;
+  --border-color: rgba(15, 164, 222, 0.22);
+  --border-color-subtle: rgba(255, 255, 255, 0.08);
+  --input-bg: #0b1d33;
+  --purple-brand: #0fa4de;
+  --expenses-gradient-end: #0284c7;
 
   --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.6);
+  --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.7);
+}
+
+:root[data-theme='light'] {
+  --bg-color: #f1f5f9;
+  --card-bg: #ffffff;
+  --card-bg-hover: #f8fafc;
+  --pill-bg: #e2e8f0;
+  --pill-hover: #cbd5e1;
+  --text-main: #071524;
+  --text-muted: #475569;
+  --primary: #0fa4de;
+  --primary-hover: #0284c7;
+  --primary-dark: #0369a1;
+  --primary-light: rgba(15, 164, 222, 0.12);
+  --border-color: #cbd5e1;
+  --border-color-subtle: #e2e8f0;
+  --input-bg: #ffffff;
 }
 
 /* Transiciones globales para un paso ultra-suave */
@@ -1457,10 +1610,10 @@ input,
 select, 
 textarea,
 button:not(.btn-submit):not(.logout-btn):not(.btn-delete) {
-  transition: background-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), 
-              color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), 
-              border-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), 
-              box-shadow 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+  transition: background-color 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), 
+              color 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), 
+              border-color 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), 
+              box-shadow 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* Mitigaciones automáticas para colores en línea o fondos duros */
@@ -1486,14 +1639,14 @@ button:not(.btn-submit):not(.logout-btn):not(.btn-delete) {
 }
 
 :root[data-theme='dark'] .users-table th {
-  background: rgba(255, 255, 255, 0.03) !important;
-  color: var(--text-main) !important;
-  border-bottom: 2px solid var(--border-color) !important;
+  background: var(--pill-bg) !important;
+  color: #38bdf8 !important;
+  border-bottom: 2px solid rgba(15, 164, 222, 0.3) !important;
 }
 
 :root[data-theme='dark'] .users-table td {
-  border-bottom: 1px solid var(--border-color) !important;
-  color: var(--text-main) !important;
+  border-bottom: 1px solid var(--border-color-subtle) !important;
+  color: #f1f5f9 !important;
 }
 
 :root[data-theme='dark'] input,
@@ -1501,7 +1654,7 @@ button:not(.btn-submit):not(.logout-btn):not(.btn-delete) {
 :root[data-theme='dark'] textarea,
 :root[data-theme='dark'] .status-select {
   background-color: var(--input-bg) !important;
-  color: var(--text-main) !important;
+  color: #ffffff !important;
   border-color: var(--border-color) !important;
 }
 

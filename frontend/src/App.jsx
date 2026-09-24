@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import Dashboard from './Dashboard';
 import Login from './Login';
 import AdminUsuarios from './AdminUsuarios';
@@ -12,10 +12,62 @@ import AdminTemplates from './AdminTemplates';
 import AdminOrganizaciones from './AdminOrganizaciones';
 import AdminEquipos from './AdminEquipos';
 import AdminConfigTickets from './AdminConfigTickets';
+import AdminEcommerce from './AdminEcommerce';
+import Shop from './Shop';
+import ShopClientPortal from './ShopClientPortal';
+import ShopCheckout from './ShopCheckout';
 import './App.css';
 
+// Componente de sincronización dinámica de Título y Favicon (DACAS Shop vs DACAS Portal de Gestión)
+function DynamicFaviconAndTitle() {
+  const location = useLocation();
+
+  useEffect(() => {
+    const isShop = location.pathname.startsWith('/shop');
+
+    // 1. Título dinámico
+    if (isShop) {
+      if (location.pathname === '/shop/checkout') {
+        document.title = 'DACAS Shop | Checkout';
+      } else if (location.pathname === '/shop/portal' || location.pathname === '/shop/account') {
+        document.title = 'DACAS Shop | Mi Panel';
+      } else {
+        document.title = 'DACAS Shop';
+      }
+    } else {
+      document.title = 'DACAS Portal de Gestión';
+    }
+
+    // 2. Favicon dinámico
+    const faviconHref = isShop ? '/favicon-shop.svg' : '/favicon-portal.svg';
+    let link = document.querySelector("link[rel~='icon']");
+    if (!link) {
+      link = document.createElement('link');
+      link.rel = 'icon';
+      document.head.appendChild(link);
+    }
+    link.type = 'image/svg+xml';
+    link.href = faviconHref;
+
+    // También actualizar apple-touch-icon si existe
+    const appleLink = document.querySelector("link[rel='apple-touch-icon']");
+    if (appleLink) {
+      appleLink.href = faviconHref;
+    }
+  }, [location.pathname]);
+
+  return null;
+}
+
 function App() {
-  const [usuario, setUsuario] = useState(null);
+  const [usuario, setUsuario] = useState(() => {
+    try {
+      const saved = localStorage.getItem('usuario');
+      return saved ? JSON.parse(saved) : null;
+    } catch (_) {
+      return null;
+    }
+  });
   const [sessionError, setSessionError] = useState('');
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
 
@@ -24,6 +76,15 @@ function App() {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
+
+  // Persistir usuario en localStorage
+  useEffect(() => {
+    if (usuario) {
+      localStorage.setItem('usuario', JSON.stringify(usuario));
+    } else {
+      localStorage.removeItem('usuario');
+    }
+  }, [usuario]);
 
   const toggleTheme = () => {
     setTheme(prev => prev === 'light' ? 'dark' : 'light');
@@ -57,30 +118,39 @@ function App() {
 
   // Componente de protección de rutas basado en roles
   const ProtectedRoute = ({ children, rolesPermitidos }) => {
+    const location = useLocation();
     if (!usuario) {
-      return <Navigate to="/login" />;
+      return <Navigate to="/login" state={{ from: location }} replace />;
     }
-    if (!rolesPermitidos.includes(usuario.rol)) {
+    if (rolesPermitidos && !rolesPermitidos.includes(usuario.rol)) {
       // Si un usuario no autorizado intenta entrar a una ruta, lo redirigimos a donde le corresponde
-      if (usuario.rol === 'admin' || usuario.rol === 'staff') return <Navigate to="/" />;
-      if (usuario.rol === 'cliente' || usuario.rol === 'manager') return <Navigate to="/mis-tickets" />;
+      if (usuario.rol === 'admin_ecommerce') return <Navigate to="/admin/ecommerce" replace />;
+      if (usuario.rol === 'admin' || usuario.rol === 'staff') return <Navigate to="/" replace />;
+      if (usuario.rol === 'cliente' || usuario.rol === 'manager') return <Navigate to="/mis-tickets" replace />;
     }
     return children;
   };
 
   return (
     <Router>
+      <DynamicFaviconAndTitle />
       <Routes>
         <Route
           path="/login"
-          element={!usuario ? <Login setUsuario={setUsuario} initialError={sessionError} clearInitialError={() => setSessionError('')} theme={theme} toggleTheme={toggleTheme} /> : <Navigate to={(usuario.rol === 'admin' || usuario.rol === 'staff') ? '/' : '/mis-tickets'} />}
+          element={!usuario ? <Login setUsuario={setUsuario} initialError={sessionError} clearInitialError={() => setSessionError('')} theme={theme} toggleTheme={toggleTheme} /> : <Navigate to={usuario.rol === 'admin_ecommerce' ? '/admin/ecommerce' : (usuario.rol === 'admin' || usuario.rol === 'staff') ? '/' : '/mis-tickets'} />}
         />
+
+        {/* Rutas Públicas de E-commerce */}
+        <Route path="/shop" element={<Shop />} />
+        <Route path="/shop/portal" element={<ShopClientPortal />} />
+        <Route path="/shop/account" element={<ShopClientPortal />} />
+        <Route path="/shop/checkout" element={<ShopCheckout />} />
 
         {/* Rutas de Administrador */}
         <Route
           path="/"
           element={
-            <ProtectedRoute rolesPermitidos={['admin', 'staff']}>
+            <ProtectedRoute rolesPermitidos={['admin', 'staff', 'admin_ecommerce']}>
               <Dashboard usuario={usuario} setUsuario={setUsuario} theme={theme} toggleTheme={toggleTheme} />
             </ProtectedRoute>
           }
@@ -112,7 +182,7 @@ function App() {
         <Route
           path="/reportes"
           element={
-            <ProtectedRoute rolesPermitidos={['admin']}>
+            <ProtectedRoute rolesPermitidos={['admin', 'admin_ecommerce']}>
               <Reportes />
             </ProtectedRoute>
           }
@@ -154,6 +224,14 @@ function App() {
           element={
             <ProtectedRoute rolesPermitidos={['admin']}>
               <AdminConfigTickets />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/ecommerce"
+          element={
+            <ProtectedRoute rolesPermitidos={['admin', 'admin_ecommerce']}>
+              <AdminEcommerce />
             </ProtectedRoute>
           }
         />

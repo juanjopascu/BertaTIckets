@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="portalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0fa4de"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#0fa4de" flood-opacity="0.3"/>
+    </filter>
+  </defs>
+  <rect width="64" height="64" rx="16" fill="#071524"/>
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="none" stroke="#0fa4de" stroke-width="2" stroke-opacity="0.4"/>
+  <!-- Bold D letter with corporate tech flare -->
+  <path d="M20 16 h14 c11 0 18 6 18 16 s-7 16 -18 16 H20 Z" fill="url(#portalGrad)" filter="url(#glow)"/>
+  <path d="M28 24 h6 c6 0 10 3 10 8 s-4 8 -10 8 h-6 Z" fill="#071524"/>
+  <circle cx="44" cy="20" r="3.5" fill="#38bdf8"/>
+</svg>

@@ -10,7 +10,7 @@ const API_URL = `${API_BASE_URL}/api/clientes`;
 const DEPT_URL = `${API_BASE_URL}/api/departamentos`;
 const ESTADOS_URL = `${API_BASE_URL}/api/estados`;
 
-const COLORS = ['#0f766e', '#06b6d4', '#4cc9f0', '#f72585', '#0284c7', '#f8961e', '#277da1'];
+const COLORS = ['#0fa4de', '#38bdf8', '#0284c7', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4'];
 const COMPLIANT_COLOR = '#10b981'; // Green
 const VIOLATED_COLOR = '#ef4444'; // Red
 
@@ -486,17 +486,62 @@ function Reportes() {
 
       <header className="crm-header grid-header">
         <div className="header-top">
-          <h1>Reportería y SLA Avanzado</h1>
-          <div className="user-controls">
-            <button className="nav-btn" onClick={() => window.print()} style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-              🖨️ Exportar PDF / Imprimir
-            </button>
-            <button className="nav-btn" onClick={() => navigate('/')}>
-              🔙 Volver al Dashboard
-            </button>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{
+                background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                color: '#ffffff',
+                fontWeight: '900',
+                fontSize: '1.4rem',
+                letterSpacing: '-0.02em',
+                padding: '8px 16px',
+                borderRadius: '12px',
+                boxShadow: '0 4px 15px rgba(15, 164, 222, 0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span>DACAS</span>
+              </div>
+              <div>
+                <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+                  Reportería <span style={{ color: '#0fa4de' }}>&</span> SLA Avanzado
+                </h1>
+                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  Métricas de cumplimiento, tiempos de resolución y trazabilidad de operaciones
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                background: 'var(--pill-bg)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '999px',
+                padding: '6px 14px',
+                color: 'var(--text-main)',
+                fontSize: '0.85rem',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+              }}>
+                <span>🇦🇷</span>
+                <span>DACAS Argentina</span>
+              </div>
+
+              <div className="user-controls">
+                <button className="nav-btn" onClick={() => window.print()} style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+                  🖨️ Exportar PDF / Imprimir
+                </button>
+                <button className="nav-btn" onClick={() => navigate('/')}>
+                  🔙 Volver al Dashboard
+                </button>
+              </div>
+            </div>
           </div>
         </div>
-        <p>Métricas detalladas de cumplimiento, tiempos de resolución y rendimiento del personal de soporte.</p>
       </header>
 
       <main className="crm-main" style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '20px' }}>

@@ -4,14 +4,33 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
+const bcrypt = require('bcrypt');
+const ecommerceRoutes = require('./ecommerce');
 
 function hashPassword(password) {
     if (!password) return '';
-    return crypto.createHash('sha256').update(password).digest('hex');
+    return bcrypt.hashSync(password, 10);
+}
+
+function verifyPassword(plainPassword, storedHash) {
+    if (!plainPassword || !storedHash) return false;
+    if (typeof storedHash === 'string' && (storedHash.startsWith('$2a$') || storedHash.startsWith('$2b$') || storedHash.startsWith('$2y$'))) {
+        try {
+            return bcrypt.compareSync(plainPassword, storedHash);
+        } catch (e) {
+            return false;
+        }
+    }
+    // Backward compatibility for SHA-256 legacy hashes
+    const sha256 = crypto.createHash('sha256').update(plainPassword).digest('hex');
+    return sha256 === storedHash;
 }
 
 const app = express();
 const port = process.env.PORT || 3001;
+
+// Ocultar cabecera de Express por seguridad
+app.disable('x-powered-by');
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
@@ -28,17 +47,33 @@ const storage = multer.diskStorage({
     },
     filename: function (req, file, cb) {
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, uniqueSuffix + '-' + file.originalname);
+        const safeName = file.originalname.replace(/[^a-zA-Z0-9.-]/g, '_');
+        cb(null, uniqueSuffix + '-' + safeName);
     }
 });
+
+// Multer general para tickets y clientes (NO permite ejecutables ni scripts)
 const upload = multer({
     storage: storage,
     limits: { fileSize: 15 * 1024 * 1024 }, // Límite estricto de 15 MB por archivo
     fileFilter: function (req, file, cb) {
         const ext = path.extname(file.originalname).toLowerCase();
-        const allowed = ['.pdf', '.jpg', '.jpeg', '.png', '.xls', '.xlsx', '.sql'];
+        const allowed = ['.pdf', '.jpg', '.jpeg', '.png', '.webp', '.xls', '.xlsx', '.csv'];
         if (!allowed.includes(ext)) {
-            return cb(new Error('Tipo de archivo no permitido. Solo se admiten PDFs, imágenes (JPG, PNG), planillas Excel (XLS, XLSX) y archivos SQL (.sql).'));
+            return cb(new Error('Tipo de archivo no permitido. Solo se admiten PDFs, imágenes (JPG, PNG, WebP) y planillas Excel/CSV.'));
+        }
+        cb(null, true);
+    }
+});
+
+// Multer dedicado para importación de base de datos Kayako SQL (solo accesible por Administradores)
+const sqlUpload = multer({
+    storage: storage,
+    limits: { fileSize: 30 * 1024 * 1024 },
+    fileFilter: function (req, file, cb) {
+        const ext = path.extname(file.originalname).toLowerCase();
+        if (ext !== '.sql') {
+            return cb(new Error('Solo se admiten archivos con extensión .sql'));
         }
         cb(null, true);
     }
@@ -175,20 +210,14 @@ let clientesDb = [
 let nextClienteId = 4;
 
 let usuariosDb = [
-    { id: 1, nombre: "Administrador", email: "admin@crm.com", password: "8c6976e5b5410415bde908bd4dee15dfb167a9c873fc4bb8a81f6f2ab448a918", rol: "admin", crear_tickets: true, activo: true, pais: "Argentina", sector: "Administración", horario_atencion: "24/7", ciudad: "Buenos Aires" },
-    { id: 2, nombre: "Cliente de Prueba", email: "cliente@crm.com", password: "e606e38b0d8c19b24cf0ee3808183162ea7cd63ff7912dbb22b5e803286b4446", rol: "cliente", crear_tickets: true, activo: true, pais: "Chile", sector: "Compras", horario_atencion: "09:00 - 18:00", ciudad: "Santiago" },
-    { id: 3, nombre: "Staff de Prueba", email: "staff@crm.com", password: "1562206543da764123c21bd524674f0a8aaf49c8a89744c97352fe677f7e4006", rol: "staff", crear_tickets: true, activo: true, accesos: { departamentos: [2], estados: ["Prospecto", "Contactado"] }, equipoId: 1, pais: "Uruguay", sector: "Soporte Técnico", horario_atencion: "08:00 - 17:00", ciudad: "Montevideo" },
-    { id: 4, nombre: "Manager de Prueba", email: "manager@crm.com", password: "6ee4a469cd4e91053847f5d3fcb61dbcc91e8f0ef10be7748da4c4a1ba382d17", rol: "manager", crear_tickets: true, activo: true, pais: "Argentina", sector: "Operaciones", horario_atencion: "09:00 - 18:00", ciudad: "Buenos Aires" },
-    { id: 5, nombre: "Juan Pascuzzi", email: "jpascuzzi@dacas.com", password: "66c5b8883a78c8a041d08a8b0906eb0208235f93a86ab913f276aba2d64e3cd9", rol: "admin", crear_tickets: true, activo: true, pais: "Argentina", sector: "Dirección", horario_atencion: "24/7", ciudad: "Buenos Aires" }
+    { id: 1, nombre: "Administrador", email: "admin@crm.com", password: hashPassword("admin"), rol: "admin", crear_tickets: true, activo: true, pais: "Argentina", sector: "Administración", horario_atencion: "24/7", ciudad: "Buenos Aires" },
+    { id: 2, nombre: "Cliente de Prueba", email: "cliente@crm.com", password: hashPassword("cliente123"), rol: "cliente", crear_tickets: true, activo: true, pais: "Chile", sector: "Compras", horario_atencion: "09:00 - 18:00", ciudad: "Santiago" },
+    { id: 3, nombre: "Staff de Prueba", email: "staff@crm.com", password: hashPassword("staff123"), rol: "staff", crear_tickets: true, activo: true, accesos: { departamentos: [2], estados: ["Prospecto", "Contactado"] }, equipoId: 1, pais: "Uruguay", sector: "Soporte Técnico", horario_atencion: "08:00 - 17:00", ciudad: "Montevideo" },
+    { id: 4, nombre: "Manager de Prueba", email: "manager@crm.com", password: hashPassword("manager123"), rol: "manager", crear_tickets: true, activo: true, pais: "Argentina", sector: "Operaciones", horario_atencion: "09:00 - 18:00", ciudad: "Buenos Aires" },
+    { id: 5, nombre: "Juan Pascuzzi", email: "jpascuzzi@dacas.com", password: hashPassword("admin123"), rol: "admin", crear_tickets: true, activo: true, pais: "Argentina", sector: "Dirección", horario_atencion: "24/7", ciudad: "Buenos Aires" },
+    { id: 6, nombre: "Admin E-commerce", email: "admin.ecommerce@dacas.com", password: hashPassword("password123"), rol: "admin_ecommerce", crear_tickets: true, activo: true, pais: "Argentina", sector: "E-Commerce", horario_atencion: "09:00 - 18:00", ciudad: "Buenos Aires" }
 ];
-let nextUsuarioId = 6;
-
-// Hashear contraseñas iniciales al arranque del servidor
-usuariosDb.forEach(u => {
-    if (u.password && u.password.length < 64) {
-        u.password = hashPassword(u.password);
-    }
-});
+let nextUsuarioId = 7;
 
 let nextAccionId = 1;
 function registrarAccionTicket(ticketId, accion, detalle, usuarioStr) {
@@ -281,14 +310,82 @@ let nextOrganizacionId = 2;
 
 
 // ==========================================
+// BASE DE DATOS DE SESIONES Y AUTENTICACIÓN
+// ==========================================
+let sesionesActivas = [];
+
+function getClientIp(req) {
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip;
+    let cleanIp = typeof ip === 'string' ? ip : 'Desconocida';
+    if (cleanIp.includes(',')) {
+        cleanIp = cleanIp.split(',')[0].trim();
+    }
+    if (cleanIp === '::1' || cleanIp === '::ffff:127.0.0.1') {
+        cleanIp = '127.0.0.1';
+    } else if (cleanIp.startsWith('::ffff:')) {
+        cleanIp = cleanIp.substring(7);
+    }
+    return cleanIp;
+}
+
+// Middleware de autenticación obligatoria para el CRM
+function requireCrmAuth(req, res, next) {
+    const authHeader = req.headers['authorization'] || req.headers['x-session-id'];
+    let sesionId = null;
+    if (authHeader) {
+        if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
+            sesionId = authHeader.split(' ')[1];
+        } else {
+            sesionId = authHeader;
+        }
+    }
+    if (!sesionId && req.query && req.query.sesionId) {
+        sesionId = req.query.sesionId;
+    }
+    if (!sesionId && req.body && req.body.sesionId) {
+        sesionId = req.body.sesionId;
+    }
+
+    if (!sesionId) {
+        return res.status(401).json({ error: 'Autenticación requerida. Sesión no proporcionada.' });
+    }
+
+    const sesion = sesionesActivas.find(s => s.id === sesionId);
+    if (!sesion) {
+        return res.status(401).json({ error: 'Sesión inválida o expirada.' });
+    }
+
+    const usuario = usuariosDb.find(u => u.id === sesion.usuarioId);
+    if (!usuario || usuario.activo === false) {
+        return res.status(403).json({ error: 'Usuario inactivo o no encontrado.' });
+    }
+
+    req.user = {
+        ...sesion,
+        activo: usuario.activo,
+        crear_tickets: usuario.crear_tickets,
+        accesos: usuario.accesos
+    };
+    next();
+}
+
+// Middleware para restringir acceso exclusivo a Administradores del CRM
+function requireCrmAdmin(req, res, next) {
+    if (!req.user || req.user.rol !== 'admin') {
+        return res.status(403).json({ error: 'Acceso restringido solo para Administradores.' });
+    }
+    next();
+}
+
+// ==========================================
 // ENDPOINTS DE DEPARTAMENTOS
 // ==========================================
 
-app.get('/api/departamentos', (req, res) => {
+app.get('/api/departamentos', requireCrmAuth, (req, res) => {
     res.status(200).json(departamentosDb);
 });
 
-app.post('/api/departamentos', (req, res) => {
+app.post('/api/departamentos', requireCrmAuth, requireCrmAdmin, (req, res) => {
     const { nombre, sla_horas } = req.body;
     if (!nombre || nombre.trim() === '') return res.status(400).json({ error: 'El nombre es obligatorio.' });
     if (departamentosDb.find(d => d.nombre.toLowerCase() === nombre.toLowerCase())) return res.status(400).json({ error: 'El departamento ya existe.' });
@@ -297,7 +394,7 @@ app.post('/api/departamentos', (req, res) => {
     res.status(201).json(nuevo);
 });
 
-app.put('/api/departamentos/:id', (req, res) => {
+app.put('/api/departamentos/:id', requireCrmAuth, requireCrmAdmin, (req, res) => {
     const id = parseInt(req.params.id);
     const { nombre, sla_horas } = req.body;
 
@@ -322,7 +419,7 @@ app.put('/api/departamentos/:id', (req, res) => {
     res.status(200).json(departamentosDb[index]);
 });
 
-app.delete('/api/departamentos/:id', (req, res) => {
+app.delete('/api/departamentos/:id', requireCrmAuth, requireCrmAdmin, (req, res) => {
     const id = parseInt(req.params.id);
     const index = departamentosDb.findIndex(d => d.id === id);
     if (index === -1) return res.status(404).json({ error: 'Departamento no encontrado.' });
@@ -372,11 +469,11 @@ app.delete('/api/departamentos/:id', (req, res) => {
 // ENDPOINTS DE ESTADOS
 // ==========================================
 
-app.get('/api/estados', (req, res) => {
+app.get('/api/estados', requireCrmAuth, (req, res) => {
     res.status(200).json(estadosDb);
 });
 
-app.post('/api/estados', (req, res) => {
+app.post('/api/estados', requireCrmAuth, requireCrmAdmin, (req, res) => {
     const { nombre, sla_horas } = req.body;
     if (!nombre || nombre.trim() === '') return res.status(400).json({ error: 'El nombre es obligatorio.' });
     if (estadosDb.find(e => e.nombre.toLowerCase() === nombre.toLowerCase())) return res.status(400).json({ error: 'El estado ya existe.' });
@@ -385,7 +482,7 @@ app.post('/api/estados', (req, res) => {
     res.status(201).json(nuevo);
 });
 
-app.put('/api/estados/:id', (req, res) => {
+app.put('/api/estados/:id', requireCrmAuth, requireCrmAdmin, (req, res) => {
     const id = parseInt(req.params.id);
     const { nombre, sla_horas } = req.body;
 
@@ -410,7 +507,7 @@ app.put('/api/estados/:id', (req, res) => {
     res.status(200).json(estadosDb[index]);
 });
 
-app.delete('/api/estados/:id', (req, res) => {
+app.delete('/api/estados/:id', requireCrmAuth, requireCrmAdmin, (req, res) => {
     const id = parseInt(req.params.id);
     const index = estadosDb.findIndex(e => e.id === id);
     if (index === -1) return res.status(404).json({ error: 'Estado no encontrado.' });
@@ -431,11 +528,11 @@ app.delete('/api/estados/:id', (req, res) => {
 // ==========================================
 // ENDPOINTS DE CONFIGURACIÓN DE TICKETS
 // ==========================================
-app.get('/api/config-tickets', (req, res) => {
+app.get('/api/config-tickets', requireCrmAuth, (req, res) => {
     res.status(200).json(configTicketsDb);
 });
 
-app.post('/api/config-tickets', (req, res) => {
+app.post('/api/config-tickets', requireCrmAuth, requireCrmAdmin, (req, res) => {
     const { habilitarNuevoTicketProcesos, habilitarReintegroGastos, habilitarReservaViajes } = req.body;
 
     if (habilitarNuevoTicketProcesos !== undefined) configTicketsDb.habilitarNuevoTicketProcesos = !!habilitarNuevoTicketProcesos;
@@ -446,33 +543,26 @@ app.post('/api/config-tickets', (req, res) => {
 });
 
 // ==========================================
-// BASE DE DATOS DE SESIONES Y AUTENTICACIÓN
+// ENDPOINTS DE AUTENTICACIÓN Y LOGIN
 // ==========================================
-let sesionesActivas = [];
-
-function getClientIp(req) {
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || req.ip;
-    let cleanIp = typeof ip === 'string' ? ip : 'Desconocida';
-    if (cleanIp.includes(',')) {
-        cleanIp = cleanIp.split(',')[0].trim();
-    }
-    if (cleanIp === '::1' || cleanIp === '::ffff:127.0.0.1') {
-        cleanIp = '127.0.0.1';
-    } else if (cleanIp.startsWith('::ffff:')) {
-        cleanIp = cleanIp.substring(7);
-    }
-    return cleanIp;
-}
 
 app.post('/api/login', (req, res) => {
     const { email, password } = req.body;
-    const hashed = hashPassword(password);
-    const usuario = usuariosDb.find(u => u.email.toLowerCase() === email.toLowerCase() && u.password === hashed);
+    if (!email || !password) {
+        return res.status(400).json({ error: "Email y contraseña requeridos" });
+    }
+    const usuario = usuariosDb.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
 
-    if (usuario) {
+    if (usuario && verifyPassword(password, usuario.password)) {
         if (usuario.activo === false) {
             return res.status(403).json({ error: "Tu cuenta ha sido deshabilitada por un administrador." });
         }
+
+        // Si la contraseña estaba en SHA-256 legacy, actualizarla transparentemente a bcrypt
+        if (!usuario.password.startsWith('$2a$') && !usuario.password.startsWith('$2b$')) {
+            usuario.password = hashPassword(password);
+        }
+
         const sesionId = crypto.randomBytes(32).toString('hex');
         const ip = getClientIp(req);
 
@@ -512,9 +602,12 @@ app.post('/api/login', (req, res) => {
 
 app.post('/api/login-microsoft', (req, res) => {
     const { email, nombre } = req.body;
+    if (!email) {
+        return res.status(400).json({ error: "Email de Microsoft requerido" });
+    }
 
     // Buscar si el correo de Microsoft ya está registrado como usuario válido
-    const usuario = usuariosDb.find(u => u.email.toLowerCase() === email.toLowerCase());
+    const usuario = usuariosDb.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
 
     if (usuario) {
         if (usuario.activo === false) {
@@ -553,12 +646,12 @@ app.post('/api/login-microsoft', (req, res) => {
             }
         });
     } else {
-        res.status(403).json({ error: "Este correo de Microsoft no tiene acceso a Berta Ticket." });
+        res.status(403).json({ error: "Este correo de Microsoft no tiene acceso a DACAS Portal de Gestión." });
     }
 });
 
 
-app.get('/api/usuarios', (req, res) => {
+app.get('/api/usuarios', requireCrmAuth, (req, res) => {
     const seguros = usuariosDb.map(u => ({
         id: u.id,
         nombre: u.nombre,
@@ -576,7 +669,7 @@ app.get('/api/usuarios', (req, res) => {
     res.status(200).json(seguros);
 });
 
-app.post('/api/usuarios', (req, res) => {
+app.post('/api/usuarios', requireCrmAuth, requireCrmAdmin, (req, res) => {
     const { nombre, email, password, rol, accesos, equipoId, crear_tickets, activo, pais, sector, horario_atencion, ciudad } = req.body;
     if (usuariosDb.find(u => u.email === email)) return res.status(400).json({ error: 'El email ya está en uso por otro usuario.' });
     const nuevoUsuario = {
@@ -618,7 +711,7 @@ app.post('/api/usuarios', (req, res) => {
     });
 });
 
-app.put('/api/usuarios/:id', (req, res) => {
+app.put('/api/usuarios/:id', requireCrmAuth, requireCrmAdmin, (req, res) => {
     const id = parseInt(req.params.id);
     const { nombre, email, password, rol, accesos, equipoId, crear_tickets, activo, pais, sector, horario_atencion, ciudad } = req.body;
 
@@ -692,7 +785,7 @@ app.put('/api/usuarios/:id', (req, res) => {
     });
 });
 
-app.delete('/api/usuarios/:id', (req, res) => {
+app.delete('/api/usuarios/:id', requireCrmAuth, requireCrmAdmin, (req, res) => {
     const id = parseInt(req.params.id);
     if (id === 1) return res.status(403).json({ error: 'No se puede eliminar al administrador principal.' });
     const index = usuariosDb.findIndex(u => u.id === id);
@@ -715,12 +808,12 @@ app.delete('/api/usuarios/:id', (req, res) => {
 // ENDPOINTS DE CONTROL DE SESIONES ACTIVAS
 // ==========================================
 
-app.get('/api/admin/sesiones', (req, res) => {
+app.get('/api/admin/sesiones', requireCrmAuth, requireCrmAdmin, (req, res) => {
     res.status(200).json(sesionesActivas);
 });
 
 // Endpoint global para obtener toda la bitácora de auditoría consolidada
-app.get('/api/admin/auditoria-acciones', (req, res) => {
+app.get('/api/admin/auditoria-acciones', requireCrmAuth, requireCrmAdmin, (req, res) => {
     let todasAcciones = [];
     clientesDb.forEach(ticket => {
         if (ticket.auditoria_acciones) {
@@ -739,7 +832,7 @@ app.get('/api/admin/auditoria-acciones', (req, res) => {
     res.status(200).json(todasAcciones);
 });
 
-app.post('/api/admin/desconectar', (req, res) => {
+app.post('/api/admin/desconectar', requireCrmAuth, requireCrmAdmin, (req, res) => {
     const { sesionId } = req.body;
     if (!sesionId) return res.status(400).json({ error: 'Falta ID de sesión.' });
 
@@ -777,11 +870,11 @@ app.post('/api/logout', (req, res) => {
 // ENDPOINTS DE ORGANIZACIONES
 // ==========================================
 
-app.get('/api/organizaciones', (req, res) => {
+app.get('/api/organizaciones', requireCrmAuth, (req, res) => {
     res.status(200).json(organizacionesDb);
 });
 
-app.post('/api/organizaciones', (req, res) => {
+app.post('/api/organizaciones', requireCrmAuth, requireCrmAdmin, (req, res) => {
     const { nombre, managers, clientes, departamentoId } = req.body;
     if (!nombre || nombre.trim() === '') {
         return res.status(400).json({ error: 'El nombre de la organización es obligatorio.' });
@@ -797,7 +890,7 @@ app.post('/api/organizaciones', (req, res) => {
     res.status(201).json(nueva);
 });
 
-app.put('/api/organizaciones/:id', (req, res) => {
+app.put('/api/organizaciones/:id', requireCrmAuth, requireCrmAdmin, (req, res) => {
     const id = parseInt(req.params.id);
     const { nombre, managers, clientes, departamentoId } = req.body;
     const index = organizacionesDb.findIndex(o => o.id === id);
@@ -817,7 +910,7 @@ app.put('/api/organizaciones/:id', (req, res) => {
     res.status(200).json(organizacionesDb[index]);
 });
 
-app.delete('/api/organizaciones/:id', (req, res) => {
+app.delete('/api/organizaciones/:id', requireCrmAuth, requireCrmAdmin, (req, res) => {
     const id = parseInt(req.params.id);
     const index = organizacionesDb.findIndex(o => o.id === id);
     if (index === -1) {
@@ -830,11 +923,11 @@ app.delete('/api/organizaciones/:id', (req, res) => {
 // ==========================================
 // ENDPOINTS DE EQUIPOS
 // ==========================================
-app.get('/api/equipos', (req, res) => {
+app.get('/api/equipos', requireCrmAuth, (req, res) => {
     res.status(200).json(equiposDb);
 });
 
-app.post('/api/equipos', (req, res) => {
+app.post('/api/equipos', requireCrmAuth, requireCrmAdmin, (req, res) => {
     const { nombre, miembros } = req.body;
     if (!nombre || nombre.trim() === '') {
         return res.status(400).json({ error: 'El nombre del equipo es obligatorio.' });
@@ -860,7 +953,7 @@ app.post('/api/equipos', (req, res) => {
     res.status(201).json(nuevo);
 });
 
-app.put('/api/equipos/:id', (req, res) => {
+app.put('/api/equipos/:id', requireCrmAuth, requireCrmAdmin, (req, res) => {
     const id = parseInt(req.params.id);
     const { nombre, miembros } = req.body;
     const index = equiposDb.findIndex(e => e.id === id);
@@ -893,7 +986,7 @@ app.put('/api/equipos/:id', (req, res) => {
     res.status(200).json(equiposDb[index]);
 });
 
-app.delete('/api/equipos/:id', (req, res) => {
+app.delete('/api/equipos/:id', requireCrmAuth, requireCrmAdmin, (req, res) => {
     const id = parseInt(req.params.id);
     const index = equiposDb.findIndex(e => e.id === id);
     if (index === -1) {
@@ -916,7 +1009,7 @@ app.delete('/api/equipos/:id', (req, res) => {
 // ==========================================
 
 // Modificado para aceptar Multipart form-data para subir múltiples archivos de hasta 15 MB
-app.post('/api/clientes', handleUpload('documentos', 15), (req, res) => {
+app.post('/api/clientes', requireCrmAuth, handleUpload('documentos', 15), (req, res) => {
     // Si viene como JSON plano (desde admin): req.body.departamento
     // Si viene como form-data (desde el panel del usuario): req.body.departamento también existe pero todo es string
     const { nombre, email, telefono, empresa, estado_embudo, departamento, asignado_a, prioridad, templateId, camposExtra,
@@ -1022,13 +1115,13 @@ app.post('/api/clientes', handleUpload('documentos', 15), (req, res) => {
     res.status(201).json(nuevoCliente);
 });
 
-app.get('/api/clientes', (req, res) => {
+app.get('/api/clientes', requireCrmAuth, (req, res) => {
     const sorted = [...clientesDb].sort((a, b) => b.creado_en - a.creado_en);
     res.status(200).json(sorted);
 });
 
 // Endpoint para obtener los tickets de un usuario específico
-app.get('/api/mis-tickets', (req, res) => {
+app.get('/api/mis-tickets', requireCrmAuth, (req, res) => {
     const { email } = req.query;
     if (!email) return res.status(400).json({ error: 'Falta email' });
 
@@ -1055,7 +1148,7 @@ app.get('/api/mis-tickets', (req, res) => {
     res.status(200).json(sorted);
 });
 
-app.put('/api/clientes/:id', (req, res) => {
+app.put('/api/clientes/:id', requireCrmAuth, (req, res) => {
     const id = parseInt(req.params.id);
     const { nombre, email, telefono, empresa, estado_embudo, departamento, prioridad, asignado_a,
         pais, marca, nombre_empresa, orden_compra_cliente, stock, soft_hard, factura_cancelada, comentario, operador } = req.body;
@@ -1165,7 +1258,7 @@ app.put('/api/clientes/:id', (req, res) => {
     };
 
     // Registrar auditoría de cambios
-    const usuarioStr = operador || 'Sistema';
+    const usuarioStr = operador || (req.user ? req.user.nombre : 'Sistema');
 
     // 1. Estado
     const realNuevoEstado = clientesDb[index].estado_embudo;
@@ -1219,7 +1312,7 @@ app.put('/api/clientes/:id', (req, res) => {
 });
 
 // Endpoint para añadir una nota al hilo del ticket (Módulo interno estilo Kayako) con soporte para adjuntos múltiples de hasta 15 MB
-app.post('/api/clientes/:id/notas', handleUpload('documentos', 15), (req, res) => {
+app.post('/api/clientes/:id/notas', requireCrmAuth, handleUpload('documentos', 15), (req, res) => {
     const id = parseInt(req.params.id);
     const { mensaje, autor } = req.body;
 
@@ -1239,7 +1332,7 @@ app.post('/api/clientes/:id/notas', handleUpload('documentos', 15), (req, res) =
     const nuevaNota = {
         id: Date.now(),
         mensaje: mensaje || '',
-        autor: autor || 'Sistema',
+        autor: autor || (req.user ? req.user.nombre : 'Sistema'),
         fecha: new Date(),
         archivos: archivos
     };
@@ -1248,7 +1341,7 @@ app.post('/api/clientes/:id/notas', handleUpload('documentos', 15), (req, res) =
     cliente.notas.push(nuevaNota);
     cliente.actualizado_en = new Date();
 
-    registrarAccionTicket(id, "Comentario", "Nueva respuesta registrada en el ticket.", autor || 'Sistema');
+    registrarAccionTicket(id, "Comentario", "Nueva respuesta registrada en el ticket.", nuevaNota.autor);
 
     res.status(201).json(nuevaNota);
 });
@@ -1259,12 +1352,31 @@ app.post('/api/clientes/:id/notas', handleUpload('documentos', 15), (req, res) =
 
 const mysql = require('mysql2/promise');
 
+function isForbiddenDatabaseHost(host) {
+    if (!host || typeof host !== 'string') return true;
+    const cleanHost = host.trim().toLowerCase();
+    // Block cloud metadata services and link-local addresses
+    if (cleanHost === '169.254.169.254' || cleanHost === 'metadata.google.internal' || cleanHost.startsWith('169.254.') || cleanHost.includes('metadata.google')) {
+        return true;
+    }
+    return false;
+}
+
 // 1. Validar conexión y obtener estadísticas
-app.post('/api/importar-kayako/conectar', async (req, res) => {
+app.post('/api/importar-kayako/conectar', requireCrmAuth, requireCrmAdmin, async (req, res) => {
     const { host, port, user, password, database, prefix = 'sw' } = req.body;
 
     if (!host || !user || !database) {
         return res.status(400).json({ error: 'Faltan parámetros requeridos de conexión.' });
+    }
+
+    if (isForbiddenDatabaseHost(host)) {
+        return res.status(400).json({ error: 'Host no permitido para conexión.' });
+    }
+
+    const pfx = (prefix || 'sw').trim();
+    if (!/^[a-zA-Z0-9_]{1,30}$/.test(pfx)) {
+        return res.status(400).json({ error: 'Prefijo de tabla inválido. Solo se permiten caracteres alfanuméricos.' });
     }
 
     let connection;
@@ -1277,8 +1389,6 @@ app.post('/api/importar-kayako/conectar', async (req, res) => {
             database,
             connectTimeout: 5000
         });
-
-        const pfx = prefix.trim();
 
         let deptCount = 0;
         try {
@@ -1332,11 +1442,20 @@ app.post('/api/importar-kayako/conectar', async (req, res) => {
 });
 
 // 2. Procesar importación desde base de datos conectada
-app.post('/api/importar-kayako/procesar-conexion', async (req, res) => {
+app.post('/api/importar-kayako/procesar-conexion', requireCrmAuth, requireCrmAdmin, async (req, res) => {
     const { host, port, user, password, database, prefix = 'sw' } = req.body;
 
     if (!host || !user || !database) {
         return res.status(400).json({ error: 'Faltan parámetros requeridos.' });
+    }
+
+    if (isForbiddenDatabaseHost(host)) {
+        return res.status(400).json({ error: 'Host no permitido para conexión.' });
+    }
+
+    const pfx = (prefix || 'sw').trim();
+    if (!/^[a-zA-Z0-9_]{1,30}$/.test(pfx)) {
+        return res.status(400).json({ error: 'Prefijo de tabla inválido. Solo se permiten caracteres alfanuméricos.' });
     }
 
     let connection;
@@ -1349,8 +1468,6 @@ app.post('/api/importar-kayako/procesar-conexion', async (req, res) => {
             database,
             connectTimeout: 10000
         });
-
-        const pfx = prefix.trim();
 
         // 1. Obtener estados de Kayako
         let kayakoStatuses = {};
@@ -1614,7 +1731,7 @@ function cleanFieldValue(val) {
 }
 
 // 3. Procesar importación desde archivo SQL subido
-app.post('/api/importar-kayako/subir-sql', upload.single('sqlFile'), (req, res) => {
+app.post('/api/importar-kayako/subir-sql', requireCrmAuth, requireCrmAdmin, sqlUpload.single('sqlFile'), (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No se subió ningún archivo SQL.' });
     }
@@ -1835,7 +1952,7 @@ let templatesDb = [
 ];
 let nextTemplateId = 2;
 
-app.get('/api/templates', (req, res) => {
+app.get('/api/templates', requireCrmAuth, (req, res) => {
     const { email } = req.query;
     if (!email) {
         return res.status(200).json(templatesDb);
@@ -1872,7 +1989,7 @@ app.get('/api/templates', (req, res) => {
     res.status(200).json(filtrados);
 });
 
-app.post('/api/templates', (req, res) => {
+app.post('/api/templates', requireCrmAuth, requireCrmAdmin, (req, res) => {
     const { nombre, descripcion, asociacionTipo, equipoId, accion, destinatarioTipo, destinatarioEmail, organizacionId, campos } = req.body;
     if (!nombre || nombre.trim() === '') {
         return res.status(400).json({ error: 'El nombre es obligatorio.' });
@@ -1893,7 +2010,7 @@ app.post('/api/templates', (req, res) => {
     res.status(201).json(nuevo);
 });
 
-app.put('/api/templates/:id', (req, res) => {
+app.put('/api/templates/:id', requireCrmAuth, requireCrmAdmin, (req, res) => {
     const id = parseInt(req.params.id);
     const { nombre, descripcion, asociacionTipo, equipoId, accion, destinatarioTipo, destinatarioEmail, organizacionId, campos } = req.body;
     const index = templatesDb.findIndex(t => t.id === id);
@@ -1918,7 +2035,7 @@ app.put('/api/templates/:id', (req, res) => {
     res.status(200).json(templatesDb[index]);
 });
 
-app.delete('/api/templates/:id', (req, res) => {
+app.delete('/api/templates/:id', requireCrmAuth, requireCrmAdmin, (req, res) => {
     const id = parseInt(req.params.id);
     const index = templatesDb.findIndex(t => t.id === id);
     if (index === -1) {
@@ -1927,6 +2044,125 @@ app.delete('/api/templates/:id', (req, res) => {
     templatesDb.splice(index, 1);
     res.status(200).json({ mensaje: "Plantilla eliminada con éxito." });
 });
+
+// ==========================================
+// INTEGRACIÓN E-COMMERCE -> OPERACIONES CRM
+// ==========================================
+function createOperacionesTicketForOrder(payload) {
+    const { order, user, orderItems, billingInfo, shippingInfo, paymentMethod, trackingNumber, poNumber } = payload;
+    const opsDept = departamentosDb.find(d => d.nombre.toLowerCase() === 'operaciones') || { id: 4, nombre: 'Operaciones' };
+    const defaultEstado = estadosDb[0] ? estadosDb[0].nombre : 'Prospecto';
+
+    const itemsSummary = (orderItems || []).map(i => `• ${i.product_name || i.name} (Cant: ${i.quantity || i.qty}) - $${i.price_at_purchase || i.price} USD [SKU: ${i.sku || 'N/A'}] [Marca: ${i.brand || 'DACAS'}]`).join('\n');
+    const brands = [...new Set((orderItems || []).map(i => i.brand).filter(Boolean))].join(', ') || 'DACAS';
+    const companyName = billingInfo?.empresa || user?.empresa || user?.razon_social || user?.name || 'Cliente B2B Ecommerce';
+    const contactEmail = billingInfo?.contacto_email || user?.email || 'ventas@ecommerce.com';
+    const contactPhone = billingInfo?.contacto_telefono || user?.telefono || user?.phone || '';
+    const cuitNumber = billingInfo?.cuit || user?.cuit || user?.numero_nit || '30-71829340-9';
+    const invoiceType = billingInfo?.tipo_factura || user?.tipo_factura || 'Factura A (Responsable Inscripto)';
+    const clientPo = poNumber || order?.po_number || `OC-${order?.id || Math.floor(1000 + Math.random() * 9000)}`;
+    const effectiveTracking = trackingNumber || order?.tracking_number || `DACAS-LOG-AR-${order.id}`;
+
+    const initialComment = `🛒 **NUEVA ORDEN DE VENTA ECOMMERCE REGISTRADA #${order.id}**
+==================================================
+🏢 **Cliente / Razón Social:** ${companyName}
+📄 **CUIT / Identificación Fiscal:** ${cuitNumber}
+📑 **Tipo de Comprobante Requerido:** ${invoiceType}
+📌 **N° Orden de Compra Cliente:** ${clientPo}
+
+🚚 **Datos de Logística y Despacho:**
+• Modalidad: ${shippingInfo?.shipping_method || order.shipping_method || 'Envío Express a Domicilio'}
+• Dirección de Entrega: ${shippingInfo?.shipping_address || order.shipping_address || 'Dirección registrada'}
+• Observaciones / Horario: ${shippingInfo?.delivery_notes || order.notes || 'Horario de oficina estándar'}
+
+💳 **Condiciones Comerciales y Pago:**
+• Medio de Pago: ${paymentMethod || order.payment_method || 'Cuenta Corriente Comercial B2B'}
+• Total de la Orden: $${parseFloat(order.total).toFixed(2)} USD
+• Descuento B2B Aplicado: $${parseFloat(order.discount_applied || 0).toFixed(2)} USD
+• Código de Seguimiento (Tracking): ${effectiveTracking}
+
+📦 **Equipamiento y Productos Solicitados:**
+${itemsSummary || '• 1 x Ítem de Hardware / Licenciamiento'}
+==================================================
+⚙️ *Ticket generado automáticamente desde el Onboarding de Compra para inicio inmediato del flujo operativo y despacho.*`;
+
+    const nuevoCliente = {
+        id: nextClienteId++,
+        nombre: companyName,
+        email: contactEmail,
+        telefono: contactPhone,
+        empresa: `🛒 Orden Ecommerce #${order.id} - ${companyName}`,
+        estado_embudo: defaultEstado,
+        departamento: opsDept.id,
+        prioridad: 'Alta',
+        archivo_url: null,
+        archivos: [],
+        notas: [
+            {
+                id: Date.now(),
+                mensaje: initialComment,
+                autor: 'Sistema E-commerce B2B',
+                fecha: new Date(),
+                archivos: []
+            }
+        ],
+        asignado_a: 'Sin asignar',
+        creado_en: new Date(),
+        creado_por: user?.email || contactEmail || 'Ecommerce Checkout',
+        actualizado_en: new Date(),
+        historial_estados: [
+            { estado: defaultEstado, desde: new Date(), hasta: null }
+        ],
+        historial_asignados: [
+            { asignado_a: 'Sin asignar', desde: new Date(), hasta: null }
+        ],
+        historial_departamentos: [
+            { departamento: opsDept.id, desde: new Date(), hasta: null }
+        ],
+        templateId: null,
+        camposExtra: {
+            isEcommerceOrder: true,
+            orderId: order.id,
+            trackingNumber: effectiveTracking,
+            totalUSD: order.total,
+            items: orderItems,
+            shippingMethod: shippingInfo?.shipping_method || order.shipping_method,
+            paymentMethod: paymentMethod || order.payment_method,
+            poNumber: clientPo,
+            cuit: cuitNumber,
+            tipo_factura: invoiceType
+        },
+        pais: user?.pais || 'Argentina',
+        marca: brands,
+        nombre_empresa: companyName,
+        orden_compra_cliente: parseInt(clientPo.replace(/\D/g, '')) || order.id,
+        stock: 'Sí',
+        soft_hard: 'Equipamiento IT / Hardware',
+        factura_cancelada: 'No',
+        comentario: initialComment
+    };
+
+    clientesDb.push(nuevoCliente);
+
+    registrarAccionTicket(
+        nuevoCliente.id,
+        "Creación Automática",
+        `Ticket generado automáticamente desde Onboarding Ecommerce (Orden #${order.id}) asignado a ${opsDept.nombre} en estado "${nuevoCliente.estado_embudo}"`,
+        nuevoCliente.creado_por
+    );
+
+    console.log(`🎫 [CRM] Ticket #${nuevoCliente.id} creado en Operaciones para la Orden Ecommerce #${order.id} (${companyName})`);
+    return nuevoCliente;
+}
+
+// Conectar callback con el router de ecommerce
+ecommerceRoutes.onOrderCreated = createOperacionesTicketForOrder;
+ecommerceRoutes.validateSession = (sesionId) => {
+    return sesionesActivas.find(s => s.id === sesionId) || null;
+};
+
+// Montar rutas de E-commerce
+app.use('/api/ecommerce', ecommerceRoutes);
 
 app.listen(port, () => {
     console.log(`🚀 Servidor backend ejecutándose (En Memoria) en http://localhost:${port}`);

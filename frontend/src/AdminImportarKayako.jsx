@@ -202,17 +202,61 @@ function AdminImportarKayako() {
   return (
     <div className="crm-container">
       {/* Botón de retorno rápido */}
-      <div style={{ marginBottom: '20px' }}>
-        <button className="nav-btn" onClick={() => navigate('/')}>
-          ⬅️ Volver al Dashboard
-        </button>
-      </div>
-
       <header className="crm-header" style={{ marginBottom: '30px' }}>
-        <h1>📥 Importar desde Kayako</h1>
-        <p style={{ color: 'var(--text-muted)', fontSize: '1.1rem', marginTop: '10px' }}>
-          Importa de forma rápida y sencilla todos los departamentos, agentes de soporte, tickets y conversaciones de tu base de datos de Kayako Classic.
-        </p>
+        <div className="header-top">
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{
+                background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                color: '#ffffff',
+                fontWeight: '900',
+                fontSize: '1.4rem',
+                letterSpacing: '-0.02em',
+                padding: '8px 16px',
+                borderRadius: '12px',
+                boxShadow: '0 4px 15px rgba(15, 164, 222, 0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span>DACAS</span>
+              </div>
+              <div>
+                <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+                  Importar desde Kayako
+                </h1>
+                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  Migración estructurada de departamentos, agentes, tickets y conversaciones
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                background: 'var(--pill-bg)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '999px',
+                padding: '6px 14px',
+                color: 'var(--text-main)',
+                fontSize: '0.85rem',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+              }}>
+                <span>🇦🇷</span>
+                <span>DACAS Argentina</span>
+              </div>
+
+              <div className="user-controls">
+                <button className="nav-btn" onClick={() => navigate('/')}>
+                  🔙 Volver al Dashboard
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </header>
 
       {successData ? (

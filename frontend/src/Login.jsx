@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useMsal } from "@azure/msal-react";
 import { loginRequest } from "./authConfig";
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
@@ -182,6 +182,7 @@ function Login({ setUsuario, initialError, clearInitialError, theme, toggleTheme
   const [avatarState, setAvatarState] = useState('normal'); // 'normal' | 'typing' | 'angry'
   const [shakeBox, setShakeBox] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { instance } = useMsal();
 
   useEffect(() => {
@@ -217,6 +218,13 @@ function Login({ setUsuario, initialError, clearInitialError, theme, toggleTheme
     setTimeout(() => setShakeBox(false), 500);
   };
 
+  const getDestination = (rol, requestedPath) => {
+    if (requestedPath && requestedPath !== '/login') return requestedPath;
+    if (rol === 'admin_ecommerce') return '/admin/ecommerce';
+    if (rol === 'admin' || rol === 'staff') return '/';
+    return '/mis-tickets';
+  };
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setError('');
@@ -231,11 +239,8 @@ function Login({ setUsuario, initialError, clearInitialError, theme, toggleTheme
 
       if (response.ok) {
         setUsuario(data.usuario);
-        if (data.usuario.rol === 'admin' || data.usuario.rol === 'staff') {
-          navigate('/');
-        } else {
-          navigate('/mis-tickets');
-        }
+        const destination = getDestination(data.usuario.rol, location.state?.from?.pathname);
+        navigate(destination, { replace: true });
       } else {
         setError(data.error || 'Credenciales inválidas');
         triggerErrorAnimations();
@@ -263,11 +268,8 @@ function Login({ setUsuario, initialError, clearInitialError, theme, toggleTheme
 
       if (response.ok) {
         setUsuario(data.usuario);
-        if (data.usuario.rol === 'admin' || data.usuario.rol === 'staff') {
-          navigate('/');
-        } else {
-          navigate('/mis-tickets');
-        }
+        const destination = getDestination(data.usuario.rol, location.state?.from?.pathname);
+        navigate(destination, { replace: true });
       } else {
         setError(data.error || 'Acceso denegado con Microsoft.');
         triggerErrorAnimations();
@@ -302,7 +304,7 @@ function Login({ setUsuario, initialError, clearInitialError, theme, toggleTheme
         {/* Berto the interactive SVG mascot */}
         <BertoAvatar state={avatarState} />
 
-        <h1>Berta Ticket Login</h1>
+        <h1>DACAS Portal de Gestión</h1>
         <p>Inicia sesión para acceder al sistema</p>
 
         {error && (
@@ -342,7 +344,26 @@ function Login({ setUsuario, initialError, clearInitialError, theme, toggleTheme
           <button type="submit" className="btn-submit">Ingresar</button>
         </form>
 
-        <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginTop: '20px', borderTop: '1px solid #e2e8f0', paddingTop: '20px' }}>
+        <div style={{ marginTop: '12px', textAlign: 'center', width: '100%' }}>
+          <button
+            type="button"
+            onClick={() => navigate('/shop')}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: '#0fa4de',
+              fontSize: '13px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              textDecoration: 'underline',
+              padding: '4px'
+            }}
+          >
+            🛍️ Ir a la Tienda DACAS Shop
+          </button>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginTop: '16px', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
           <button
             onClick={handleMicrosoftLogin}
             style={{ width: '100%', background: '#0078d4', color: 'white', border: 'none', padding: '12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}

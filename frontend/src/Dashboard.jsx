@@ -101,6 +101,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
   });
 
   useEffect(() => {
+    document.title = "DACAS Portal de Gestión";
     fetchDepartamentos();
     fetchEstados();
     fetchClientes();
@@ -547,18 +548,78 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
     <div className="crm-container layout-sidebar">
       <header className="crm-header grid-header">
         <div className="header-top">
-          <h1>Berta Ticket Dashboard</h1>
-          <div className="user-controls">
-            <span>Hola, {usuario?.nombre}</span>
-            <button 
-              type="button" 
-              onClick={toggleTheme} 
-              className="theme-toggle-btn"
-              title="Cambiar Tema"
-            >
-              {theme === 'light' ? '🌙' : '☀️'}
-            </button>
-            <button className="logout-btn" onClick={handleLogout}>Cerrar Sesión</button>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{
+                background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                color: '#ffffff',
+                fontWeight: '900',
+                fontSize: '1.4rem',
+                letterSpacing: '-0.02em',
+                padding: '8px 16px',
+                borderRadius: '12px',
+                boxShadow: '0 4px 15px rgba(15, 164, 222, 0.4)',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span>DACAS</span>
+              </div>
+              <div>
+                <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+                  Portal de Gestión
+                </h1>
+                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                  Mayorista de Tecnología, Ciberseguridad & Networking
+                </div>
+              </div>
+            </div>
+
+            {/* Selector de Mercado / País estilo DACAS */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <div style={{
+                background: 'var(--pill-bg)',
+                border: '1px solid var(--border-color)',
+                borderRadius: '999px',
+                padding: '6px 14px',
+                color: 'var(--text-main)',
+                fontSize: '0.85rem',
+                fontWeight: '600',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+              }}>
+                <span>🇦🇷</span>
+                <span>DACAS Argentina</span>
+              </div>
+
+              <div className="user-controls" style={{ width: 'auto', padding: 0 }}>
+                <span style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>Hola, <strong style={{ color: 'var(--text-main)' }}>{usuario?.nombre}</strong></span>
+                <button 
+                  type="button" 
+                  onClick={toggleTheme} 
+                  className="theme-toggle-btn"
+                  title="Cambiar Tema"
+                  style={{
+                    background: 'var(--pill-bg)',
+                    border: '1px solid var(--border-color)',
+                    borderRadius: '50%',
+                    width: '36px',
+                    height: '36px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '1rem',
+                    color: 'var(--text-main)'
+                  }}
+                >
+                  {theme === 'light' ? '🌙' : '☀️'}
+                </button>
+                <button className="logout-btn" onClick={handleLogout}>Cerrar Sesión</button>
+              </div>
+            </div>
           </div>
         </div>
       </header>
@@ -566,7 +627,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
       <main className="crm-main-grid">
         {/* BARRA LATERAL DE DEPARTAMENTOS Y ADMINISTRACION */}
         <aside className="sidebar-depts sidebar-left">
-          {usuario?.rol === 'admin' && (
+          {(usuario?.rol === 'admin' || usuario?.rol === 'admin_ecommerce') && (
             <div className="sidebar-section sidebar-section-admin">
               <h3 
                 onClick={() => setAdminAbierto(!adminAbierto)} 
@@ -578,7 +639,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                   userSelect: 'none'
                 }}
               >
-                Administración
+                {usuario?.rol === 'admin_ecommerce' ? 'Gestión E-commerce' : 'Administración'}
                 <span style={{ 
                   fontSize: '0.8rem', 
                   color: 'var(--text-muted)',
@@ -592,59 +653,69 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
               {adminAbierto && (
                 <ul className="admin-menu-list" style={{ animation: 'fadeIn 0.2s ease-out' }}>
                   <li>
+                    <button className="sidebar-menu-btn" onClick={() => navigate('/admin/ecommerce')}>
+                      <span className="sidebar-btn-icon">🛒</span>
+                      <span className="sidebar-btn-text">E-commerce</span>
+                    </button>
+                  </li>
+                  <li>
                     <button className="sidebar-menu-btn" onClick={() => navigate('/reportes')}>
                       <span className="sidebar-btn-icon">📊</span>
                       <span className="sidebar-btn-text">Reportes</span>
                     </button>
                   </li>
-                  <li>
-                    <button className="sidebar-menu-btn" onClick={() => navigate('/departamentos')}>
-                      <span className="sidebar-btn-icon">🏢</span>
-                      <span className="sidebar-btn-text">Gestionar Deptos</span>
-                    </button>
-                  </li>
-                  <li>
-                    <button className="sidebar-menu-btn" onClick={() => navigate('/estados')}>
-                      <span className="sidebar-btn-icon">🏷️</span>
-                      <span className="sidebar-btn-text">Gestionar Estados</span>
-                    </button>
-                  </li>
-                  <li>
-                    <button className="sidebar-menu-btn" onClick={() => navigate('/templates')}>
-                      <span className="sidebar-btn-icon">📋</span>
-                      <span className="sidebar-btn-text">Plantillas</span>
-                    </button>
-                  </li>
-                  <li>
-                    <button className="sidebar-menu-btn" onClick={() => navigate('/organizaciones')}>
-                      <span className="sidebar-btn-icon">🏢</span>
-                      <span className="sidebar-btn-text">Organizaciones</span>
-                    </button>
-                  </li>
-                  <li>
-                    <button className="sidebar-menu-btn" onClick={() => navigate('/equipos')}>
-                      <span className="sidebar-btn-icon">👥</span>
-                      <span className="sidebar-btn-text">Gestionar Equipos</span>
-                    </button>
-                  </li>
-                  <li>
-                    <button className="sidebar-menu-btn" onClick={() => navigate('/admin')}>
-                      <span className="sidebar-btn-icon">⚙️</span>
-                      <span className="sidebar-btn-text">Usuarios</span>
-                    </button>
-                  </li>
-                  <li>
-                    <button className="sidebar-menu-btn" onClick={() => navigate('/admin/importar-kayako')}>
-                      <span className="sidebar-btn-icon">📥</span>
-                      <span className="sidebar-btn-text">Importar Kayako</span>
-                    </button>
-                  </li>
-                  <li>
-                    <button className="sidebar-menu-btn" onClick={() => navigate('/config-tickets')}>
-                      <span className="sidebar-btn-icon">⚙️</span>
-                      <span className="sidebar-btn-text">Configuración Tickets</span>
-                    </button>
-                  </li>
+                  {usuario?.rol === 'admin' && (
+                    <>
+                      <li>
+                        <button className="sidebar-menu-btn" onClick={() => navigate('/departamentos')}>
+                          <span className="sidebar-btn-icon">🏢</span>
+                          <span className="sidebar-btn-text">Gestionar Deptos</span>
+                        </button>
+                      </li>
+                      <li>
+                        <button className="sidebar-menu-btn" onClick={() => navigate('/estados')}>
+                          <span className="sidebar-btn-icon">🏷️</span>
+                          <span className="sidebar-btn-text">Gestionar Estados</span>
+                        </button>
+                      </li>
+                      <li>
+                        <button className="sidebar-menu-btn" onClick={() => navigate('/templates')}>
+                          <span className="sidebar-btn-icon">📋</span>
+                          <span className="sidebar-btn-text">Plantillas</span>
+                        </button>
+                      </li>
+                      <li>
+                        <button className="sidebar-menu-btn" onClick={() => navigate('/organizaciones')}>
+                          <span className="sidebar-btn-icon">🏢</span>
+                          <span className="sidebar-btn-text">Organizaciones</span>
+                        </button>
+                      </li>
+                      <li>
+                        <button className="sidebar-menu-btn" onClick={() => navigate('/equipos')}>
+                          <span className="sidebar-btn-icon">👥</span>
+                          <span className="sidebar-btn-text">Gestionar Equipos</span>
+                        </button>
+                      </li>
+                      <li>
+                        <button className="sidebar-menu-btn" onClick={() => navigate('/admin')}>
+                          <span className="sidebar-btn-icon">⚙️</span>
+                          <span className="sidebar-btn-text">Usuarios</span>
+                        </button>
+                      </li>
+                      <li>
+                        <button className="sidebar-menu-btn" onClick={() => navigate('/admin/importar-kayako')}>
+                          <span className="sidebar-btn-icon">📥</span>
+                          <span className="sidebar-btn-text">Importar Kayako</span>
+                        </button>
+                      </li>
+                      <li>
+                        <button className="sidebar-menu-btn" onClick={() => navigate('/config-tickets')}>
+                          <span className="sidebar-btn-icon">⚙️</span>
+                          <span className="sidebar-btn-text">Configuración Tickets</span>
+                        </button>
+                      </li>
+                    </>
+                  )}
                 </ul>
               )}
             </div>
@@ -2125,60 +2196,61 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
               })}
             </div>
           ) : (
-            <section className="board-section" style={{ background: 'white', borderRadius: '8px', padding: '15px', marginTop: '20px', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+            <section className="board-section" style={{ marginTop: '20px' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead>
-                <tr style={{ borderBottom: '2px solid #e2e8f0' }}>
-                  <th style={{ padding: '12px' }}>ID / Remitente</th>
-                  <th style={{ padding: '12px' }}>Asunto</th>
-                  <th style={{ padding: '12px' }}>Estado</th>
-                  <th style={{ padding: '12px' }}>Prioridad</th>
-                  <th style={{ padding: '12px' }}>Última Actividad</th>
-                  <th style={{ padding: '12px' }}>Acción</th>
+                <tr>
+                  <th style={{ padding: '14px 12px' }}>ID / Remitente</th>
+                  <th style={{ padding: '14px 12px' }}>Asunto</th>
+                  <th style={{ padding: '14px 12px' }}>Estado</th>
+                  <th style={{ padding: '14px 12px' }}>Prioridad</th>
+                  <th style={{ padding: '14px 12px' }}>Última Actividad</th>
+                  <th style={{ padding: '14px 12px' }}>Acción</th>
                 </tr>
               </thead>
               <tbody>
                 {clientesFiltrados.length === 0 ? (
-                  <tr><td colSpan="6" style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>No hay tickets en este departamento.</td></tr>
+                  <tr><td colSpan="6" style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>No hay tickets en este departamento.</td></tr>
                 ) : ticketsFiltradosFinal.length === 0 ? (
-                  <tr><td colSpan="6" style={{ padding: '20px', textAlign: 'center', color: '#64748b' }}>No se encontraron tickets que coincidan con los filtros.</td></tr>
+                  <tr><td colSpan="6" style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>No se encontraron tickets que coincidan con los filtros.</td></tr>
                 ) : (
                   ticketsFiltradosFinal.map(cliente => (
-                    <tr key={cliente.id} style={{ borderBottom: '1px solid #f1f5f9' }}>
-                      <td style={{ padding: '12px' }}>
-                        <strong>#{cliente.id}</strong><br/>
-                        <span style={{ fontSize: '0.85rem', color: '#64748b' }}>{cliente.nombre}</span>
+                    <tr key={cliente.id}>
+                      <td style={{ padding: '14px 12px' }}>
+                        <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>#{cliente.id}</strong><br/>
+                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>{cliente.nombre}</span>
                       </td>
-                      <td style={{ padding: '12px', fontWeight: 'bold' }}>{cliente.empresa || 'Sin empresa'}</td>
-                      <td style={{ padding: '12px' }}>
+                      <td style={{ padding: '14px 12px', fontWeight: '700', color: 'var(--text-main)' }}>{cliente.empresa || 'Sin empresa'}</td>
+                      <td style={{ padding: '14px 12px' }}>
                         {(() => {
                           const estObj = estados.find(e => e.nombre === cliente.estado_embudo);
-                          const colorBase = estObj?.color || '#0f766e';
+                          const colorBase = estObj?.color || '#0fa4de';
                           return (
-                            <span style={{ background: `${colorBase}1c`, color: colorBase, padding: '6px 12px', borderRadius: '12px', fontSize: '0.8rem', fontWeight: '700' }}>
+                            <span style={{ background: `${colorBase}1c`, color: colorBase, padding: '6px 14px', borderRadius: 'var(--radius-pill)', fontSize: '0.8rem', fontWeight: '700' }}>
                               {cliente.estado_embudo}
                             </span>
                           );
                         })()}
                       </td>
-                      <td style={{ padding: '12px' }}>
+                      <td style={{ padding: '14px 12px' }}>
                         <span className={`badge prioridad-${(cliente.prioridad || 'Normal').toLowerCase()}`}>
                           {cliente.prioridad || 'Normal'}
                         </span>
                       </td>
-                      <td style={{ padding: '12px', color: '#64748b', fontSize: '0.85rem' }}>
-                        {cliente.notas?.length > 0 ? new Date(cliente.notas[cliente.notas.length-1].fecha).toLocaleString() : new Date(cliente.creado_en).toLocaleString()}
+                      <td style={{ padding: '14px 12px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                        <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>
+                          {cliente.notas?.length > 0 ? new Date(cliente.notas[cliente.notas.length-1].fecha).toLocaleString() : new Date(cliente.creado_en).toLocaleString()}
+                        </span>
                         <div style={{ marginTop: '4px', fontSize: '0.75rem', color: 'var(--primary)', display: 'flex', gap: '8px' }}>
                           <span>💬 {cliente.notas ? cliente.notas.length : 0} Notas</span>
                           {((cliente.archivos && cliente.archivos.length > 0) || cliente.archivo_url) && (
-                            <span style={{ color: '#34c759', fontWeight: 'bold' }}>📎 {cliente.archivos ? cliente.archivos.length : 1} Adjuntos</span>
+                            <span style={{ color: '#10b981', fontWeight: 'bold' }}>📎 {cliente.archivos ? cliente.archivos.length : 1} Adjuntos</span>
                           )}
                         </div>
                       </td>
-                      <td style={{ padding: '12px' }}>
+                      <td style={{ padding: '14px 12px' }}>
                         <button 
                           onClick={() => setModalCliente(cliente)}
-                          style={{ background: 'var(--primary)', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer' }}
                         >
                           Abrir Ticket
                         </button>
