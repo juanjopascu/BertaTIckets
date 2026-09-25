@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DOMPurify from 'dompurify';
+import BrandingVectorIcon from './BrandingVectorIcon';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 
@@ -196,12 +197,62 @@ const DACAS_COUNTRIES = [
   { code: 'UY', name: 'Uruguay', flag: '🇺🇾' }
 ];
 
+export function CategoryIcon({ name, size = 18, color = 'currentColor', style = {} }) {
+  const n = (name || '').toLowerCase().trim();
+  if (n === 'networking' || n.includes('network') || n === '🌐') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0, ...style }}>
+        <circle cx="12" cy="12" r="10" />
+        <line x1="2" y1="12" x2="22" y2="12" />
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+      </svg>
+    );
+  }
+  if (n === 'infraestructura' || n.includes('infra') || n === '🏗️' || n.includes('server')) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0, ...style }}>
+        <rect x="2" y="3" width="20" height="7" rx="2" />
+        <rect x="2" y="14" width="20" height="7" rx="2" />
+        <line x1="6" y1="6.5" x2="6.01" y2="6.5" />
+        <line x1="6" y1="17.5" x2="6.01" y2="17.5" />
+        <line x1="10" y1="6.5" x2="14" y2="6.5" />
+        <line x1="10" y1="17.5" x2="14" y2="17.5" />
+      </svg>
+    );
+  }
+  if (n === 'comunicaciones_unificadas' || n.includes('comunic') || n === '📞' || n.includes('telef')) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0, ...style }}>
+        <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
+        <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
+      </svg>
+    );
+  }
+  if (n === 'security' || n.includes('secur') || n.includes('segurid') || n === '🔒') {
+    return (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0, ...style }}>
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        <polyline points="9 12 11 14 15 10" />
+      </svg>
+    );
+  }
+  // Default / All / Todos los productos / 🛒
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ display: 'inline-block', verticalAlign: 'middle', flexShrink: 0, ...style }}>
+      <rect x="3" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="3" width="7" height="7" rx="1.5" />
+      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+      <rect x="3" y="14" width="7" height="7" rx="1.5" />
+    </svg>
+  );
+}
+
 const CATEGORIES = [
-  { key: 'all', label: 'Todos los productos', icon: '🛒' },
-  { key: 'networking', label: 'Networking', icon: '🌐' },
-  { key: 'infraestructura', label: 'Infraestructura', icon: '🏗️' },
-  { key: 'comunicaciones_unificadas', label: 'Comunicaciones Unificadas', icon: '📞' },
-  { key: 'security', label: 'Security', icon: '🔒' },
+  { key: 'all', label: 'Todos los productos', icon: 'all' },
+  { key: 'networking', label: 'Networking', icon: 'networking' },
+  { key: 'infraestructura', label: 'Infraestructura', icon: 'infraestructura' },
+  { key: 'comunicaciones_unificadas', label: 'Comunicaciones Unificadas', icon: 'comunicaciones_unificadas' },
+  { key: 'security', label: 'Security', icon: 'security' },
 ];
 
 const BRAND_INFO = {
@@ -934,10 +985,46 @@ export default function Shop() {
   const currentCategoryObj = categories.find((c) => c.key === activeCategory) || categories[0];
   const categoryProducts = products.filter((p) => isProductInCat(p, activeCategory));
 
+  const isBrandAllowedInCountry = (brandName, categoryKey, currentCountryCode) => {
+    if (!brandName) return true;
+    const bKey = brandName.toLowerCase();
+
+    // 1. Check in visualSettings.categoryBrands
+    if (visualSettings?.categoryBrands) {
+      const categoriesToCheck = categoryKey && categoryKey !== 'all' 
+        ? [categoryKey] 
+        : Object.keys(visualSettings.categoryBrands);
+
+      for (const cat of categoriesToCheck) {
+        const list = visualSettings.categoryBrands[cat];
+        if (Array.isArray(list)) {
+          const found = list.find(item => {
+            if (typeof item === 'string') return item.toLowerCase() === bKey;
+            return (item?.name || '').toLowerCase() === bKey;
+          });
+          if (found && typeof found === 'object' && Array.isArray(found.countries) && found.countries.length > 0) {
+            return found.countries.includes(currentCountryCode);
+          }
+        }
+      }
+    }
+
+    // 2. Check in visualSettings.brandCountries
+    if (visualSettings?.brandCountries && visualSettings.brandCountries[bKey]) {
+      const allowed = visualSettings.brandCountries[bKey];
+      if (Array.isArray(allowed) && allowed.length > 0) {
+        return allowed.includes(currentCountryCode);
+      }
+    }
+
+    return true;
+  };
+
   const availableBrands = useMemo(() => {
     if (activeCategory === 'all') {
       const productBrands = Array.from(new Set(products.map((p) => p.brand).filter(Boolean)))
-        .filter((b) => !DISALLOWED_BRANDS.includes(b.toLowerCase()));
+        .filter((b) => !DISALLOWED_BRANDS.includes(b.toLowerCase()))
+        .filter((b) => isBrandAllowedInCountry(b, 'all', selectedCountryCode));
       return productBrands.map((bName) => {
         const brandKey = bName.toLowerCase();
         const info = BRAND_INFO[brandKey] || {
@@ -956,8 +1043,18 @@ export default function Shop() {
       });
     }
 
-    const officialKeys = categoryBrandsMap[activeCategory] || [];
-    const productBrands = categoryProducts.map((p) => p.brand).filter(Boolean);
+    const rawOfficial = categoryBrandsMap[activeCategory] || [];
+    const officialKeys = rawOfficial
+      .map(item => (typeof item === 'string' ? item : item?.name || ''))
+      .filter(Boolean)
+      .map(k => k.toLowerCase())
+      .filter(k => isBrandAllowedInCountry(k, activeCategory, selectedCountryCode));
+
+    const productBrands = categoryProducts
+      .map((p) => p.brand)
+      .filter(Boolean)
+      .filter(b => isBrandAllowedInCountry(b, activeCategory, selectedCountryCode));
+
     const combinedKeys = Array.from(new Set([...officialKeys, ...productBrands.map((b) => b.toLowerCase())]))
       .filter((k) => !DISALLOWED_BRANDS.includes(k.toLowerCase()));
 
@@ -976,7 +1073,7 @@ export default function Shop() {
         count
       };
     });
-  }, [activeCategory, categoryProducts, products, categoryBrandsMap]);
+  }, [activeCategory, categoryProducts, products, categoryBrandsMap, visualSettings, selectedCountryCode]);
 
   const filtered = products.filter((p) => {
     if (p.brand && DISALLOWED_BRANDS.includes(p.brand.toLowerCase())) return false;
@@ -1051,9 +1148,6 @@ export default function Shop() {
               {generalSettings.contactPhone && (
                 <span style={{ color: '#0fa4de', fontWeight: '600' }}>📞 {generalSettings.contactPhone}</span>
               )}
-              <a href="#" onClick={(e) => { e.preventDefault(); navigate('/login'); }} style={{ color: '#E2E8F0', textDecoration: 'none', fontWeight: '600' }}>
-                Portal Admin →
-              </a>
             </div>
           </div>
         </div>
@@ -1173,7 +1267,7 @@ export default function Shop() {
                     {clientUser.avatar_url ? (
                       <img src={clientUser.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                     ) : (
-                      <span>🏢</span>
+                      <BrandingVectorIcon name="building" size={16} color="#ffffff" />
                     )}
                   </div>
                   <div style={{ textAlign: 'left' }}>
@@ -1226,7 +1320,7 @@ export default function Shop() {
                         {clientUser.avatar_url ? (
                           <img src={clientUser.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                         ) : (
-                          <span>🏢</span>
+                          <BrandingVectorIcon name="building" size={20} color="#ffffff" />
                         )}
                       </div>
                       <div style={{ minWidth: 0, flex: 1 }}>
@@ -1259,7 +1353,7 @@ export default function Shop() {
                           textAlign: 'left'
                         }}
                       >
-                        <span>📊</span>
+                        <BrandingVectorIcon name="layout" size={14} color="#0369A1" />
                         <span>Mi Portal de Cliente B2B</span>
                       </button>
 
@@ -1281,7 +1375,7 @@ export default function Shop() {
                           textAlign: 'left'
                         }}
                       >
-                        <span>📦</span>
+                        <BrandingVectorIcon name="box" size={14} color="#334155" />
                         <span>Mis Compras y Estado</span>
                       </button>
 
@@ -1303,7 +1397,7 @@ export default function Shop() {
                           textAlign: 'left'
                         }}
                       >
-                        <span>🏢</span>
+                        <BrandingVectorIcon name="building" size={14} color="#334155" />
                         <span>Mi Ficha & Solicitar Cambios</span>
                       </button>
                     </div>
@@ -1326,7 +1420,8 @@ export default function Shop() {
                         gap: '6px'
                       }}
                     >
-                      <span>🚪</span> Cerrar Sesión
+                      <BrandingVectorIcon name="lock" size={13} color="#DC2626" />
+                      <span>Cerrar Sesión</span>
                     </button>
                   </div>
                 )}
@@ -1350,7 +1445,7 @@ export default function Shop() {
                   boxShadow: '0 2px 6px rgba(15, 164, 222, 0.12)'
                 }}
               >
-                <span>👤</span>
+                <BrandingVectorIcon name="user" size={14} color="#0fa4de" />
                 <span>Mi Cuenta / Registro</span>
               </button>
             )}
@@ -1531,7 +1626,7 @@ export default function Shop() {
                 }
               }}
             >
-              <span style={{ fontSize: '15px' }}>{cat.icon}</span>
+              <CategoryIcon name={cat.key || cat.icon} size={16} />
               <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.label || cat.name}</span>
             </button>
           ))}
@@ -1784,12 +1879,12 @@ export default function Shop() {
             {/* Breadcrumb y encabezado de paso previo */}
             <div style={{ marginBottom: '32px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#64748B', marginBottom: '14px' }}>
-                <span onClick={() => { setActiveCategory('all'); setSelectedBrand(null); }} style={{ cursor: 'pointer', color: '#0fa4de', fontWeight: '600' }}>
-                  🛒 Catálogo
+                <span onClick={() => { setActiveCategory('all'); setSelectedBrand(null); }} style={{ cursor: 'pointer', color: '#0fa4de', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                  <CategoryIcon name="all" size={14} color="#0fa4de" /> Catálogo
                 </span>
                 <span>/</span>
-                <span style={{ fontWeight: '700', color: '#071524' }}>
-                  {currentCategoryObj?.icon} {currentCategoryObj?.label}
+                <span style={{ fontWeight: '700', color: '#071524', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                  <CategoryIcon name={currentCategoryObj?.key} size={14} color="#071524" /> {currentCategoryObj?.label}
                 </span>
                 <span>/</span>
                 <span style={{ color: '#94A3B8' }}>Seleccionar Marca</span>
@@ -1800,8 +1895,9 @@ export default function Shop() {
                   <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(15, 164, 222, 0.12)', color: '#0fa4de', padding: '4px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: '800', letterSpacing: '0.05em', marginBottom: '8px' }}>
                     PASO 1 DE 2 · SELECCIÓN DE FABRICANTE
                   </div>
-                  <h2 style={{ margin: '0 0 6px', fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: '900', color: '#071524', letterSpacing: '-0.02em' }}>
-                    {currentCategoryObj?.icon} {currentCategoryObj?.label}
+                  <h2 style={{ margin: '0 0 6px', fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: '900', color: '#071524', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <CategoryIcon name={currentCategoryObj?.key} size={26} color="#0fa4de" />
+                    <span>{currentCategoryObj?.label}</span>
                   </h2>
                   <p style={{ margin: 0, fontSize: '0.95rem', color: '#64748B', maxWidth: '680px', lineHeight: 1.5 }}>
                     Selecciona una marca para explorar sus modelos certificados, stock en tiempo real y precios mayoristas oficiales:
@@ -1955,21 +2051,21 @@ export default function Shop() {
             <div style={{ marginBottom: '28px' }}>
               {/* Breadcrumbs de navegación */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#64748B', marginBottom: '12px', flexWrap: 'wrap' }}>
-                <span onClick={() => { setActiveCategory('all'); setSelectedBrand(null); }} style={{ cursor: 'pointer', color: '#0fa4de', fontWeight: '600' }}>
-                  🛒 Catálogo
+                <span onClick={() => { setActiveCategory('all'); setSelectedBrand(null); }} style={{ cursor: 'pointer', color: '#0fa4de', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                  <CategoryIcon name="all" size={14} color="#0fa4de" /> Catálogo
                 </span>
                 <span>/</span>
                 <span 
                   onClick={() => setSelectedBrand(null)} 
-                  style={{ cursor: activeCategory !== 'all' ? 'pointer' : 'default', color: activeCategory !== 'all' ? '#0fa4de' : '#071524', fontWeight: '700' }}
+                  style={{ cursor: activeCategory !== 'all' ? 'pointer' : 'default', color: activeCategory !== 'all' ? '#0fa4de' : '#071524', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
                 >
-                  {currentCategoryObj?.icon} {currentCategoryObj?.label}
+                  <CategoryIcon name={currentCategoryObj?.key} size={14} color={activeCategory !== 'all' ? '#0fa4de' : '#071524'} /> {currentCategoryObj?.label}
                 </span>
                 {selectedBrand && (
                   <>
                     <span>/</span>
                     <span style={{ fontWeight: '750', color: '#071524' }}>
-                      🏷️ {selectedBrand === 'all' ? 'Todas las Marcas' : selectedBrand}
+                      {selectedBrand === 'all' ? 'Todas las Marcas' : selectedBrand}
                     </span>
                   </>
                 )}
@@ -2112,13 +2208,26 @@ export default function Shop() {
       <div style={{ background: '#FFFFFF', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0', padding: '36px 20px' }}>
         <div style={{ maxWidth: '1320px', margin: '0 auto', display: 'flex', justifyContent: 'space-around', gap: '30px', flexWrap: 'wrap' }}>
           {[
-            { icon: '🔒', title: 'Distribución Segura', sub: 'Certificación y trazabilidad garantizada' },
-            { icon: '📦', title: 'Stock en Tiempo Real', sub: 'Disponibilidad inmediata para despachos' },
-            { icon: '🛡️', title: 'Garantía Oficial', sub: 'Respaldo directo de fabricantes' },
-            { icon: '🤝', title: 'Atención a Canales', sub: 'Precios preferenciales para integradores' },
+            { icon: 'lock', title: 'Distribución Segura', sub: 'Certificación y trazabilidad garantizada', color: '#0FA4DE', bg: '#F0F9FF', border: '#BAE6FD' },
+            { icon: 'box', title: 'Stock en Tiempo Real', sub: 'Disponibilidad inmediata para despachos', color: '#0284C7', bg: '#F0F9FF', border: '#BAE6FD' },
+            { icon: 'shield', title: 'Garantía Oficial', sub: 'Respaldo directo de fabricantes', color: '#0FA4DE', bg: '#F0F9FF', border: '#BAE6FD' },
+            { icon: 'handshake', title: 'Atención a Canales', sub: 'Precios preferenciales para integradores', color: '#0284C7', bg: '#F0F9FF', border: '#BAE6FD' },
           ].map((b) => (
             <div key={b.title} style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-              <span style={{ fontSize: '28px' }}>{b.icon}</span>
+              <div style={{
+                width: '46px',
+                height: '46px',
+                borderRadius: '13px',
+                background: b.bg,
+                border: `1.5px solid ${b.border}`,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                flexShrink: 0,
+                boxShadow: '0 2px 8px rgba(15, 164, 222, 0.08)'
+              }}>
+                <BrandingVectorIcon name={b.icon} size={22} color={b.color} strokeWidth={2.2} />
+              </div>
               <div>
                 <div style={{ fontWeight: '800', fontSize: '14px', color: '#071524' }}>{b.title}</div>
                 <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>{b.sub}</div>
@@ -2670,10 +2779,12 @@ function ProductDetailModal({ product, clientUser, onOpenAuth, onClose, onAddToC
             )}
 
             {/* Dimensions & Specs Card */}
+            {/* Dimensions & Specs Card */}
             {(product.weight || product.width || product.sku) && (
               <div style={{ background: '#F8FAFC', borderRadius: '16px', padding: '16px', border: '1px solid #E2E8F0', marginTop: '6px' }}>
-                <div style={{ fontSize: '12px', fontWeight: '800', color: '#071524', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '8px' }}>
-                  ⚙️ Especificaciones Físicas
+                <div style={{ fontSize: '12px', fontWeight: '800', color: '#071524', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <BrandingVectorIcon name="layers" size={14} color="#071524" />
+                  <span>Especificaciones Físicas</span>
                 </div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '8px', fontSize: '12px', color: '#475569' }}>
                   {product.brand && <div><strong>Marca:</strong> {product.brand}</div>}
@@ -2743,7 +2854,7 @@ function ProductDetailModal({ product, clientUser, onOpenAuth, onClose, onAddToC
             {isLocked ? (
               <div style={{ margin: '14px 0 20px', padding: '18px 20px', background: 'linear-gradient(135deg, #F0F9FF 0%, #E0F2FE 100%)', borderRadius: '16px', border: '1px solid #BAE6FD' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '24px' }}>🔒</span>
+                  <BrandingVectorIcon name="lock" size={20} color="#0369a1" />
                   <span style={{ fontSize: '16px', fontWeight: '900', color: '#0369a1' }}>
                     Precios B2B Exclusivos para Canales DACAS
                   </span>
@@ -2781,8 +2892,9 @@ function ProductDetailModal({ product, clientUser, onOpenAuth, onClose, onAddToC
                   ) : null}
                 </div>
 
-                <div style={{ marginTop: '8px', fontSize: '12px', color: '#0369a1', fontWeight: '600' }}>
-                  🏢 Tarifa aplicada para <strong>{clientUser?.tipo_cliente || 'Integrador'}</strong> · 🌎 {clientUser?.pais || 'Argentina'} · 🏷️ {product.brand || 'Dacas'}
+                <div style={{ marginTop: '8px', fontSize: '12px', color: '#0369a1', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                  <BrandingVectorIcon name="building" size={12} color="#0369a1" />
+                  <span>Tarifa aplicada para <strong>{clientUser?.tipo_cliente || 'Integrador'}</strong> · {clientUser?.pais || 'Argentina'} · {product.brand || 'Dacas'}</span>
                 </div>
               </div>
             )}
@@ -2831,7 +2943,8 @@ function ProductDetailModal({ product, clientUser, onOpenAuth, onClose, onAddToC
                     gap: '10px'
                   }}
                 >
-                  <span style={{ fontSize: '18px' }}>🔐</span> Iniciar Sesión / Solicitar Cuenta B2B para Comprar
+                  <BrandingVectorIcon name="lock" size={16} color="#38bdf8" />
+                  <span>Iniciar Sesión / Solicitar Cuenta B2B para Comprar</span>
                 </button>
               ) : (
                 <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
@@ -2875,13 +2988,15 @@ function ProductDetailModal({ product, clientUser, onOpenAuth, onClose, onAddToC
                       gap: '8px'
                     }}
                   >
-                    {added ? '✓ ¡Agregado al Carrito!' : `🛒 Agregar al Carrito · $${(parseFloat(product.price || 0) * quantity).toFixed(2)}`}
+                    <BrandingVectorIcon name={added ? "check" : "shopping-cart"} size={16} color="#ffffff" />
+                    <span>{added ? '¡Agregado al Carrito!' : `Agregar al Carrito · $${(parseFloat(product.price || 0) * quantity).toFixed(2)}`}</span>
                   </button>
                 </div>
               )}
 
               <div style={{ marginTop: '14px', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12px', color: '#64748B', justifyContent: 'center' }}>
-                <span>🛡️ Garantía oficial DACAS</span>
+                <BrandingVectorIcon name="shield" size={13} color="#64748B" />
+                <span>Garantía oficial DACAS</span>
                 <span>·</span>
                 <span>⚡ Despacho inmediato</span>
                 <span>·</span>

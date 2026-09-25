@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BrandingVectorIcon from './BrandingVectorIcon';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 
@@ -325,7 +326,7 @@ export default function ShopClientPortal() {
               onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
               onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
             >
-              <span>🛒</span>
+              <BrandingVectorIcon name="shopping-cart" size={14} color="#ffffff" />
               <span>Volver a la Tienda</span>
             </button>
 
@@ -345,7 +346,8 @@ export default function ShopClientPortal() {
                 gap: '6px'
               }}
             >
-              <span>🚪</span> Cerrar Sesión
+              <BrandingVectorIcon name="lock" size={13} color="#F87171" />
+              <span>Cerrar Sesión</span>
             </button>
           </div>
         </div>
@@ -394,12 +396,14 @@ export default function ShopClientPortal() {
                   justifyContent: 'center',
                   fontSize: '34px',
                   overflow: 'hidden',
-                  boxShadow: '0 6px 18px rgba(0,0,0,0.25)'
+                  boxShadow: '0 6px 18px rgba(0,0,0,0.25)',
+                  background: 'rgba(15, 164, 222, 0.15)',
+                  color: '#0fa4de'
                 }}>
                   {profileData?.avatar_url ? (
                     <img src={profileData.avatar_url} alt="Avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                   ) : (
-                    <span>🏢</span>
+                    <BrandingVectorIcon name="building" size={32} color="#0fa4de" />
                   )}
                 </div>
 
@@ -436,7 +440,7 @@ export default function ShopClientPortal() {
                   onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
                   onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
                 >
-                  {avatarUploading ? '⏳' : '📷'}
+                  <BrandingVectorIcon name={avatarUploading ? "rotate-ccw" : "edit"} size={13} color="#ffffff" />
                 </button>
               </div>
 
@@ -455,17 +459,37 @@ export default function ShopClientPortal() {
                     padding: '3px 10px',
                     borderRadius: '999px',
                     textTransform: 'uppercase',
-                    letterSpacing: '0.04em'
+                    letterSpacing: '0.04em',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
                   }}>
-                    ✓ Cuenta B2B Activa
+                    <BrandingVectorIcon name="check" size={11} color="#4ade80" />
+                    Cuenta B2B Activa
                   </span>
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '18px', flexWrap: 'wrap', color: '#94A3B8', fontSize: '13px' }}>
-                  <span>👤 <strong>Contacto:</strong> {profileData?.name || clientUser?.name}</span>
-                  <span>📧 <strong>Email:</strong> {profileData?.email || clientUser?.email}</span>
-                  {profileData?.numero_nit && <span>🏛️ <strong>CUIT/NIT:</strong> {profileData.numero_nit}</span>}
-                  {profileData?.country_name && <span>🌐 <strong>País:</strong> {profileData.country_name}</span>}
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                    <BrandingVectorIcon name="user" size={13} color="#94A3B8" />
+                    <strong>Contacto:</strong> {profileData?.name || clientUser?.name}
+                  </span>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                    <BrandingVectorIcon name="mail" size={13} color="#94A3B8" />
+                    <strong>Email:</strong> {profileData?.email || clientUser?.email}
+                  </span>
+                  {profileData?.numero_nit && (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                      <BrandingVectorIcon name="bank" size={13} color="#94A3B8" />
+                      <strong>CUIT/NIT:</strong> {profileData.numero_nit}
+                    </span>
+                  )}
+                  {profileData?.country_name && (
+                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                      <BrandingVectorIcon name="globe" size={13} color="#94A3B8" />
+                      <strong>País:</strong> {profileData.country_name}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
@@ -531,67 +555,43 @@ export default function ShopClientPortal() {
         </div>
 
         {/* ── Tabs Navigation ── */}
-        <div style={{ display: 'flex', gap: '10px', marginBottom: '24px', borderBottom: '2px solid #E2E8F0', paddingBottom: '2px' }}>
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap', background: 'rgba(0,0,0,0.03)', padding: '6px', borderRadius: '999px', width: 'fit-content' }}>
           <button
             onClick={() => setActiveTab('orders')}
+            className={`dacas-tab-pill${activeTab === 'orders' ? ' active' : ''}`}
             style={{
-              padding: '12px 24px',
-              fontSize: '14px',
-              fontWeight: '800',
-              color: activeTab === 'orders' ? '#0fa4de' : '#64748B',
-              background: 'none',
-              border: 'none',
-              borderBottom: activeTab === 'orders' ? '3px solid #0fa4de' : '3px solid transparent',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              transition: 'all 0.15s'
+              padding: '10px 20px',
+              fontSize: '13.5px',
+              fontWeight: '800'
             }}
           >
-            <span>📦</span>
+            <BrandingVectorIcon name="box" size={16} color={activeTab === 'orders' ? '#ffffff' : '#64748B'} />
             <span>Mis Compras y Pedidos ({orders.length})</span>
           </button>
 
           <button
             onClick={() => setActiveTab('profile')}
+            className={`dacas-tab-pill${activeTab === 'profile' ? ' active' : ''}`}
             style={{
-              padding: '12px 24px',
-              fontSize: '14px',
-              fontWeight: '800',
-              color: activeTab === 'profile' ? '#0fa4de' : '#64748B',
-              background: 'none',
-              border: 'none',
-              borderBottom: activeTab === 'profile' ? '3px solid #0fa4de' : '3px solid transparent',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              transition: 'all 0.15s'
+              padding: '10px 20px',
+              fontSize: '13.5px',
+              fontWeight: '800'
             }}
           >
-            <span>🏢</span>
+            <BrandingVectorIcon name="building" size={16} color={activeTab === 'profile' ? '#ffffff' : '#64748B'} />
             <span>Mi Ficha Corporativa & Contactos</span>
           </button>
 
           <button
             onClick={() => setActiveTab('discounts')}
+            className={`dacas-tab-pill${activeTab === 'discounts' ? ' active' : ''}`}
             style={{
-              padding: '12px 24px',
-              fontSize: '14px',
-              fontWeight: '800',
-              color: activeTab === 'discounts' ? '#0fa4de' : '#64748B',
-              background: 'none',
-              border: 'none',
-              borderBottom: activeTab === 'discounts' ? '3px solid #0fa4de' : '3px solid transparent',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              transition: 'all 0.15s'
+              padding: '10px 20px',
+              fontSize: '13.5px',
+              fontWeight: '800'
             }}
           >
-            <span>🏷️</span>
+            <BrandingVectorIcon name="tag" size={16} color={activeTab === 'discounts' ? '#ffffff' : '#64748B'} />
             <span>Mis Descuentos y Condiciones</span>
           </button>
         </div>
@@ -897,8 +897,9 @@ export default function ShopClientPortal() {
             {/* Left: Detailed Card */}
             <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '28px', border: '1.5px solid #E2E8F0', boxShadow: '0 4px 16px rgba(0,0,0,0.03)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #F1F5F9', paddingBottom: '14px' }}>
-                <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#071524' }}>
-                  🏢 Datos de la Empresa y Facturación
+                <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#071524', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <BrandingVectorIcon name="building" size={20} color="#071524" />
+                  <span>Datos de la Empresa y Facturación</span>
                 </h2>
                 <button
                   onClick={() => setEditProfileOpen(true)}
@@ -910,10 +911,14 @@ export default function ShopClientPortal() {
                     padding: '7px 14px',
                     fontSize: '12.5px',
                     fontWeight: '700',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
                   }}
                 >
-                  ✏️ Editar Contactos Rápidos
+                  <BrandingVectorIcon name="edit" size={13} color="#0369A1" />
+                  <span>Editar Contactos Rápidos</span>
                 </button>
               </div>
 
@@ -950,20 +955,27 @@ export default function ShopClientPortal() {
               </div>
 
               {/* Responsables de Sector */}
-              <h3 style={{ margin: '24px 0 14px', fontSize: '1.05rem', fontWeight: '800', color: '#071524', borderTop: '1px solid #F1F5F9', paddingTop: '18px' }}>
-                👥 Contactos Designados
+              <h3 style={{ margin: '24px 0 14px', fontSize: '1.05rem', fontWeight: '800', color: '#071524', borderTop: '1px solid #F1F5F9', paddingTop: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <BrandingVectorIcon name="users" size={18} color="#071524" />
+                <span>Contactos Designados</span>
               </h3>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '18px' }}>
                 <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
-                  <div style={{ fontSize: '12px', fontWeight: '800', color: '#0fa4de', marginBottom: '6px' }}>📦 Responsable de Compras</div>
+                  <div style={{ fontSize: '12px', fontWeight: '800', color: '#0fa4de', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <BrandingVectorIcon name="box" size={13} color="#0fa4de" />
+                    <span>Responsable de Compras</span>
+                  </div>
                   <div style={{ fontSize: '13px', fontWeight: '700', color: '#071524' }}>{profileData?.nombre_compras || 'No especificado'}</div>
                   <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>{profileData?.telefono_compras || ''}</div>
                   <div style={{ fontSize: '12px', color: '#0369A1' }}>{profileData?.email_compras || ''}</div>
                 </div>
 
                 <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
-                  <div style={{ fontSize: '12px', fontWeight: '800', color: '#10b981', marginBottom: '6px' }}>💳 Responsable de Pagos & Finanzas</div>
+                  <div style={{ fontSize: '12px', fontWeight: '800', color: '#10b981', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <BrandingVectorIcon name="credit-card" size={13} color="#10b981" />
+                    <span>Responsable de Pagos & Finanzas</span>
+                  </div>
                   <div style={{ fontSize: '13px', fontWeight: '700', color: '#071524' }}>{profileData?.nombre_pagos || 'No especificado'}</div>
                   <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>{profileData?.telefono_pagos || ''}</div>
                   <div style={{ fontSize: '12px', color: '#0369A1' }}>{profileData?.email_pagos || ''}</div>
@@ -974,8 +986,9 @@ export default function ShopClientPortal() {
             {/* Right: Change Requests History */}
             <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '24px', border: '1.5px solid #E2E8F0', boxShadow: '0 4px 16px rgba(0,0,0,0.03)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
-                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '800', color: '#071524' }}>
-                  📋 Solicitudes de Cambio
+                <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: '800', color: '#071524', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <BrandingVectorIcon name="file-text" size={16} color="#071524" />
+                  <span>Solicitudes de Cambio</span>
                 </h3>
                 <button
                   onClick={() => setChangeModalOpen(true)}
@@ -987,10 +1000,14 @@ export default function ShopClientPortal() {
                     padding: '5px 10px',
                     fontSize: '11.5px',
                     fontWeight: '700',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
                   }}
                 >
-                  + Nueva
+                  <BrandingVectorIcon name="plus" size={11} color="#ffffff" />
+                  <span>Nueva</span>
                 </button>
               </div>
 
@@ -1032,8 +1049,9 @@ export default function ShopClientPortal() {
         {/* ── TAB 3: MIS DESCUENTOS Y CONDICIONES ── */}
         {activeTab === 'discounts' && (
           <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '28px', border: '1.5px solid #E2E8F0', boxShadow: '0 4px 16px rgba(0,0,0,0.03)' }}>
-            <h2 style={{ margin: '0 0 8px', fontSize: '1.25rem', fontWeight: '900', color: '#071524' }}>
-              🏷️ Condiciones Comerciales y Descuentos Activos
+            <h2 style={{ margin: '0 0 8px', fontSize: '1.25rem', fontWeight: '900', color: '#071524', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <BrandingVectorIcon name="tag" size={20} color="#071524" />
+              <span>Condiciones Comerciales y Descuentos Activos</span>
             </h2>
             <p style={{ color: '#64748B', fontSize: '13px', margin: '0 0 24px' }}>
               Estas son las tarifas de precios mayoristas y bonificaciones automáticas aplicadas en tu cuenta para cotizaciones y pedidos en DACAS.
@@ -1041,7 +1059,9 @@ export default function ShopClientPortal() {
 
             {activeRules.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '40px 0', color: '#64748B' }}>
-                <div style={{ fontSize: '32px', marginBottom: '8px' }}>🏷️</div>
+                <div style={{ marginBottom: '8px', color: '#94A3B8' }}>
+                  <BrandingVectorIcon name="tag" size={32} color="#94A3B8" />
+                </div>
                 <p>Tu cuenta cuenta con la lista de precios mayorista estándar para tu categoría.</p>
               </div>
             ) : (
@@ -1217,8 +1237,9 @@ export default function ShopClientPortal() {
             boxShadow: '0 20px 60px rgba(0,0,0,0.3)'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#071524' }}>
-                ✏️ Actualizar Contactos y Domicilio
+              <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#071524', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <BrandingVectorIcon name="edit" size={18} color="#071524" />
+                <span>Actualizar Contactos y Domicilio</span>
               </h3>
               <button
                 onClick={() => setEditProfileOpen(false)}
@@ -1317,8 +1338,9 @@ export default function ShopClientPortal() {
       )}
 
       {/* ── MODAL: PROFORMA / VOUCHER DE PEDIDO ── */}
+      {/* ── Voucher / Factura Proforma Modal ── */}
       {selectedOrderForVoucher && (
-        <div style={{
+        <div className="modal-overlay proforma-overlay" style={{
           position: 'fixed',
           top: 0, left: 0, right: 0, bottom: 0,
           background: 'rgba(7, 21, 36, 0.75)',
@@ -1326,61 +1348,78 @@ export default function ShopClientPortal() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          zIndex: 1000,
+          zIndex: 9999,
           padding: '20px'
         }}>
-          <div style={{
+          <div className="modal-container ecommerce-proforma-voucher printable-proforma" style={{
             background: '#FFFFFF',
-            borderRadius: '24px',
-            maxWidth: '680px',
+            borderRadius: '20px',
+            maxWidth: '780px',
             width: '100%',
-            maxHeight: '90vh',
+            maxHeight: '92vh',
             overflowY: 'auto',
             padding: '36px',
             boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-            color: '#071524'
+            color: '#071524',
+            border: '1px solid #E2E8F0'
           }}>
             {/* Voucher Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #071524', paddingBottom: '16px', marginBottom: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '2px solid #071524', paddingBottom: '18px', marginBottom: '20px' }}>
               <div>
-                <div style={{ fontSize: '1.4rem', fontWeight: '900', color: '#0fa4de' }}>DACAS S.A.</div>
-                <div style={{ fontSize: '12px', color: '#64748B' }}>Distribuidor Mayorista de Valor Agregado</div>
-                <div style={{ fontSize: '11px', color: '#94A3B8' }}>info@dacas.com · www.dacas.com</div>
+                <div style={{ fontSize: '1.6rem', fontWeight: '900', color: '#0fa4de', letterSpacing: '-0.02em' }}>DACAS S.A.</div>
+                <div style={{ fontSize: '12px', fontWeight: '700', color: '#071524' }}>Distribuidor Mayorista de Valor Agregado B2B</div>
+                <div style={{ fontSize: '11px', color: '#64748B', marginTop: '2px' }}>CUIT: 30-68942158-9 · IVA Responsable Inscripto</div>
+                <div style={{ fontSize: '11px', color: '#94A3B8' }}>Av. del Libertador 4500, CABA · ventas@dacas.com · www.dacas.com</div>
               </div>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontSize: '1.2rem', fontWeight: '900' }}>COMPROBANTE DE COMPRA</div>
-                <div style={{ fontSize: '13px', fontWeight: '800', color: '#0fa4de' }}>ORDEN #{selectedOrderForVoucher.id}</div>
-                <div style={{ fontSize: '12px', color: '#64748B' }}>{new Date(selectedOrderForVoucher.created_at).toLocaleDateString()}</div>
+                <div style={{ background: '#071524', color: '#FFFFFF', fontSize: '11px', fontWeight: '800', padding: '4px 10px', borderRadius: '6px', display: 'inline-block', marginBottom: '6px', letterSpacing: '0.04em' }}>
+                  FACTURA PROFORMA B2B
+                </div>
+                <div style={{ fontSize: '14px', fontWeight: '900', color: '#0fa4de' }}>ORDEN #{selectedOrderForVoucher.id}</div>
+                <div style={{ fontSize: '11px', color: '#64748B' }}>Fecha: {new Date(selectedOrderForVoucher.created_at).toLocaleDateString()}</div>
+                <div style={{ fontSize: '11px', color: '#64748B' }}>Validez de Oferta: 15 días corridos</div>
               </div>
             </div>
 
-            {/* Voucher Client Info */}
-            <div style={{ background: '#F8FAFC', padding: '16px', borderRadius: '12px', marginBottom: '20px', fontSize: '12.5px', lineHeight: '1.6' }}>
-              <div><strong>Cliente:</strong> {profileData?.razon_social || clientUser?.razon_social || 'Cliente DACAS'}</div>
-              <div><strong>CUIT / NIT:</strong> {profileData?.numero_nit || '30-12345678-9'}</div>
-              <div><strong>Entrega en:</strong> {selectedOrderForVoucher.shipping_address || 'Dirección registrada'}</div>
-              <div><strong>Condición de Pago:</strong> {selectedOrderForVoucher.payment_method || 'Cuenta Corriente'}</div>
+            {/* Voucher Client Info Grid */}
+            <div style={{ background: '#F8FAFC', padding: '16px 20px', borderRadius: '12px', marginBottom: '20px', border: '1px solid #E2E8F0', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', fontSize: '12px' }}>
+              <div>
+                <div style={{ color: '#64748B', fontSize: '10.5px', textTransform: 'uppercase', fontWeight: '700' }}>Razón Social / Cliente:</div>
+                <div style={{ fontWeight: '800', color: '#071524', fontSize: '13px' }}>{profileData?.razon_social || clientUser?.razon_social || profileData?.nombre || clientUser?.nombre || 'Empresa Cliente B2B'}</div>
+              </div>
+              <div>
+                <div style={{ color: '#64748B', fontSize: '10.5px', textTransform: 'uppercase', fontWeight: '700' }}>Identificación Fiscal / CUIT:</div>
+                <div style={{ fontWeight: '800', color: '#071524' }}>{profileData?.numero_nit || clientUser?.cuit || '30-12345678-9'}</div>
+              </div>
+              <div>
+                <div style={{ color: '#64748B', fontSize: '10.5px', textTransform: 'uppercase', fontWeight: '700' }}>Destino de Entrega / Despacho:</div>
+                <div style={{ fontWeight: '700', color: '#334155' }}>{selectedOrderForVoucher.shipping_address || 'Entrega registrada'}</div>
+              </div>
+              <div>
+                <div style={{ color: '#64748B', fontSize: '10.5px', textTransform: 'uppercase', fontWeight: '700' }}>Condición de Pago & Financiación:</div>
+                <div style={{ fontWeight: '700', color: '#0369A1' }}>{selectedOrderForVoucher.payment_method || 'Cuenta Corriente Comercial'}</div>
+              </div>
             </div>
 
             {/* Voucher Items Table */}
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px', marginBottom: '20px' }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px', marginBottom: '20px' }}>
               <thead>
                 <tr style={{ background: '#071524', color: '#fff', textAlign: 'left' }}>
-                  <th style={{ padding: '8px 10px', borderRadius: '6px 0 0 6px' }}>Item</th>
-                  <th style={{ padding: '8px 10px' }}>SKU / Marca</th>
-                  <th style={{ padding: '8px 10px', textAlign: 'center' }}>Cant.</th>
-                  <th style={{ padding: '8px 10px', textAlign: 'right' }}>Unitario</th>
-                  <th style={{ padding: '8px 10px', textAlign: 'right', borderRadius: '0 6px 6px 0' }}>Subtotal</th>
+                  <th style={{ padding: '10px 12px', borderRadius: '6px 0 0 6px' }}>Producto / Descripción</th>
+                  <th style={{ padding: '10px 12px' }}>Marca / SKU</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'center' }}>Cant.</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'right' }}>Unitario USD</th>
+                  <th style={{ padding: '10px 12px', textAlign: 'right', borderRadius: '0 6px 6px 0' }}>Subtotal USD</th>
                 </tr>
               </thead>
               <tbody>
                 {selectedOrderForVoucher.items?.map((item, idx) => (
                   <tr key={idx} style={{ borderBottom: '1px solid #E2E8F0' }}>
-                    <td style={{ padding: '10px', fontWeight: '700' }}>{item.product_name}</td>
-                    <td style={{ padding: '10px', color: '#64748B' }}>{item.brand || 'DACAS'} ({item.sku || 'N/A'})</td>
-                    <td style={{ padding: '10px', textAlign: 'center', fontWeight: '700' }}>{item.quantity}</td>
-                    <td style={{ padding: '10px', textAlign: 'right' }}>${parseFloat(item.price_at_purchase).toFixed(2)}</td>
-                    <td style={{ padding: '10px', textAlign: 'right', fontWeight: '800', color: '#0fa4de' }}>
+                    <td style={{ padding: '10px 12px', fontWeight: '700', color: '#071524' }}>{item.product_name}</td>
+                    <td style={{ padding: '10px 12px', color: '#64748B' }}>{item.brand || 'DACAS'} ({item.sku || 'SKU-DACAS'})</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'center', fontWeight: '700' }}>{item.quantity}</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right', color: '#475569' }}>${parseFloat(item.price_at_purchase).toFixed(2)}</td>
+                    <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: '800', color: '#0fa4de' }}>
                       ${(parseFloat(item.price_at_purchase) * item.quantity).toFixed(2)}
                     </td>
                   </tr>
@@ -1388,35 +1427,66 @@ export default function ShopClientPortal() {
               </tbody>
             </table>
 
-            {/* Voucher Total */}
-            <div style={{ textAlign: 'right', fontSize: '1.25rem', fontWeight: '900', color: '#071524', marginBottom: '24px' }}>
-              Total: <span style={{ color: '#0fa4de' }}>${parseFloat(selectedOrderForVoucher.total).toFixed(2)} USD</span>
+            {/* Voucher Financial Summary & Bank Information Box */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px', marginBottom: '24px', alignItems: 'start' }}>
+              {/* Bank Details for Wire Transfer */}
+              <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '12px', padding: '14px', fontSize: '11.5px', color: '#0369A1' }}>
+                <div style={{ fontWeight: '800', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span>🏦</span>
+                  <span>Datos Bancarios para Transferencia / Liquidación:</span>
+                </div>
+                <div>Banco: <strong>Banco Santander / BBVA</strong></div>
+                <div>CBU: <strong>0720123920000001234567</strong></div>
+                <div>Alias: <strong>DACAS.PAGOS.B2B</strong> | SWIFT: <strong>BAPROARBAXXX</strong></div>
+                <div>Titular: <strong>DACAS S.A.</strong> (CUIT: 30-68942158-9)</div>
+              </div>
+
+              {/* Totals */}
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '14px 18px', textAlign: 'right' }}>
+                <div style={{ fontSize: '12px', color: '#64748B', marginBottom: '4px' }}>Subtotal B2B: <strong>${parseFloat(selectedOrderForVoucher.total).toFixed(2)} USD</strong></div>
+                <div style={{ fontSize: '12px', color: '#10B981', marginBottom: '8px' }}>Despacho Logístico: <strong>Bonificado (B2B)</strong></div>
+                <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#071524', borderTop: '1.5px solid #E2E8F0', paddingTop: '8px' }}>
+                  Total: <span style={{ color: '#0fa4de' }}>${parseFloat(selectedOrderForVoucher.total).toFixed(2)} USD</span>
+                </div>
+              </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
+            {/* Legal Notice */}
+            <div style={{ fontSize: '10px', color: '#94A3B8', borderTop: '1px solid #E2E8F0', paddingTop: '10px', marginBottom: '20px', lineHeight: '1.4' }}>
+              * Documento proforma emitido con fines de presupuestación mayorista, reserva de inventario y tramitación bancaria. Los precios se encuentran expresados en Dólares Estadounidenses (USD) oficiales y no incluyen IVA ni percepciones locales hasta la emisión de la Factura Oficial AFIP.
+            </div>
+
+            {/* Action Buttons (Hidden on Print) */}
+            <div className="no-print" style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
               <button
+                type="button"
                 onClick={() => window.print()}
                 style={{
-                  background: '#071524',
+                  background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
                   color: '#fff',
                   border: 'none',
                   borderRadius: '10px',
-                  padding: '10px 18px',
+                  padding: '12px 22px',
                   fontSize: '13px',
-                  fontWeight: '700',
-                  cursor: 'pointer'
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  boxShadow: '0 4px 14px rgba(15, 164, 222, 0.35)'
                 }}
               >
-                🖨️ Imprimir / Guardar PDF
+                🖨️ Imprimir / Guardar como PDF
               </button>
               <button
+                type="button"
                 onClick={() => setSelectedOrderForVoucher(null)}
                 style={{
                   background: '#F1F5F9',
                   color: '#475569',
                   border: '1px solid #CBD5E1',
                   borderRadius: '10px',
-                  padding: '10px 18px',
+                  padding: '12px 20px',
                   fontSize: '13px',
                   fontWeight: '700',
                   cursor: 'pointer'

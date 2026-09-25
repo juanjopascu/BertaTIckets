@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell, AreaChart, Area
 } from 'recharts';
 import AdminProductFormTiendanube from './AdminProductFormTiendanube';
+import BrandingVectorIcon from './BrandingVectorIcon';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 const COLORS = ['#0fa4de', '#38bdf8', '#0284c7', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4'];
@@ -127,11 +128,111 @@ const MOCK_ORDERS = [
   }
 ];
 const MOCK_PRODUCTS = [];
-const MOCK_COUNTRIES = [];
-const MOCK_USERS = [];
 const MOCK_RULES = [];
 
-function AdminEcommerce() {
+// --- DEFAULT CHECKOUT METHODS (SHIPPING & PAYMENT) ---
+const DEFAULT_CHECKOUT_METHODS = {
+  shipping: [
+    {
+      id: 'express',
+      enabled: true,
+      title: 'Envío Express a Domicilio',
+      subtitle: 'Despacho a Planta / Oficina',
+      badge: 'Recomendado',
+      icon: '🚚',
+      priceText: 'Bonificado (B2B)',
+      description: 'Envío directo puerta a puerta a la dirección declarada de la empresa.'
+    },
+    {
+      id: 'hub',
+      enabled: true,
+      title: 'Retiro en HUB DACAS',
+      subtitle: 'Depósito Central (Sin Cargo)',
+      badge: 'Gratis',
+      icon: '🏢',
+      priceText: 'Sin cargo',
+      description: 'Retiro por depósito central o centro logístico DACAS en el país.'
+    },
+    {
+      id: 'expreso',
+      enabled: true,
+      title: 'Expreso / Transporte Propio',
+      subtitle: 'Despacho a receptoría de expreso',
+      badge: 'Interior',
+      icon: '🚛',
+      priceText: 'A cargo del cliente',
+      description: 'Despacho hacia la receptoría o transporte que el integrador contrate.'
+    }
+  ],
+  payment: [
+    {
+      id: 'cuenta_corriente',
+      enabled: true,
+      title: 'Cuenta Corriente Comercial B2B DACAS',
+      subtitle: 'Pago diferido contra factura y límite crediticio asignado a tu empresa.',
+      icon: 'bank',
+      terms: ['30_dias', '60_dias'],
+      terms_label: 'Plazo de Facturación:',
+      instrucciones: 'Sujeto a verificación de línea crediticia aprobada en DACAS.'
+    },
+    {
+      id: 'transferencia',
+      enabled: true,
+      title: 'Transferencia Bancaria Directa (CBU / SWIFT)',
+      subtitle: 'Se emitirá la Factura Proforma con cuentas en BBVA / Banco Santander para depósito en USD o ARS al tipo de cambio oficial.',
+      badge: 'Inmediato',
+      icon: '💸',
+      banco: 'Banco Santander / BBVA Argentina',
+      titular: 'DACAS S.A.',
+      cuit: '30-68942158-9',
+      cbu: '0720123920000001234567',
+      alias: 'DACAS.PAGOS.B2B',
+      swift: 'BAPROARBAXXX',
+      tipo_cuenta: 'Cuenta Corriente Especial en USD / ARS',
+      instrucciones: 'Una vez efectuada la transferencia, adjuntá el comprobante a cobranzas@dacas.com indicando tu número de orden.'
+    },
+    {
+      id: 'tarjeta',
+      enabled: true,
+      title: 'Tarjeta Corporativa / Débito (Stripe Secure)',
+      subtitle: 'Procesamiento online seguro e inmediato con Visa, Mastercard, American Express B2B.',
+      badge: 'Online',
+      icon: '💳',
+      gateway: 'Stripe SSL 256-bit',
+      instrucciones: 'Transacción encriptada y protegida bajo normativa PCI-DSS Nivel 1.'
+    },
+    {
+      id: 'echeq',
+      enabled: true,
+      title: 'Cheque de Pago Diferido / E-Cheq',
+      subtitle: 'Endoso y recepción de cheques electrónicos interbancarios COELSA.',
+      badge: 'Financiamiento',
+      icon: '📑',
+      cuit_receptor: '30-68942158-9',
+      banco_receptor: 'Banco Santander',
+      plazos_admitidos: '30 y 60 días fecha factura',
+      instrucciones: 'Emitir o endosar el E-Cheq a favor de DACAS S.A. (CUIT 30-68942158-9) mediante homebanking.'
+    }
+  ],
+  terms_conditions_text: 'Acepto las condiciones comerciales de DACAS B2B, términos de garantía oficial de fabricante de 12/36 meses y la emisión de la orden de compra con carácter vinculante para reserva de stock.'
+};
+
+const DACAS_COUNTRIES_LIST = [
+  { code: 'US', name: 'Estados Unidos', flag: '🇺🇸' },
+  { code: 'AR', name: 'Argentina', flag: '🇦🇷' },
+  { code: 'BO', name: 'Bolivia', flag: '🇧🇴' },
+  { code: 'CL', name: 'Chile', flag: '🇨🇱' },
+  { code: 'CO', name: 'Colombia', flag: '🇨🇴' },
+  { code: 'CR', name: 'Costa Rica', flag: '🇨🇷' },
+  { code: 'EC', name: 'Ecuador', flag: '🇪🇨' },
+  { code: 'MX', name: 'México', flag: '🇲🇽' },
+  { code: 'PY', name: 'Paraguay', flag: '🇵🇾' },
+  { code: 'PE', name: 'Perú', flag: '🇵🇪' },
+  { code: 'DO', name: 'República Dominicana', flag: '🇩🇴' },
+  { code: 'UY', name: 'Uruguay', flag: '🇺🇾' }
+];
+
+function AdminEcommerce({ embedded = false }) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('products');
 
@@ -223,8 +324,10 @@ function AdminEcommerce() {
   const [showUserForm, setShowUserForm] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [userFilterStatus, setUserFilterStatus] = useState('all');
+  const [userCreateMode, setUserCreateMode] = useState('new_company'); // 'new_company' | 'existing_company'
+  const [selectedExistingCompany, setSelectedExistingCompany] = useState('');
   const initialUserForm = {
-    name: '', email: '', password: '', status: 'activo',
+    name: '', email: '', password: '', status: 'activo', cargo: 'Encargado de Compras',
     razon_social: '', tipo_cliente: 'Reseller / Integrador IT', direccion_legal: '', localidad: '', codigo_postal: '', ciudad: '', country_id: '', phone: '', fecha_limite_facturacion: '', web: '',
     report_to_country_id: '', vendedor: '', direccion_entrega: '', localidad_entrega: '', codigo_postal_entrega: '', ciudad_entrega: '', pais_entrega_id: '', tipo_iva: '', numero_nit: '',
     nombre_compras: '', telefono_compras: '', email_compras: '',
@@ -235,13 +338,28 @@ function AdminEcommerce() {
   const [userForm, setUserForm] = useState(initialUserForm);
   const [userFormSection, setUserFormSection] = useState(1);
 
-  // RULES Form
+  // RULES & COUPONS Form
   const [showRuleForm, setShowRuleForm] = useState(false);
   const [editingRule, setEditingRule] = useState(null);
+  const [ruleFilterType, setRuleFilterType] = useState('all'); // 'all' | 'coupons' | 'rules'
   const initialRuleForm = {
-    name: '', rule_type: 'discount', value_type: 'percentage', value: '',
-    tipo_cliente: '', brand: '', country_id: '', product_id: '', user_id: '',
-    priority: '0', is_active: true
+    name: '', 
+    rule_type: 'discount', 
+    value_type: 'percentage', 
+    value: '',
+    tipo_cliente: '', 
+    brand: '', 
+    country_id: '', 
+    product_id: '', 
+    user_id: '',
+    priority: '0', 
+    is_active: true,
+    is_coupon: true, // true = Coupon with code, false = automatic B2B pricing rule
+    coupon_code: '',
+    min_order_amount: '',
+    valid_until: '',
+    usage_limit: '',
+    times_used: 0
   };
   const [ruleForm, setRuleForm] = useState(initialRuleForm);
 
@@ -262,6 +380,30 @@ function AdminEcommerce() {
   const [visualSaveSuccess, setVisualSaveSuccess] = useState(false);
   const [editingSlideIdx, setEditingSlideIdx] = useState(0);
 
+  // ── Brand & Country Management State ──
+  const [editingBrandModal, setEditingBrandModal] = useState(null); // { catKey, brandIdx, name, countries }
+  const [brandCountryFilter, setBrandCountryFilter] = useState('all');
+  const [showNewBrandModal, setShowNewBrandModal] = useState(false);
+  const [newBrandForm, setNewBrandForm] = useState({
+    name: '',
+    category: 'networking',
+    isGlobal: true,
+    countries: []
+  });
+
+  // ── Checkout Methods (Shipping & Payment) State ──
+  const [checkoutMethods, setCheckoutMethods] = useState(() => {
+    try {
+      const saved = localStorage.getItem('dacas_checkout_methods');
+      return saved ? JSON.parse(saved) : DEFAULT_CHECKOUT_METHODS;
+    } catch {
+      return DEFAULT_CHECKOUT_METHODS;
+    }
+  });
+  const [isSavingCheckout, setIsSavingCheckout] = useState(false);
+  const [checkoutSaveSuccess, setCheckoutSaveSuccess] = useState(false);
+  const [checkoutSubTab, setCheckoutSubTab] = useState('shipping'); // 'shipping' | 'payment'
+
   useEffect(() => {
     fetchProducts();
     fetchOrders();
@@ -269,7 +411,65 @@ function AdminEcommerce() {
     fetchUsers();
     fetchRules();
     fetchVisualSettings();
+    fetchCheckoutMethods();
   }, []);
+
+  const fetchCheckoutMethods = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/checkout-methods`);
+      if (res.ok) {
+        const data = await res.json();
+        setCheckoutMethods(data);
+        localStorage.setItem('dacas_checkout_methods', JSON.stringify(data));
+      }
+    } catch (err) {
+      console.error('Error fetching checkout methods:', err);
+    }
+  };
+
+  const handleSaveCheckoutMethods = async () => {
+    setIsSavingCheckout(true);
+    setCheckoutSaveSuccess(false);
+    try {
+      localStorage.setItem('dacas_checkout_methods', JSON.stringify(checkoutMethods));
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/checkout-methods`, {
+        method: 'PUT',
+        headers: getAuthHeader(),
+        body: JSON.stringify(checkoutMethods)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al guardar métodos de pago y envío');
+      if (data.config) setCheckoutMethods(data.config);
+      setCheckoutSaveSuccess(true);
+      setTimeout(() => setCheckoutSaveSuccess(false), 4000);
+    } catch (err) {
+      alert('Error guardando métodos de pago y envío: ' + err.message);
+    } finally {
+      setIsSavingCheckout(false);
+    }
+  };
+
+  const handleResetCheckoutMethods = async () => {
+    if (!window.confirm('¿Deseas restablecer los métodos de envío y formas de pago a los valores originales por defecto?')) return;
+    setIsSavingCheckout(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/checkout-methods/reset`, {
+        method: 'POST',
+        headers: getAuthHeader()
+      });
+      const data = await res.json();
+      if (res.ok && data.config) {
+        setCheckoutMethods(data.config);
+        localStorage.setItem('dacas_checkout_methods', JSON.stringify(data.config));
+        setCheckoutSaveSuccess(true);
+        setTimeout(() => setCheckoutSaveSuccess(false), 3000);
+      }
+    } catch (err) {
+      console.error('Error resetting checkout methods:', err);
+    } finally {
+      setIsSavingCheckout(false);
+    }
+  };
 
   const fetchVisualSettings = async () => {
     try {
@@ -405,6 +605,112 @@ function AdminEcommerce() {
     metrics[metricIdx] = { ...metrics[metricIdx], [field]: value };
     slides[slideIdx] = { ...slides[slideIdx], metrics };
     setVisualConfig({ ...visualConfig, heroSlides: slides });
+  };
+
+  // ── Brand Management Handlers ──
+  const normalizeBrandItem = (item, catKey) => {
+    if (typeof item === 'string') {
+      const bKey = item.toLowerCase();
+      const countries = (visualConfig?.brandCountries && visualConfig.brandCountries[bKey]) || [];
+      return { name: bKey, countries };
+    }
+    return {
+      name: (item?.name || '').toLowerCase(),
+      countries: Array.isArray(item?.countries) ? item.countries : []
+    };
+  };
+
+  const handleCreateNewBrand = (e) => {
+    e.preventDefault();
+    const brandName = newBrandForm.name.trim().toLowerCase();
+    if (!brandName) return;
+
+    const catKey = newBrandForm.category;
+    const currentList = visualConfig?.categoryBrands?.[catKey] || [];
+
+    // Check if already exists in this category
+    const exists = currentList.some(item => {
+      const b = normalizeBrandItem(item, catKey);
+      return b.name === brandName;
+    });
+
+    if (exists) {
+      alert(`La marca "${brandName.toUpperCase()}" ya se encuentra registrada en la categoría seleccionada.`);
+      return;
+    }
+
+    const newBrandObj = {
+      name: brandName,
+      countries: newBrandForm.isGlobal ? [] : newBrandForm.countries
+    };
+
+    const updatedList = [...currentList, newBrandObj];
+    const updatedBrandCountries = {
+      ...(visualConfig?.brandCountries || {}),
+      [brandName]: newBrandForm.isGlobal ? [] : newBrandForm.countries
+    };
+
+    setVisualConfig({
+      ...visualConfig,
+      categoryBrands: {
+        ...(visualConfig?.categoryBrands || {}),
+        [catKey]: updatedList
+      },
+      brandCountries: updatedBrandCountries
+    });
+
+    setNewBrandForm({
+      name: '',
+      category: newBrandForm.category,
+      isGlobal: true,
+      countries: []
+    });
+    setShowNewBrandModal(false);
+  };
+
+  const handleDeleteBrand = (catKey, brandIdx, brandName) => {
+    if (!window.confirm(`¿Estás seguro de que deseas eliminar la marca "${brandName.toUpperCase()}" de esta sección?`)) {
+      return;
+    }
+    const currentList = visualConfig?.categoryBrands?.[catKey] || [];
+    const updatedList = currentList.filter((_, idx) => idx !== brandIdx);
+    setVisualConfig({
+      ...visualConfig,
+      categoryBrands: {
+        ...(visualConfig?.categoryBrands || {}),
+        [catKey]: updatedList
+      }
+    });
+  };
+
+  const handleSaveBrandCountries = (catKey, brandIdx, newCountries) => {
+    const currentList = visualConfig?.categoryBrands?.[catKey] || [];
+    const targetItem = currentList[brandIdx];
+    const brandName = (typeof targetItem === 'string' ? targetItem : targetItem?.name || '').toLowerCase();
+
+    const updatedList = currentList.map((item, idx) => {
+      if (idx !== brandIdx) return item;
+      return {
+        name: brandName,
+        countries: newCountries
+      };
+    });
+
+    const updatedBrandCountries = {
+      ...(visualConfig?.brandCountries || {}),
+      [brandName]: newCountries
+    };
+
+    setVisualConfig({
+      ...visualConfig,
+      categoryBrands: {
+        ...(visualConfig?.categoryBrands || {}),
+        [catKey]: updatedList
+      },
+      brandCountries: updatedBrandCountries
+    });
+
+    setEditingBrandModal(null);
   };
 
   const fetchProducts = async () => {
@@ -557,12 +863,151 @@ function AdminEcommerce() {
     }
   };
 
+  // ── Distinct Companies & Multi-User Helpers ──
+  const distinctCompanies = useMemo(() => {
+    const list = [];
+    const seen = new Set();
+    users.forEach(u => {
+      const name = (u.razon_social || u.name || '').trim();
+      if (name && !seen.has(name.toLowerCase())) {
+        seen.add(name.toLowerCase());
+        list.push({
+          razon_social: name,
+          tipo_cliente: u.tipo_cliente || 'Reseller / Integrador IT',
+          numero_nit: u.numero_nit || '',
+          country_id: u.country_id || '',
+          country_name: u.country_name || '',
+          phone: u.phone || '',
+          web: u.web || '',
+          direccion_legal: u.direccion_legal || '',
+          localidad: u.localidad || '',
+          ciudad: u.ciudad || '',
+          codigo_postal: u.codigo_postal || '',
+          vendedor: u.vendedor || '',
+          report_to_country_id: u.report_to_country_id || '',
+          direccion_entrega: u.direccion_entrega || '',
+          localidad_entrega: u.localidad_entrega || '',
+          ciudad_entrega: u.ciudad_entrega || '',
+          codigo_postal_entrega: u.codigo_postal_entrega || '',
+          pais_entrega_id: u.pais_entrega_id || '',
+          tipo_iva: u.tipo_iva || '',
+          nombre_compras: u.nombre_compras || '',
+          telefono_compras: u.telefono_compras || '',
+          email_compras: u.email_compras || '',
+          nombre_pagos: u.nombre_pagos || '',
+          telefono_pagos: u.telefono_pagos || '',
+          email_pagos: u.email_pagos || '',
+          nombre_admin: u.nombre_admin || '',
+          telefono_admin: u.telefono_admin || '',
+          email_admin: u.email_admin || '',
+          email_factura_electronica: u.email_factura_electronica || '',
+          email_contacto_compras: u.email_contacto_compras || '',
+          email_cotizaciones_automaticas: u.email_cotizaciones_automaticas || ''
+        });
+      }
+    });
+    return list;
+  }, [users]);
+
+  const handleSelectExistingCompany = (companyName) => {
+    setSelectedExistingCompany(companyName);
+    const comp = distinctCompanies.find(c => c.razon_social.toLowerCase() === companyName.toLowerCase());
+    if (comp) {
+      setUserForm(prev => ({
+        ...prev,
+        razon_social: comp.razon_social,
+        tipo_cliente: comp.tipo_cliente,
+        numero_nit: comp.numero_nit,
+        country_id: comp.country_id,
+        phone: comp.phone || prev.phone,
+        web: comp.web,
+        direccion_legal: comp.direccion_legal,
+        localidad: comp.localidad,
+        ciudad: comp.ciudad,
+        codigo_postal: comp.codigo_postal,
+        vendedor: comp.vendedor,
+        report_to_country_id: comp.report_to_country_id,
+        direccion_entrega: comp.direccion_entrega,
+        localidad_entrega: comp.localidad_entrega,
+        ciudad_entrega: comp.ciudad_entrega,
+        codigo_postal_entrega: comp.codigo_postal_entrega,
+        pais_entrega_id: comp.pais_entrega_id,
+        tipo_iva: comp.tipo_iva,
+        nombre_compras: comp.nombre_compras,
+        telefono_compras: comp.telefono_compras,
+        email_compras: comp.email_compras,
+        nombre_pagos: comp.nombre_pagos,
+        telefono_pagos: comp.telefono_pagos,
+        email_pagos: comp.email_pagos,
+        nombre_admin: comp.nombre_admin,
+        telefono_admin: comp.telefono_admin,
+        email_admin: comp.email_admin,
+        email_factura_electronica: comp.email_factura_electronica,
+        email_contacto_compras: comp.email_contacto_compras,
+        email_cotizaciones_automaticas: comp.email_cotizaciones_automaticas
+      }));
+    }
+  };
+
+  const handleOpenAddUserToCompany = (compOrUser) => {
+    resetUserForm();
+    let comp = null;
+    if (typeof compOrUser === 'string') {
+      comp = distinctCompanies.find(c => c.razon_social.toLowerCase() === compOrUser.toLowerCase());
+    } else if (compOrUser) {
+      comp = distinctCompanies.find(c => c.razon_social.toLowerCase() === (compOrUser.razon_social || compOrUser.name || '').toLowerCase()) || compOrUser;
+    }
+    setUserCreateMode('existing_company');
+    if (comp) {
+      const cName = comp.razon_social || comp.name || '';
+      setSelectedExistingCompany(cName);
+      setUserForm({
+        ...initialUserForm,
+        razon_social: cName,
+        tipo_cliente: comp.tipo_cliente || 'Reseller / Integrador IT',
+        numero_nit: comp.numero_nit || '',
+        country_id: comp.country_id || '',
+        phone: comp.phone || '',
+        web: comp.web || '',
+        direccion_legal: comp.direccion_legal || '',
+        localidad: comp.localidad || '',
+        ciudad: comp.ciudad || '',
+        codigo_postal: comp.codigo_postal || '',
+        vendedor: comp.vendedor || '',
+        report_to_country_id: comp.report_to_country_id || '',
+        direccion_entrega: comp.direccion_entrega || '',
+        localidad_entrega: comp.localidad_entrega || '',
+        ciudad_entrega: comp.ciudad_entrega || '',
+        codigo_postal_entrega: comp.codigo_postal_entrega || '',
+        pais_entrega_id: comp.pais_entrega_id || '',
+        tipo_iva: comp.tipo_iva || '',
+        nombre_compras: comp.nombre_compras || '',
+        telefono_compras: comp.telefono_compras || '',
+        email_compras: comp.email_compras || '',
+        nombre_pagos: comp.nombre_pagos || '',
+        telefono_pagos: comp.telefono_pagos || '',
+        email_pagos: comp.email_pagos || '',
+        nombre_admin: comp.nombre_admin || '',
+        telefono_admin: comp.telefono_admin || '',
+        email_admin: comp.email_admin || '',
+        email_factura_electronica: comp.email_factura_electronica || '',
+        email_contacto_compras: comp.email_contacto_compras || '',
+        email_cotizaciones_automaticas: comp.email_cotizaciones_automaticas || '',
+        cargo: 'Encargado de Compras'
+      });
+    }
+    setShowUserForm(true);
+    setUserFormSection(1);
+  };
+
   // ── User / Customer Methods ──
   const resetUserForm = () => {
     setUserForm(initialUserForm);
     setEditingUser(null);
     setShowUserForm(false);
     setUserFormSection(1);
+    setUserCreateMode('new_company');
+    setSelectedExistingCompany('');
   };
 
   const handleUserSubmit = async (e) => {
@@ -635,6 +1080,24 @@ function AdminEcommerce() {
     }
   };
 
+  const handleDeleteUser = async (userId, userName) => {
+    if (!window.confirm(`¿Estás seguro de que deseas eliminar la cuenta de usuario "${userName || userId}"?`)) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/admin/users/${userId}`, {
+        method: 'DELETE'
+      });
+      if (!res.ok) throw new Error((await res.json()).error || 'Error al eliminar usuario');
+      if (selectedUser && selectedUser.id === userId) {
+        setShowUserModal(false);
+      } else if (selectedUser) {
+        openUserModal(selectedUser.id);
+      }
+      fetchUsers();
+    } catch (err) {
+      alert(err.message);
+    }
+  };
+
   const handleEditUser = async (u) => {
     try {
       const res = await fetch(`${API_BASE_URL}/api/ecommerce/admin/users/${u.id}`);
@@ -644,6 +1107,8 @@ function AdminEcommerce() {
         if (safeData.fecha_limite_facturacion) safeData.fecha_limite_facturacion = safeData.fecha_limite_facturacion.split('T')[0];
         setUserForm(safeData);
         setEditingUser(u);
+        setUserCreateMode('existing_company');
+        setSelectedExistingCompany(safeData.razon_social || '');
         setShowUserForm(true);
         setUserFormSection(1);
       }
@@ -671,8 +1136,14 @@ function AdminEcommerce() {
       product_id: rule.product_id || '',
       country_id: rule.country_id || '',
       user_id: rule.user_id || '',
-      priority: rule.priority || '0',
-      is_active: rule.is_active !== undefined ? rule.is_active : true
+      priority: rule.priority !== undefined ? String(rule.priority) : '0',
+      is_active: rule.is_active !== undefined ? rule.is_active : true,
+      is_coupon: !!(rule.coupon_code && String(rule.coupon_code).trim()),
+      coupon_code: rule.coupon_code || '',
+      min_order_amount: rule.min_order_amount || '',
+      valid_until: rule.valid_until ? String(rule.valid_until).split('T')[0] : '',
+      usage_limit: rule.usage_limit || '',
+      times_used: rule.times_used || 0
     });
     setShowRuleForm(true);
   };
@@ -693,12 +1164,33 @@ function AdminEcommerce() {
       if (!payload.country_id) payload.country_id = null;
       if (!payload.user_id) payload.user_id = null;
 
+      if (!payload.is_coupon) {
+        payload.coupon_code = null;
+        payload.min_order_amount = null;
+        payload.valid_until = null;
+        payload.usage_limit = null;
+      } else {
+        if (payload.coupon_code) payload.coupon_code = payload.coupon_code.trim().toUpperCase();
+        else {
+          alert('Por favor definí un Código de Cupón (ej: FORTINET-ARG-20)');
+          return;
+        }
+        if (payload.min_order_amount) payload.min_order_amount = parseFloat(payload.min_order_amount);
+        else payload.min_order_amount = null;
+        if (!payload.valid_until) payload.valid_until = null;
+        if (payload.usage_limit) payload.usage_limit = parseInt(payload.usage_limit);
+        else payload.usage_limit = null;
+      }
+
       const res = await fetch(url, {
         method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
-      if (!res.ok) throw new Error('Error al guardar regla');
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.error || 'Error al guardar regla/cupón');
+      }
       resetRuleForm();
       fetchRules();
     } catch (err) {
@@ -1058,12 +1550,163 @@ function AdminEcommerce() {
   };
 
   return (
-    <div className="crm-container">
+    <div
+      className={embedded ? "crm-embedded-view" : "crm-container"}
+      style={embedded ? { width: '100%', maxWidth: '100%', margin: 0, padding: 0 } : {}}
+    >
       <style>{`
-        .tab-buttons { display:flex; flex-wrap: wrap; background:rgba(120,120,128,0.08); border-radius:16px; padding:4px; margin-bottom:24px; gap:4px; }
-        .tab-btn { flex:1; min-width:120px; background:transparent; border:none; padding:12px 16px; font-weight:600; font-size:0.9rem; color:#8e8e93; border-radius:12px; cursor:pointer; transition:all 0.25s; }
-        .tab-btn.active { background:white; color:#000; box-shadow:0 4px 12px rgba(0,0,0,0.06); }
-        [data-theme="dark"] .tab-btn.active { background:var(--card-bg); color:var(--text-main); }
+        .tab-buttons {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(120, 120, 128, 0.08);
+          border: 1px solid rgba(0, 0, 0, 0.06);
+          border-radius: 14px;
+          padding: 6px;
+          margin-bottom: 22px;
+          overflow-x: auto;
+          scrollbar-width: none;
+          -webkit-overflow-scrolling: touch;
+          width: 100%;
+          box-sizing: border-box;
+        }
+        .tab-buttons::-webkit-scrollbar {
+          display: none;
+        }
+        [data-theme="dark"] .tab-buttons {
+          background: rgba(255, 255, 255, 0.04);
+          border-color: rgba(255, 255, 255, 0.08);
+        }
+        .tab-btn {
+          flex: 1 0 auto;
+          min-width: max-content;
+          background: transparent;
+          border: 1px solid transparent;
+          padding: 9px 18px;
+          font-weight: 700;
+          font-size: 0.88rem;
+          color: var(--text-muted, #475569);
+          border-radius: 9999px;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          white-space: nowrap;
+          gap: 8px;
+        }
+        .tab-btn svg {
+          stroke: currentColor;
+          transition: stroke 0.2s ease;
+        }
+        .tab-btn:hover {
+          color: var(--text-main, #0f172a);
+          background: rgba(15, 164, 222, 0.08);
+        }
+        .tab-btn.active {
+          background: linear-gradient(135deg, #0fa4de 0%, #0284c7 100%);
+          color: #ffffff !important;
+          font-weight: 800;
+          box-shadow: 0 4px 14px rgba(15, 164, 222, 0.35);
+          border-color: transparent;
+        }
+        .tab-btn.active svg {
+          stroke: #ffffff !important;
+        }
+        [data-theme="dark"] .tab-btn:hover {
+          color: #f1f5f9;
+          background: rgba(255, 255, 255, 0.06);
+        }
+        [data-theme="dark"] .tab-btn.active {
+          background: linear-gradient(135deg, #0fa4de 0%, #0284c7 100%);
+          color: #ffffff !important;
+          box-shadow: 0 4px 14px rgba(15, 164, 222, 0.4);
+        }
+
+        /* ── Dacas Custom Action Pills (Matching Selected / Deselected States) ── */
+        .dacas-pill-btn {
+          background: var(--card-bg, #FFFFFF);
+          border: 1.5px solid var(--border-color, #E2E8F0);
+          color: var(--text-main, #334155);
+          padding: 8px 18px;
+          border-radius: 9999px;
+          font-size: 0.86rem;
+          font-weight: 700;
+          display: inline-flex;
+          align-items: center;
+          gap: 8px;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          white-space: nowrap;
+          box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+        }
+        .dacas-pill-btn svg {
+          stroke: currentColor;
+          transition: stroke 0.2s ease, transform 0.2s ease;
+        }
+        .dacas-pill-btn:hover {
+          color: #0284c7;
+          border-color: #BAE6FD;
+          background: rgba(15, 164, 222, 0.08);
+          transform: translateY(-1px);
+        }
+        .dacas-pill-btn:hover svg {
+          stroke: #0284c7;
+        }
+        .dacas-pill-btn.active, .dacas-pill-btn.selected {
+          background: linear-gradient(135deg, #0fa4de 0%, #0284c7 100%) !important;
+          border-color: transparent !important;
+          color: #FFFFFF !important;
+          box-shadow: 0 4px 14px rgba(15, 164, 222, 0.35) !important;
+          transform: translateY(-1px);
+        }
+        .dacas-pill-btn.active svg, .dacas-pill-btn.selected svg {
+          stroke: #FFFFFF !important;
+        }
+
+        .dacas-action-pill {
+          background: #F8FAFC;
+          border: 1.5px solid #E2E8F0;
+          color: #334155;
+          padding: 5px 14px;
+          border-radius: 9999px;
+          font-size: 0.8rem;
+          font-weight: 700;
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          cursor: pointer;
+          transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+          white-space: nowrap;
+        }
+        .dacas-action-pill svg {
+          stroke: currentColor;
+          transition: stroke 0.2s ease;
+        }
+        .dacas-action-pill:hover, .dacas-action-pill.active {
+          background: linear-gradient(135deg, #0fa4de 0%, #0284c7 100%) !important;
+          border-color: transparent !important;
+          color: #FFFFFF !important;
+          box-shadow: 0 3px 10px rgba(15, 164, 222, 0.3) !important;
+          transform: translateY(-1px);
+        }
+        .dacas-action-pill:hover svg, .dacas-action-pill.active svg {
+          stroke: #FFFFFF !important;
+        }
+        .dacas-action-pill.danger {
+          padding: 5px 10px;
+          color: #64748B;
+        }
+        .dacas-action-pill.danger:hover, .dacas-action-pill.danger.active {
+          background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
+          border-color: transparent !important;
+          color: #FFFFFF !important;
+          box-shadow: 0 3px 10px rgba(239, 68, 68, 0.3) !important;
+        }
+        .dacas-action-pill.danger:hover svg, .dacas-action-pill.danger.active svg {
+          stroke: #FFFFFF !important;
+        }
+        .crm-table-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 14px; margin-top: 8px; }
         .report-card { background:var(--card-bg,white); border-radius:20px; padding:24px; box-shadow:0 4px 20px rgba(0,0,0,0.06); margin-bottom:24px; }
         .kpi-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(170px,1fr)); gap:16px; margin-bottom:24px; }
         .kpi-card { background:var(--card-bg,white); border-radius:16px; padding:20px; box-shadow:0 4px 16px rgba(0,0,0,0.05); border-left:4px solid var(--primary); }
@@ -1079,91 +1722,143 @@ function AdminEcommerce() {
         .rule-badge { display:inline-block; padding:4px 8px; border-radius:6px; font-size:0.75rem; font-weight:bold; background:#e2e8f0; color:#475569; margin-right:4px; }
       `}</style>
 
-      <header className="crm-header">
-        <div className="header-top">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{
-                background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
-                color: '#ffffff',
-                fontWeight: '900',
-                fontSize: '1.4rem',
-                letterSpacing: '-0.02em',
-                padding: '8px 16px',
-                borderRadius: '12px',
-                boxShadow: '0 4px 15px rgba(15, 164, 222, 0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <span>DACAS</span>
+      {!embedded && (
+        <header className="crm-header">
+          <div className="header-top">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{
+                  background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                  color: '#ffffff',
+                  fontWeight: '900',
+                  fontSize: '1.4rem',
+                  letterSpacing: '-0.02em',
+                  padding: '8px 16px',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 15px rgba(15, 164, 222, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <span>DACAS</span>
+                </div>
+                <div>
+                  <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+                    Admin E-Commerce <span style={{ color: '#0fa4de' }}>&</span> Catálogo
+                  </h1>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    Gestión de productos, inventario, precios multinacionales y reportería
+                  </div>
+                </div>
               </div>
-              <div>
-                <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-                  Admin E-Commerce <span style={{ color: '#0fa4de' }}>&</span> Catálogo
-                </h1>
-                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  Gestión de productos, inventario, precios multinacionales y reportería
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div className="user-controls">
+                  {activeTab === 'reportes' && (
+                    <button className="nav-btn" onClick={() => window.print()} style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+                      🖨️ Imprimir / PDF
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{
-                background: 'var(--pill-bg)',
-                border: '1px solid var(--border-color)',
-                borderRadius: '999px',
-                padding: '6px 14px',
-                color: 'var(--text-main)',
-                fontSize: '0.85rem',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-              }}>
-                <span>🇦🇷</span>
-                <span>DACAS Argentina</span>
-              </div>
-
-              <div className="user-controls">
-                {activeTab === 'reportes' && (
-                  <button className="nav-btn" onClick={() => window.print()} style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-                    🖨️ Imprimir / PDF
-                  </button>
-                )}
-                <button className="nav-btn" onClick={() => navigate('/')}>🔙 Dashboard</button>
-              </div>
-            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
-      <main className="crm-main">
+      <main className={embedded ? "crm-main-embedded" : "crm-main"} style={embedded ? { width: '100%', maxWidth: '100%', padding: 0, margin: 0 } : {}}>
         <div className="tab-buttons">
-          <button className={`tab-btn${activeTab === 'products' ? ' active' : ''}`} onClick={() => setActiveTab('products')}>📦 Productos</button>
-          <button className={`tab-btn${activeTab === 'countries' ? ' active' : ''}`} onClick={() => setActiveTab('countries')}>🌍 Países</button>
-          <button className={`tab-btn${activeTab === 'rules' ? ' active' : ''}`} onClick={() => setActiveTab('rules')}>🎯 Reglas (Precios)</button>
-          <button className={`tab-btn${activeTab === 'users' ? ' active' : ''}`} onClick={() => setActiveTab('users')} style={{ position: 'relative' }}>
-            👥 Clientes
+          <button className={`tab-btn${activeTab === 'products' ? ' active' : ''}`} onClick={() => setActiveTab('products')}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m7.5 4.27 9 5.15" />
+              <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
+              <path d="m3.3 7 8.7 5 8.7-5" />
+              <path d="M12 22V12" />
+            </svg>
+            <span>Productos</span>
+          </button>
+          <button className={`tab-btn${activeTab === 'countries' ? ' active' : ''}`} onClick={() => setActiveTab('countries')}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <line x1="2" y1="12" x2="22" y2="12" />
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+            </svg>
+            <span>Países</span>
+          </button>
+          <button className={`tab-btn${activeTab === 'rules' ? ' active' : ''}`} onClick={() => setActiveTab('rules')}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="4" y1="21" x2="4" y2="14" />
+              <line x1="4" y1="10" x2="4" y2="3" />
+              <line x1="12" y1="21" x2="12" y2="12" />
+              <line x1="12" y1="8" x2="12" y2="3" />
+              <line x1="20" y1="21" x2="20" y2="16" />
+              <line x1="20" y1="12" x2="20" y2="3" />
+              <line x1="1" y1="14" x2="7" y2="14" />
+              <line x1="9" y1="8" x2="15" y2="8" />
+              <line x1="17" y1="16" x2="23" y2="16" />
+            </svg>
+            <span>Cupones y Reglas</span>
+          </button>
+          <button className={`tab-btn${activeTab === 'users' ? ' active' : ''}`} onClick={() => setActiveTab('users')}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+            <span>Clientes</span>
             {users.filter(u => u.status === 'pendiente').length > 0 && (
               <span style={{
-                background: '#f59e0b',
-                color: '#ffffff',
+                background: activeTab === 'users' ? '#ffffff' : '#f59e0b',
+                color: activeTab === 'users' ? '#d97706' : '#ffffff',
                 fontSize: '11px',
                 fontWeight: '800',
-                padding: '2px 7px',
+                padding: '2px 8px',
                 borderRadius: '999px',
-                marginLeft: '8px',
-                boxShadow: '0 2px 6px rgba(245, 158, 11, 0.4)'
+                display: 'inline-flex',
+                alignItems: 'center',
+                whiteSpace: 'nowrap',
+                lineHeight: 1.2,
+                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.15)',
+                transition: 'all 0.2s'
               }}>
                 {users.filter(u => u.status === 'pendiente').length} pend.
               </span>
             )}
           </button>
-          <button className={`tab-btn${activeTab === 'orders' ? ' active' : ''}`} onClick={() => setActiveTab('orders')}>📋 Órdenes</button>
-          <button className={`tab-btn${activeTab === 'reportes' ? ' active' : ''}`} onClick={() => setActiveTab('reportes')}>📊 Reportería</button>
-          <button className={`tab-btn${activeTab === 'visual' ? ' active' : ''}`} onClick={() => setActiveTab('visual')}>🎨 Personalización Shop</button>
+          <button className={`tab-btn${activeTab === 'orders' ? ' active' : ''}`} onClick={() => setActiveTab('orders')}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+              <path d="M3 6h18" />
+              <path d="M16 10a4 4 0 0 1-8 0" />
+            </svg>
+            <span>Órdenes</span>
+          </button>
+          <button className={`tab-btn${activeTab === 'reportes' ? ' active' : ''}`} onClick={() => setActiveTab('reportes')}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="18" y1="20" x2="18" y2="10" />
+              <line x1="12" y1="20" x2="12" y2="4" />
+              <line x1="6" y1="20" x2="6" y2="14" />
+            </svg>
+            <span>Reportería</span>
+          </button>
+          <button className={`tab-btn${activeTab === 'pagos_envios' ? ' active' : ''}`} onClick={() => setActiveTab('pagos_envios')}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="5" width="20" height="14" rx="2" />
+              <line x1="2" y1="10" x2="22" y2="10" />
+            </svg>
+            <span>Pagos y Envíos</span>
+          </button>
+          <button className={`tab-btn${activeTab === 'visual' ? ' active' : ''}`} onClick={() => setActiveTab('visual')}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+              <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+              <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+              <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+              <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2z" />
+            </svg>
+            <span>Personalización Shop</span>
+          </button>
         </div>
 
         {error && <div style={{ color: 'red', marginBottom: '20px' }}>{error}</div>}
@@ -1178,34 +1873,25 @@ function AdminEcommerce() {
               apiBaseUrl={API_BASE_URL}
             />
           ) : (
-            <section className="board-section">
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <section className="board-section" style={{ width: '100%', boxSizing: 'border-box' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
                 <div>
-                  <h2 style={{ margin: 0 }}>Catálogo de Productos</h2>
-                  <p style={{ margin: '4px 0 0', fontSize: '0.88rem', color: '#6b7280' }}>
+                  <h2 style={{ margin: 0, fontSize: '1.35rem' }}>Catálogo de Productos</h2>
+                  <p style={{ margin: '4px 0 0', fontSize: '0.86rem', color: '#6b7280' }}>
                     Gestiona tu catálogo, fotos, descripciones enriquecidas, precios y stock.
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                   <button
-                    className="nav-btn"
-                    style={{ background: 'var(--card-bg)' }}
+                    className="dacas-pill-btn"
                     onClick={exportProductsCSV}
                     title="Exportar todos los productos actuales a un archivo CSV"
                   >
-                    📥 Exportar CSV
+                    <BrandingVectorIcon name="download" size={16} />
+                    <span>Exportar CSV</span>
                   </button>
                   <button
-                    className="nav-btn"
-                    style={{
-                      background: 'linear-gradient(135deg, #0fa4de, #0284c7)',
-                      color: '#ffffff',
-                      border: 'none',
-                      boxShadow: '0 4px 12px rgba(15, 164, 222, 0.3)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
+                    className={`dacas-pill-btn${showBulkModal ? ' active' : ''}`}
                     onClick={() => {
                       setShowBulkModal(true);
                       setBulkData([]);
@@ -1213,42 +1899,50 @@ function AdminEcommerce() {
                       setBulkResult(null);
                       setBulkError(null);
                     }}
+                    title="Carga masiva de catálogo mediante archivo CSV"
                   >
-                    📤 Carga Masiva (CSV)
+                    <BrandingVectorIcon name="upload" size={16} />
+                    <span>Carga Masiva (CSV)</span>
                   </button>
-                  <button className="nav-btn" onClick={() => { setEditingProduct(null); setShowProductForm(true); }}>
-                    ➕ Nuevo Producto
+                  <button
+                    className={`dacas-pill-btn${showProductForm && !editingProduct ? ' active' : ''}`}
+                    onClick={() => { setEditingProduct(null); setShowProductForm(true); }}
+                    title="Crear un nuevo producto en el catálogo"
+                  >
+                    <BrandingVectorIcon name="plus" size={16} />
+                    <span>Nuevo Producto</span>
                   </button>
                 </div>
               </div>
 
               {/* Barra de Filtros y Búsqueda */}
-              <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '20px' }}>
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '18px' }}>
                 <input
                   type="text"
                   placeholder="🔍 Buscar por nombre, SKU, marca..."
                   value={productSearch}
                   onChange={(e) => setProductSearch(e.target.value)}
                   style={{
-                    flex: '1 1 240px',
-                    padding: '9px 14px',
+                    flex: '1 1 200px',
+                    minWidth: '160px',
+                    padding: '8px 12px',
                     borderRadius: '8px',
                     border: '1px solid var(--border-color)',
                     background: 'var(--card-bg)',
                     color: 'var(--text-main)',
-                    fontSize: '0.9rem'
+                    fontSize: '0.88rem'
                   }}
                 />
                 <select
                   value={selectedCategory}
                   onChange={(e) => setSelectedCategory(e.target.value)}
                   style={{
-                    padding: '9px 14px',
+                    padding: '8px 12px',
                     borderRadius: '8px',
                     border: '1px solid var(--border-color)',
                     background: 'var(--card-bg)',
                     color: 'var(--text-main)',
-                    fontSize: '0.9rem'
+                    fontSize: '0.88rem'
                   }}
                 >
                   <option value="">Todas las categorías</option>
@@ -1258,12 +1952,12 @@ function AdminEcommerce() {
                   value={filterStock}
                   onChange={(e) => setFilterStock(e.target.value)}
                   style={{
-                    padding: '9px 14px',
+                    padding: '8px 12px',
                     borderRadius: '8px',
                     border: '1px solid var(--border-color)',
                     background: 'var(--card-bg)',
                     color: 'var(--text-main)',
-                    fontSize: '0.9rem'
+                    fontSize: '0.88rem'
                   }}
                 >
                   <option value="all">Todo el Stock</option>
@@ -1272,108 +1966,146 @@ function AdminEcommerce() {
                 </select>
                 <button
                   className="nav-btn"
-                  style={{ background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)' }}
+                  style={{ padding: '8px 14px', background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)' }}
                   onClick={() => { setProductSearch(''); setSelectedCategory(''); setFilterStock('all'); }}
                 >
                   ✕ Limpiar
                 </button>
               </div>
 
-              {/* Tabla de Productos */}
-              <table className="users-table">
-                <thead>
-                  <tr>
-                    <th>Foto</th>
-                    <th>Producto</th>
-                    <th>SKU</th>
-                    <th>Categoría</th>
-                    <th>Precio Base</th>
-                    <th>Precio Promo</th>
-                    <th>Stock</th>
-                    <th>Acciones</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredProducts.map(p => {
-                    const discount = p.promotional_price && Number(p.price) > 0
-                      ? Math.round((1 - Number(p.promotional_price) / Number(p.price)) * 100)
-                      : null;
-                    return (
-                      <tr key={p.id}>
-                        <td style={{ width: '56px' }}>
-                          <img
-                            src={(p.images && p.images[0]) || p.image_url || 'https://placehold.co/50x50/f1f5f9/94a3b8?text=Foto'}
-                            alt={p.name}
-                            style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-color)' }}
-                            onError={(e) => { e.target.src = 'https://placehold.co/50x50/f1f5f9/94a3b8?text=Foto'; }}
-                          />
-                        </td>
-                        <td>
-                          <strong>{p.name}</strong>
-                          {p.badge && (
+              {/* Tabla de Productos optimizada y compacta para encajar en el cuadro */}
+              <div className="crm-table-container" style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+                <table className="users-table crm-compact-table" style={{ width: '100%' }}>
+                  <thead>
+                    <tr>
+                      <th style={{ width: '48px', textAlign: 'center' }}>Foto</th>
+                      <th>Producto / SKU</th>
+                      <th>Categoría</th>
+                      <th style={{ textAlign: 'right' }}>Precio</th>
+                      <th style={{ textAlign: 'center' }}>Stock</th>
+                      <th style={{ textAlign: 'center' }}>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredProducts.map(p => {
+                      const discount = p.promotional_price && Number(p.price) > 0
+                        ? Math.round((1 - Number(p.promotional_price) / Number(p.price)) * 100)
+                        : null;
+                      return (
+                        <tr key={p.id}>
+                          <td style={{ width: '48px', textAlign: 'center' }}>
+                            <img
+                              src={(p.images && p.images[0]) || p.image_url || 'https://placehold.co/50x50/f1f5f9/94a3b8?text=Foto'}
+                              alt={p.name}
+                              style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-color)' }}
+                              onError={(e) => { e.target.src = 'https://placehold.co/50x50/f1f5f9/94a3b8?text=Foto'; }}
+                            />
+                          </td>
+                          <td>
+                            <div style={{ fontWeight: '600', color: 'var(--text-main)', fontSize: '0.88rem', lineHeight: 1.3 }}>
+                              {p.name}
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px' }}>
+                              <span className="no-badge-style" style={{ fontFamily: 'monospace', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                                {p.sku || 'S/SKU'}
+                              </span>
+                              {p.badge && (
+                                <span style={{
+                                  background: p.badgeColor || '#0fa4de',
+                                  color: '#fff',
+                                  fontSize: '9px',
+                                  fontWeight: '700',
+                                  padding: '1px 5px',
+                                  borderRadius: '4px'
+                                }}>
+                                  {p.badge}
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td>
                             <span style={{
-                              marginLeft: '8px',
-                              background: p.badgeColor || '#0fa4de',
-                              color: '#fff',
-                              fontSize: '10px',
-                              fontWeight: '700',
-                              padding: '2px 6px',
-                              borderRadius: '4px'
+                              background: 'var(--pill-bg)',
+                              border: '1px solid var(--border-color)',
+                              color: 'var(--text-main)',
+                              fontSize: '0.78rem',
+                              fontWeight: '600',
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              textTransform: 'capitalize'
                             }}>
-                              {p.badge}
+                              {(p.category || 'General').replace(/_/g, ' ')}
                             </span>
-                          )}
-                        </td>
-                        <td style={{ fontFamily: 'monospace', color: 'var(--text-muted)' }}>{p.sku || '—'}</td>
-                        <td>{p.category || 'General'}</td>
-                        <td>${Number(p.price).toFixed(2)}</td>
-                        <td>
-                          {p.promotional_price ? (
-                            <span style={{ color: '#10b981', fontWeight: '700' }}>
-                              ${Number(p.promotional_price).toFixed(2)}
-                              {discount && <small style={{ marginLeft: '4px', background: '#dcfce7', color: '#16a34a', padding: '1px 4px', borderRadius: '4px', fontSize: '10px' }}>-{discount}%</small>}
+                          </td>
+                          <td style={{ textAlign: 'right' }}>
+                            {p.promotional_price ? (
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                                <span style={{ color: '#10b981', fontWeight: '700', fontSize: '0.9rem' }}>
+                                  ${Number(p.promotional_price).toFixed(2)}
+                                </span>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  <s className="no-badge-style" style={{ color: 'var(--text-muted)', fontSize: '0.76rem' }}>
+                                    ${Number(p.price).toFixed(2)}
+                                  </s>
+                                  {discount && (
+                                    <small style={{ background: '#dcfce7', color: '#16a34a', padding: '1px 4px', borderRadius: '4px', fontSize: '9px', fontWeight: '700' }}>
+                                      -{discount}%
+                                    </small>
+                                  )}
+                                </div>
+                              </div>
+                            ) : (
+                              <span style={{ fontWeight: '600', color: 'var(--text-main)', fontSize: '0.88rem' }}>
+                                ${Number(p.price).toFixed(2)}
+                              </span>
+                            )}
+                          </td>
+                          <td style={{ textAlign: 'center' }}>
+                            <span style={{
+                              padding: '3px 8px',
+                              borderRadius: '12px',
+                              fontSize: '11px',
+                              fontWeight: '700',
+                              background: p.stock > 10 ? '#dcfce7' : p.stock > 0 ? '#fef3c7' : '#fee2e2',
+                              color: p.stock > 10 ? '#16a34a' : p.stock > 0 ? '#d97706' : '#dc2626',
+                              display: 'inline-block'
+                            }}>
+                              {p.stock ?? 0} u.
                             </span>
-                          ) : '—'}
-                        </td>
-                        <td>
-                          <span style={{
-                            padding: '3px 8px',
-                            borderRadius: '12px',
-                            fontSize: '12px',
-                            fontWeight: '600',
-                            background: p.stock > 10 ? '#dcfce7' : p.stock > 0 ? '#fef3c7' : '#fee2e2',
-                            color: p.stock > 10 ? '#16a34a' : p.stock > 0 ? '#d97706' : '#dc2626'
-                          }}>
-                            {p.stock ?? 0} u.
-                          </span>
-                        </td>
-                        <td>
-                          <div style={{ display: 'flex', gap: '6px' }}>
-                            <button
-                              onClick={() => { setEditingProduct(p); setShowProductForm(true); }}
-                              style={{ background: '#0fa4de', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
-                            >
-                              Editar
-                            </button>
-                            <button
-                              onClick={() => openStockModal(p)}
-                              style={{ background: '#6366f1', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
-                            >
-                              Stock Países
-                            </button>
-                            <button
-                              onClick={() => handleDeleteProduct(p.id)}
-                              style={{ background: '#ef4444', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600' }}
-                            >
-                              ✕
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                          </td>
+                          <td style={{ textAlign: 'center' }}>
+                            <div style={{ display: 'flex', justifyContent: 'center', gap: '6px' }}>
+                              <button
+                                className={`dacas-action-pill${editingProduct?.id === p.id && showProductForm ? ' active' : ''}`}
+                                onClick={() => { setEditingProduct(p); setShowProductForm(true); }}
+                                title="Editar producto"
+                              >
+                                <BrandingVectorIcon name="edit" size={13} />
+                                <span>Editar</span>
+                              </button>
+                              <button
+                                className={`dacas-action-pill${selectedProductForStock?.id === p.id && showStockModal ? ' active' : ''}`}
+                                onClick={() => openStockModal(p)}
+                                title="Stock por Países"
+                              >
+                                <BrandingVectorIcon name="box" size={13} />
+                                <span>Stock</span>
+                              </button>
+                              <button
+                                className="dacas-action-pill danger"
+                                onClick={() => handleDeleteProduct(p.id)}
+                                title="Eliminar producto"
+                              >
+                                <BrandingVectorIcon name="trash" size={13} />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </section>
           )
         )}
@@ -1424,150 +2156,381 @@ function AdminEcommerce() {
               </div>
             )}
 
-            <table className="users-table">
-              <thead>
-                <tr>
-                  <th>Código</th><th>Nombre</th><th>IVA (%)</th><th>Envío Base</th><th>Nacionalización</th><th>Desc. País</th><th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {countries.map(c => (
-                  <tr key={c.id}>
-                    <td><strong>{c.code}</strong></td>
-                    <td>{c.name}</td>
-                    <td>{c.tax_rate}%</td>
-                    <td>${c.shipping_cost}</td>
-                    <td>${c.nationalization_cost}</td>
-                    <td>{c.discount_rate}%</td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        <button onClick={() => handleEditCountry(c)} style={{ background: '#0fa4de', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Editar</button>
-                        <button onClick={() => handleDeleteCountry(c.id)} style={{ background: '#ef4444', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
-                      </div>
-                    </td>
+            <div className="crm-table-container" style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <table className="users-table crm-compact-table" style={{ width: '100%' }}>
+                <thead>
+                  <tr>
+                    <th>Código</th><th>Nombre</th><th>IVA (%)</th><th>Envío Base</th><th>Nacionalización</th><th>Desc. País</th><th>Acciones</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {countries.map(c => (
+                    <tr key={c.id}>
+                      <td><strong>{c.code}</strong></td>
+                      <td>{c.name}</td>
+                      <td>{c.tax_rate}%</td>
+                      <td>${c.shipping_cost}</td>
+                      <td>${c.nationalization_cost}</td>
+                      <td>{c.discount_rate}%</td>
+                      <td>
+                        <div style={{ display: 'flex', gap: '6px' }}>
+                          <button onClick={() => handleEditCountry(c)} style={{ background: '#0fa4de', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Editar</button>
+                          <button onClick={() => handleDeleteCountry(c.id)} style={{ background: '#ef4444', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </section>
         )}
 
-        {/* ═══════════════ RULES ═══════════════ */}
+        {/* ═══════════════ RULES & COUPONS ═══════════════ */}
         {activeTab === 'rules' && (
           <section className="board-section">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            {/* Header & Sub-filter bar */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
               <div>
-                <h2 style={{ margin: 0 }}>Motor de Reglas de Precios y Descuentos</h2>
-                <p style={{ margin: '4px 0 0', fontSize: '0.88rem', color: '#6b7280' }}>
-                  Aplica descuentos globales, por producto, país o cliente específico con prioridades.
+                <h2 style={{ margin: 0, fontSize: '1.35rem', fontWeight: '900', color: 'var(--text-main, #0F172A)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <BrandingVectorIcon name="tag" size={22} color="#0FA4DE" strokeWidth={2.2} />
+                  <span>Cupones de Descuento y Reglas de Precios B2B</span>
+                </h2>
+                <p style={{ margin: '4px 0 0', fontSize: '0.84rem', color: 'var(--text-muted, #64748B)' }}>
+                  Creá y administrá cupones promocionales con código y reglas de tarifas automáticas segmentadas por <strong>País</strong>, <strong>Cliente</strong>, <strong>Marca</strong> o <strong>Producto</strong>.
                 </p>
               </div>
-              <button className="nav-btn" onClick={() => setShowRuleForm(true)}>➕ Nueva Regla</button>
+
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <button 
+                  className="dacas-pill-btn active" 
+                  onClick={() => {
+                    setEditingRule(null);
+                    setRuleForm({ ...initialRuleForm, is_coupon: true, coupon_code: `DACAS-${Math.floor(100 + Math.random() * 900)}` });
+                    setShowRuleForm(true);
+                  }}
+                  style={{
+                    background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '8px 16px',
+                    fontWeight: '800',
+                    fontSize: '12.5px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 4px 12px rgba(15, 164, 222, 0.25)'
+                  }}
+                >
+                  <BrandingVectorIcon name="plus" size={14} color="#FFFFFF" strokeWidth={2.5} />
+                  <span>Crear Cupón de Descuento</span>
+                </button>
+
+                <button 
+                  className="dacas-pill-btn" 
+                  onClick={() => {
+                    setEditingRule(null);
+                    setRuleForm({ ...initialRuleForm, is_coupon: false, coupon_code: '' });
+                    setShowRuleForm(true);
+                  }}
+                  style={{
+                    background: '#F1F5F9',
+                    color: '#334155',
+                    border: '1px solid #CBD5E1',
+                    borderRadius: '12px',
+                    padding: '8px 14px',
+                    fontWeight: '700',
+                    fontSize: '12.5px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <BrandingVectorIcon name="settings" size={13} color="#475569" strokeWidth={2} />
+                  <span>Nueva Regla Automática</span>
+                </button>
+              </div>
             </div>
 
+            {/* Sub-tabs / Filters */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '18px', borderBottom: '1px solid #E2E8F0', paddingBottom: '12px' }}>
+              <button
+                onClick={() => setRuleFilterType('all')}
+                style={{
+                  background: ruleFilterType === 'all' ? '#0FA4DE' : '#F1F5F9',
+                  color: ruleFilterType === 'all' ? '#FFFFFF' : '#475569',
+                  border: 'none',
+                  borderRadius: '999px',
+                  padding: '5px 14px',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <span>Todos ({rules.length})</span>
+              </button>
+              <button
+                onClick={() => setRuleFilterType('coupons')}
+                style={{
+                  background: ruleFilterType === 'coupons' ? '#0FA4DE' : '#F1F5F9',
+                  color: ruleFilterType === 'coupons' ? '#FFFFFF' : '#475569',
+                  border: 'none',
+                  borderRadius: '999px',
+                  padding: '5px 14px',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <span>🎟️ Cupones con Código ({rules.filter(r => r.coupon_code && String(r.coupon_code).trim()).length})</span>
+              </button>
+              <button
+                onClick={() => setRuleFilterType('rules')}
+                style={{
+                  background: ruleFilterType === 'rules' ? '#0FA4DE' : '#F1F5F9',
+                  color: ruleFilterType === 'rules' ? '#FFFFFF' : '#475569',
+                  border: 'none',
+                  borderRadius: '999px',
+                  padding: '5px 14px',
+                  fontSize: '12px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <span>⚙️ Tarifas y Reglas Automáticas ({rules.filter(r => !r.coupon_code || !String(r.coupon_code).trim()).length})</span>
+              </button>
+            </div>
+
+            {/* Creation / Edit Modal Form */}
             {showRuleForm && (
-              <div style={{ background: '#FFFFFF', padding: '24px 28px', borderRadius: '18px', marginBottom: '24px', border: '1px solid #E2E8F0', boxShadow: '0 4px 16px rgba(0,0,0,0.04)' }}>
+              <div style={{ background: '#FFFFFF', padding: '24px 28px', borderRadius: '18px', marginBottom: '24px', border: '1px solid #BAE6FD', boxShadow: '0 8px 24px rgba(15, 164, 222, 0.08)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px' }}>
-                  <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#071524' }}>
-                    {editingRule ? '✏️ Editar Regla de Precio' : '➕ Nueva Regla de Precio'}
-                  </h3>
-                  <span style={{ fontSize: '12px', color: '#64748B' }}>Configuración de precios B2B por cliente, marca, país o producto</span>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#071524', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span>{editingRule ? '✏️ Editar Configuración de Descuento' : ruleForm.is_coupon ? '🎟️ Crear Nuevo Cupón de Descuento' : '⚙️ Crear Nueva Regla de Precio Automática'}</span>
+                    </h3>
+                    <span style={{ fontSize: '12px', color: '#64748B' }}>
+                      Segmentá el beneficio por <strong>País</strong>, <strong>Cliente específico</strong>, <strong>Marca</strong> o <strong>Producto</strong>
+                    </span>
+                  </div>
+
+                  {/* Toggle Mode */}
+                  <div style={{ display: 'flex', background: '#F1F5F9', padding: '3px', borderRadius: '10px', border: '1px solid #CBD5E1' }}>
+                    <button
+                      type="button"
+                      onClick={() => setRuleForm({ ...ruleForm, is_coupon: true })}
+                      style={{
+                        padding: '5px 12px',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '11.5px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        background: ruleForm.is_coupon ? '#0FA4DE' : 'transparent',
+                        color: ruleForm.is_coupon ? '#FFFFFF' : '#475569'
+                      }}
+                    >
+                      🎟️ Cupón con Código
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setRuleForm({ ...ruleForm, is_coupon: false, coupon_code: '' })}
+                      style={{
+                        padding: '5px 12px',
+                        border: 'none',
+                        borderRadius: '8px',
+                        fontSize: '11.5px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        background: !ruleForm.is_coupon ? '#0FA4DE' : 'transparent',
+                        color: !ruleForm.is_coupon ? '#FFFFFF' : '#475569'
+                      }}
+                    >
+                      ⚙️ Regla Automática B2B
+                    </button>
+                  </div>
                 </div>
 
                 <form onSubmit={handleRuleSubmit} className="crm-form">
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
-                    <div className="form-group">
-                      <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>Nombre de la Regla *</label>
+                    
+                    {/* Nombre descriptivo */}
+                    <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                      <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>Nombre / Descripción del Descuento *</label>
                       <input
                         type="text"
                         value={ruleForm.name}
                         onChange={e => setRuleForm({ ...ruleForm, name: e.target.value })}
                         required
-                        placeholder="Ej: Descuento Especial 15% Empresa Demo"
-                        style={{ color: '#0F172A', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '600' }}
+                        placeholder="Ej: Cupón Promocional 20% en Fortinet para Clientes de Argentina"
+                        style={{ color: '#0F172A', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '600', width: '100%' }}
                       />
                     </div>
+
+                    {/* Código de cupón (si aplica) */}
+                    {ruleForm.is_coupon && (
+                      <div className="form-group">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <label style={{ color: '#0369A1', fontWeight: '800', fontSize: '12.5px' }}>🎟️ Código de Cupón *</label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const brandPrefix = ruleForm.brand ? ruleForm.brand.slice(0, 5).toUpperCase() : 'DACAS';
+                              const randomCode = `${brandPrefix}-${Math.floor(1000 + Math.random() * 9000)}`;
+                              setRuleForm({ ...ruleForm, coupon_code: randomCode });
+                            }}
+                            style={{ background: 'none', border: 'none', color: '#0FA4DE', fontSize: '11px', fontWeight: '700', cursor: 'pointer', textDecoration: 'underline' }}
+                          >
+                            ⚡ Generar
+                          </button>
+                        </div>
+                        <input
+                          type="text"
+                          value={ruleForm.coupon_code}
+                          onChange={e => setRuleForm({ ...ruleForm, coupon_code: e.target.value.toUpperCase().replace(/\s+/g, '') })}
+                          required={ruleForm.is_coupon}
+                          placeholder="Ej: FORTINET-ARG-20"
+                          style={{ color: '#0369A1', background: '#F0F9FF', border: '1.5px solid #BAE6FD', padding: '10px 14px', borderRadius: '10px', fontSize: '13.5px', fontWeight: '800', letterSpacing: '0.8px', textTransform: 'uppercase' }}
+                        />
+                      </div>
+                    )}
+
+                    {/* Tipo de Ajuste */}
                     <div className="form-group">
-                      <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>Tipo de Regla *</label>
+                      <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>Tipo de Ajuste *</label>
                       <select
                         value={ruleForm.rule_type}
                         onChange={e => setRuleForm({ ...ruleForm, rule_type: e.target.value })}
                         style={{ color: '#0F172A', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '600' }}
                       >
-                        <option value="discount">🏷️ Descuento (%)</option>
+                        <option value="discount">🏷️ Descuento</option>
                         <option value="markup">📈 Recargo / Markup</option>
                         <option value="fixed_price">💲 Precio Fijo</option>
                       </select>
                     </div>
+
+                    {/* Formato de Valor (% vs USD) */}
                     <div className="form-group">
-                      <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>Tipo de Valor *</label>
+                      <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>Unidad de Medida *</label>
                       <select
                         value={ruleForm.value_type}
                         onChange={e => setRuleForm({ ...ruleForm, value_type: e.target.value })}
                         style={{ color: '#0F172A', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '600' }}
                       >
                         <option value="percentage">Porcentaje (%)</option>
-                        <option value="fixed">Monto Fijo (USD $)</option>
+                        <option value="fixed">Monto Fijo en USD ($)</option>
                       </select>
                     </div>
+
+                    {/* Valor numérico */}
                     <div className="form-group">
-                      <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>Valor del Ajuste *</label>
+                      <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>Valor del Beneficio *</label>
                       <input
                         type="number"
                         step="0.01"
                         value={ruleForm.value}
                         onChange={e => setRuleForm({ ...ruleForm, value: e.target.value })}
                         required
-                        placeholder="Ej: 15"
+                        placeholder={ruleForm.value_type === 'percentage' ? 'Ej: 15 (para 15%)' : 'Ej: 50.00 (para $50 USD)'}
                         style={{ color: '#0F172A', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '700' }}
                       />
                     </div>
+
+                    {/* DIMENSIÓN 1: PAÍS */}
                     <div className="form-group">
-                      <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>Cliente Específico (Opcional)</label>
+                      <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>🌎 País Destino (Segmentación)</label>
+                      <select
+                        value={ruleForm.country_id || ''}
+                        onChange={e => setRuleForm({ ...ruleForm, country_id: e.target.value })}
+                        style={{ color: '#0F172A', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '600' }}
+                      >
+                        <option value="">🌎 Válido para todos los países</option>
+                        {countries.map(c => <option key={c.id} value={c.id}>{c.name} ({c.code})</option>)}
+                      </select>
+                    </div>
+
+                    {/* DIMENSIÓN 2: CLIENTE / USUARIO */}
+                    <div className="form-group">
+                      <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>👤 Cliente / Integrador Específico</label>
                       <select
                         value={ruleForm.user_id || ''}
                         onChange={e => setRuleForm({ ...ruleForm, user_id: e.target.value })}
                         style={{ color: '#0F172A', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '600' }}
                       >
-                        <option value="">Aplica a todos los clientes</option>
+                        <option value="">👤 Válido para cualquier cliente</option>
                         {users.map(u => (
                           <option key={u.id} value={u.id}>
-                            👤 #{u.id} - {u.razon_social || u.name} ({u.email})
+                            #{u.id} - {u.razon_social || u.name} ({u.email})
                           </option>
                         ))}
                       </select>
                     </div>
+
+                    {/* DIMENSIÓN 3: MARCA / FABRICANTE */}
                     <div className="form-group">
-                      <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>Marca / Fabricante (Opcional)</label>
+                      <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>🏷️ Marca / Fabricante</label>
                       <select
                         value={ruleForm.brand || ''}
                         onChange={e => setRuleForm({ ...ruleForm, brand: e.target.value })}
                         style={{ color: '#0F172A', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '600' }}
                       >
-                        <option value="">Aplica a todas las marcas</option>
-                        <option value="Fortinet">Fortinet</option>
-                        <option value="AudioCodes">AudioCodes</option>
-                        <option value="Avaya">Avaya</option>
-                        <option value="MikroTik">MikroTik</option>
-                        <option value="Aruba">Aruba Networks</option>
-                        <option value="Vertiv">Vertiv</option>
-                        <option value="Panduit">Panduit</option>
-                        <option value="CommScope">CommScope</option>
-                        <option value="Eaton">Eaton</option>
-                        <option value="Sophos">Sophos</option>
-                        <option value="SonicWall">SonicWall</option>
-                        <option value="Microsoft">Microsoft</option>
-                        <option value="Dacas">Dacas Eventos / Soluciones</option>
+                        <option value="">🏷️ Aplica a todas las marcas</option>
+                        <option value="Fortinet">Fortinet (Cybersecurity)</option>
+                        <option value="MikroTik">MikroTik (Routers & Wireless)</option>
+                        <option value="Aruba">Aruba Networks (Enterprise WiFi/Switching)</option>
+                        <option value="AudioCodes">AudioCodes (VoIP & Microsoft Teams)</option>
+                        <option value="Avaya">Avaya (Unified Communications)</option>
+                        <option value="Vertiv">Vertiv (UPS & Data Center)</option>
+                        <option value="Panduit">Panduit (Cabling & Racks)</option>
+                        <option value="CommScope">CommScope (Enterprise Cabling)</option>
+                        <option value="Eaton">Eaton (Power Quality)</option>
+                        <option value="Sophos">Sophos (Security)</option>
+                        <option value="SonicWall">SonicWall (Firewalls)</option>
+                        <option value="Microsoft">Microsoft (Licencias & Cloud)</option>
+                        <option value="Hikvision">Hikvision (Seguridad y CCTV)</option>
+                        <option value="Grandstream">Grandstream (Telefonía IP)</option>
+                        <option value="Dacas">Dacas Soluciones Integradas</option>
                       </select>
                     </div>
+
+                    {/* DIMENSIÓN 4: PRODUCTO ESPECÍFICO */}
                     <div className="form-group">
-                      <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>Tipo de Cliente (Opcional)</label>
+                      <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>📦 Producto Específico</label>
+                      <select
+                        value={ruleForm.product_id || ''}
+                        onChange={e => setRuleForm({ ...ruleForm, product_id: e.target.value })}
+                        style={{ color: '#0F172A', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '600' }}
+                      >
+                        <option value="">📦 Aplica a todo el catálogo</option>
+                        {products.map(p => (
+                          <option key={p.id} value={p.id}>
+                            {p.name} [{p.brand || 'DACAS'}] - Base: ${p.price} USD
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* DIMENSIÓN 5: TIPO DE CLIENTE */}
+                    <div className="form-group">
+                      <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>🏢 Tipo de Cliente (Segmento B2B)</label>
                       <select
                         value={ruleForm.tipo_cliente || ''}
                         onChange={e => setRuleForm({ ...ruleForm, tipo_cliente: e.target.value })}
                         style={{ color: '#0F172A', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '600' }}
                       >
-                        <option value="">Aplica a todos los tipos de clientes</option>
+                        <option value="">Todos los segmentos de clientes</option>
                         <option value="Integrador IT / Reseller">Integrador IT / Reseller</option>
                         <option value="Empresa / Reseller">Empresa / Reseller</option>
                         <option value="Proveedor de Internet (ISP / WISP)">Proveedor de Internet (ISP / WISP)</option>
@@ -1577,30 +2540,52 @@ function AdminEcommerce() {
                         <option value="Otro">Otro Tipo</option>
                       </select>
                     </div>
+
+                    {/* CONDICIONES DE CUPÓN: MONTO MÍNIMO */}
+                    {ruleForm.is_coupon && (
+                      <div className="form-group">
+                        <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>💵 Monto Mínimo de Pedido (USD, Opcional)</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={ruleForm.min_order_amount}
+                          onChange={e => setRuleForm({ ...ruleForm, min_order_amount: e.target.value })}
+                          placeholder="Ej: 500.00"
+                          style={{ color: '#0F172A', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '600' }}
+                        />
+                      </div>
+                    )}
+
+                    {/* CONDICIONES DE CUPÓN: FECHA DE VENCIMIENTO */}
+                    {ruleForm.is_coupon && (
+                      <div className="form-group">
+                        <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>📅 Fecha de Vencimiento (Opcional)</label>
+                        <input
+                          type="date"
+                          value={ruleForm.valid_until}
+                          onChange={e => setRuleForm({ ...ruleForm, valid_until: e.target.value })}
+                          style={{ color: '#0F172A', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '600' }}
+                        />
+                      </div>
+                    )}
+
+                    {/* CONDICIONES DE CUPÓN: LÍMITE DE USOS */}
+                    {ruleForm.is_coupon && (
+                      <div className="form-group">
+                        <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>🔢 Límite de Usos Máximos (Opcional)</label>
+                        <input
+                          type="number"
+                          value={ruleForm.usage_limit}
+                          onChange={e => setRuleForm({ ...ruleForm, usage_limit: e.target.value })}
+                          placeholder="Ej: 50 (Ilimitado si queda vacío)"
+                          style={{ color: '#0F172A', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '600' }}
+                        />
+                      </div>
+                    )}
+
+                    {/* PRIORIDAD */}
                     <div className="form-group">
-                      <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>País de Destino (Opcional)</label>
-                      <select
-                        value={ruleForm.country_id || ''}
-                        onChange={e => setRuleForm({ ...ruleForm, country_id: e.target.value })}
-                        style={{ color: '#0F172A', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '600' }}
-                      >
-                        <option value="">Aplica a todos los países</option>
-                        {countries.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>Producto Específico (Opcional)</label>
-                      <select
-                        value={ruleForm.product_id || ''}
-                        onChange={e => setRuleForm({ ...ruleForm, product_id: e.target.value })}
-                        style={{ color: '#0F172A', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '600' }}
-                      >
-                        <option value="">Aplica a todos los productos del catálogo</option>
-                        {products.map(p => <option key={p.id} value={p.id}>{p.name} (${p.price} USD)</option>)}
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>Prioridad (Mayor = se aplica primero)</label>
+                      <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>⚡ Prioridad de Aplicación</label>
                       <input
                         type="number"
                         value={ruleForm.priority}
@@ -1609,15 +2594,26 @@ function AdminEcommerce() {
                         style={{ color: '#0F172A', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '600' }}
                       />
                     </div>
-                    <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '28px' }}>
-                      <input type="checkbox" id="rule_active" checked={ruleForm.is_active} onChange={e => setRuleForm({ ...ruleForm, is_active: e.target.checked })} style={{ width: '18px', height: '18px' }} />
-                      <label htmlFor="rule_active" style={{ margin: 0, cursor: 'pointer', fontWeight: 'bold', color: '#0F172A' }}>Regla Activa</label>
+
+                    {/* CHECKBOX ACTIVA */}
+                    <div className="form-group" style={{ display: 'flex', alignItems: 'center', gap: '10px', marginTop: '26px' }}>
+                      <input 
+                        type="checkbox" 
+                        id="rule_active" 
+                        checked={ruleForm.is_active} 
+                        onChange={e => setRuleForm({ ...ruleForm, is_active: e.target.checked })} 
+                        style={{ width: '18px', height: '18px', cursor: 'pointer' }} 
+                      />
+                      <label htmlFor="rule_active" style={{ margin: 0, cursor: 'pointer', fontWeight: 'bold', color: '#0F172A', fontSize: '13px' }}>
+                        {ruleForm.is_coupon ? 'Cupón Activo para Canje' : 'Regla de Precios Activa'}
+                      </label>
                     </div>
+
                   </div>
 
                   {/* Impact Live Summary Box */}
                   <div style={{
-                    marginTop: '18px',
+                    marginTop: '20px',
                     padding: '14px 18px',
                     background: '#F0F9FF',
                     border: '1px solid #BAE6FD',
@@ -1625,100 +2621,295 @@ function AdminEcommerce() {
                     fontSize: '13px',
                     color: '#0369A1',
                     display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px'
+                    alignItems: 'flex-start',
+                    gap: '10px'
                   }}>
-                    <span>💡</span>
-                    <span>
-                      <strong>Impacto de la regla:</strong> Se aplicará{' '}
-                      <strong>
-                        {ruleForm.rule_type === 'discount' ? 'un Descuento' : ruleForm.rule_type === 'markup' ? 'un Recargo' : 'un Precio Fijo'} de{' '}
-                        {ruleForm.value ? (ruleForm.value_type === 'percentage' ? `${ruleForm.value}%` : `$${ruleForm.value} USD`) : '(Valor sin definir)'}
-                      </strong>{' '}
-                      para{' '}
-                      <strong>
-                        {ruleForm.user_id ? users.find(u => String(u.id) === String(ruleForm.user_id))?.razon_social || `Cliente #${ruleForm.user_id}` : 'Todos los clientes'}
-                      </strong>
-                      {ruleForm.brand ? ` en equipos ${ruleForm.brand}` : ''}
-                      {ruleForm.country_id ? ` en ${countries.find(c => String(c.id) === String(ruleForm.country_id))?.name || 'país seleccionado'}` : ''}
-                      {ruleForm.product_id ? ` para el producto seleccionado` : ''}.
-                    </span>
+                    <span style={{ fontSize: '16px', marginTop: '1px' }}>💡</span>
+                    <div>
+                      <strong>Resumen del impacto:</strong>{' '}
+                      {ruleForm.is_coupon ? (
+                        <span>
+                          El cupón <strong>{ruleForm.coupon_code || '[SIN CÓDIGO]'}</strong> otorgará un{' '}
+                          <strong>{ruleForm.value ? (ruleForm.value_type === 'percentage' ? `${ruleForm.value}% OFF` : `$${ruleForm.value} USD de descuento`) : 'beneficio sin definir'}</strong>{' '}
+                          para{' '}
+                          <strong>
+                            {ruleForm.user_id ? (users.find(u => String(u.id) === String(ruleForm.user_id))?.razon_social || `Cliente #${ruleForm.user_id}`) : 'cualquier cliente'}
+                          </strong>
+                          {ruleForm.country_id ? ` con entrega en ${countries.find(c => String(c.id) === String(ruleForm.country_id))?.name || 'país seleccionado'}` : ''}
+                          {ruleForm.brand ? ` en equipos de la marca "${ruleForm.brand}"` : ''}
+                          {ruleForm.product_id ? ` para el producto seleccionado` : ''}
+                          {ruleForm.min_order_amount ? ` (con compra mínima de $${ruleForm.min_order_amount} USD)` : ''}
+                          {ruleForm.valid_until ? ` hasta el ${ruleForm.valid_until}` : ''}.
+                        </span>
+                      ) : (
+                        <span>
+                          Se aplicará una regla automática de{' '}
+                          <strong>
+                            {ruleForm.rule_type === 'discount' ? 'Descuento' : ruleForm.rule_type === 'markup' ? 'Recargo' : 'Precio Fijo'} de{' '}
+                            {ruleForm.value ? (ruleForm.value_type === 'percentage' ? `${ruleForm.value}%` : `$${ruleForm.value} USD`) : '(Sin definir)'}
+                          </strong>{' '}
+                          para{' '}
+                          <strong>
+                            {ruleForm.user_id ? (users.find(u => String(u.id) === String(ruleForm.user_id))?.razon_social || `Cliente #${ruleForm.user_id}`) : 'todos los clientes'}
+                          </strong>
+                          {ruleForm.country_id ? ` en ${countries.find(c => String(c.id) === String(ruleForm.country_id))?.name || 'país seleccionado'}` : ''}
+                          {ruleForm.brand ? ` en marca "${ruleForm.brand}"` : ''}
+                          {ruleForm.product_id ? ` para el producto seleccionado` : ''}.
+                        </span>
+                      )}
+                    </div>
                   </div>
 
-                  <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
-                    <button type="submit" className="btn-submit" style={{ maxWidth: '200px' }}>{editingRule ? 'Guardar Cambios' : 'Crear Regla'}</button>
-                    <button type="button" className="btn-delete" onClick={resetRuleForm}>Cancelar</button>
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '22px' }}>
+                    <button 
+                      type="submit" 
+                      className="btn-submit" 
+                      style={{ 
+                        background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)', 
+                        color: '#FFFFFF', 
+                        border: 'none', 
+                        borderRadius: '10px', 
+                        padding: '10px 24px', 
+                        fontWeight: '800', 
+                        fontSize: '13px', 
+                        cursor: 'pointer' 
+                      }}
+                    >
+                      {editingRule ? 'Guardar Modificaciones' : ruleForm.is_coupon ? 'Crear Cupón de Descuento' : 'Crear Regla de Precio'}
+                    </button>
+                    <button 
+                      type="button" 
+                      className="btn-delete" 
+                      onClick={resetRuleForm}
+                      style={{
+                        background: '#F1F5F9',
+                        color: '#475569',
+                        border: '1px solid #CBD5E1',
+                        borderRadius: '10px',
+                        padding: '10px 20px',
+                        fontWeight: '700',
+                        fontSize: '13px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Cancelar
+                    </button>
                   </div>
                 </form>
               </div>
             )}
 
-            <table className="users-table">
-              <thead>
-                <tr>
-                  <th>Nombre Regla</th><th>Tipo / Ajuste</th><th>Tipo Cliente</th><th>País</th><th>Marca</th><th>Producto</th><th>Cliente</th><th>Prioridad</th><th>Estado</th><th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {rules.map(r => (
-                  <tr key={r.id}>
-                    <td><strong>{r.name}</strong></td>
-                    <td>
-                      <span style={{
-                        background: r.rule_type === 'discount' ? '#dcfce7' : '#e0f2fe',
-                        color: r.rule_type === 'discount' ? '#166534' : '#0369a1',
-                        padding: '3px 8px',
-                        borderRadius: '6px',
-                        fontSize: '12px',
-                        fontWeight: '700',
-                        display: 'inline-block'
-                      }}>
-                        {r.rule_type === 'discount' ? 'Descuento ' : r.rule_type === 'markup' ? 'Markup ' : 'Fijo '}
-                        {r.value_type === 'percentage' ? `${r.value}%` : `$${r.value}`}
-                      </span>
-                    </td>
-                    <td>
-                      {r.tipo_cliente ? (
-                        <span style={{ background: '#f1f5f9', color: '#334155', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '600' }}>
-                          {r.tipo_cliente}
-                        </span>
-                      ) : <span style={{ color: '#94a3b8' }}>Todos</span>}
-                    </td>
-                    <td>
-                      {r.country_name || (r.country_id ? `ID: ${r.country_id}` : <span style={{ color: '#94a3b8' }}>Todos</span>)}
-                    </td>
-                    <td>
-                      {r.brand ? (
-                        <span style={{ background: '#fef3c7', color: '#92400e', padding: '2px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: '700' }}>
-                          {r.brand}
-                        </span>
-                      ) : <span style={{ color: '#94a3b8' }}>Todas</span>}
-                    </td>
-                    <td>{r.product_name || <span style={{ color: '#94a3b8' }}>Todos</span>}</td>
-                    <td>{r.user_email || <span style={{ color: '#94a3b8' }}>Todos</span>}</td>
-                    <td><span style={{ fontWeight: '700' }}>{r.priority}</span></td>
-                    <td>
-                      <span style={{
-                        background: r.is_active ? '#dcfce7' : '#fee2e2',
-                        color: r.is_active ? '#16a34a' : '#dc2626',
-                        padding: '4px 8px',
-                        borderRadius: '12px',
-                        fontSize: '12px',
-                        fontWeight: 'bold'
-                      }}>
-                        {r.is_active ? 'Activa' : 'Inactiva'}
-                      </span>
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        <button onClick={() => handleEditRule(r)} style={{ background: '#0fa4de', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>Editar</button>
-                        <button onClick={() => handleDeleteRule(r.id)} style={{ background: '#ef4444', color: 'white', border: 'none', padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>✕</button>
-                      </div>
-                    </td>
+            {/* Table of Rules & Coupons */}
+            <div className="crm-table-container" style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', borderRadius: '16px', border: '1px solid #E2E8F0', background: '#FFFFFF' }}>
+              <table className="users-table crm-compact-table" style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ background: '#F8FAFC', borderBottom: '1.5px solid #E2E8F0' }}>
+                    <th style={{ padding: '12px 14px', fontSize: '11.5px', fontWeight: '800', color: '#475569', textAlign: 'left' }}>Código / Nombre</th>
+                    <th style={{ padding: '12px 14px', fontSize: '11.5px', fontWeight: '800', color: '#475569', textAlign: 'left' }}>Beneficio</th>
+                    <th style={{ padding: '12px 14px', fontSize: '11.5px', fontWeight: '800', color: '#475569', textAlign: 'left' }}>🌎 País</th>
+                    <th style={{ padding: '12px 14px', fontSize: '11.5px', fontWeight: '800', color: '#475569', textAlign: 'left' }}>👤 Cliente</th>
+                    <th style={{ padding: '12px 14px', fontSize: '11.5px', fontWeight: '800', color: '#475569', textAlign: 'left' }}>🏷️ Marca</th>
+                    <th style={{ padding: '12px 14px', fontSize: '11.5px', fontWeight: '800', color: '#475569', textAlign: 'left' }}>📦 Producto</th>
+                    <th style={{ padding: '12px 14px', fontSize: '11.5px', fontWeight: '800', color: '#475569', textAlign: 'left' }}>Condiciones / Canjes</th>
+                    <th style={{ padding: '12px 14px', fontSize: '11.5px', fontWeight: '800', color: '#475569', textAlign: 'left' }}>Estado</th>
+                    <th style={{ padding: '12px 14px', fontSize: '11.5px', fontWeight: '800', color: '#475569', textAlign: 'center' }}>Acciones</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {rules
+                    .filter(r => {
+                      if (ruleFilterType === 'coupons') return !!(r.coupon_code && String(r.coupon_code).trim());
+                      if (ruleFilterType === 'rules') return !(r.coupon_code && String(r.coupon_code).trim());
+                      return true;
+                    })
+                    .map(r => {
+                      const isCoupon = !!(r.coupon_code && String(r.coupon_code).trim());
+                      return (
+                        <tr key={r.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                          
+                          {/* Código / Nombre */}
+                          <td style={{ padding: '12px 14px' }}>
+                            {isCoupon ? (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <span style={{ 
+                                    background: '#E0F2FE', 
+                                    color: '#0369A1', 
+                                    padding: '3px 8px', 
+                                    borderRadius: '6px', 
+                                    fontWeight: '900', 
+                                    fontSize: '12px', 
+                                    letterSpacing: '0.6px',
+                                    border: '1px solid #BAE6FD',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                  }}>
+                                    🎟️ {r.coupon_code}
+                                  </span>
+                                  <button
+                                    onClick={() => {
+                                      navigator.clipboard.writeText(r.coupon_code);
+                                      alert(`¡Código "${r.coupon_code}" copiado al portapapeles!`);
+                                    }}
+                                    title="Copiar código de cupón"
+                                    style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '2px', color: '#64748B' }}
+                                  >
+                                    <BrandingVectorIcon name="clipboard" size={12} color="#0FA4DE" />
+                                  </button>
+                                </div>
+                                <span style={{ fontSize: '11.5px', color: '#64748B', fontWeight: '600' }}>{r.name}</span>
+                              </div>
+                            ) : (
+                              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                                <strong style={{ fontSize: '12.5px', color: '#0F172A' }}>{r.name}</strong>
+                                <span style={{ fontSize: '10.5px', color: '#94A3B8', fontWeight: '600' }}>⚙️ Tarifa Automática B2B</span>
+                              </div>
+                            )}
+                          </td>
+
+                          {/* Ajuste / Beneficio */}
+                          <td style={{ padding: '12px 14px' }}>
+                            <span style={{
+                              background: r.rule_type === 'discount' ? '#DCFCE7' : '#E0F2FE',
+                              color: r.rule_type === 'discount' ? '#166534' : '#0369A1',
+                              padding: '3px 8px',
+                              borderRadius: '6px',
+                              fontSize: '11.5px',
+                              fontWeight: '800',
+                              display: 'inline-block'
+                            }}>
+                              {r.rule_type === 'discount' ? 'Descuento ' : r.rule_type === 'markup' ? 'Markup ' : 'Fijo '}
+                              {r.value_type === 'percentage' ? `${r.value}%` : `$${r.value} USD`}
+                            </span>
+                          </td>
+
+                          {/* País */}
+                          <td style={{ padding: '12px 14px', fontSize: '12px' }}>
+                            {r.country_name || (r.country_id ? `ID País: ${r.country_id}` : (
+                              <span style={{ color: '#94A3B8', fontStyle: 'italic' }}>Todos</span>
+                            ))}
+                          </td>
+
+                          {/* Cliente */}
+                          <td style={{ padding: '12px 14px', fontSize: '12px' }}>
+                            {r.user_razon_social || r.user_email ? (
+                              <span style={{ background: '#F1F5F9', color: '#0F172A', padding: '2px 7px', borderRadius: '6px', fontWeight: '700', fontSize: '11px', display: 'inline-block' }}>
+                                👤 {r.user_razon_social || r.user_email}
+                              </span>
+                            ) : r.tipo_cliente ? (
+                              <span style={{ background: '#F8FAFC', color: '#475569', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '600' }}>
+                                🏢 {r.tipo_cliente}
+                              </span>
+                            ) : (
+                              <span style={{ color: '#94A3B8', fontStyle: 'italic' }}>Todos los clientes</span>
+                            )}
+                          </td>
+
+                          {/* Marca */}
+                          <td style={{ padding: '12px 14px' }}>
+                            {r.brand ? (
+                              <span style={{ background: '#FEF3C7', color: '#92400E', padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: '800' }}>
+                                {r.brand}
+                              </span>
+                            ) : (
+                              <span style={{ color: '#94A3B8', fontSize: '12px', fontStyle: 'italic' }}>Todas</span>
+                            )}
+                          </td>
+
+                          {/* Producto */}
+                          <td style={{ padding: '12px 14px', fontSize: '12px', maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {r.product_name || <span style={{ color: '#94A3B8', fontStyle: 'italic' }}>Todo el catálogo</span>}
+                          </td>
+
+                          {/* Condiciones & Usos */}
+                          <td style={{ padding: '12px 14px', fontSize: '11.5px', color: '#475569' }}>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                              {isCoupon && (
+                                <span style={{ fontWeight: '700', color: '#0369A1' }}>
+                                  Usos: {r.times_used || 0}{r.usage_limit ? ` / ${r.usage_limit}` : ' (Ilimitado)'}
+                                </span>
+                              )}
+                              {r.min_order_amount && (
+                                <span style={{ color: '#64748B', fontSize: '10.5px' }}>
+                                  Mínimo: ${parseFloat(r.min_order_amount).toFixed(2)} USD
+                                </span>
+                              )}
+                              {r.valid_until && (
+                                <span style={{ color: '#E11D48', fontSize: '10.5px', fontWeight: '700' }}>
+                                  Vence: {new Date(r.valid_until).toLocaleDateString('es-AR')}
+                                </span>
+                              )}
+                              {!isCoupon && !r.min_order_amount && !r.valid_until && (
+                                <span style={{ color: '#94A3B8' }}>Prio: {r.priority || 0}</span>
+                              )}
+                            </div>
+                          </td>
+
+                          {/* Estado */}
+                          <td style={{ padding: '12px 14px' }}>
+                            <span style={{
+                              background: r.is_active ? '#DCFCE7' : '#FEE2E2',
+                              color: r.is_active ? '#166534' : '#DC2626',
+                              padding: '2px 8px',
+                              borderRadius: '999px',
+                              fontSize: '11px',
+                              fontWeight: '800'
+                            }}>
+                              {r.is_active ? 'Activo' : 'Inactivo'}
+                            </span>
+                          </td>
+
+                          {/* Acciones */}
+                          <td style={{ padding: '12px 14px', textAlign: 'center' }}>
+                            <div style={{ display: 'flex', gap: '6px', justifyContent: 'center', alignItems: 'center' }}>
+                              <button 
+                                onClick={() => handleEditRule(r)} 
+                                style={{ 
+                                  background: '#F1F5F9', 
+                                  color: '#0284C7', 
+                                  border: '1px solid #CBD5E1', 
+                                  padding: '4px 9px', 
+                                  borderRadius: '6px', 
+                                  cursor: 'pointer', 
+                                  fontWeight: '700',
+                                  fontSize: '11px',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '3px'
+                                }}
+                              >
+                                <BrandingVectorIcon name="edit" size={11} color="#0284C7" />
+                                <span>Editar</span>
+                              </button>
+                              <button 
+                                onClick={() => handleDeleteRule(r.id)} 
+                                style={{ 
+                                  background: '#FEE2E2', 
+                                  color: '#EF4444', 
+                                  border: 'none', 
+                                  padding: '4px 7px', 
+                                  borderRadius: '6px', 
+                                  cursor: 'pointer', 
+                                  fontWeight: '700',
+                                  fontSize: '11px',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}
+                                title="Eliminar regla / cupón"
+                              >
+                                <BrandingVectorIcon name="trash" size={11} color="#EF4444" />
+                              </button>
+                            </div>
+                          </td>
+
+                        </tr>
+                      );
+                    })}
+                </tbody>
+              </table>
+            </div>
           </section>
         )}
 
@@ -1732,45 +2923,47 @@ function AdminEcommerce() {
                   Revisa las solicitudes de registro enviadas desde el Shop, aprueba clientes mayoristas y gestiona condiciones comerciales.
                 </p>
               </div>
-              <button className="nav-btn" onClick={() => { resetUserForm(); setShowUserForm(true); }}>
-                ➕ Crear Cliente Manualmente
+              <button className="dacas-action-pill primary" onClick={() => { resetUserForm(); setShowUserForm(true); }}>
+                <BrandingVectorIcon name="plus" size={14} color="#ffffff" />
+                <span>Crear Cliente Manualmente</span>
               </button>
             </div>
 
             {/* Filtros por Estado */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '20px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', flexWrap: 'wrap' }}>
               {[
-                { key: 'all', label: 'Todos los Clientes', count: users.length },
-                { key: 'pendiente', label: '🟡 Solicitudes Pendientes', count: users.filter(u => u.status === 'pendiente').length, highlight: true },
-                { key: 'activo', label: '🟢 Clientes Activos', count: users.filter(u => (u.status || 'activo') === 'activo').length },
-                { key: 'inactivo', label: '🔴 Inactivos', count: users.filter(u => u.status === 'inactivo').length }
+                { key: 'all', label: 'Todos los Clientes', icon: null, count: users.length },
+                { key: 'pendiente', label: 'Solicitudes Pendientes', icon: <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#eab308', display: 'inline-block' }}></span>, count: users.filter(u => u.status === 'pendiente').length, highlight: true },
+                { key: 'activo', label: 'Clientes Activos', icon: <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }}></span>, count: users.filter(u => (u.status || 'activo') === 'activo').length },
+                { key: 'inactivo', label: 'Inactivos', icon: <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', display: 'inline-block' }}></span>, count: users.filter(u => u.status === 'inactivo').length }
               ].map(f => (
                 <button
                   key={f.key}
                   onClick={() => setUserFilterStatus(f.key)}
                   style={{
-                    padding: '8px 16px',
+                    padding: '6px 12px',
                     borderRadius: '8px',
-                    border: '1.5px solid',
+                    border: '1px solid',
                     borderColor: userFilterStatus === f.key ? '#0fa4de' : 'var(--border-color)',
                     background: userFilterStatus === f.key ? '#0fa4de' : 'var(--card-bg)',
                     color: userFilterStatus === f.key ? '#ffffff' : 'var(--text-main)',
-                    fontWeight: userFilterStatus === f.key ? '700' : '500',
+                    fontWeight: userFilterStatus === f.key ? '700' : '600',
                     cursor: 'pointer',
-                    fontSize: '0.88rem',
+                    fontSize: '0.8rem',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '6px',
-                    boxShadow: userFilterStatus === f.key ? '0 2px 8px rgba(15, 164, 222, 0.25)' : 'none'
+                    boxShadow: userFilterStatus === f.key ? '0 2px 6px rgba(15, 164, 222, 0.2)' : 'none'
                   }}
                 >
+                  {f.icon}
                   <span>{f.label}</span>
                   <span style={{
                     background: userFilterStatus === f.key ? 'rgba(255,255,255,0.25)' : (f.highlight && f.count > 0 ? '#fef3c7' : '#f1f5f9'),
                     color: userFilterStatus === f.key ? '#ffffff' : (f.highlight && f.count > 0 ? '#d97706' : '#64748b'),
-                    padding: '2px 6px',
+                    padding: '1px 5px',
                     borderRadius: '999px',
-                    fontSize: '11px',
+                    fontSize: '10.5px',
                     fontWeight: '700'
                   }}>
                     {f.count}
@@ -1783,15 +2976,111 @@ function AdminEcommerce() {
             {showUserForm && (
               <div style={{ background: 'var(--card-bg)', padding: '24px', borderRadius: '16px', marginBottom: '24px', border: '1px solid var(--border-color)', boxShadow: '0 8px 30px rgba(0,0,0,0.06)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                  <h3 style={{ margin: 0 }}>{editingUser ? `Editar Cliente: ${editingUser.razon_social || editingUser.name}` : 'Alta Nuevo Cliente B2B'}</h3>
+                  <div>
+                    <h3 style={{ margin: 0 }}>{editingUser ? `Editar Usuario / Cliente: ${editingUser.name}` : (userCreateMode === 'existing_company' ? `Agregar Nuevo Usuario a Empresa: ${userForm.razon_social || 'Seleccionada'}` : 'Alta Nueva Empresa & Usuario Principal B2B')}</h3>
+                    <p style={{ margin: '4px 0 0', fontSize: '13px', color: 'var(--text-muted)' }}>
+                      {editingUser ? 'Actualiza los datos personales, cargo o condiciones de acceso.' : (userCreateMode === 'existing_company' ? 'Crea una cuenta adicional de log-in que compartirá la misma empresa, condiciones fiscales y descuentos.' : 'Crea una nueva razón social junto a su primer usuario habilitado para operar.')}
+                    </p>
+                  </div>
                   <button onClick={resetUserForm} style={{ background: 'transparent', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'var(--text-muted)' }}>✕</button>
                 </div>
+
+                {/* Switcher Modo de Creación (sólo si no estamos editando) */}
+                {!editingUser && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '20px', background: 'rgba(0,0,0,0.03)', padding: '6px', borderRadius: '12px' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserCreateMode('new_company');
+                        setSelectedExistingCompany('');
+                      }}
+                      style={{
+                        padding: '10px 14px',
+                        borderRadius: '9px',
+                        border: 'none',
+                        background: userCreateMode === 'new_company' ? 'linear-gradient(135deg, #0fa4de, #0284c7)' : 'transparent',
+                        color: userCreateMode === 'new_company' ? '#ffffff' : 'var(--text-main)',
+                        fontWeight: userCreateMode === 'new_company' ? '700' : '500',
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        boxShadow: userCreateMode === 'new_company' ? '0 2px 8px rgba(15, 164, 222, 0.3)' : 'none',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <span>🏢</span> Nueva Empresa & Usuario Principal
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUserCreateMode('existing_company');
+                        if (distinctCompanies.length > 0 && !selectedExistingCompany) {
+                          handleSelectExistingCompany(distinctCompanies[0].razon_social);
+                        }
+                      }}
+                      style={{
+                        padding: '10px 14px',
+                        borderRadius: '9px',
+                        border: 'none',
+                        background: userCreateMode === 'existing_company' ? 'linear-gradient(135deg, #0fa4de, #0284c7)' : 'transparent',
+                        color: userCreateMode === 'existing_company' ? '#ffffff' : 'var(--text-main)',
+                        fontWeight: userCreateMode === 'existing_company' ? '700' : '500',
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        boxShadow: userCreateMode === 'existing_company' ? '0 2px 8px rgba(15, 164, 222, 0.3)' : 'none',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <span>👥</span> Agregar Usuario a Empresa Existente ({distinctCompanies.length})
+                    </button>
+                  </div>
+                )}
+
+                {/* Si estamos agregando a empresa existente, mostrar selector */}
+                {!editingUser && userCreateMode === 'existing_company' && (
+                  <div style={{ background: 'rgba(15, 164, 222, 0.08)', border: '1px solid rgba(15, 164, 222, 0.3)', padding: '16px', borderRadius: '12px', marginBottom: '20px' }}>
+                    <label style={{ display: 'block', fontWeight: '700', fontSize: '13px', color: '#0284c7', marginBottom: '6px' }}>
+                      🏢 Seleccionar Empresa a la que pertenecerá este usuario:
+                    </label>
+                    <select
+                      value={selectedExistingCompany || userForm.razon_social}
+                      onChange={(e) => handleSelectExistingCompany(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        borderRadius: '8px',
+                        border: '1.5px solid #0fa4de',
+                        fontWeight: '700',
+                        background: 'var(--card-bg)',
+                        color: 'var(--text-main)',
+                        fontSize: '14px'
+                      }}
+                    >
+                      {distinctCompanies.length === 0 && <option value="">No hay empresas registradas aún</option>}
+                      {distinctCompanies.map(c => (
+                        <option key={c.razon_social} value={c.razon_social}>
+                          {c.razon_social} {c.numero_nit ? `— CUIT/NIT: ${c.numero_nit}` : ''} {c.country_name ? `(${c.country_name})` : ''}
+                        </option>
+                      ))}
+                    </select>
+                    <div style={{ fontSize: '12px', color: '#0369a1', marginTop: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>ℹ️</span> Este nuevo usuario podrá ingresar con su propio email y clave, compartiendo el catálogo de precios, condiciones comerciales y pedidos de <strong>{userForm.razon_social || 'la empresa'}</strong>.
+                    </div>
+                  </div>
+                )}
                 
                 <div className="stepper" style={{ marginBottom: '20px' }}>
-                  <div className={`step ${userFormSection === 1 ? 'active' : ''}`} onClick={() => setUserFormSection(1)}>1. General & Auth</div>
+                  <div className={`step ${userFormSection === 1 ? 'active' : ''}`} onClick={() => setUserFormSection(1)}>1. Datos Usuario & Auth</div>
                   <div className={`step ${userFormSection === 2 ? 'active' : ''}`} onClick={() => setUserFormSection(2)}>2. Ship To / Fiscal</div>
-                  <div className={`step ${userFormSection === 3 ? 'active' : ''}`} onClick={() => setUserFormSection(3)}>3. Contactos</div>
-                  <div className={`step ${userFormSection === 4 ? 'active' : ''}`} onClick={() => setUserFormSection(4)}>4. Mails Referencia</div>
+                  <div className={`step ${userFormSection === 3 ? 'active' : ''}`} onClick={() => setUserFormSection(3)}>3. Contactos Empresa</div>
+                  <div className={`step ${userFormSection === 4 ? 'active' : ''}`} onClick={() => setUserFormSection(4)}>4. Mails Notificaciones</div>
                 </div>
 
                 <form onSubmit={handleUserSubmit} className="crm-form">
@@ -1814,28 +3103,54 @@ function AdminEcommerce() {
                         </select>
                       </div>
                       <div className="form-group">
-                        <label>Nombre de Contacto *</label>
-                        <input type="text" value={userForm.name} onChange={e => setUserForm({ ...userForm, name: e.target.value })} required />
+                        <label>Nombre y Apellido del Usuario *</label>
+                        <input type="text" placeholder="Ej: Laura Gómez" value={userForm.name} onChange={e => setUserForm({ ...userForm, name: e.target.value })} required />
                       </div>
                       <div className="form-group">
-                        <label>Email (Log In) *</label>
-                        <input type="email" value={userForm.email} onChange={e => setUserForm({ ...userForm, email: e.target.value })} required />
+                        <label>Cargo / Rol en la Empresa</label>
+                        <input 
+                          type="text" 
+                          list="cargos-list"
+                          placeholder="Ej: Encargado de Compras, Gerente, Finanzas..." 
+                          value={userForm.cargo || ''} 
+                          onChange={e => setUserForm({ ...userForm, cargo: e.target.value })} 
+                        />
+                        <datalist id="cargos-list">
+                          <option value="Encargado de Compras" />
+                          <option value="Comprador Senior" />
+                          <option value="Gerente General / Director" />
+                          <option value="Administración & Finanzas" />
+                          <option value="Soporte Técnico / Preventa" />
+                          <option value="Comercial / Ventas" />
+                          <option value="Operaciones / Logística" />
+                        </datalist>
+                      </div>
+                      <div className="form-group">
+                        <label>Email de Log-In (Shop) *</label>
+                        <input type="email" placeholder="usuario@empresa.com" value={userForm.email} onChange={e => setUserForm({ ...userForm, email: e.target.value })} required />
                       </div>
                       <div className="form-group">
                         <label>Contraseña {editingUser && '(Dejar vacío para no cambiar)'} {!editingUser && '*'}</label>
-                        <input type="password" value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })} required={!editingUser} />
+                        <input type="password" placeholder="••••••••" value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })} required={!editingUser} />
                       </div>
                       <div className="form-group">
-                        <label>Razón Social / Empresa</label>
-                        <input type="text" value={userForm.razon_social} onChange={e => setUserForm({ ...userForm, razon_social: e.target.value })} />
+                        <label>Teléfono Directo / WhatsApp</label>
+                        <input type="text" placeholder="+54 11 ..." value={userForm.phone} onChange={e => setUserForm({ ...userForm, phone: e.target.value })} />
+                      </div>
+                      <div className="form-group">
+                        <label>Razón Social / Empresa *</label>
+                        <input 
+                          type="text" 
+                          value={userForm.razon_social} 
+                          onChange={e => setUserForm({ ...userForm, razon_social: e.target.value })} 
+                          required 
+                          disabled={!editingUser && userCreateMode === 'existing_company'}
+                          style={{ background: !editingUser && userCreateMode === 'existing_company' ? 'rgba(0,0,0,0.04)' : undefined }}
+                        />
                       </div>
                       <div className="form-group">
                         <label>Tipo de Cliente</label>
                         <input type="text" value={userForm.tipo_cliente} onChange={e => setUserForm({ ...userForm, tipo_cliente: e.target.value })} placeholder="Ej: Integrador IT, Reseller, Corporativo" />
-                      </div>
-                      <div className="form-group">
-                        <label>Teléfono General / WhatsApp</label>
-                        <input type="text" value={userForm.phone} onChange={e => setUserForm({ ...userForm, phone: e.target.value })} />
                       </div>
                       <div className="form-group">
                         <label>Sitio Web</label>
@@ -1964,7 +3279,7 @@ function AdminEcommerce() {
                   )}
 
                   <div style={{ display: 'flex', gap: '10px', marginTop: '24px', borderTop: '1px solid var(--border-color)', paddingTop: '20px' }}>
-                    <button type="submit" className="btn-submit">{editingUser ? 'Actualizar Cliente' : 'Guardar y Habilitar Cliente'}</button>
+                    <button type="submit" className="btn-submit">{editingUser ? 'Actualizar Usuario' : (userCreateMode === 'existing_company' ? 'Crear y Habilitar Usuario para esta Empresa' : 'Guardar y Habilitar Empresa B2B')}</button>
                     <button type="button" className="btn-delete" onClick={resetUserForm}>Cancelar</button>
                   </div>
                 </form>
@@ -1972,12 +3287,14 @@ function AdminEcommerce() {
             )}
 
             {/* TABLA DE USUARIOS / CLIENTES */}
-            <table className="users-table">
+            <div className="crm-table-container" style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+              <table className="users-table crm-compact-table" style={{ width: '100%' }}>
               <thead>
                 <tr>
                   <th>ID</th>
                   <th>Empresa / Razón Social</th>
-                  <th>Contacto & Email</th>
+                  <th>Usuario & Acceso LogIn</th>
+                  <th>Cargo / Rol</th>
                   <th>Teléfono</th>
                   <th>País / CUIT</th>
                   <th>Estado</th>
@@ -1996,25 +3313,68 @@ function AdminEcommerce() {
                   .map(u => {
                     const isPending = u.status === 'pendiente';
                     const isInactive = u.status === 'inactivo';
+                    const companyKey = (u.razon_social || u.name || '').trim().toLowerCase();
+                    const sameCompanyCount = users.filter(x => (x.razon_social || x.name || '').trim().toLowerCase() === companyKey).length;
+                    
                     return (
                       <tr key={u.id} style={{ background: isPending ? 'rgba(245, 158, 11, 0.04)' : 'transparent' }}>
-                        <td>{u.id}</td>
+                        <td><strong style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>#{u.id}</strong></td>
                         <td>
-                          <strong>{u.razon_social || u.name}</strong>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                            <strong style={{ color: 'var(--text-main)', fontSize: '0.84rem' }}>{u.razon_social || u.name}</strong>
+                            {sameCompanyCount > 1 && (
+                              <span 
+                                title={`Esta empresa cuenta con ${sameCompanyCount} usuarios con acceso al Shop`}
+                                style={{
+                                  background: 'rgba(15, 164, 222, 0.1)',
+                                  color: '#0284c7',
+                                  border: '1px solid rgba(15, 164, 222, 0.25)',
+                                  padding: '1px 6px',
+                                  borderRadius: '999px',
+                                  fontSize: '10px',
+                                  fontWeight: '700',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '3px'
+                                }}
+                              >
+                                <BrandingVectorIcon name="users" size={10} color="#0284c7" />
+                                {sameCompanyCount}
+                              </span>
+                            )}
+                          </div>
                           {u.tipo_cliente && (
-                            <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
-                              {u.tipo_cliente}
+                            <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '1px', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                              <BrandingVectorIcon name="briefcase" size={11} color="#64748b" />
+                              <span>{u.tipo_cliente}</span>
                             </div>
                           )}
                         </td>
                         <td>
-                          <div>{u.name}</div>
-                          <div style={{ fontSize: '12px', color: '#0fa4de', marginTop: '2px' }}>{u.email}</div>
+                          <div style={{ fontWeight: '600', color: 'var(--text-main)', fontSize: '0.82rem' }}>{u.name}</div>
+                          <div style={{ fontSize: '0.74rem', color: '#0fa4de', marginTop: '1px', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                            <BrandingVectorIcon name="mail" size={11} color="#0fa4de" />
+                            <span>{u.email}</span>
+                          </div>
                         </td>
-                        <td style={{ fontSize: '12px' }}>{u.phone || '—'}</td>
                         <td>
-                          <div>{u.country_name || '—'}</div>
-                          <div style={{ fontSize: '11px', color: '#64748b' }}>{u.numero_nit || ''}</div>
+                          <span style={{
+                            background: 'rgba(0,0,0,0.03)',
+                            color: 'var(--text-main)',
+                            padding: '2px 6px',
+                            borderRadius: '5px',
+                            fontSize: '0.74rem',
+                            fontWeight: '600',
+                            display: 'inline-block',
+                            border: '1px solid var(--border-color)'
+                          }}>
+                            {u.cargo || 'Encargado de Compras'}
+                          </span>
+                        </td>
+                        <td style={{ fontSize: '0.78rem' }}>{u.phone || '—'}</td>
+                        <td>
+                          <div style={{ fontSize: '0.8rem' }}>{u.country_name || countries.find(c => c.id === u.country_id)?.name || '—'}</div>
+                          <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: '600' }}>{u.numero_nit || ''}</div>
                         </td>
                         <td>
                           {isPending ? (
@@ -2022,94 +3382,109 @@ function AdminEcommerce() {
                               background: '#fef3c7',
                               color: '#d97706',
                               border: '1px solid #fde68a',
-                              padding: '4px 10px',
+                              padding: '2px 8px',
                               borderRadius: '999px',
-                              fontSize: '11px',
+                              fontSize: '0.72rem',
                               fontWeight: '700',
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '4px'
                             }}>
-                              🟡 Solicitud Shop (Pendiente)
+                              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#d97706' }}></span>
+                              Solicitud Shop
                             </span>
                           ) : isInactive ? (
                             <span style={{
                               background: '#fee2e2',
                               color: '#dc2626',
-                              padding: '4px 10px',
+                              border: '1px solid #fecaca',
+                              padding: '2px 8px',
                               borderRadius: '999px',
-                              fontSize: '11px',
-                              fontWeight: '700'
+                              fontSize: '0.72rem',
+                              fontWeight: '700',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
                             }}>
-                              🔴 Inactivo
+                              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#dc2626' }}></span>
+                              Inactivo
                             </span>
                           ) : (
                             <span style={{
                               background: '#dcfce7',
                               color: '#16a34a',
-                              padding: '4px 10px',
+                              border: '1px solid #bbf7d0',
+                              padding: '2px 8px',
                               borderRadius: '999px',
-                              fontSize: '11px',
-                              fontWeight: '700'
+                              fontSize: '0.72rem',
+                              fontWeight: '700',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
                             }}>
-                              🟢 Activo
+                              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#16a34a' }}></span>
+                              Activo
                             </span>
                           )}
                         </td>
                         <td>
-                          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' }}>
                             {isPending && (
                               <button
                                 onClick={() => handleApproveUser(u.id)}
-                                style={{
-                                  background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                                  color: 'white',
-                                  border: 'none',
-                                  padding: '6px 14px',
-                                  borderRadius: '8px',
-                                  cursor: 'pointer',
-                                  fontWeight: '700',
-                                  fontSize: '12px',
-                                  boxShadow: '0 2px 6px rgba(16, 185, 129, 0.3)'
-                                }}
+                                className="dacas-action-pill success"
+                                title="Aprobar solicitud de cliente"
                               >
-                                ✓ Aprobar Cliente
+                                <BrandingVectorIcon name="check" size={11} color="#ffffff" />
+                                <span>Aprobar</span>
                               </button>
                             )}
                             <button
-                              onClick={() => openUserModal(u.id)}
-                              style={{ background: '#0fa4de', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' }}
+                              onClick={() => handleOpenAddUserToCompany(u)}
+                              className="dacas-action-pill secondary"
+                              title="Agregar otro usuario a esta misma empresa"
                             >
-                              Ver Perfil
+                              <BrandingVectorIcon name="plus" size={11} color="currentColor" />
+                              <span>Usuario</span>
+                            </button>
+                            <button
+                              onClick={() => openUserModal(u.id)}
+                              className="dacas-action-pill secondary"
+                              title="Ver perfil completo"
+                            >
+                              <span>Ver Perfil</span>
                             </button>
                             <button
                               onClick={() => handleEditUser(u)}
-                              style={{ background: '#f59e0b', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' }}
+                              className="dacas-action-pill secondary"
+                              title="Editar cliente"
                             >
-                              Editar
+                              <BrandingVectorIcon name="edit" size={11} color="currentColor" />
+                              <span>Editar</span>
                             </button>
                             {isPending ? (
                               <button
                                 onClick={() => handleToggleUserStatus(u.id, 'inactivo')}
-                                style={{ background: '#fee2e2', color: '#dc2626', border: 'none', padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' }}
+                                className="dacas-action-pill danger"
                                 title="Rechazar solicitud"
                               >
-                                Rechazar
+                                <span>Rechazar</span>
                               </button>
                             ) : isInactive ? (
                               <button
                                 onClick={() => handleToggleUserStatus(u.id, 'activo')}
-                                style={{ background: '#dcfce7', color: '#16a34a', border: 'none', padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: '600', fontSize: '12px' }}
+                                className="dacas-action-pill success"
+                                title="Reactivar cliente"
                               >
-                                Reactivar
+                                <span>Reactivar</span>
                               </button>
                             ) : (
                               <button
                                 onClick={() => handleToggleUserStatus(u.id, 'inactivo')}
-                                style={{ background: 'transparent', color: '#94a3b8', border: '1px solid var(--border-color)', padding: '6px 10px', borderRadius: '8px', cursor: 'pointer', fontWeight: '500', fontSize: '12px' }}
-                                title="Desactivar cliente"
+                                className="dacas-action-pill secondary"
+                                title="Desactivar cuenta"
                               >
-                                Desactivar
+                                <span>Desactivar</span>
                               </button>
                             )}
                           </div>
@@ -2119,20 +3494,24 @@ function AdminEcommerce() {
                   })}
               </tbody>
             </table>
+            </div>
           </section>
         )}
 
         {/* ═══════════════ ÓRDENES / PEDIDOS B2B ═══════════════ */}
         {activeTab === 'orders' && (
           <section className="board-section">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '14px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '12px' }}>
               <div>
-                <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '800', color: '#071524' }}>📋 Gestión de Órdenes y Cotizaciones B2B</h2>
-                <p style={{ margin: '4px 0 0', fontSize: '0.88rem', color: '#64748B' }}>
+                <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '800', color: '#071524', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <BrandingVectorIcon name="ticket" size={20} color="#0FA4DE" />
+                  <span>Gestión de Órdenes y Cotizaciones B2B</span>
+                </h2>
+                <p style={{ margin: '3px 0 0', fontSize: '0.82rem', color: '#64748B' }}>
                   Supervisa los pedidos generados en el Shop, gestiona el estado logístico y revisa los tickets sincronizados con Operaciones CRM.
                 </p>
               </div>
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <button
                   onClick={exportOrdersCSV}
                   className="nav-btn"
@@ -2140,64 +3519,67 @@ function AdminEcommerce() {
                     background: '#ffffff',
                     border: '1px solid #CBD5E1',
                     color: '#334155',
-                    fontSize: '13px',
+                    fontSize: '12px',
                     fontWeight: '700',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: '6px'
+                    gap: '6px',
+                    padding: '6px 12px',
+                    borderRadius: '8px'
                   }}
                 >
-                  📥 Exportar CSV
+                  <BrandingVectorIcon name="download" size={14} color="#0FA4DE" />
+                  <span>Exportar CSV</span>
                 </button>
               </div>
             </div>
 
-            {/* Quick KPI Chips for Orders */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '12px', marginBottom: '20px' }}>
-              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '12px', padding: '12px 16px' }}>
-                <div style={{ fontSize: '11px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase' }}>Total Órdenes</div>
-                <div style={{ fontSize: '20px', fontWeight: '800', color: '#071524', marginTop: '2px' }}>{orders.length}</div>
+            {/* Quick KPI Chips for Orders - Compact High-Density */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '8px', marginBottom: '14px' }}>
+              <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '8px 12px' }}>
+                <div style={{ fontSize: '10.5px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase' }}>Total Órdenes</div>
+                <div style={{ fontSize: '18px', fontWeight: '800', color: '#071524', marginTop: '1px' }}>{orders.length}</div>
               </div>
-              <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '12px', padding: '12px 16px' }}>
-                <div style={{ fontSize: '11px', color: '#166534', fontWeight: '700', textTransform: 'uppercase' }}>Total Facturado</div>
-                <div style={{ fontSize: '20px', fontWeight: '800', color: '#16A34A', marginTop: '2px' }}>
+              <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '10px', padding: '8px 12px' }}>
+                <div style={{ fontSize: '10.5px', color: '#166534', fontWeight: '700', textTransform: 'uppercase' }}>Total Facturado</div>
+                <div style={{ fontSize: '18px', fontWeight: '800', color: '#16A34A', marginTop: '1px' }}>
                   ${totalRevenue.toLocaleString('es-AR', { minimumFractionDigits: 2 })} USD
                 </div>
               </div>
-              <div style={{ background: '#FEFCE8', border: '1px solid #FEF08A', borderRadius: '12px', padding: '12px 16px' }}>
-                <div style={{ fontSize: '11px', color: '#854D0E', fontWeight: '700', textTransform: 'uppercase' }}>En Preparación</div>
-                <div style={{ fontSize: '20px', fontWeight: '800', color: '#CA8A04', marginTop: '2px' }}>
+              <div style={{ background: '#FEFCE8', border: '1px solid #FEF08A', borderRadius: '10px', padding: '8px 12px' }}>
+                <div style={{ fontSize: '10.5px', color: '#854D0E', fontWeight: '700', textTransform: 'uppercase' }}>En Preparación</div>
+                <div style={{ fontSize: '18px', fontWeight: '800', color: '#CA8A04', marginTop: '1px' }}>
                   {orders.filter(o => o.status === 'procesando' || o.status === 'pending').length}
                 </div>
               </div>
-              <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '12px', padding: '12px 16px' }}>
-                <div style={{ fontSize: '11px', color: '#075985', fontWeight: '700', textTransform: 'uppercase' }}>En Despacho / Camino</div>
-                <div style={{ fontSize: '20px', fontWeight: '800', color: '#0284C7', marginTop: '2px' }}>
+              <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '10px', padding: '8px 12px' }}>
+                <div style={{ fontSize: '10.5px', color: '#075985', fontWeight: '700', textTransform: 'uppercase' }}>En Despacho / Camino</div>
+                <div style={{ fontSize: '18px', fontWeight: '800', color: '#0284C7', marginTop: '1px' }}>
                   {orders.filter(o => o.status === 'en_camino' || o.status === 'shipped').length}
                 </div>
               </div>
-              <div style={{ background: '#FAF5FF', border: '1px solid #E9D5FF', borderRadius: '12px', padding: '12px 16px' }}>
-                <div style={{ fontSize: '11px', color: '#6B21A8', fontWeight: '700', textTransform: 'uppercase' }}>Entregadas</div>
-                <div style={{ fontSize: '20px', fontWeight: '800', color: '#9333EA', marginTop: '2px' }}>
+              <div style={{ background: '#FAF5FF', border: '1px solid #E9D5FF', borderRadius: '10px', padding: '8px 12px' }}>
+                <div style={{ fontSize: '10.5px', color: '#6B21A8', fontWeight: '700', textTransform: 'uppercase' }}>Entregadas</div>
+                <div style={{ fontSize: '18px', fontWeight: '800', color: '#9333EA', marginTop: '1px' }}>
                   {orders.filter(o => o.status === 'entregado' || o.status === 'completed').length}
                 </div>
               </div>
             </div>
 
             {/* Toolbar: Filters & Search */}
-            <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap', alignItems: 'center', background: '#F8FAFC', padding: '14px', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
-              <div style={{ flex: '1 1 260px', position: 'relative' }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '14px', flexWrap: 'wrap', alignItems: 'center', background: '#F8FAFC', padding: '10px 12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+              <div style={{ flex: '1 1 240px', position: 'relative' }}>
                 <input
                   type="text"
-                  placeholder="🔍 Buscar por ID, cliente, empresa, CUIT, tracking, OC..."
+                  placeholder="Buscar por ID, cliente, empresa, CUIT, tracking, OC..."
                   value={orderSearch}
                   onChange={(e) => setOrderSearch(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '9px 12px',
-                    borderRadius: '8px',
+                    padding: '7px 10px',
+                    borderRadius: '7px',
                     border: '1px solid #CBD5E1',
-                    fontSize: '13px',
+                    fontSize: '12.5px',
                     boxSizing: 'border-box'
                   }}
                 />
@@ -2207,20 +3589,20 @@ function AdminEcommerce() {
                 <select
                   value={orderStatusFilter}
                   onChange={(e) => setOrderStatusFilter(e.target.value)}
-                  style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', background: '#ffffff' }}
+                  style={{ padding: '7px 10px', borderRadius: '7px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#ffffff' }}
                 >
                   <option value="all">Todos los Estados</option>
-                  <option value="procesando">🟡 En Preparación (Procesando)</option>
-                  <option value="en_camino">🚚 En Despacho / Camino</option>
-                  <option value="entregado">✅ Entregado</option>
-                  <option value="paid">🟢 Pagado</option>
-                  <option value="cancelled">🔴 Cancelado</option>
+                  <option value="procesando">En Preparación (Procesando)</option>
+                  <option value="en_camino">En Despacho / Camino</option>
+                  <option value="entregado">Entregado</option>
+                  <option value="paid">Pagado</option>
+                  <option value="cancelled">Cancelado</option>
                 </select>
 
                 <select
                   value={orderCountryFilter}
                   onChange={(e) => setOrderCountryFilter(e.target.value)}
-                  style={{ padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', background: '#ffffff' }}
+                  style={{ padding: '7px 10px', borderRadius: '7px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#ffffff' }}
                 >
                   <option value="all">Todos los Países</option>
                   {countries.map(c => (
@@ -2231,114 +3613,120 @@ function AdminEcommerce() {
                 {(orderSearch || orderStatusFilter !== 'all' || orderCountryFilter !== 'all') && (
                   <button
                     onClick={() => { setOrderSearch(''); setOrderStatusFilter('all'); setOrderCountryFilter('all'); }}
-                    style={{ background: '#E2E8F0', border: 'none', padding: '9px 12px', borderRadius: '8px', fontSize: '12px', cursor: 'pointer', fontWeight: '600', color: '#475569' }}
+                    style={{ background: '#E2E8F0', border: 'none', padding: '7px 10px', borderRadius: '7px', fontSize: '11.5px', cursor: 'pointer', fontWeight: '600', color: '#475569' }}
                   >
-                    Limpiar Filtros
+                    Limpiar
                   </button>
                 )}
               </div>
             </div>
 
-            {/* Orders Table */}
+            {/* Orders Table - Compact High Density */}
             {filteredOrders.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '48px 20px', background: '#ffffff', borderRadius: '16px', border: '1px dashed #CBD5E1' }}>
-                <div style={{ fontSize: '36px', marginBottom: '10px' }}>📦</div>
-                <h3 style={{ margin: '0 0 6px', color: '#0F172A' }}>No se encontraron órdenes</h3>
-                <p style={{ margin: 0, color: '#64748B', fontSize: '13px' }}>
+              <div style={{ textAlign: 'center', padding: '36px 20px', background: '#ffffff', borderRadius: '12px', border: '1px dashed #CBD5E1' }}>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+                  <BrandingVectorIcon name="box" size={32} color="#94A3B8" />
+                </div>
+                <h3 style={{ margin: '0 0 4px', color: '#0F172A', fontSize: '14px' }}>No se encontraron órdenes</h3>
+                <p style={{ margin: 0, color: '#64748B', fontSize: '12px' }}>
                   Intenta ajustar los criterios de búsqueda o filtros seleccionados.
                 </p>
               </div>
             ) : (
-              <div style={{ overflowX: 'auto', background: '#ffffff', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
-                <table className="users-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
+              <div style={{ overflowX: 'auto', background: '#ffffff', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+                <table className="users-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                   <thead>
                     <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', textAlign: 'left' }}>
-                      <th style={{ padding: '12px 16px', fontWeight: '700', color: '#475569' }}>N° Orden</th>
-                      <th style={{ padding: '12px 16px', fontWeight: '700', color: '#475569' }}>Fecha</th>
-                      <th style={{ padding: '12px 16px', fontWeight: '700', color: '#475569' }}>Cliente & Empresa</th>
-                      <th style={{ padding: '12px 16px', fontWeight: '700', color: '#475569' }}>País & Despacho</th>
-                      <th style={{ padding: '12px 16px', fontWeight: '700', color: '#475569' }}>Condición / PO</th>
-                      <th style={{ padding: '12px 16px', fontWeight: '700', color: '#475569' }}>Total USD</th>
-                      <th style={{ padding: '12px 16px', fontWeight: '700', color: '#475569' }}>Estado</th>
-                      <th style={{ padding: '12px 16px', fontWeight: '700', color: '#475569', textAlign: 'center' }}>Acciones</th>
+                      <th style={{ padding: '8px 10px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>N° Orden</th>
+                      <th style={{ padding: '8px 10px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Fecha</th>
+                      <th style={{ padding: '8px 10px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Cliente & Empresa</th>
+                      <th style={{ padding: '8px 10px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>País & Despacho</th>
+                      <th style={{ padding: '8px 10px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Condición / PO</th>
+                      <th style={{ padding: '8px 10px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Total USD</th>
+                      <th style={{ padding: '8px 10px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Estado</th>
+                      <th style={{ padding: '8px 10px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', textAlign: 'center' }}>Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredOrders.map(ord => (
                       <tr key={ord.id} style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.15s' }}>
-                        <td style={{ padding: '12px 16px' }}>
-                          <span style={{ fontWeight: '800', color: '#0FA4DE', fontSize: '13px' }}>#{ord.id}</span>
+                        <td style={{ padding: '7px 10px', whiteSpace: 'nowrap' }}>
+                          <span style={{ fontWeight: '800', color: '#0FA4DE', fontSize: '12px' }}>#{ord.id}</span>
                         </td>
-                        <td style={{ padding: '12px 16px', color: '#64748B', whiteSpace: 'nowrap' }}>
-                          {ord.created_at ? new Date(ord.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'}
+                        <td style={{ padding: '7px 10px', color: '#64748B', whiteSpace: 'nowrap', fontSize: '11px' }}>
+                          {ord.created_at ? new Date(ord.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—'}
                         </td>
-                        <td style={{ padding: '12px 16px' }}>
-                          <div style={{ fontWeight: '700', color: '#0F172A' }}>{ord.user_company || ord.user_name || 'Cliente B2B'}</div>
-                          <div style={{ fontSize: '11px', color: '#64748B' }}>{ord.user_email}</div>
-                          {ord.user_cuit && <div style={{ fontSize: '11px', color: '#94A3B8' }}>CUIT: {ord.user_cuit}</div>}
+                        <td style={{ padding: '7px 10px' }}>
+                          <div style={{ fontWeight: '700', color: '#0F172A', fontSize: '12px', lineHeight: 1.25 }}>{ord.user_company || ord.user_name || 'Cliente B2B'}</div>
+                          <div style={{ fontSize: '10.5px', color: '#64748B' }}>{ord.user_email}</div>
+                          {ord.user_cuit && <div style={{ fontSize: '10px', color: '#94A3B8' }}>CUIT: {ord.user_cuit}</div>}
                         </td>
-                        <td style={{ padding: '12px 16px' }}>
-                          <div style={{ fontWeight: '600', color: '#334155' }}>📍 {ord.country_name || 'Argentina'}</div>
-                          <div style={{ fontSize: '11px', color: '#64748B' }}>{ord.shipping_method || 'Envío a Domicilio'}</div>
+                        <td style={{ padding: '7px 10px' }}>
+                          <div style={{ fontWeight: '600', color: '#334155', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11.5px' }}>
+                            <BrandingVectorIcon name="map-pin" size={12} color="#0FA4DE" />
+                            <span>{ord.country_name || 'Argentina'}</span>
+                          </div>
+                          <div style={{ fontSize: '10.5px', color: '#64748B' }}>{ord.shipping_method || 'Envío a Domicilio'}</div>
                           {ord.tracking_number && (
-                            <span style={{ fontSize: '10px', background: '#F1F5F9', color: '#0369A1', padding: '2px 6px', borderRadius: '4px', fontWeight: '700', fontFamily: 'monospace' }}>
+                            <span style={{ fontSize: '9.5px', background: '#F1F5F9', color: '#0369A1', padding: '1px 5px', borderRadius: '4px', fontWeight: '700', fontFamily: 'monospace', display: 'inline-block', marginTop: '2px' }}>
                               {ord.tracking_number}
                             </span>
                           )}
                         </td>
-                        <td style={{ padding: '12px 16px' }}>
-                          <div style={{ fontSize: '12px', color: '#334155' }}>{ord.payment_method || 'Cuenta Corriente'}</div>
-                          {ord.po_number && <div style={{ fontSize: '11px', color: '#0FA4DE', fontWeight: '600' }}>{ord.po_number}</div>}
+                        <td style={{ padding: '7px 10px' }}>
+                          <div style={{ fontSize: '11.5px', color: '#334155', lineHeight: 1.25 }}>{ord.payment_method || 'Cuenta Corriente'}</div>
+                          {ord.po_number && <div style={{ fontSize: '10.5px', color: '#0FA4DE', fontWeight: '700' }}>{ord.po_number}</div>}
                         </td>
-                        <td style={{ padding: '12px 16px', whiteSpace: 'nowrap' }}>
-                          <div style={{ fontWeight: '800', color: '#071524', fontSize: '14px' }}>
+                        <td style={{ padding: '7px 10px', whiteSpace: 'nowrap' }}>
+                          <div style={{ fontWeight: '800', color: '#071524', fontSize: '12.5px' }}>
                             ${parseFloat(ord.total || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
                           </div>
                           {parseFloat(ord.discount_applied || 0) > 0 && (
-                            <div style={{ fontSize: '11px', color: '#16A34A', fontWeight: '600' }}>
+                            <div style={{ fontSize: '10px', color: '#16A34A', fontWeight: '600' }}>
                               Desc: -${parseFloat(ord.discount_applied).toFixed(2)}
                             </div>
                           )}
                         </td>
-                        <td style={{ padding: '12px 16px' }}>
+                        <td style={{ padding: '7px 10px' }}>
                           <select
                             value={ord.status || 'procesando'}
                             onChange={(e) => handleUpdateOrderStatus(ord.id, e.target.value)}
                             style={{
-                              padding: '4px 8px',
-                              borderRadius: '8px',
+                              padding: '3px 6px',
+                              borderRadius: '6px',
                               fontSize: '11px',
                               fontWeight: '700',
                               cursor: 'pointer',
                               ...statusStyle(ord.status)
                             }}
                           >
-                            <option value="procesando">🟡 En Preparación</option>
-                            <option value="en_camino">🚚 En Despacho</option>
-                            <option value="entregado">✅ Entregado</option>
-                            <option value="paid">🟢 Pagado</option>
-                            <option value="cancelled">🔴 Cancelado</option>
+                            <option value="procesando">En Preparación</option>
+                            <option value="en_camino">En Despacho</option>
+                            <option value="entregado">Entregado</option>
+                            <option value="paid">Pagado</option>
+                            <option value="cancelled">Cancelado</option>
                           </select>
                         </td>
-                        <td style={{ padding: '12px 16px', textAlign: 'center' }}>
+                        <td style={{ padding: '7px 10px', textAlign: 'center', whiteSpace: 'nowrap' }}>
                           <button
                             onClick={() => { setSelectedOrder(ord); setShowOrderModal(true); }}
                             style={{
                               background: '#0FA4DE',
                               color: '#ffffff',
                               border: 'none',
-                              padding: '6px 12px',
-                              borderRadius: '8px',
-                              fontSize: '12px',
+                              padding: '4px 10px',
+                              borderRadius: '6px',
+                              fontSize: '11.5px',
                               fontWeight: '700',
                               cursor: 'pointer',
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '4px',
-                              boxShadow: '0 2px 6px rgba(15, 164, 222, 0.25)'
+                              boxShadow: '0 2px 4px rgba(15, 164, 222, 0.2)'
                             }}
                           >
-                            👁️ Ver Detalle
+                            <BrandingVectorIcon name="eye" size={12} color="#ffffff" />
+                            <span>Ver</span>
                           </button>
                         </td>
                       </tr>
@@ -2487,6 +3875,1122 @@ function AdminEcommerce() {
           </>
         )}
 
+        {/* ═══════════════ GESTIÓN PAGOS Y ENVÍOS ═══════════════ */}
+        {activeTab === 'pagos_envios' && (
+          <section className="board-section" style={{ maxWidth: '1280px', margin: '0 auto' }}>
+            
+            {/* ── Header & Action Toolbar ── */}
+            <div style={{
+              background: 'var(--card-bg, #FFFFFF)',
+              borderRadius: '20px',
+              padding: '24px 28px',
+              border: '1px solid var(--border-color, #E2E8F0)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
+              marginBottom: '24px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '20px',
+              flexWrap: 'wrap'
+            }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(15, 164, 222, 0.1)', padding: '6px 10px', borderRadius: '12px' }}>
+                    <BrandingVectorIcon name="truck" size={20} color="#0fa4de" />
+                    <BrandingVectorIcon name="credit-card" size={20} color="#0284c7" />
+                  </div>
+                  <h2 style={{ margin: 0, fontSize: '1.45rem', fontWeight: '900', color: 'var(--text-main, #0F172A)', letterSpacing: '-0.02em' }}>
+                    Gestión de Métodos de Envío & Formas de Pago
+                  </h2>
+                  <span style={{
+                    background: 'linear-gradient(135deg, rgba(15, 164, 222, 0.15), rgba(2, 132, 199, 0.2))',
+                    color: '#0284c7',
+                    fontWeight: '800',
+                    fontSize: '11px',
+                    padding: '3px 10px',
+                    borderRadius: '999px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em'
+                  }}>
+                    Checkout B2B
+                  </span>
+                </div>
+                <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted, #64748B)', maxWidth: '700px' }}>
+                  Habilitá, deshabilitá o personalizá los métodos de despacho (Paso 3) y opciones de pago corporativo (Paso 4) disponibles en el carro de compras.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <button
+                  type="button"
+                  onClick={handleResetCheckoutMethods}
+                  disabled={isSavingCheckout}
+                  className="dacas-pill-btn"
+                  style={{
+                    background: '#FFFFFF',
+                    border: '1px solid var(--border-color, #CBD5E1)',
+                    color: 'var(--text-muted, #64748B)',
+                    borderRadius: '12px',
+                    padding: '10px 18px',
+                    fontWeight: '700',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <BrandingVectorIcon name="rotate-ccw" size={15} color="#64748B" />
+                  <span>Restablecer Oficiales</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveCheckoutMethods}
+                  disabled={isSavingCheckout}
+                  className="dacas-pill-btn active"
+                  style={{
+                    background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '10px 24px',
+                    fontWeight: '800',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 14px rgba(15, 164, 222, 0.35)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <BrandingVectorIcon name="save" size={16} color="#FFFFFF" />
+                  <span>{isSavingCheckout ? 'Guardando...' : 'Guardar Configuración'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Success feedback alert */}
+            {checkoutSaveSuccess && (
+              <div style={{
+                background: '#ECFDF5',
+                border: '1px solid #A7F3D0',
+                color: '#065F46',
+                borderRadius: '14px',
+                padding: '14px 20px',
+                marginBottom: '20px',
+                fontSize: '13px',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                animation: 'fadeIn 0.3s ease-out'
+              }}>
+                <BrandingVectorIcon name="check" size={18} color="#059669" />
+                <span>¡Configuración de pagos y envíos guardada exitosamente! Los cambios ya están activos en el Checkout.</span>
+              </div>
+            )}
+
+            {/* ── Subtabs Navigation ── */}
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              background: 'var(--card-bg, #FFFFFF)',
+              padding: '8px',
+              borderRadius: '16px',
+              border: '1px solid var(--border-color, #E2E8F0)',
+              marginBottom: '24px',
+              overflowX: 'auto'
+            }}>
+              <button
+                type="button"
+                onClick={() => setCheckoutSubTab('shipping')}
+                className={`dacas-pill-btn ${checkoutSubTab === 'shipping' ? 'active' : ''}`}
+                style={{
+                  flex: 1,
+                  padding: '12px 20px',
+                  borderRadius: '12px',
+                  border: checkoutSubTab === 'shipping' ? 'none' : '1px solid var(--border-color, #E2E8F0)',
+                  background: checkoutSubTab === 'shipping' ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : '#FFFFFF',
+                  color: checkoutSubTab === 'shipping' ? '#FFFFFF' : 'var(--text-muted, #64748B)',
+                  fontWeight: '800',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px',
+                  whiteSpace: 'nowrap',
+                  boxShadow: checkoutSubTab === 'shipping' ? '0 4px 12px rgba(15, 164, 222, 0.25)' : 'none'
+                }}
+              >
+                <BrandingVectorIcon name="truck" size={18} color={checkoutSubTab === 'shipping' ? '#FFFFFF' : '#64748B'} />
+                <span>Métodos de Envío y Logística</span>
+                <span style={{
+                  background: checkoutSubTab === 'shipping' ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.06)',
+                  color: checkoutSubTab === 'shipping' ? '#FFFFFF' : 'var(--text-main, #0F172A)',
+                  padding: '2px 8px',
+                  borderRadius: '10px',
+                  fontSize: '11px',
+                  fontWeight: '800'
+                }}>
+                  {(checkoutMethods?.shipping || []).filter(s => s.enabled).length} Activos
+                </span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setCheckoutSubTab('payment')}
+                className={`dacas-pill-btn ${checkoutSubTab === 'payment' ? 'active' : ''}`}
+                style={{
+                  flex: 1,
+                  padding: '12px 20px',
+                  borderRadius: '12px',
+                  border: checkoutSubTab === 'payment' ? 'none' : '1px solid var(--border-color, #E2E8F0)',
+                  background: checkoutSubTab === 'payment' ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : '#FFFFFF',
+                  color: checkoutSubTab === 'payment' ? '#FFFFFF' : 'var(--text-muted, #64748B)',
+                  fontWeight: '800',
+                  fontSize: '13px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '10px',
+                  whiteSpace: 'nowrap',
+                  boxShadow: checkoutSubTab === 'payment' ? '0 4px 12px rgba(15, 164, 222, 0.25)' : 'none'
+                }}
+              >
+                <BrandingVectorIcon name="credit-card" size={18} color={checkoutSubTab === 'payment' ? '#FFFFFF' : '#64748B'} />
+                <span>Formas de Pago & Financiación</span>
+                <span style={{
+                  background: checkoutSubTab === 'payment' ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.06)',
+                  color: checkoutSubTab === 'payment' ? '#FFFFFF' : 'var(--text-main, #0F172A)',
+                  padding: '2px 8px',
+                  borderRadius: '10px',
+                  fontSize: '11px',
+                  fontWeight: '800'
+                }}>
+                  {(checkoutMethods?.payment || []).filter(p => p.enabled).length} Activos
+                </span>
+              </button>
+            </div>
+
+            {/* ══════════════ SUBTAB 1: MÉTODOS DE ENVÍO ══════════════ */}
+            {checkoutSubTab === 'shipping' && (
+              <div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+                  {(checkoutMethods?.shipping || []).map((method, idx) => (
+                    <div
+                      key={method.id || idx}
+                      style={{
+                        background: 'var(--card-bg, #FFFFFF)',
+                        borderRadius: '18px',
+                        padding: '22px',
+                        border: `2px solid ${method.enabled ? '#0fa4de' : 'var(--border-color, #E2E8F0)'}`,
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.04)',
+                        opacity: method.enabled ? 1 : 0.7,
+                        transition: 'all 0.25s ease',
+                        boxSizing: 'border-box'
+                      }}
+                    >
+                      {/* Top Header Card */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--border-color, #F1F5F9)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{
+                            width: '42px',
+                            height: '42px',
+                            borderRadius: '12px',
+                            background: method.enabled ? 'rgba(15, 164, 222, 0.12)' : '#F1F5F9',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0
+                          }}>
+                            <BrandingVectorIcon name={method.icon || 'truck'} size={24} color={method.enabled ? '#0fa4de' : '#64748B'} />
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: '800', fontSize: '14px', color: 'var(--text-main, #0F172A)' }}>
+                              {method.title || 'Método de Envío'}
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted, #64748B)' }}>
+                              ID: <code style={{ color: '#0fa4de', fontWeight: '700' }}>{method.id}</code>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Toggle Button */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const updated = { ...checkoutMethods };
+                            updated.shipping[idx].enabled = !updated.shipping[idx].enabled;
+                            setCheckoutMethods({ ...updated });
+                          }}
+                          style={{
+                            background: method.enabled ? '#10B981' : '#94A3B8',
+                            color: '#FFFFFF',
+                            border: 'none',
+                            borderRadius: '20px',
+                            padding: '6px 14px',
+                            fontWeight: '800',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            transition: 'all 0.2s',
+                            boxShadow: method.enabled ? '0 2px 8px rgba(16, 185, 129, 0.3)' : 'none'
+                          }}
+                        >
+                          <BrandingVectorIcon name={method.enabled ? 'check' : 'x'} size={13} color="#FFFFFF" strokeWidth={3} />
+                          <span>{method.enabled ? 'Habilitado' : 'Deshabilitado'}</span>
+                        </button>
+                      </div>
+
+                      {/* Live Preview Box */}
+                      <div style={{
+                        background: method.enabled ? '#F0F9FF' : '#F8FAFC',
+                        border: `1.5px solid ${method.enabled ? '#BAE6FD' : '#E2E8F0'}`,
+                        borderRadius: '12px',
+                        padding: '14px',
+                        marginBottom: '16px',
+                        boxSizing: 'border-box'
+                      }}>
+                        <div style={{ fontSize: '10px', fontWeight: '800', color: '#0284C7', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px', letterSpacing: '0.04em' }}>
+                          <BrandingVectorIcon name="eye" size={13} color="#0284C7" />
+                          <span>Vista Previa en Checkout (Paso 3)</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                          <BrandingVectorIcon name={method.icon || 'truck'} size={22} color="#0fa4de" />
+                          {method.badge && (
+                            <span style={{ background: '#0fa4de', color: '#fff', fontSize: '10px', fontWeight: '800', padding: '2px 8px', borderRadius: '10px' }}>
+                              {method.badge}
+                            </span>
+                          )}
+                        </div>
+                        <div style={{ fontWeight: '800', fontSize: '13px', color: '#071524' }}>{method.title}</div>
+                        <div style={{ fontSize: '11px', color: '#64748B', marginTop: '2px' }}>{method.subtitle}</div>
+                      </div>
+
+                      {/* Editable Form Inputs */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', boxSizing: 'border-box' }}>
+                        <div style={{ boxSizing: 'border-box' }}>
+                          <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted, #64748B)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                            Título del Botón
+                          </label>
+                          <input
+                            type="text"
+                            value={method.title || ''}
+                            onChange={(e) => {
+                              const updated = { ...checkoutMethods };
+                              updated.shipping[idx].title = e.target.value;
+                              setCheckoutMethods({ ...updated });
+                            }}
+                            style={{
+                              boxSizing: 'border-box',
+                              width: '100%',
+                              height: '38px',
+                              padding: '0 12px',
+                              borderRadius: '10px',
+                              border: '1px solid var(--border-color, #CBD5E1)',
+                              fontSize: '13px',
+                              background: 'var(--bg-main, #FFFFFF)',
+                              color: 'var(--text-main, #0F172A)',
+                              outline: 'none'
+                            }}
+                          />
+                        </div>
+
+                        <div style={{ boxSizing: 'border-box' }}>
+                          <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted, #64748B)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                            Subtítulo / Bajada
+                          </label>
+                          <input
+                            type="text"
+                            value={method.subtitle || ''}
+                            onChange={(e) => {
+                              const updated = { ...checkoutMethods };
+                              updated.shipping[idx].subtitle = e.target.value;
+                              setCheckoutMethods({ ...updated });
+                            }}
+                            style={{
+                              boxSizing: 'border-box',
+                              width: '100%',
+                              height: '38px',
+                              padding: '0 12px',
+                              borderRadius: '10px',
+                              border: '1px solid var(--border-color, #CBD5E1)',
+                              fontSize: '13px',
+                              background: 'var(--bg-main, #FFFFFF)',
+                              color: 'var(--text-main, #0F172A)',
+                              outline: 'none'
+                            }}
+                          />
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', boxSizing: 'border-box' }}>
+                          <div style={{ boxSizing: 'border-box' }}>
+                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted, #64748B)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                              Etiqueta / Badge
+                            </label>
+                            <input
+                              type="text"
+                              value={method.badge || ''}
+                              placeholder="Ej. Recomendado"
+                              onChange={(e) => {
+                                const updated = { ...checkoutMethods };
+                                updated.shipping[idx].badge = e.target.value;
+                                setCheckoutMethods({ ...updated });
+                              }}
+                              style={{
+                                boxSizing: 'border-box',
+                                width: '100%',
+                                height: '38px',
+                                padding: '0 12px',
+                                borderRadius: '10px',
+                                border: '1px solid var(--border-color, #CBD5E1)',
+                                fontSize: '13px',
+                                background: 'var(--bg-main, #FFFFFF)',
+                                color: 'var(--text-main, #0F172A)',
+                                outline: 'none'
+                              }}
+                            />
+                          </div>
+                          <div style={{ boxSizing: 'border-box' }}>
+                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted, #64748B)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                              Ícono (ID / Emoji)
+                            </label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', boxSizing: 'border-box' }}>
+                              <input
+                                type="text"
+                                value={method.icon || ''}
+                                placeholder="truck / hub / box"
+                                onChange={(e) => {
+                                  const updated = { ...checkoutMethods };
+                                  updated.shipping[idx].icon = e.target.value;
+                                  setCheckoutMethods({ ...updated });
+                                }}
+                                style={{
+                                  boxSizing: 'border-box',
+                                  width: '100%',
+                                  height: '38px',
+                                  padding: '0 12px',
+                                  borderRadius: '10px',
+                                  border: '1px solid var(--border-color, #CBD5E1)',
+                                  fontSize: '13px',
+                                  background: 'var(--bg-main, #FFFFFF)',
+                                  color: 'var(--text-main, #0F172A)',
+                                  outline: 'none'
+                                }}
+                              />
+                              <div style={{
+                                width: '38px',
+                                height: '38px',
+                                borderRadius: '10px',
+                                border: '1px solid var(--border-color, #CBD5E1)',
+                                background: '#F8FAFC',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0,
+                                boxSizing: 'border-box'
+                              }}>
+                                <BrandingVectorIcon name={method.icon || 'truck'} size={18} color="#0fa4de" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div style={{ textAlign: 'center' }}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const newId = `custom_shipping_${Date.now()}`;
+                      const updated = { ...checkoutMethods };
+                      updated.shipping.push({
+                        id: newId,
+                        enabled: true,
+                        title: 'Nuevo Método de Entrega',
+                        subtitle: 'Descripción breve de la entrega',
+                        badge: 'Nuevo',
+                        icon: 'box',
+                        priceText: 'A convenir',
+                        description: 'Detalles del nuevo método de despacho.'
+                      });
+                      setCheckoutMethods({ ...updated });
+                    }}
+                    style={{
+                      background: 'var(--card-bg, #FFFFFF)',
+                      border: '2px dashed #0fa4de',
+                      color: '#0fa4de',
+                      borderRadius: '16px',
+                      padding: '14px 28px',
+                      fontWeight: '800',
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <BrandingVectorIcon name="plus" size={16} color="#0fa4de" strokeWidth={2.5} />
+                    <span>Añadir Nuevo Método de Envío</span>
+                  </button>
+                </div>
+              </div>
+            )}
+            {/* ══════════════ SUBTAB 2: FORMAS DE PAGO ══════════════ */}
+            {checkoutSubTab === 'payment' && (
+              <div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: '20px', marginBottom: '24px' }}>
+                  {(checkoutMethods?.payment || []).map((method, idx) => (
+                    <div
+                      key={method.id || idx}
+                      style={{
+                        background: 'var(--card-bg, #FFFFFF)',
+                        borderRadius: '18px',
+                        padding: '22px',
+                        border: `2px solid ${method.enabled ? '#0fa4de' : 'var(--border-color, #E2E8F0)'}`,
+                        boxShadow: '0 4px 16px rgba(0,0,0,0.04)',
+                        opacity: method.enabled ? 1 : 0.7,
+                        transition: 'all 0.25s ease',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        boxSizing: 'border-box'
+                      }}
+                    >
+                      {/* Top Header Card */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', paddingBottom: '12px', borderBottom: '1px solid var(--border-color, #F1F5F9)' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                          <div style={{
+                            width: '42px',
+                            height: '42px',
+                            borderRadius: '12px',
+                            background: method.enabled ? 'rgba(15, 164, 222, 0.12)' : '#F1F5F9',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0
+                          }}>
+                            <BrandingVectorIcon name={method.icon || 'credit-card'} size={24} color={method.enabled ? '#0fa4de' : '#64748B'} />
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: '800', fontSize: '14px', color: 'var(--text-main, #0F172A)' }}>
+                              {method.title || 'Forma de Pago'}
+                            </div>
+                            <div style={{ fontSize: '11px', color: 'var(--text-muted, #64748B)' }}>
+                              ID: <code style={{ color: '#0fa4de', fontWeight: '700' }}>{method.id}</code>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          {idx >= 4 && (
+                            <button
+                              type="button"
+                              title="Eliminar método personalizado"
+                              onClick={() => {
+                                if (window.confirm('¿Deseas eliminar este método de pago?')) {
+                                  const updated = { ...checkoutMethods };
+                                  updated.payment.splice(idx, 1);
+                                  setCheckoutMethods({ ...updated });
+                                }
+                              }}
+                              style={{
+                                background: '#FEE2E2',
+                                color: '#EF4444',
+                                border: 'none',
+                                borderRadius: '8px',
+                                padding: '6px 10px',
+                                fontSize: '12px',
+                                cursor: 'pointer',
+                                fontWeight: '700',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                              }}
+                            >
+                              <BrandingVectorIcon name="trash" size={14} color="#EF4444" />
+                            </button>
+                          )}
+
+                          {/* Toggle Button */}
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const updated = { ...checkoutMethods };
+                              updated.payment[idx].enabled = !updated.payment[idx].enabled;
+                              setCheckoutMethods({ ...updated });
+                            }}
+                            style={{
+                              background: method.enabled ? '#10B981' : '#94A3B8',
+                              color: '#FFFFFF',
+                              border: 'none',
+                              borderRadius: '20px',
+                              padding: '6px 14px',
+                              fontWeight: '800',
+                              fontSize: '12px',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              transition: 'all 0.2s',
+                              boxShadow: method.enabled ? '0 2px 8px rgba(16, 185, 129, 0.3)' : 'none'
+                            }}
+                          >
+                            <BrandingVectorIcon name={method.enabled ? 'check' : 'x'} size={13} color="#FFFFFF" strokeWidth={3} />
+                            <span>{method.enabled ? 'Habilitado' : 'Deshabilitado'}</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Live Preview Box */}
+                      <div style={{
+                        background: method.enabled ? '#F0F9FF' : '#F8FAFC',
+                        border: `1.5px solid ${method.enabled ? '#BAE6FD' : '#E2E8F0'}`,
+                        borderRadius: '12px',
+                        padding: '14px',
+                        marginBottom: '16px',
+                        boxSizing: 'border-box'
+                      }}>
+                        <div style={{ fontSize: '10px', fontWeight: '800', color: '#0284C7', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px', letterSpacing: '0.04em' }}>
+                          <BrandingVectorIcon name="eye" size={13} color="#0284C7" />
+                          <span>Vista Previa en Checkout (Paso 4)</span>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <BrandingVectorIcon name={method.icon || 'credit-card'} size={22} color="#0fa4de" />
+                            <div>
+                              <div style={{ fontWeight: '800', fontSize: '13px', color: '#071524' }}>{method.title}</div>
+                              <div style={{ fontSize: '11px', color: '#64748B', marginTop: '2px' }}>{method.subtitle}</div>
+                            </div>
+                          </div>
+                          {method.badge && (
+                            <span style={{ background: '#10B981', color: '#fff', fontSize: '10px', fontWeight: '800', padding: '2px 8px', borderRadius: '10px', flexShrink: 0 }}>
+                              {method.badge}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Preview of Bank Details if Transferencia */}
+                        {method.id === 'transferencia' && (
+                          <div style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px dashed #BAE6FD', fontSize: '11px', color: '#0369A1', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <BrandingVectorIcon name="bank" size={13} color="#0284c7" />
+                              <span><strong>Banco:</strong> {method.banco || 'Banco Santander'}</span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <BrandingVectorIcon name="ticket" size={13} color="#0284c7" />
+                              <span><strong>CBU:</strong> <code style={{ background: '#E0F2FE', padding: '1px 6px', borderRadius: '4px' }}>{method.cbu || '07201239...'}</code></span>
+                            </div>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <BrandingVectorIcon name="tag" size={13} color="#0284c7" />
+                              <span><strong>Alias:</strong> <strong>{method.alias || 'DACAS.PAGOS.B2B'}</strong> | <strong>SWIFT:</strong> {method.swift || 'BAPROARBAXXX'}</span>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* General Form Inputs */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', flex: 1, boxSizing: 'border-box' }}>
+                        <div style={{ boxSizing: 'border-box' }}>
+                          <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted, #64748B)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                            Título de la Opción
+                          </label>
+                          <input
+                            type="text"
+                            value={method.title || ''}
+                            onChange={(e) => {
+                              const updated = { ...checkoutMethods };
+                              updated.payment[idx].title = e.target.value;
+                              setCheckoutMethods({ ...updated });
+                            }}
+                            style={{
+                              boxSizing: 'border-box',
+                              width: '100%',
+                              height: '38px',
+                              padding: '0 12px',
+                              borderRadius: '10px',
+                              border: '1px solid var(--border-color, #CBD5E1)',
+                              fontSize: '13px',
+                              background: 'var(--bg-main, #FFFFFF)',
+                              color: 'var(--text-main, #0F172A)',
+                              outline: 'none'
+                            }}
+                          />
+                        </div>
+
+                        <div style={{ boxSizing: 'border-box' }}>
+                          <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted, #64748B)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                            Descripción / Subtítulo Principal
+                          </label>
+                          <textarea
+                            rows={2}
+                            value={method.subtitle || ''}
+                            onChange={(e) => {
+                              const updated = { ...checkoutMethods };
+                              updated.payment[idx].subtitle = e.target.value;
+                              setCheckoutMethods({ ...updated });
+                            }}
+                            style={{
+                              boxSizing: 'border-box',
+                              width: '100%',
+                              padding: '8px 12px',
+                              borderRadius: '10px',
+                              border: '1px solid var(--border-color, #CBD5E1)',
+                              fontSize: '13px',
+                              background: 'var(--bg-main, #FFFFFF)',
+                              color: 'var(--text-main, #0F172A)',
+                              resize: 'vertical',
+                              outline: 'none'
+                            }}
+                          />
+                        </div>
+
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', boxSizing: 'border-box' }}>
+                          <div style={{ boxSizing: 'border-box' }}>
+                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted, #64748B)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                              Etiqueta / Badge
+                            </label>
+                            <input
+                              type="text"
+                              value={method.badge || ''}
+                              placeholder="Ej. Sin Recargo"
+                              onChange={(e) => {
+                                const updated = { ...checkoutMethods };
+                                updated.payment[idx].badge = e.target.value;
+                                setCheckoutMethods({ ...updated });
+                              }}
+                              style={{
+                                boxSizing: 'border-box',
+                                width: '100%',
+                                height: '38px',
+                                padding: '0 12px',
+                                borderRadius: '10px',
+                                border: '1px solid var(--border-color, #CBD5E1)',
+                                fontSize: '13px',
+                                background: 'var(--bg-main, #FFFFFF)',
+                                color: 'var(--text-main, #0F172A)',
+                                outline: 'none'
+                              }}
+                            />
+                          </div>
+                          <div style={{ boxSizing: 'border-box' }}>
+                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: 'var(--text-muted, #64748B)', marginBottom: '5px', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                              Ícono (ID / Emoji)
+                            </label>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', boxSizing: 'border-box' }}>
+                              <input
+                                type="text"
+                                value={method.icon || ''}
+                                placeholder="bank / credit-card"
+                                onChange={(e) => {
+                                  const updated = { ...checkoutMethods };
+                                  updated.payment[idx].icon = e.target.value;
+                                  setCheckoutMethods({ ...updated });
+                                }}
+                                style={{
+                                  boxSizing: 'border-box',
+                                  width: '100%',
+                                  height: '38px',
+                                  padding: '0 12px',
+                                  borderRadius: '10px',
+                                  border: '1px solid var(--border-color, #CBD5E1)',
+                                  fontSize: '13px',
+                                  background: 'var(--bg-main, #FFFFFF)',
+                                  color: 'var(--text-main, #0F172A)',
+                                  outline: 'none'
+                                }}
+                              />
+                              <div style={{
+                                width: '38px',
+                                height: '38px',
+                                borderRadius: '10px',
+                                border: '1px solid var(--border-color, #CBD5E1)',
+                                background: '#F8FAFC',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                flexShrink: 0,
+                                boxSizing: 'border-box'
+                              }}>
+                                <BrandingVectorIcon name={method.icon || 'credit-card'} size={18} color="#0fa4de" />
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* ── Specific Banking Fields for Transferencia CBU / SWIFT ── */}
+                        {method.id === 'transferencia' && (
+                          <div style={{
+                            background: '#F8FAFC',
+                            border: '1.5px solid #E2E8F0',
+                            borderRadius: '12px',
+                            padding: '14px',
+                            marginTop: '8px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '12px',
+                            boxSizing: 'border-box'
+                          }}>
+                            <div style={{ fontSize: '12px', fontWeight: '800', color: '#0369A1', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <BrandingVectorIcon name="bank" size={16} color="#0369A1" />
+                              <span>Datos Bancarios Oficiales (CBU / SWIFT / Alias)</span>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', boxSizing: 'border-box' }}>
+                              <div style={{ boxSizing: 'border-box' }}>
+                                <label style={{ display: 'block', fontSize: '10px', fontWeight: '700', color: '#475569', marginBottom: '3px', textTransform: 'uppercase' }}>
+                                  Banco / Entidad
+                                </label>
+                                <input
+                                  type="text"
+                                  value={method.banco || ''}
+                                  placeholder="Banco Santander / BBVA"
+                                  onChange={(e) => {
+                                    const updated = { ...checkoutMethods };
+                                    updated.payment[idx].banco = e.target.value;
+                                    setCheckoutMethods({ ...updated });
+                                  }}
+                                  style={{ boxSizing: 'border-box', width: '100%', height: '34px', padding: '0 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF' }}
+                                />
+                              </div>
+
+                              <div style={{ boxSizing: 'border-box' }}>
+                                <label style={{ display: 'block', fontSize: '10px', fontWeight: '700', color: '#475569', marginBottom: '3px', textTransform: 'uppercase' }}>
+                                  Titular / Razón Social
+                                </label>
+                                <input
+                                  type="text"
+                                  value={method.titular || ''}
+                                  placeholder="DACAS S.A."
+                                  onChange={(e) => {
+                                    const updated = { ...checkoutMethods };
+                                    updated.payment[idx].titular = e.target.value;
+                                    setCheckoutMethods({ ...updated });
+                                  }}
+                                  style={{ boxSizing: 'border-box', width: '100%', height: '34px', padding: '0 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF' }}
+                                />
+                              </div>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '10px', boxSizing: 'border-box' }}>
+                              <div style={{ boxSizing: 'border-box' }}>
+                                <label style={{ display: 'block', fontSize: '10px', fontWeight: '700', color: '#475569', marginBottom: '3px', textTransform: 'uppercase' }}>
+                                  CBU / CVU (22 dígitos)
+                                </label>
+                                <input
+                                  type="text"
+                                  value={method.cbu || ''}
+                                  placeholder="0720123920000001234567"
+                                  onChange={(e) => {
+                                    const updated = { ...checkoutMethods };
+                                    updated.payment[idx].cbu = e.target.value;
+                                    setCheckoutMethods({ ...updated });
+                                  }}
+                                  style={{ boxSizing: 'border-box', width: '100%', height: '34px', padding: '0 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF', fontFamily: 'monospace' }}
+                                />
+                              </div>
+
+                              <div style={{ boxSizing: 'border-box' }}>
+                                <label style={{ display: 'block', fontSize: '10px', fontWeight: '700', color: '#475569', marginBottom: '3px', textTransform: 'uppercase' }}>
+                                  Alias CBU
+                                </label>
+                                <input
+                                  type="text"
+                                  value={method.alias || ''}
+                                  placeholder="DACAS.PAGOS.B2B"
+                                  onChange={(e) => {
+                                    const updated = { ...checkoutMethods };
+                                    updated.payment[idx].alias = e.target.value;
+                                    setCheckoutMethods({ ...updated });
+                                  }}
+                                  style={{ boxSizing: 'border-box', width: '100%', height: '34px', padding: '0 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF', fontWeight: '700', color: '#0369A1' }}
+                                />
+                              </div>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', boxSizing: 'border-box' }}>
+                              <div style={{ boxSizing: 'border-box' }}>
+                                <label style={{ display: 'block', fontSize: '10px', fontWeight: '700', color: '#475569', marginBottom: '3px', textTransform: 'uppercase' }}>
+                                  Código SWIFT / BIC
+                                </label>
+                                <input
+                                  type="text"
+                                  value={method.swift || ''}
+                                  placeholder="BAPROARBAXXX"
+                                  onChange={(e) => {
+                                    const updated = { ...checkoutMethods };
+                                    updated.payment[idx].swift = e.target.value;
+                                    setCheckoutMethods({ ...updated });
+                                  }}
+                                  style={{ boxSizing: 'border-box', width: '100%', height: '34px', padding: '0 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF', fontFamily: 'monospace' }}
+                                />
+                              </div>
+
+                              <div style={{ boxSizing: 'border-box' }}>
+                                <label style={{ display: 'block', fontSize: '10px', fontWeight: '700', color: '#475569', marginBottom: '3px', textTransform: 'uppercase' }}>
+                                  CUIT / Tax ID
+                                </label>
+                                <input
+                                  type="text"
+                                  value={method.cuit || ''}
+                                  placeholder="30-68942158-9"
+                                  onChange={(e) => {
+                                    const updated = { ...checkoutMethods };
+                                    updated.payment[idx].cuit = e.target.value;
+                                    setCheckoutMethods({ ...updated });
+                                  }}
+                                  style={{ boxSizing: 'border-box', width: '100%', height: '34px', padding: '0 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF' }}
+                                />
+                              </div>
+                            </div>
+
+                            <div style={{ boxSizing: 'border-box' }}>
+                              <label style={{ display: 'block', fontSize: '10px', fontWeight: '700', color: '#475569', marginBottom: '3px', textTransform: 'uppercase' }}>
+                                Instrucciones para el Comprobante de Pago
+                              </label>
+                              <textarea
+                                rows={2}
+                                value={method.instrucciones || ''}
+                                placeholder="Enviar comprobante a cobranzas@dacas.com indicando N° de Orden."
+                                onChange={(e) => {
+                                  const updated = { ...checkoutMethods };
+                                  updated.payment[idx].instrucciones = e.target.value;
+                                  setCheckoutMethods({ ...updated });
+                                }}
+                                style={{ boxSizing: 'border-box', width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF', resize: 'vertical' }}
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* ── Specific Fields for E-Cheq ── */}
+                        {method.id === 'echeq' && (
+                          <div style={{
+                            background: '#F8FAFC',
+                            border: '1.5px solid #E2E8F0',
+                            borderRadius: '12px',
+                            padding: '14px',
+                            marginTop: '8px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '10px',
+                            boxSizing: 'border-box'
+                          }}>
+                            <div style={{ fontSize: '12px', fontWeight: '800', color: '#0369A1', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <BrandingVectorIcon name="file-text" size={16} color="#0369A1" />
+                              <span>Configuración de E-Cheq Digital</span>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', boxSizing: 'border-box' }}>
+                              <div style={{ boxSizing: 'border-box' }}>
+                                <label style={{ display: 'block', fontSize: '10px', fontWeight: '700', color: '#475569', marginBottom: '3px', textTransform: 'uppercase' }}>
+                                  CUIT Receptor
+                                </label>
+                                <input
+                                  type="text"
+                                  value={method.cuit_receptor || ''}
+                                  placeholder="30-68942158-9"
+                                  onChange={(e) => {
+                                    const updated = { ...checkoutMethods };
+                                    updated.payment[idx].cuit_receptor = e.target.value;
+                                    setCheckoutMethods({ ...updated });
+                                  }}
+                                  style={{ boxSizing: 'border-box', width: '100%', height: '34px', padding: '0 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF' }}
+                                />
+                              </div>
+
+                              <div style={{ boxSizing: 'border-box' }}>
+                                <label style={{ display: 'block', fontSize: '10px', fontWeight: '700', color: '#475569', marginBottom: '3px', textTransform: 'uppercase' }}>
+                                  Banco Receptor COELSA
+                                </label>
+                                <input
+                                  type="text"
+                                  value={method.banco_receptor || ''}
+                                  placeholder="Banco Santander"
+                                  onChange={(e) => {
+                                    const updated = { ...checkoutMethods };
+                                    updated.payment[idx].banco_receptor = e.target.value;
+                                    setCheckoutMethods({ ...updated });
+                                  }}
+                                  style={{ boxSizing: 'border-box', width: '100%', height: '34px', padding: '0 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF' }}
+                                />
+                              </div>
+                            </div>
+
+                            <div style={{ boxSizing: 'border-box' }}>
+                              <label style={{ display: 'block', fontSize: '10px', fontWeight: '700', color: '#475569', marginBottom: '3px', textTransform: 'uppercase' }}>
+                                Plazos Admitidos / Condiciones
+                              </label>
+                              <input
+                                type="text"
+                                value={method.plazos_admitidos || ''}
+                                placeholder="30 y 60 días fecha factura"
+                                onChange={(e) => {
+                                  const updated = { ...checkoutMethods };
+                                  updated.payment[idx].plazos_admitidos = e.target.value;
+                                  setCheckoutMethods({ ...updated });
+                                }}
+                                style={{ boxSizing: 'border-box', width: '100%', height: '34px', padding: '0 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF' }}
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {/* ── Specific Fields for Cuenta Corriente ── */}
+                        {method.id === 'cuenta_corriente' && (
+                          <div style={{
+                            background: '#F8FAFC',
+                            border: '1.5px solid #E2E8F0',
+                            borderRadius: '12px',
+                            padding: '14px',
+                            marginTop: '8px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '10px',
+                            boxSizing: 'border-box'
+                          }}>
+                            <div style={{ fontSize: '12px', fontWeight: '800', color: '#0369A1', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <BrandingVectorIcon name="building" size={16} color="#0369A1" />
+                              <span>Configuración de Cuenta Corriente B2B</span>
+                            </div>
+
+                            <div style={{ boxSizing: 'border-box' }}>
+                              <label style={{ display: 'block', fontSize: '10px', fontWeight: '700', color: '#475569', marginBottom: '3px', textTransform: 'uppercase' }}>
+                                Etiqueta del Selector de Plazos
+                              </label>
+                              <input
+                                type="text"
+                                value={method.terms_label || 'Plazo de Facturación:'}
+                                onChange={(e) => {
+                                  const updated = { ...checkoutMethods };
+                                  updated.payment[idx].terms_label = e.target.value;
+                                  setCheckoutMethods({ ...updated });
+                                }}
+                                style={{ boxSizing: 'border-box', width: '100%', height: '34px', padding: '0 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF' }}
+                              />
+                            </div>
+
+                            <div style={{ boxSizing: 'border-box' }}>
+                              <label style={{ display: 'block', fontSize: '10px', fontWeight: '700', color: '#475569', marginBottom: '3px', textTransform: 'uppercase' }}>
+                                Nota de Evaluación Crediticia
+                              </label>
+                              <textarea
+                                rows={2}
+                                value={method.instrucciones || ''}
+                                placeholder="Sujeto a verificación de línea crediticia aprobada en DACAS."
+                                onChange={(e) => {
+                                  const updated = { ...checkoutMethods };
+                                  updated.payment[idx].instrucciones = e.target.value;
+                                  setCheckoutMethods({ ...updated });
+                                }}
+                                style={{ boxSizing: 'border-box', width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF', resize: 'vertical' }}
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* ── Add New Payment Method & Terms & Conditions Card ── */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const newId = `custom_payment_${Date.now()}`;
+                        const updated = { ...checkoutMethods };
+                        updated.payment.push({
+                          id: newId,
+                          enabled: true,
+                          title: 'Nueva Opción de Pago',
+                          subtitle: 'Instrucciones para el pago corporativo',
+                          badge: 'Opcional',
+                          icon: 'credit-card',
+                          instrucciones: 'Instrucciones adicionales para este medio de pago.'
+                        });
+                        setCheckoutMethods({ ...updated });
+                      }}
+                      style={{
+                        background: 'var(--card-bg, #FFFFFF)',
+                        border: '2px dashed #0fa4de',
+                        color: '#0fa4de',
+                        borderRadius: '16px',
+                        padding: '14px 28px',
+                        fontWeight: '800',
+                        fontSize: '13px',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <BrandingVectorIcon name="plus" size={16} color="#0fa4de" strokeWidth={2.5} />
+                      <span>Añadir Nueva Forma de Pago</span>
+                    </button>
+                  </div>
+
+                  {/* Legal Terms & Conditions in Checkout Paso 4 */}
+                  <div style={{
+                    background: 'var(--card-bg, #FFFFFF)',
+                    borderRadius: '18px',
+                    padding: '24px',
+                    border: '1px solid var(--border-color, #E2E8F0)',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.03)',
+                    boxSizing: 'border-box'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                      <BrandingVectorIcon name="file-text" size={20} color="#0fa4de" />
+                      <h3 style={{ margin: 0, fontSize: '14px', fontWeight: '800', color: 'var(--text-main, #0F172A)' }}>
+                        Texto de Términos y Condiciones Comerciales (Checkbox Paso 4)
+                      </h3>
+                    </div>
+                    <p style={{ margin: '0 0 12px', fontSize: '12px', color: 'var(--text-muted, #64748B)' }}>
+                      Este es el texto que el cliente debe aceptar al final del Paso 4 para confirmar y procesar su orden mayorista.
+                    </p>
+                    <textarea
+                      rows={3}
+                      value={checkoutMethods.terms_conditions_text || ''}
+                      placeholder="Acepto las condiciones comerciales de DACAS B2B, términos de garantía oficial..."
+                      onChange={(e) => {
+                        setCheckoutMethods({
+                          ...checkoutMethods,
+                          terms_conditions_text: e.target.value
+                        });
+                      }}
+                      style={{
+                        boxSizing: 'border-box',
+                        width: '100%',
+                        padding: '12px 14px',
+                        borderRadius: '10px',
+                        border: '1px solid var(--border-color, #CBD5E1)',
+                        fontSize: '13px',
+                        background: 'var(--bg-main, #FFFFFF)',
+                        color: 'var(--text-main, #0F172A)',
+                        resize: 'vertical',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+          </section>
+        )}
+
         {/* ═══════════════ VISUAL & SHOP CUSTOMIZATION ═══════════════ */}
         {activeTab === 'visual' && (
           <section className="board-section" style={{ maxWidth: '1280px', margin: '0 auto' }}>
@@ -2507,7 +5011,7 @@ function AdminEcommerce() {
             }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                  <span style={{ fontSize: '26px' }}>🎨</span>
+                  <BrandingVectorIcon name="palette" size={26} color="#0fa4de" />
                   <h2 style={{ margin: 0, fontSize: '1.45rem', fontWeight: '900', color: '#0F172A', letterSpacing: '-0.02em' }}>
                     Personalización Visual del Shop
                   </h2>
@@ -2533,75 +5037,46 @@ function AdminEcommerce() {
               <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
                 <button
                   type="button"
+                  className="dacas-pill-btn"
                   onClick={() => window.open('/shop', '_blank')}
-                  style={{
-                    background: '#F8FAFC',
-                    color: '#0F172A',
-                    border: '1px solid #CBD5E1',
-                    borderRadius: '12px',
-                    padding: '11px 18px',
-                    fontWeight: '700',
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    transition: 'all 0.2s'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.background = '#E2E8F0'}
-                  onMouseLeave={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                  title="Abrir el Shop en una nueva pestaña"
                 >
-                  <span>👁️</span> Previsualizar en Shop
+                  <BrandingVectorIcon name="eye" size={16} />
+                  <span>Previsualizar en Shop</span>
                 </button>
 
                 <button
                   type="button"
+                  className="dacas-pill-btn"
                   onClick={handleResetVisualSettings}
                   disabled={isSavingVisual}
-                  style={{
-                    background: '#FEF2F2',
-                    color: '#DC2626',
-                    border: '1px solid #FECACA',
-                    borderRadius: '12px',
-                    padding: '11px 16px',
-                    fontWeight: '700',
-                    fontSize: '13px',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
+                  style={{ color: '#DC2626' }}
                   title="Restaura la configuración oficial de DACAS"
                 >
-                  <span>🔄</span> Restaurar Oficial
+                  <BrandingVectorIcon name="rotate-ccw" size={16} color="#DC2626" />
+                  <span>Restaurar Oficial</span>
                 </button>
 
                 <button
                   type="button"
+                  className="dacas-pill-btn active"
                   onClick={handleSaveVisualSettings}
                   disabled={isSavingVisual}
                   style={{
-                    background: 'linear-gradient(135deg, #0fa4de, #0284c7)',
-                    color: '#ffffff',
-                    border: 'none',
-                    borderRadius: '12px',
-                    padding: '11px 22px',
-                    fontWeight: '800',
-                    fontSize: '13.5px',
                     cursor: isSavingVisual ? 'not-allowed' : 'pointer',
-                    boxShadow: '0 4px 14px rgba(15, 164, 222, 0.35)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    transition: 'transform 0.2s'
+                    opacity: isSavingVisual ? 0.7 : 1
                   }}
-                  onMouseEnter={(e) => { if (!isSavingVisual) e.currentTarget.style.transform = 'translateY(-1px)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; }}
                 >
                   {isSavingVisual ? (
-                    <><span>⏳</span> Guardando...</>
+                    <>
+                      <BrandingVectorIcon name="rotate-ccw" size={16} color="#FFFFFF" />
+                      <span>Guardando...</span>
+                    </>
                   ) : (
-                    <><span>💾</span> Guardar Cambios</>
+                    <>
+                      <BrandingVectorIcon name="save" size={16} color="#FFFFFF" />
+                      <span>Guardar Cambios</span>
+                    </>
                   )}
                 </button>
               </div>
@@ -2623,7 +5098,7 @@ function AdminEcommerce() {
                 gap: '10px',
                 boxShadow: '0 4px 12px rgba(22, 101, 52, 0.1)'
               }}>
-                <span style={{ fontSize: '18px' }}>✅</span>
+                <BrandingVectorIcon name="check-circle" size={18} color="#166534" />
                 <span>¡Diseño y configuración visual del Shop actualizados correctamente en tiempo real!</span>
               </div>
             )}
@@ -2633,45 +5108,56 @@ function AdminEcommerce() {
                 {/* ── Sub-Tab Navigation Bar ── */}
                 <div style={{
                   display: 'flex',
-                  gap: '8px',
+                  gap: '10px',
                   background: '#F1F5F9',
-                  padding: '6px',
-                  borderRadius: '16px',
+                  padding: '8px',
+                  borderRadius: '20px',
                   marginBottom: '24px',
                   overflowX: 'auto'
                 }}>
                   {[
-                    { id: 'hero', label: '🚀 Carousel de Banners (Hero)', desc: `${(visualConfig.heroSlides || []).length} Slides Activos` },
-                    { id: 'announcement', label: '📢 Anuncio & Barra Superior', desc: 'Mensaje de cobertura' },
-                    { id: 'categories', label: '🏷️ 4 Categorías del Shop', desc: 'Títulos, íconos y orden' },
-                    { id: 'brands', label: '🏭 Marcas por Categoría', desc: 'Fabricantes autorizados' },
-                    { id: 'contact', label: '📞 Contacto B2B & WhatsApp', desc: 'Canales de atención' }
-                  ].map(tab => (
-                    <button
-                      key={tab.id}
-                      type="button"
-                      onClick={() => setVisualSubTab(tab.id)}
-                      style={{
-                        flex: 1,
-                        minWidth: '180px',
-                        background: visualSubTab === tab.id ? '#FFFFFF' : 'transparent',
-                        border: 'none',
-                        borderRadius: '12px',
-                        padding: '10px 16px',
-                        cursor: 'pointer',
-                        textAlign: 'left',
-                        boxShadow: visualSubTab === tab.id ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
-                        transition: 'all 0.2s'
-                      }}
-                    >
-                      <div style={{ fontWeight: '800', fontSize: '13px', color: visualSubTab === tab.id ? '#0284c7' : '#334155' }}>
-                        {tab.label}
-                      </div>
-                      <div style={{ fontSize: '11px', color: '#64748B', marginTop: '2px', fontWeight: '500' }}>
-                        {tab.desc}
-                      </div>
-                    </button>
-                  ))}
+                    { id: 'hero', icon: 'rocket', title: 'Carousel de Banners (Hero)', desc: `${(visualConfig.heroSlides || []).length} Slides Activos` },
+                    { id: 'announcement', icon: 'megaphone', title: 'Anuncio & Barra Superior', desc: 'Mensaje de cobertura' },
+                    { id: 'categories', icon: 'tag', title: '4 Categorías del Shop', desc: 'Títulos, íconos y orden' },
+                    { id: 'brands', icon: 'building', title: 'Marcas por Categoría', desc: 'Fabricantes autorizados' },
+                    { id: 'contact', icon: 'headphones', title: 'Contacto B2B & WhatsApp', desc: 'Canales de atención' }
+                  ].map(tab => {
+                    const isTabActive = visualSubTab === tab.id;
+                    return (
+                      <button
+                        key={tab.id}
+                        type="button"
+                        onClick={() => setVisualSubTab(tab.id)}
+                        style={{
+                          flex: 1,
+                          minWidth: '190px',
+                          background: isTabActive ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : '#FFFFFF',
+                          border: isTabActive ? 'none' : '1px solid #E2E8F0',
+                          borderRadius: '14px',
+                          padding: '12px 16px',
+                          cursor: 'pointer',
+                          textAlign: 'left',
+                          boxShadow: isTabActive ? '0 4px 14px rgba(15, 164, 222, 0.35)' : '0 1px 3px rgba(0,0,0,0.03)',
+                          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                          transform: isTabActive ? 'translateY(-1px)' : 'none',
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
+                          <BrandingVectorIcon
+                            name={tab.icon}
+                            size={18}
+                            color={isTabActive ? '#FFFFFF' : '#0284c7'}
+                          />
+                          <div style={{ fontWeight: '800', fontSize: '13px', color: isTabActive ? '#FFFFFF' : '#0F172A' }}>
+                            {tab.title}
+                          </div>
+                        </div>
+                        <div style={{ fontSize: '11px', color: isTabActive ? 'rgba(255, 255, 255, 0.85)' : '#64748B', fontWeight: '500', paddingLeft: '26px' }}>
+                          {tab.desc}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
 
                 {/* ── SUBTAB 1: HERO CAROUSEL ── */}
@@ -3073,12 +5559,12 @@ function AdminEcommerce() {
 
                 {/* ── SUBTAB 2: ANNOUNCEMENT & HEADER ── */}
                 {visualSubTab === 'announcement' && (
-                  <div style={{ background: '#FFFFFF', padding: '28px', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
-                    <h3 style={{ margin: '0 0 18px', fontSize: '1.1rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ background: '#FFFFFF', padding: '30px', borderRadius: '22px', border: '1px solid rgba(15, 164, 222, 0.18)', boxShadow: '0 12px 36px rgba(7, 21, 36, 0.05)' }}>
+                    <h3 style={{ margin: '0 0 18px', fontSize: '1.25rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '-0.02em' }}>
                       <span>📢</span> Configuración de la Barra Superior & Textos de Cabecera
                     </h3>
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', background: '#F8FAFC', padding: '14px 18px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', background: '#F8FAFC', padding: '14px 18px', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
                       <input
                         type="checkbox"
                         id="toggleAnnouncement"
@@ -3087,7 +5573,7 @@ function AdminEcommerce() {
                           ...visualConfig,
                           announcement: { ...(visualConfig.announcement || {}), enabled: e.target.checked }
                         })}
-                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                        style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#0fa4de' }}
                       />
                       <label htmlFor="toggleAnnouncement" style={{ fontWeight: '700', fontSize: '13.5px', color: '#0F172A', cursor: 'pointer' }}>
                         Mostrar Barra Superior de Anuncios y Cobertura Regional
@@ -3106,7 +5592,7 @@ function AdminEcommerce() {
                             ...visualConfig,
                             announcement: { ...(visualConfig.announcement || {}), text: e.target.value }
                           })}
-                          style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13.5px', background: '#FFFFFF' }}
                           placeholder="Distribución Oficial y Soporte Certificado en 12 Países..."
                         />
                       </div>
@@ -3122,7 +5608,7 @@ function AdminEcommerce() {
                             ...visualConfig,
                             general: { ...(visualConfig.general || {}), contactPhone: e.target.value }
                           })}
-                          style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13.5px', background: '#FFFFFF' }}
                           placeholder="+54 11 4110-3300"
                         />
                       </div>
@@ -3140,7 +5626,7 @@ function AdminEcommerce() {
                             ...visualConfig,
                             general: { ...(visualConfig.general || {}), shopTitle: e.target.value }
                           })}
-                          style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13.5px', background: '#FFFFFF' }}
                           placeholder="DACAS B2B Shop"
                         />
                       </div>
@@ -3156,7 +5642,7 @@ function AdminEcommerce() {
                             ...visualConfig,
                             general: { ...(visualConfig.general || {}), shopSubtitle: e.target.value }
                           })}
-                          style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13.5px', background: '#FFFFFF' }}
                           placeholder="Plataforma Corporativa de Soluciones IT..."
                         />
                       </div>
@@ -3166,37 +5652,64 @@ function AdminEcommerce() {
 
                 {/* ── SUBTAB 3: CATEGORIES ── */}
                 {visualSubTab === 'categories' && (
-                  <div style={{ background: '#FFFFFF', padding: '28px', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+                  <div style={{ background: '#FFFFFF', padding: '30px', borderRadius: '22px', border: '1px solid rgba(15, 164, 222, 0.18)', boxShadow: '0 12px 36px rgba(7, 21, 36, 0.05)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px', borderBottom: '1px solid #F1F5F9', paddingBottom: '16px' }}>
                       <div>
-                        <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '-0.02em' }}>
                           <span>🏷️</span> Las 4 Secciones Principales del Shop
                         </h3>
-                        <p style={{ margin: '4px 0 0', color: '#64748B', fontSize: '13px' }}>
+                        <p style={{ margin: '4px 0 0', color: '#64748B', fontSize: '13.5px' }}>
                           Personaliza el nombre, ícono y descripción visible para los integradores y clientes.
                         </p>
                       </div>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '18px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '22px' }}>
                       {(visualConfig.categories || []).map((cat, idx) => (
                         <div
                           key={cat.key || idx}
                           style={{
-                            background: '#F8FAFC',
-                            padding: '20px',
-                            borderRadius: '14px',
-                            border: '1px solid #E2E8F0',
+                            background: '#FFFFFF',
+                            padding: '24px',
+                            borderRadius: '18px',
+                            border: '1px solid rgba(15, 164, 222, 0.2)',
+                            boxShadow: '0 6px 24px rgba(7, 21, 36, 0.04)',
                             display: 'flex',
                             flexDirection: 'column',
-                            gap: '12px'
+                            gap: '16px',
+                            transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)'
                           }}
                         >
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span style={{ fontSize: '12px', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                            <span style={{
+                              background: 'linear-gradient(135deg, rgba(15, 164, 222, 0.12), rgba(2, 132, 199, 0.06))',
+                              color: '#0284c7',
+                              padding: '5px 12px',
+                              borderRadius: '999px',
+                              fontSize: '12px',
+                              fontWeight: '800',
+                              textTransform: 'uppercase',
+                              letterSpacing: '0.04em',
+                              border: '1px solid rgba(15, 164, 222, 0.2)'
+                            }}>
                               SECCIÓN #{idx + 1} ({cat.key})
                             </span>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <label
+                              htmlFor={`cat-enabled-${idx}`}
+                              style={{
+                                background: cat.enabled !== false ? '#DCFCE7' : '#F1F5F9',
+                                color: cat.enabled !== false ? '#166534' : '#64748B',
+                                border: '1px solid ' + (cat.enabled !== false ? '#BBF7D0' : '#E2E8F0'),
+                                padding: '4px 10px',
+                                borderRadius: '999px',
+                                fontSize: '12px',
+                                fontWeight: '700',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px',
+                                cursor: 'pointer'
+                              }}
+                            >
                               <input
                                 type="checkbox"
                                 id={`cat-enabled-${idx}`}
@@ -3206,17 +5719,15 @@ function AdminEcommerce() {
                                   updatedCats[idx] = { ...updatedCats[idx], enabled: e.target.checked };
                                   setVisualConfig({ ...visualConfig, categories: updatedCats });
                                 }}
-                                style={{ cursor: 'pointer' }}
+                                style={{ width: '14px', height: '14px', cursor: 'pointer', accentColor: '#10b981' }}
                               />
-                              <label htmlFor={`cat-enabled-${idx}`} style={{ fontSize: '11px', fontWeight: '700', color: '#475569', cursor: 'pointer' }}>
-                                Activa
-                              </label>
-                            </div>
+                              {cat.enabled !== false ? 'Activa' : 'Inactiva'}
+                            </label>
                           </div>
 
-                          <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr', gap: '10px' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: '70px 1fr', gap: '12px' }}>
                             <div>
-                              <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                              <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
                                 Ícono
                               </label>
                               <input
@@ -3227,11 +5738,19 @@ function AdminEcommerce() {
                                   updatedCats[idx] = { ...updatedCats[idx], icon: e.target.value };
                                   setVisualConfig({ ...visualConfig, categories: updatedCats });
                                 }}
-                                style={{ width: '100%', textAlign: 'center', padding: '8px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '16px' }}
+                                style={{
+                                  width: '100%',
+                                  textAlign: 'center',
+                                  padding: '9px',
+                                  borderRadius: '10px',
+                                  border: '1.5px solid #CBD5E1',
+                                  fontSize: '20px',
+                                  background: '#F8FAFC'
+                                }}
                               />
                             </div>
                             <div>
-                              <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                              <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
                                 Nombre de la Categoría
                               </label>
                               <input
@@ -3242,13 +5761,22 @@ function AdminEcommerce() {
                                   updatedCats[idx] = { ...updatedCats[idx], name: e.target.value, label: e.target.value };
                                   setVisualConfig({ ...visualConfig, categories: updatedCats });
                                 }}
-                                style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', fontWeight: '700' }}
+                                style={{
+                                  width: '100%',
+                                  padding: '9px 14px',
+                                  borderRadius: '10px',
+                                  border: '1.5px solid #CBD5E1',
+                                  fontSize: '13.5px',
+                                  fontWeight: '700',
+                                  color: '#0F172A',
+                                  background: '#FFFFFF'
+                                }}
                               />
                             </div>
                           </div>
 
                           <div>
-                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                            <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
                               Descripción Breve
                             </label>
                             <textarea
@@ -3259,7 +5787,17 @@ function AdminEcommerce() {
                                 setVisualConfig({ ...visualConfig, categories: updatedCats });
                               }}
                               rows={2}
-                              style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12px', resize: 'vertical' }}
+                              style={{
+                                width: '100%',
+                                padding: '10px 14px',
+                                borderRadius: '10px',
+                                border: '1.5px solid #CBD5E1',
+                                fontSize: '13px',
+                                lineHeight: '1.5',
+                                color: '#334155',
+                                background: '#FFFFFF',
+                                resize: 'vertical'
+                              }}
                             />
                           </div>
                         </div>
@@ -3268,120 +5806,318 @@ function AdminEcommerce() {
                   </div>
                 )}
 
-                {/* ── SUBTAB 4: BRANDS PER CATEGORY ── */}
+                {/* ── SUBTAB 4: BRANDS PER CATEGORY & COUNTRY ── */}
                 {visualSubTab === 'brands' && (
-                  <div style={{ background: '#FFFFFF', padding: '28px', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
-                    <h3 style={{ margin: '0 0 18px', fontSize: '1.1rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span>🏭</span> Fabricantes / Marcas Asignadas por Sección
-                    </h3>
-                    <p style={{ margin: '0 0 20px', color: '#64748B', fontSize: '13px' }}>
-                      Gestiona qué marcas aparecen en el selector previo antes de mostrar los productos de cada categoría.
-                    </p>
+                  <div style={{ background: '#FFFFFF', padding: '30px', borderRadius: '22px', border: '1px solid rgba(15, 164, 222, 0.18)', boxShadow: '0 12px 36px rgba(7, 21, 36, 0.05)' }}>
+                    {/* Header & Controls */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '22px', borderBottom: '1px solid #F1F5F9', paddingBottom: '18px' }}>
+                      <div>
+                        <h3 style={{ margin: '0 0 6px', fontSize: '1.25rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '-0.02em' }}>
+                          <span>🏭</span> Gestión de Marcas y Cobertura por País
+                        </h3>
+                        <p style={{ margin: 0, color: '#64748B', fontSize: '13.5px', maxWidth: '700px', lineHeight: 1.4 }}>
+                          Crea nuevas marcas, elimínalas y define en qué países opera cada fabricante. Las marcas solo aparecerán en el Shop cuando el cliente navegue desde un país autorizado.
+                        </p>
+                      </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setNewBrandForm({
+                              name: '',
+                              category: 'networking',
+                              isGlobal: true,
+                              countries: []
+                            });
+                            setShowNewBrandModal(true);
+                          }}
+                          style={{
+                            background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                            color: '#FFFFFF',
+                            border: 'none',
+                            borderRadius: '10px',
+                            padding: '10px 18px',
+                            fontSize: '13px',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            boxShadow: '0 3px 10px rgba(15, 164, 222, 0.3)'
+                          }}
+                        >
+                          <span>➕</span> Crear Nueva Marca
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Country Filter Banner */}
+                    <div style={{
+                      background: '#F8FAFC',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '12px',
+                      padding: '12px 16px',
+                      marginBottom: '24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      flexWrap: 'wrap',
+                      gap: '12px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: '700', color: '#334155' }}>
+                          🌍 Filtrar Vista por País:
+                        </span>
+                        <span style={{ fontSize: '12px', color: '#64748B' }}>
+                          (Verifica qué marcas están activas para clientes de cada región)
+                        </span>
+                      </div>
+
+                      <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', maxWidth: '100%', paddingBottom: '2px' }}>
+                        <button
+                          type="button"
+                          onClick={() => setBrandCountryFilter('all')}
+                          style={{
+                            background: brandCountryFilter === 'all' ? '#0284c7' : '#FFFFFF',
+                            color: brandCountryFilter === 'all' ? '#FFFFFF' : '#475569',
+                            border: `1px solid ${brandCountryFilter === 'all' ? '#0284c7' : '#CBD5E1'}`,
+                            borderRadius: '8px',
+                            padding: '5px 12px',
+                            fontSize: '12px',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          🌐 Todos los Países (Global)
+                        </button>
+                        {DACAS_COUNTRIES_LIST.map(c => {
+                          const isSelected = brandCountryFilter === c.code;
+                          return (
+                            <button
+                              key={c.code}
+                              type="button"
+                              onClick={() => setBrandCountryFilter(c.code)}
+                              style={{
+                                background: isSelected ? '#0284c7' : '#FFFFFF',
+                                color: isSelected ? '#FFFFFF' : '#475569',
+                                border: `1px solid ${isSelected ? '#0284c7' : '#CBD5E1'}`,
+                                borderRadius: '8px',
+                                padding: '5px 10px',
+                                fontSize: '12px',
+                                fontWeight: isSelected ? '700' : '600',
+                                cursor: 'pointer',
+                                whiteSpace: 'nowrap',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              <span>{c.flag}</span> {c.code}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Categories Grid */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '22px' }}>
                       {[
-                        { key: 'networking', title: '🌐 Networking' },
-                        { key: 'infraestructura', title: '⚡ Infraestructura' },
-                        { key: 'comunicaciones_unificadas', title: '📞 Comunicaciones Unificadas' },
-                        { key: 'security', title: '🛡️ Seguridad' }
+                        { key: 'networking', title: 'Networking', icon: '🌐' },
+                        { key: 'infraestructura', title: 'Infraestructura', icon: '⚡' },
+                        { key: 'comunicaciones_unificadas', title: 'Comunicaciones Unificadas', icon: '📞' },
+                        { key: 'security', title: 'Seguridad & Ciberseguridad', icon: '🛡️' }
                       ].map(group => {
-                        const brandsList = (visualConfig.categoryBrands && visualConfig.categoryBrands[group.key]) || [];
+                        const rawList = (visualConfig?.categoryBrands && visualConfig.categoryBrands[group.key]) || [];
+                        const normalizedBrands = rawList.map((item, idx) => ({
+                          ...normalizeBrandItem(item, group.key),
+                          originalIdx: idx
+                        }));
+
+                        // Filter based on country filter if active
+                        const displayedBrands = normalizedBrands.filter(b => {
+                          if (brandCountryFilter === 'all') return true;
+                          if (!b.countries || b.countries.length === 0) return true; // Global
+                          return b.countries.includes(brandCountryFilter);
+                        });
+
                         return (
                           <div
                             key={group.key}
                             style={{
                               background: '#F8FAFC',
+                              borderRadius: '16px',
+                              border: '1px solid #E2E8F0',
                               padding: '20px',
-                              borderRadius: '14px',
-                              border: '1px solid #E2E8F0'
+                              display: 'flex',
+                              flexDirection: 'column'
                             }}
                           >
-                            <h4 style={{ margin: '0 0 12px', fontSize: '13.5px', fontWeight: '800', color: '#0F172A' }}>
-                              {group.title} ({brandsList.length})
-                            </h4>
+                            {/* Category Header */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #E2E8F0', paddingBottom: '10px' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span style={{ fontSize: '18px' }}>{group.icon}</span>
+                                <div>
+                                  <h4 style={{ margin: 0, fontSize: '14px', fontWeight: '800', color: '#0F172A' }}>
+                                    {group.title}
+                                  </h4>
+                                  <div style={{ fontSize: '11px', color: '#64748B' }}>
+                                    {displayedBrands.length} {displayedBrands.length === 1 ? 'marca activa' : 'marcas activas'}
+                                    {brandCountryFilter !== 'all' && ` en ${brandCountryFilter}`}
+                                  </div>
+                                </div>
+                              </div>
 
-                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '14px' }}>
-                              {brandsList.map((brandKey, bIdx) => (
-                                <span
-                                  key={bIdx}
-                                  style={{
-                                    background: '#FFFFFF',
-                                    border: '1px solid #CBD5E1',
-                                    padding: '4px 10px',
-                                    borderRadius: '8px',
-                                    fontSize: '12px',
-                                    fontWeight: '700',
-                                    color: '#0F172A',
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    gap: '6px'
-                                  }}
-                                >
-                                  {brandKey.toUpperCase()}
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      const updatedMap = { ...(visualConfig.categoryBrands || {}) };
-                                      updatedMap[group.key] = brandsList.filter((_, i) => i !== bIdx);
-                                      setVisualConfig({ ...visualConfig, categoryBrands: updatedMap });
-                                    }}
-                                    style={{
-                                      background: 'transparent',
-                                      border: 'none',
-                                      color: '#94A3B8',
-                                      cursor: 'pointer',
-                                      padding: '0',
-                                      fontWeight: '900',
-                                      fontSize: '11px'
-                                    }}
-                                    onMouseEnter={(e) => e.currentTarget.style.color = '#DC2626'}
-                                    onMouseLeave={(e) => e.currentTarget.style.color = '#94A3B8'}
-                                    title="Quitar marca"
-                                  >
-                                    ✕
-                                  </button>
-                                </span>
-                              ))}
-                            </div>
-
-                            {/* Add Brand Input */}
-                            <div style={{ display: 'flex', gap: '6px' }}>
-                              <input
-                                type="text"
-                                placeholder="Añadir marca (ej: sophos)"
-                                id={`new-brand-input-${group.key}`}
-                                onKeyDown={(e) => {
-                                  if (e.key === 'Enter') {
-                                    e.preventDefault();
-                                    const val = e.target.value.trim().toLowerCase();
-                                    if (val && !brandsList.includes(val)) {
-                                      const updatedMap = { ...(visualConfig.categoryBrands || {}) };
-                                      updatedMap[group.key] = [...brandsList, val];
-                                      setVisualConfig({ ...visualConfig, categoryBrands: updatedMap });
-                                      e.target.value = '';
-                                    }
-                                  }
-                                }}
-                                style={{ flex: 1, padding: '7px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12px' }}
-                              />
                               <button
                                 type="button"
                                 onClick={() => {
-                                  const input = document.getElementById(`new-brand-input-${group.key}`);
-                                  if (input) {
-                                    const val = input.value.trim().toLowerCase();
-                                    if (val && !brandsList.includes(val)) {
-                                      const updatedMap = { ...(visualConfig.categoryBrands || {}) };
-                                      updatedMap[group.key] = [...brandsList, val];
-                                      setVisualConfig({ ...visualConfig, categoryBrands: updatedMap });
-                                      input.value = '';
-                                    }
-                                  }
+                                  setNewBrandForm({
+                                    name: '',
+                                    category: group.key,
+                                    isGlobal: true,
+                                    countries: []
+                                  });
+                                  setShowNewBrandModal(true);
                                 }}
-                                style={{ background: '#0284c7', color: '#fff', border: 'none', borderRadius: '8px', padding: '7px 12px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                                style={{
+                                  background: '#E0F2FE',
+                                  color: '#0369A1',
+                                  border: '1px solid #BAE6FD',
+                                  borderRadius: '8px',
+                                  padding: '5px 10px',
+                                  fontSize: '11.5px',
+                                  fontWeight: '700',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '4px'
+                                }}
                               >
                                 + Añadir
                               </button>
+                            </div>
+
+                            {/* Brands List */}
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1, minHeight: '120px' }}>
+                              {displayedBrands.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '30px 10px', color: '#94A3B8', fontSize: '12.5px', background: '#FFFFFF', borderRadius: '10px', border: '1px dashed #CBD5E1' }}>
+                                  No hay marcas asignadas para esta categoría {brandCountryFilter !== 'all' ? `en ${brandCountryFilter}` : ''}
+                                </div>
+                              ) : (
+                                displayedBrands.map(b => {
+                                  const isGlobal = !b.countries || b.countries.length === 0;
+                                  return (
+                                    <div
+                                      key={b.originalIdx}
+                                      style={{
+                                        background: '#FFFFFF',
+                                        border: '1px solid #E2E8F0',
+                                        borderRadius: '10px',
+                                        padding: '10px 12px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        gap: '10px',
+                                        boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+                                        transition: 'all 0.15s'
+                                      }}
+                                    >
+                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                          <span style={{ fontWeight: '800', fontSize: '13px', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
+                                            {b.name}
+                                          </span>
+                                        </div>
+
+                                        {/* Country Badges */}
+                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
+                                          {isGlobal ? (
+                                            <span style={{
+                                              background: '#DCFCE7',
+                                              color: '#15803D',
+                                              fontSize: '10.5px',
+                                              fontWeight: '700',
+                                              padding: '2px 8px',
+                                              borderRadius: '999px',
+                                              display: 'inline-flex',
+                                              alignItems: 'center',
+                                              gap: '4px'
+                                            }}>
+                                              🌐 Todos los Países (Global)
+                                            </span>
+                                          ) : (
+                                            <span style={{
+                                              background: '#E0F2FE',
+                                              color: '#0369A1',
+                                              fontSize: '10.5px',
+                                              fontWeight: '700',
+                                              padding: '2px 8px',
+                                              borderRadius: '999px',
+                                              display: 'inline-flex',
+                                              alignItems: 'center',
+                                              gap: '4px'
+                                            }}>
+                                              <span>{b.countries.map(cCode => {
+                                                const found = DACAS_COUNTRIES_LIST.find(c => c.code === cCode);
+                                                return found ? found.flag : cCode;
+                                              }).join(' ')}</span>
+                                              <span>({b.countries.length} {b.countries.length === 1 ? 'país' : 'países'})</span>
+                                            </span>
+                                          )}
+                                        </div>
+                                      </div>
+
+                                      {/* Brand Actions */}
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
+                                        <button
+                                          type="button"
+                                          onClick={() => setEditingBrandModal({
+                                            catKey: group.key,
+                                            brandIdx: b.originalIdx,
+                                            name: b.name,
+                                            countries: isGlobal ? [] : b.countries
+                                          })}
+                                          title="Administrar países para esta marca"
+                                          style={{
+                                            background: '#F1F5F9',
+                                            color: '#334155',
+                                            border: '1px solid #CBD5E1',
+                                            borderRadius: '6px',
+                                            padding: '5px 9px',
+                                            fontSize: '11px',
+                                            fontWeight: '700',
+                                            cursor: 'pointer',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '4px'
+                                          }}
+                                        >
+                                          ⚙️ Países
+                                        </button>
+
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDeleteBrand(group.key, b.originalIdx, b.name)}
+                                          title="Eliminar marca"
+                                          style={{
+                                            background: '#FEF2F2',
+                                            color: '#DC2626',
+                                            border: '1px solid #FECACA',
+                                            borderRadius: '6px',
+                                            padding: '5px 8px',
+                                            fontSize: '11px',
+                                            fontWeight: '700',
+                                            cursor: 'pointer'
+                                          }}
+                                        >
+                                          🗑️
+                                        </button>
+                                      </div>
+                                    </div>
+                                  );
+                                })
+                              )}
                             </div>
                           </div>
                         );
@@ -3392,12 +6128,12 @@ function AdminEcommerce() {
 
                 {/* ── SUBTAB 5: CONTACT & WHATSAPP ── */}
                 {visualSubTab === 'contact' && (
-                  <div style={{ background: '#FFFFFF', padding: '28px', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
-                    <h3 style={{ margin: '0 0 18px', fontSize: '1.1rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ background: '#FFFFFF', padding: '30px', borderRadius: '22px', border: '1px solid rgba(15, 164, 222, 0.18)', boxShadow: '0 12px 36px rgba(7, 21, 36, 0.05)' }}>
+                    <h3 style={{ margin: '0 0 18px', fontSize: '1.25rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '-0.02em' }}>
                       <span>📞</span> Canales de Atención Directa y Cotización B2B
                     </h3>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '18px' }}>
                       <div>
                         <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
                           WhatsApp Corporativo (con código de país)
@@ -3409,10 +6145,10 @@ function AdminEcommerce() {
                             ...visualConfig,
                             general: { ...(visualConfig.general || {}), whatsappNumber: e.target.value }
                           })}
-                          style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13.5px', background: '#FFFFFF' }}
                           placeholder="+5491141103300"
                         />
-                        <p style={{ margin: '4px 0 0', fontSize: '11px', color: '#64748B' }}>
+                        <p style={{ margin: '4px 0 0', fontSize: '11.5px', color: '#64748B' }}>
                           Permite a los integradores enviar sus carritos de cotización directo a WhatsApp.
                         </p>
                       </div>
@@ -3428,7 +6164,7 @@ function AdminEcommerce() {
                             ...visualConfig,
                             general: { ...(visualConfig.general || {}), contactEmail: e.target.value }
                           })}
-                          style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13.5px', background: '#FFFFFF' }}
                           placeholder="ventas@dacas.com"
                         />
                       </div>
@@ -3778,25 +6514,123 @@ function AdminEcommerce() {
                 </div>
               </div>
 
-              {/* Grid 4: Canales de Notificación y Facturación */}
-              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '18px 20px', borderRadius: '16px', marginBottom: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
-                <div style={{ fontSize: '12px', fontWeight: '800', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span>📧</span> Enrutamiento de Correos & Facturación
+              {/* Grid 4.5: Cuentas de Usuarios Vinculadas a esta Empresa */}
+              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '20px', borderRadius: '16px', marginBottom: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                  <div style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>👥</span> Usuarios con Acceso al Shop ({selectedUser.company_users?.length || 1})
+                  </div>
+                  <button
+                    onClick={() => {
+                      handleOpenAddUserToCompany(selectedUser);
+                      setShowUserModal(false);
+                    }}
+                    style={{
+                      background: 'linear-gradient(135deg, #0fa4de, #0284c7)',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '7px 14px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      boxShadow: '0 2px 6px rgba(15, 164, 222, 0.3)'
+                    }}
+                  >
+                    ➕ Agregar Usuario a esta Empresa
+                  </button>
                 </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '12px', fontSize: '12.5px' }}>
-                  <div style={{ background: '#F8FAFC', padding: '12px 14px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-                    <span style={{ color: '#64748B', display: 'block', fontWeight: '600', marginBottom: '2px' }}>Factura Electrónica:</span>
-                    <strong style={{ color: '#0F172A', wordBreak: 'break-all', fontWeight: '700' }}>{selectedUser.email_factura_electronica || selectedUser.email}</strong>
-                  </div>
-                  <div style={{ background: '#F8FAFC', padding: '12px 14px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-                    <span style={{ color: '#64748B', display: 'block', fontWeight: '600', marginBottom: '2px' }}>Contacto de Compras:</span>
-                    <strong style={{ color: '#0F172A', wordBreak: 'break-all', fontWeight: '700' }}>{selectedUser.email_contacto_compras || selectedUser.email}</strong>
-                  </div>
-                  <div style={{ background: '#F8FAFC', padding: '12px 14px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-                    <span style={{ color: '#64748B', display: 'block', fontWeight: '600', marginBottom: '2px' }}>Cotizaciones Automáticas:</span>
-                    <strong style={{ color: '#0F172A', wordBreak: 'break-all', fontWeight: '700' }}>{selectedUser.email_cotizaciones_automaticas || selectedUser.email}</strong>
-                  </div>
-                </div>
+
+                <table className="users-table" style={{ width: '100%', fontSize: '13px' }}>
+                  <thead>
+                    <tr>
+                      <th>Usuario / Contacto</th>
+                      <th>Email (LogIn)</th>
+                      <th>Cargo / Función</th>
+                      <th>Teléfono</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {(selectedUser.company_users && selectedUser.company_users.length > 0 ? selectedUser.company_users : [selectedUser]).map(u => {
+                      const isCurrentUser = u.id === selectedUser.id;
+                      return (
+                        <tr key={u.id} style={{ background: isCurrentUser ? 'rgba(15, 164, 222, 0.04)' : 'transparent' }}>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <strong style={{ color: '#0F172A' }}>{u.name}</strong>
+                              {isCurrentUser && (
+                                <span style={{ background: '#E0F2FE', color: '#0369A1', fontSize: '10.5px', fontWeight: '800', padding: '1px 6px', borderRadius: '4px' }}>
+                                  Viendo
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td style={{ color: '#0fa4de', fontWeight: '600' }}>{u.email}</td>
+                          <td>
+                            <span style={{ background: '#F1F5F9', color: '#334155', padding: '2px 8px', borderRadius: '6px', fontSize: '11.5px', fontWeight: '600' }}>
+                              {u.cargo || 'Encargado de Compras'}
+                            </span>
+                          </td>
+                          <td style={{ color: '#64748B' }}>{u.phone || '—'}</td>
+                          <td>
+                            <span style={{
+                              background: (u.status || 'activo') === 'activo' ? '#DCFCE7' : (u.status === 'pendiente' ? '#FEF3C7' : '#FEE2E2'),
+                              color: (u.status || 'activo') === 'activo' ? '#166534' : (u.status === 'pendiente' ? '#92400E' : '#991B1B'),
+                              padding: '2px 8px',
+                              borderRadius: '999px',
+                              fontSize: '11px',
+                              fontWeight: '700'
+                            }}>
+                              {(u.status || 'activo') === 'activo' ? '🟢 Activo' : (u.status === 'pendiente' ? '🟡 Pendiente' : '🔴 Inactivo')}
+                            </span>
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                              <button
+                                onClick={() => {
+                                  handleEditUser(u);
+                                  setShowUserModal(false);
+                                }}
+                                style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', color: '#334155', padding: '4px 8px', borderRadius: '6px', cursor: 'pointer', fontSize: '11.5px', fontWeight: '600' }}
+                                title="Editar este usuario"
+                              >
+                                ✏️ Editar
+                              </button>
+                              <button
+                                onClick={() => handleToggleUserStatus(u.id, (u.status || 'activo') === 'activo' ? 'inactivo' : 'activo')}
+                                style={{
+                                  background: (u.status || 'activo') === 'activo' ? '#FEF2F2' : '#F0FDF4',
+                                  border: '1px solid ' + ((u.status || 'activo') === 'activo' ? '#FECACA' : '#BBF7D0'),
+                                  color: (u.status || 'activo') === 'activo' ? '#DC2626' : '#16A34A',
+                                  padding: '4px 8px',
+                                  borderRadius: '6px',
+                                  cursor: 'pointer',
+                                  fontSize: '11.5px',
+                                  fontWeight: '600'
+                                }}
+                                title={(u.status || 'activo') === 'activo' ? 'Desactivar acceso' : 'Activar acceso'}
+                              >
+                                {(u.status || 'activo') === 'activo' ? 'Desactivar' : 'Activar'}
+                              </button>
+                              <button
+                                onClick={() => handleDeleteUser(u.id, u.name)}
+                                style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', padding: '4px 7px', borderRadius: '6px', cursor: 'pointer', fontSize: '11.5px' }}
+                                title="Eliminar cuenta de usuario"
+                              >
+                                🗑️
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
               </div>
 
               {/* Grid 5: Historial de Órdenes */}
@@ -4250,22 +7084,22 @@ function AdminEcommerce() {
             <div style={{
               background: 'linear-gradient(135deg, #071524 0%, #0d233a 100%)',
               color: '#ffffff',
-              padding: '22px 28px',
+              padding: '20px 24px',
               display: 'flex',
               justifyContent: 'space-between',
               alignItems: 'center',
               flexWrap: 'wrap',
               gap: '12px'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: 'rgba(15, 164, 222, 0.2)', border: '1px solid rgba(15, 164, 222, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
-                  📦
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'rgba(15, 164, 222, 0.2)', border: '1px solid rgba(15, 164, 222, 0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <BrandingVectorIcon name="ticket" size={20} color="#0FA4DE" />
                 </div>
                 <div>
-                  <div style={{ fontSize: '1.2rem', fontWeight: '800', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <div style={{ fontSize: '1.15rem', fontWeight: '800', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     Orden de Compra B2B #{selectedOrder.id}
                   </div>
-                  <div style={{ fontSize: '0.82rem', color: '#94A3B8', marginTop: '2px' }}>
+                  <div style={{ fontSize: '0.8rem', color: '#94A3B8', marginTop: '2px' }}>
                     Registrada el {selectedOrder.created_at ? new Date(selectedOrder.created_at).toLocaleString('es-AR') : '—'}
                   </div>
                 </div>
@@ -4278,20 +7112,20 @@ function AdminEcommerce() {
                     value={selectedOrder.status || 'procesando'}
                     onChange={(e) => handleUpdateOrderStatus(selectedOrder.id, e.target.value)}
                     style={{
-                      padding: '6px 10px',
+                      padding: '5px 10px',
                       borderRadius: '8px',
-                      fontSize: '12px',
+                      fontSize: '11.5px',
                       fontWeight: '800',
                       cursor: 'pointer',
                       border: 'none',
                       ...statusStyle(selectedOrder.status)
                     }}
                   >
-                    <option value="procesando">🟡 En Preparación</option>
-                    <option value="en_camino">🚚 En Despacho</option>
-                    <option value="entregado">✅ Entregado</option>
-                    <option value="paid">🟢 Pagado</option>
-                    <option value="cancelled">🔴 Cancelado</option>
+                    <option value="procesando">En Preparación</option>
+                    <option value="en_camino">En Despacho</option>
+                    <option value="entregado">Entregado</option>
+                    <option value="paid">Pagado</option>
+                    <option value="cancelled">Cancelado</option>
                   </select>
                 </div>
 
@@ -4317,55 +7151,57 @@ function AdminEcommerce() {
             </div>
 
             {/* Modal Body */}
-            <div style={{ padding: '24px 28px', overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(380px, 1fr))', gap: '24px' }}>
+            <div style={{ padding: '20px 24px', overflowY: 'auto', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '20px' }}>
               
               {/* Left Column: Products & Notes */}
               <div>
-                <div style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span>🛒</span> Productos Solicitados ({selectedOrder.items?.length || 1})
+                <div style={{ fontSize: '12px', fontWeight: '800', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <BrandingVectorIcon name="shopping-bag" size={15} color="#0FA4DE" />
+                  <span>Productos Solicitados ({selectedOrder.items?.length || 1})</span>
                 </div>
 
-                <div style={{ border: '1px solid #E2E8F0', borderRadius: '14px', overflow: 'hidden', marginBottom: '20px' }}>
+                <div style={{ border: '1px solid #E2E8F0', borderRadius: '12px', overflow: 'hidden', marginBottom: '16px' }}>
                   {selectedOrder.items && selectedOrder.items.length > 0 ? (
                     selectedOrder.items.map((item, idx) => (
-                      <div key={idx} style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', gap: '14px', borderBottom: idx < selectedOrder.items.length - 1 ? '1px solid #F1F5F9' : 'none', background: '#ffffff' }}>
+                      <div key={idx} style={{ padding: '12px 14px', display: 'flex', alignItems: 'center', gap: '12px', borderBottom: idx < selectedOrder.items.length - 1 ? '1px solid #F1F5F9' : 'none', background: '#ffffff' }}>
                         {item.image_url ? (
-                          <img src={item.image_url} alt={item.product_name || item.name} style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #E2E8F0' }} />
+                          <img src={item.image_url} alt={item.product_name || item.name} style={{ width: '42px', height: '42px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #E2E8F0' }} />
                         ) : (
-                          <div style={{ width: '48px', height: '48px', borderRadius: '8px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px' }}>
-                            📦
+                          <div style={{ width: '42px', height: '42px', borderRadius: '8px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <BrandingVectorIcon name="box" size={18} color="#94A3B8" />
                           </div>
                         )}
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontWeight: '700', color: '#0F172A', fontSize: '13px' }}>{item.product_name || item.name}</div>
-                          <div style={{ fontSize: '11px', color: '#64748B', marginTop: '2px', display: 'flex', gap: '8px' }}>
-                            {item.brand && <span style={{ background: '#F1F5F9', padding: '1px 6px', borderRadius: '4px', fontWeight: '600' }}>{item.brand}</span>}
+                          <div style={{ fontWeight: '700', color: '#0F172A', fontSize: '12.5px' }}>{item.product_name || item.name}</div>
+                          <div style={{ fontSize: '10.5px', color: '#64748B', marginTop: '2px', display: 'flex', gap: '6px' }}>
+                            {item.brand && <span style={{ background: '#F1F5F9', padding: '1px 5px', borderRadius: '4px', fontWeight: '600' }}>{item.brand}</span>}
                             {item.sku && <span>SKU: {item.sku}</span>}
                           </div>
                         </div>
                         <div style={{ textAlign: 'right' }}>
-                          <div style={{ fontWeight: '800', color: '#071524', fontSize: '13px' }}>
+                          <div style={{ fontWeight: '800', color: '#071524', fontSize: '12.5px' }}>
                             ${parseFloat(item.price_at_purchase || item.price || 0).toFixed(2)} USD
                           </div>
-                          <div style={{ fontSize: '11px', color: '#64748B' }}>
+                          <div style={{ fontSize: '10.5px', color: '#64748B' }}>
                             Cant: <strong>{item.quantity || item.qty || 1}</strong>
                           </div>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <div style={{ padding: '16px', color: '#64748B', fontSize: '13px', textAlign: 'center' }}>
+                    <div style={{ padding: '14px', color: '#64748B', fontSize: '12px', textAlign: 'center' }}>
                       • Ítem de Hardware / Licenciamiento registrado en la orden
                     </div>
                   )}
                 </div>
 
                 {/* Logistics & Delivery Notes */}
-                <div style={{ background: '#F8FAFC', padding: '16px', borderRadius: '14px', border: '1px solid #E2E8F0', marginBottom: '20px' }}>
-                  <div style={{ fontSize: '12px', fontWeight: '800', color: '#0F172A', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span>🚚</span> Modalidad y Despacho
+                <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', marginBottom: '16px' }}>
+                  <div style={{ fontSize: '11.5px', fontWeight: '800', color: '#0F172A', textTransform: 'uppercase', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <BrandingVectorIcon name="truck" size={14} color="#0FA4DE" />
+                    <span>Modalidad y Despacho</span>
                   </div>
-                  <div style={{ fontSize: '13px', color: '#334155', lineHeight: '1.6' }}>
+                  <div style={{ fontSize: '12px', color: '#334155', lineHeight: '1.5' }}>
                     <div><strong>Dirección:</strong> {selectedOrder.shipping_address || 'Dirección registrada en ficha de cliente'}</div>
                     <div><strong>Modalidad:</strong> {selectedOrder.shipping_method || 'Envío Express a Domicilio'}</div>
                     {selectedOrder.tracking_number && (
@@ -4380,11 +7216,12 @@ function AdminEcommerce() {
                 </div>
 
                 {/* CRM Ticket Integration Card */}
-                <div style={{ background: 'linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)', padding: '16px', borderRadius: '14px', border: '1px solid #BBF7D0' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#166534', fontWeight: '800', fontSize: '13px' }}>
-                    <span>🎫</span> Ticket Automático Generado en Operaciones CRM
+                <div style={{ background: 'linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)', padding: '14px', borderRadius: '12px', border: '1px solid #BBF7D0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#166534', fontWeight: '800', fontSize: '12px' }}>
+                    <BrandingVectorIcon name="ticket" size={14} color="#166534" />
+                    <span>Ticket Automático Generado en Operaciones CRM</span>
                   </div>
-                  <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#15803D', lineHeight: '1.5' }}>
+                  <p style={{ margin: '4px 0 0', fontSize: '11.5px', color: '#15803D', lineHeight: '1.4' }}>
                     Esta orden sincronizó automáticamente la apertura de un ticket operativo en el departamento de <strong>Operaciones</strong> para control de stock, facturación y despacho logístico.
                   </p>
                 </div>
@@ -4393,12 +7230,13 @@ function AdminEcommerce() {
               {/* Right Column: Financial Breakdown & Invoicing */}
               <div>
                 {/* Financial Summary */}
-                <div style={{ background: '#FFFFFF', padding: '20px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', marginBottom: '20px' }}>
-                  <div style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px' }}>
-                    💵 Resumen Financiero
+                <div style={{ background: '#FFFFFF', padding: '16px', borderRadius: '14px', border: '1px solid #E2E8F0', boxShadow: '0 4px 12px rgba(0,0,0,0.03)', marginBottom: '16px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: '800', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <BrandingVectorIcon name="credit-card" size={15} color="#0FA4DE" />
+                    <span>Resumen Financiero</span>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '13px' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748B' }}>
                       <span>Subtotal Catálogo:</span>
                       <strong style={{ color: '#0F172A' }}>${parseFloat(selectedOrder.subtotal || selectedOrder.total || 0).toFixed(2)} USD</strong>
@@ -4425,9 +7263,9 @@ function AdminEcommerce() {
                       </div>
                     )}
 
-                    <div style={{ borderTop: '2px dashed #E2E8F0', paddingTop: '12px', marginTop: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                      <span style={{ fontSize: '14px', fontWeight: '800', color: '#071524' }}>Total Orden:</span>
-                      <span style={{ fontSize: '20px', fontWeight: '900', color: '#0FA4DE' }}>
+                    <div style={{ borderTop: '2px dashed #E2E8F0', paddingTop: '10px', marginTop: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '13px', fontWeight: '800', color: '#071524' }}>Total Orden:</span>
+                      <span style={{ fontSize: '18px', fontWeight: '900', color: '#0FA4DE' }}>
                         ${parseFloat(selectedOrder.total || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })} USD
                       </span>
                     </div>
@@ -4435,12 +7273,13 @@ function AdminEcommerce() {
                 </div>
 
                 {/* Invoicing & Client Info */}
-                <div style={{ background: '#F8FAFC', padding: '18px', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
-                  <div style={{ fontSize: '12px', fontWeight: '800', color: '#0F172A', textTransform: 'uppercase', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    <span>🏢</span> Datos Fiscales y Comerciales
+                <div style={{ background: '#F8FAFC', padding: '16px', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
+                  <div style={{ fontSize: '11.5px', fontWeight: '800', color: '#0F172A', textTransform: 'uppercase', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <BrandingVectorIcon name="building" size={14} color="#0FA4DE" />
+                    <span>Datos Fiscales y Comerciales</span>
                   </div>
 
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', fontSize: '12.5px', color: '#334155' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12px', color: '#334155' }}>
                     <div><strong>Razón Social:</strong> {selectedOrder.user_company || selectedOrder.user_name || 'Cliente B2B'}</div>
                     {selectedOrder.user_cuit && <div><strong>CUIT / NIT:</strong> {selectedOrder.user_cuit}</div>}
                     <div><strong>Email de Contacto:</strong> {selectedOrder.user_email}</div>
@@ -4471,6 +7310,294 @@ function AdminEcommerce() {
                 }}
               >
                 Cerrar Ventana
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: CREAR NUEVA MARCA ── */}
+      {showNewBrandModal && (
+        <div className="modal-overlay" style={{ zIndex: 9999 }}>
+          <div className="modal-content" style={{ maxWidth: '600px', padding: '28px', borderRadius: '18px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px' }}>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>➕</span> Crear y Asignar Nueva Marca
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowNewBrandModal(false)}
+                style={{ background: 'transparent', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#94A3B8' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleCreateNewBrand}>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                  Nombre de la Marca / Fabricante *
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="Ej: Cisco, Palo Alto Networks, APC, Motorola..."
+                  value={newBrandForm.name}
+                  onChange={(e) => setNewBrandForm({ ...newBrandForm, name: e.target.value })}
+                  style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                />
+              </div>
+
+              <div style={{ marginBottom: '18px' }}>
+                <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                  Categoría del Shop *
+                </label>
+                <select
+                  value={newBrandForm.category}
+                  onChange={(e) => setNewBrandForm({ ...newBrandForm, category: e.target.value })}
+                  style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                >
+                  <option value="networking">🌐 Networking</option>
+                  <option value="infraestructura">⚡ Infraestructura</option>
+                  <option value="comunicaciones_unificadas">📞 Comunicaciones Unificadas</option>
+                  <option value="security">🛡️ Seguridad & Ciberseguridad</option>
+                </select>
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '8px' }}>
+                  Cobertura por País de la Marca
+                </label>
+
+                <div style={{ display: 'flex', gap: '14px', marginBottom: '12px' }}>
+                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      name="newBrandGlobal"
+                      checked={newBrandForm.isGlobal}
+                      onChange={() => setNewBrandForm({ ...newBrandForm, isGlobal: true, countries: [] })}
+                    />
+                    🌐 Todos los Países (Global)
+                  </label>
+
+                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      name="newBrandGlobal"
+                      checked={!newBrandForm.isGlobal}
+                      onChange={() => setNewBrandForm({ ...newBrandForm, isGlobal: false, countries: ['US', 'AR'] })}
+                    />
+                    🎯 Países Específicos
+                  </label>
+                </div>
+
+                {!newBrandForm.isGlobal && (
+                  <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '12px', padding: '14px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                      <span style={{ fontSize: '12px', color: '#64748B', fontWeight: '600' }}>
+                        Selecciona los países donde se comercializa:
+                      </span>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        <button
+                          type="button"
+                          onClick={() => setNewBrandForm({ ...newBrandForm, countries: DACAS_COUNTRIES_LIST.map(c => c.code) })}
+                          style={{ background: '#E2E8F0', border: 'none', borderRadius: '6px', padding: '3px 8px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
+                        >
+                          Todos
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setNewBrandForm({ ...newBrandForm, countries: [] })}
+                          style={{ background: '#E2E8F0', border: 'none', borderRadius: '6px', padding: '3px 8px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
+                        >
+                          Ninguno
+                        </button>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '8px' }}>
+                      {DACAS_COUNTRIES_LIST.map(c => {
+                        const checked = newBrandForm.countries.includes(c.code);
+                        return (
+                          <label
+                            key={c.code}
+                            style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              padding: '6px 10px',
+                              background: checked ? '#E0F2FE' : '#FFFFFF',
+                              border: `1px solid ${checked ? '#0284c7' : '#E2E8F0'}`,
+                              borderRadius: '8px',
+                              cursor: 'pointer',
+                              fontSize: '12px',
+                              fontWeight: checked ? '700' : '500',
+                              color: checked ? '#0369A1' : '#334155'
+                            }}
+                          >
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => {
+                                const updated = checked
+                                  ? newBrandForm.countries.filter(x => x !== c.code)
+                                  : [...newBrandForm.countries, c.code];
+                                setNewBrandForm({ ...newBrandForm, countries: updated });
+                              }}
+                            />
+                            <span>{c.flag}</span>
+                            <span>{c.name}</span>
+                          </label>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', borderTop: '1px solid #F1F5F9', paddingTop: '16px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowNewBrandModal(false)}
+                  style={{ background: '#F1F5F9', color: '#475569', border: '1px solid #CBD5E1', borderRadius: '10px', padding: '10px 18px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  style={{ background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)', color: '#FFFFFF', border: 'none', borderRadius: '10px', padding: '10px 20px', fontSize: '13px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 3px 10px rgba(15, 164, 222, 0.3)' }}
+                >
+                  Crear Marca
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: EDITAR COBERTURA DE PAÍSES PARA UNA MARCA ── */}
+      {editingBrandModal && (
+        <div className="modal-overlay" style={{ zIndex: 9999 }}>
+          <div className="modal-content" style={{ maxWidth: '620px', padding: '28px', borderRadius: '18px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px' }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>⚙️</span> Cobertura de Países: <span style={{ color: '#0284c7', textTransform: 'uppercase' }}>{editingBrandModal.name}</span>
+                </h3>
+                <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
+                  Indica los países donde está habilitada esta marca en el catálogo.
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingBrandModal(null)}
+                style={{ background: 'transparent', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#94A3B8' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div style={{ marginBottom: '18px' }}>
+              <div style={{ display: 'flex', gap: '14px', marginBottom: '14px' }}>
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+                  <input
+                    type="radio"
+                    name="editBrandGlobal"
+                    checked={!editingBrandModal.countries || editingBrandModal.countries.length === 0}
+                    onChange={() => setEditingBrandModal({ ...editingBrandModal, countries: [] })}
+                  />
+                  🌐 Habilitar en TODOS los Países (Global)
+                </label>
+
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+                  <input
+                    type="radio"
+                    name="editBrandGlobal"
+                    checked={editingBrandModal.countries && editingBrandModal.countries.length > 0}
+                    onChange={() => setEditingBrandModal({ ...editingBrandModal, countries: ['US', 'AR', 'CL'] })}
+                  />
+                  🎯 Restringir a Países Específicos
+                </label>
+              </div>
+
+              {editingBrandModal.countries && editingBrandModal.countries.length > 0 && (
+                <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '12px', padding: '14px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                    <span style={{ fontSize: '12px', color: '#64748B', fontWeight: '600' }}>
+                      Países autorizados ({editingBrandModal.countries.length}):
+                    </span>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <button
+                        type="button"
+                        onClick={() => setEditingBrandModal({ ...editingBrandModal, countries: DACAS_COUNTRIES_LIST.map(c => c.code) })}
+                        style={{ background: '#E2E8F0', border: 'none', borderRadius: '6px', padding: '3px 8px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
+                      >
+                        Marcar Todos
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setEditingBrandModal({ ...editingBrandModal, countries: [] })}
+                        style={{ background: '#E2E8F0', border: 'none', borderRadius: '6px', padding: '3px 8px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
+                      >
+                        Hacer Global
+                      </button>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: '8px' }}>
+                    {DACAS_COUNTRIES_LIST.map(c => {
+                      const checked = editingBrandModal.countries.includes(c.code);
+                      return (
+                        <label
+                          key={c.code}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            padding: '6px 10px',
+                            background: checked ? '#E0F2FE' : '#FFFFFF',
+                            border: `1px solid ${checked ? '#0284c7' : '#E2E8F0'}`,
+                            borderRadius: '8px',
+                            cursor: 'pointer',
+                            fontSize: '12px',
+                            fontWeight: checked ? '700' : '500',
+                            color: checked ? '#0369A1' : '#334155'
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => {
+                              const updated = checked
+                                ? editingBrandModal.countries.filter(x => x !== c.code)
+                                : [...editingBrandModal.countries, c.code];
+                              setEditingBrandModal({ ...editingBrandModal, countries: updated });
+                            }}
+                          />
+                          <span>{c.flag}</span>
+                          <span>{c.name}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', borderTop: '1px solid #F1F5F9', paddingTop: '16px' }}>
+              <button
+                type="button"
+                onClick={() => setEditingBrandModal(null)}
+                style={{ background: '#F1F5F9', color: '#475569', border: '1px solid #CBD5E1', borderRadius: '10px', padding: '10px 18px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={() => handleSaveBrandCountries(editingBrandModal.catKey, editingBrandModal.brandIdx, editingBrandModal.countries)}
+                style={{ background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)', color: '#FFFFFF', border: 'none', borderRadius: '10px', padding: '10px 20px', fontSize: '13px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 3px 10px rgba(15, 164, 222, 0.3)' }}
+              >
+                Guardar Asignación
               </button>
             </div>
           </div>

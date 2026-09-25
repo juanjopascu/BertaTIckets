@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useShop } from './ShopContext';
+import BrandingVectorIcon from './BrandingVectorIcon';
 
 const S = {
   page: {
@@ -30,7 +31,7 @@ const S = {
   logoIcon: {
     width: '40px', height: '40px', borderRadius: '12px',
     background: 'linear-gradient(135deg, #00C4E0, #00ABC5)',
-    display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '20px',
+    display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#ffffff',
   },
   logoText: { fontWeight: '800', fontSize: '1.1rem', color: '#1a1a2e' },
   title: { fontSize: '1.5rem', fontWeight: '900', color: '#1a1a2e', margin: '0 0 6px' },
@@ -54,10 +55,12 @@ const S = {
   errorBox: {
     background: '#fef2f2', color: '#dc2626', padding: '10px 14px',
     borderRadius: '10px', fontSize: '13px', fontWeight: '600', marginBottom: '16px',
+    display: 'flex', alignItems: 'center', gap: '8px',
   },
   successBox: {
     background: '#f0fdf4', color: '#16a34a', padding: '10px 14px',
     borderRadius: '10px', fontSize: '13px', fontWeight: '600', marginBottom: '16px',
+    display: 'flex', alignItems: 'center', gap: '8px',
   },
 };
 
@@ -112,7 +115,9 @@ export default function ShopLogin() {
       <div style={S.card}>
         {/* Logo */}
         <div style={S.logo} onClick={() => navigate('/shop')}>
-          <div style={S.logoIcon}>🏢</div>
+          <div style={S.logoIcon}>
+            <BrandingVectorIcon name="building" size={22} color="#ffffff" />
+          </div>
           <span style={S.logoText}>DACAS <span style={{ color: '#00ABC5' }}>Portal de Gestión</span></span>
         </div>
 
@@ -123,8 +128,18 @@ export default function ShopLogin() {
             : 'Registrate gratis para acceder a la tienda y hacer tu primera compra.'}
         </p>
 
-        {error && <div style={S.errorBox}>⚠️ {error}</div>}
-        {success && <div style={S.successBox}>✅ {success}</div>}
+        {error && (
+          <div style={S.errorBox}>
+            <BrandingVectorIcon name="alert-triangle" size={16} color="#dc2626" />
+            <span>{error}</span>
+          </div>
+        )}
+        {success && (
+          <div style={S.successBox}>
+            <BrandingVectorIcon name="check-circle" size={16} color="#16a34a" />
+            <span>{success}</span>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} autoComplete="off">
           {mode === 'register' && (

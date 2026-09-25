@@ -1,10 +1,11 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
+import { CategoryIcon } from './Shop';
 
 const OFFICIAL_CATEGORIES = [
-  { key: 'networking', label: 'Networking', icon: '🌐', desc: 'Switches, Routers, Wi-Fi 6, Access Points, Gateways' },
-  { key: 'infraestructura', label: 'Infraestructura', icon: '🏗️', desc: 'Servidores Rack/Tower, Datacenter, Storage, Racks' },
-  { key: 'comunicaciones_unificadas', label: 'Comunicaciones Unificadas', icon: '📞', desc: 'Videoconferencia, Telefonía IP, Poly, Colaboración' },
-  { key: 'security', label: 'Security', icon: '🔒', desc: 'Next-Gen Firewalls Fortinet, EDR, Licencias Ciberseguridad' }
+  { key: 'networking', label: 'Networking', icon: 'networking', desc: 'Switches, Routers, Wi-Fi 6, Access Points, Gateways' },
+  { key: 'infraestructura', label: 'Infraestructura', icon: 'infraestructura', desc: 'Servidores Rack/Tower, Datacenter, Storage, Racks' },
+  { key: 'comunicaciones_unificadas', label: 'Comunicaciones Unificadas', icon: 'comunicaciones_unificadas', desc: 'Videoconferencia, Telefonía IP, Poly, Colaboración' },
+  { key: 'security', label: 'Security', icon: 'security', desc: 'Next-Gen Firewalls Fortinet, EDR, Licencias Ciberseguridad' }
 ];
 
 export default function AdminProductFormTiendanube({
@@ -1313,8 +1314,9 @@ export default function AdminProductFormTiendanube({
                     {isSelected && '✓'}
                   </div>
                   <div>
-                    <div style={{ fontWeight: '700', fontSize: '0.92rem', color: isSelected ? '#0369a1' : '#111827', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span>{cat.icon}</span> {cat.label}
+                    <div style={{ fontWeight: '700', fontSize: '0.92rem', color: isSelected ? '#0369a1' : '#111827', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <CategoryIcon name={cat.key} size={17} color={isSelected ? '#0369a1' : '#64748B'} />
+                      <span>{cat.label}</span>
                     </div>
                     <div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: '2px', lineHeight: 1.3 }}>
                       {cat.desc}

@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BrandingVectorIcon from './BrandingVectorIcon';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 
-function AdminEquipos() {
+function AdminEquipos({ embedded = false }) {
   const navigate = useNavigate();
   const [equipos, setEquipos] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
@@ -114,71 +115,55 @@ function AdminEquipos() {
   };
 
   return (
-    <div className="crm-container">
-      <header className="crm-header">
-        <div className="header-top">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{
-                background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
-                color: '#ffffff',
-                fontWeight: '900',
-                fontSize: '1.4rem',
-                letterSpacing: '-0.02em',
-                padding: '8px 16px',
-                borderRadius: '12px',
-                boxShadow: '0 4px 15px rgba(15, 164, 222, 0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <span>DACAS</span>
+    <div className={embedded ? "crm-embedded-view" : "crm-container"} style={embedded ? { width: '100%', maxWidth: '100%', margin: 0, padding: 0 } : {}}>
+      {!embedded && (
+        <header className="crm-header">
+          <div className="header-top">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{
+                  background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                  color: '#ffffff',
+                  fontWeight: '900',
+                  fontSize: '1.4rem',
+                  letterSpacing: '-0.02em',
+                  padding: '8px 16px',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 15px rgba(15, 164, 222, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <span>DACAS</span>
+                </div>
+                <div>
+                  <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+                    Gestión de Equipos de Soporte
+                  </h1>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    Organización de agentes, balanceo de carga y colaboración
+                  </div>
+                </div>
               </div>
-              <div>
-                <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-                  Gestión de Equipos de Soporte
-                </h1>
-                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  Organización de agentes, balanceo de carga y colaboración
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div className="user-controls">
+                  <button 
+                    className="nav-btn" 
+                    style={{ background: 'var(--primary)', color: 'white', border: 'none' }}
+                    onClick={() => {
+                      handleCancel();
+                      setMostrarModal(true);
+                    }}
+                  >
+                    ➕ Añadir Nuevo Equipo
+                  </button>
                 </div>
               </div>
             </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{
-                background: 'var(--pill-bg)',
-                border: '1px solid var(--border-color)',
-                borderRadius: '999px',
-                padding: '6px 14px',
-                color: 'var(--text-main)',
-                fontSize: '0.85rem',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-              }}>
-                <span>🇦🇷</span>
-                <span>DACAS Argentina</span>
-              </div>
-
-              <div className="user-controls">
-                <button className="nav-btn" onClick={() => navigate('/')}>🔙 Volver al Dashboard</button>
-                <button 
-                  className="nav-btn" 
-                  style={{ background: 'var(--primary)', color: 'white', border: 'none' }}
-                  onClick={() => {
-                    handleCancel();
-                    setMostrarModal(true);
-                  }}
-                >
-                  ➕ Añadir Nuevo Equipo
-                </button>
-              </div>
-            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       <main className="crm-main">
         {/* MODAL EMERGENTE DE EQUIPO (POP-UP) */}
@@ -269,7 +254,7 @@ function AdminEquipos() {
         )}
 
         <section className="board-section">
-          <h2>Equipos Activos</h2>
+          <h2 style={{ fontSize: '1.25rem', marginBottom: '14px' }}>Equipos Activos</h2>
           <div className="users-table">
             <table>
               <thead>
@@ -283,7 +268,7 @@ function AdminEquipos() {
               <tbody>
                 {equipos.length === 0 ? (
                   <tr>
-                    <td colSpan="4" style={{ textAlign: 'center', padding: '40px', color: '#64748b', fontStyle: 'italic' }}>
+                    <td colSpan="4" style={{ textAlign: 'center', padding: '30px', color: '#64748b', fontStyle: 'italic', fontSize: '0.84rem' }}>
                       No hay equipos creados. Haz clic en "Añadir Nuevo Equipo" para empezar.
                     </td>
                   </tr>
@@ -291,18 +276,21 @@ function AdminEquipos() {
                   equipos.map(eq => (
                     <tr key={eq.id}>
                       <td>
-                        <div style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-main)' }}>👥 {eq.nombre}</div>
+                        <div style={{ fontWeight: 600, fontSize: '0.86rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <BrandingVectorIcon name="users" size={13} color="#0fa4de" />
+                          <span>{eq.nombre}</span>
+                        </div>
                       </td>
                       <td>
-                        <span style={{ background: 'rgba(67, 97, 238, 0.08)', color: 'var(--primary)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '700' }}>
+                        <span style={{ background: 'rgba(15, 164, 222, 0.08)', color: '#0284c7', padding: '2px 8px', borderRadius: '6px', fontSize: '0.74rem', fontWeight: '700' }}>
                           ID: {eq.id}
                         </span>
                       </td>
                       <td style={{ maxWidth: '400px' }}>
                         {(!eq.miembros || eq.miembros.length === 0) ? (
-                          <span style={{ fontSize: '0.85rem', color: '#8e8e93', fontStyle: 'italic' }}>Sin miembros asignados</span>
+                          <span style={{ fontSize: '0.76rem', color: '#8e8e93', fontStyle: 'italic' }}>Sin miembros asignados</span>
                         ) : (
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
                             {eq.miembros.map(m => {
                               const matchingUser = usuarios.find(u => u.email.toLowerCase() === m.toLowerCase());
                               return (
@@ -311,14 +299,18 @@ function AdminEquipos() {
                                   style={{ 
                                     background: '#f1f5f9', 
                                     color: '#334155', 
-                                    padding: '4px 10px', 
-                                    borderRadius: '20px', 
-                                    fontSize: '0.8rem',
-                                    fontWeight: '500'
+                                    padding: '2px 8px', 
+                                    borderRadius: '6px', 
+                                    fontSize: '0.74rem',
+                                    fontWeight: '500',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
                                   }}
                                   title={m}
                                 >
-                                  👤 {matchingUser ? matchingUser.nombre : m}
+                                  <BrandingVectorIcon name="user" size={11} color="#64748b" />
+                                  <span>{matchingUser ? matchingUser.nombre : m}</span>
                                 </span>
                               );
                             })}
@@ -326,26 +318,22 @@ function AdminEquipos() {
                         )}
                       </td>
                       <td>
-                        <div style={{ display: 'flex', gap: '5px' }}>
+                        <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }}>
                           <button 
                             onClick={() => handleEditClick(eq)}
-                            style={{ 
-                              background: '#3b82f6', 
-                              color: 'white', 
-                              border: 'none', 
-                              padding: '4px 8px', 
-                              borderRadius: '4px', 
-                              cursor: 'pointer' 
-                            }}
+                            className="dacas-action-pill secondary"
+                            title="Editar equipo"
                           >
-                            Editar
+                            <BrandingVectorIcon name="edit" size={11} color="currentColor" />
+                            <span>Editar</span>
                           </button>
                           <button 
                             onClick={() => handleDelete(eq.id)}
-                            className="btn-delete"
-                            style={{ padding: '4px 8px', borderRadius: '4px' }}
+                            className="dacas-action-pill danger"
+                            title="Eliminar equipo"
                           >
-                            Eliminar
+                            <BrandingVectorIcon name="trash" size={11} color="currentColor" />
+                            <span>Eliminar</span>
                           </button>
                         </div>
                       </td>

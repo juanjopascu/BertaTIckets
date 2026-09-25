@@ -6,6 +6,7 @@ const fs = require('fs');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const ecommerceRoutes = require('./ecommerce');
+const { registrarLog, obtenerLogs, obtenerEstadisticasLogs, limpiarLogs } = require('./services/auditLoggerService');
 
 function hashPassword(password) {
     if (!password) return '';
@@ -600,6 +601,154 @@ app.post('/api/config-ayuda', requireCrmAuth, requireCrmAdmin, (req, res) => {
 });
 
 // ==========================================
+// ENDPOINTS DE CONFIGURACIÓN DE BRANDING & PERSONALIZACIÓN VISUAL
+// ==========================================
+const BRANDING_FILE_PATH = path.join(__dirname, 'branding_settings.json');
+
+const DEFAULT_BRANDING_SETTINGS = {
+    portalTitle: 'DACAS Portal de Gestión',
+    portalSubtitle: 'Mayorista de Tecnología, Ciberseguridad & Networking',
+    companyName: 'DACAS',
+    companyTagline: 'Distribuidor Mayorista de Valor Agregado',
+    headerLogoType: 'text_icon', // 'text_icon' | 'custom_image' | 'svg_berto'
+    headerLogoUrl: '',
+    headerLogoIcon: 'building',
+    headerLogoText: 'DACAS',
+    headerLogoAccentText: 'Portal de Gestión',
+    browserTitle: 'DACAS Portal de Gestión',
+    faviconUrl: '',
+    customIcons: [],
+    login: {
+        avatarType: 'preset_icon', // 'berto_svg' | 'custom_image' | 'preset_icon' | 'none'
+        avatarImageUrl: '',
+        avatarIcon: 'building',
+        avatarShape: 'circle', // 'circle' | 'rounded' | 'original'
+        avatarSize: 120,
+        title: 'DACAS Portal de Gestión',
+        subtitle: 'Inicia sesión para acceder al sistema',
+        emailPlaceholder: 'tu@correo.com',
+        passwordPlaceholder: '••••••••',
+        submitButtonText: 'Ingresar',
+        showShopLink: true,
+        shopLinkText: '🛍️ Ir a la Tienda DACAS Shop',
+        showMicrosoftLogin: true,
+        microsoftButtonText: 'Iniciar sesión con Microsoft',
+        showThemeToggle: true,
+        footerText: 'DACAS Mayorista Oficial • Todos los derechos reservados',
+        supportContactUrl: '',
+        cardBackground: 'glass', // 'glass' | 'white' | 'dark'
+        primaryColor: '#0fa4de',
+        accentColor: '#00ABC5',
+        buttonGradientStart: '#0fa4de',
+        buttonGradientEnd: '#0284c7',
+        backgroundStyle: 'default_gradient', // 'default_gradient' | 'deep_blue' | 'dark_slate' | 'custom_image' | 'custom_color'
+        customBackgroundImage: '',
+        customBackgroundColor: '#0f172a'
+    },
+    theme: {
+        primaryColor: '#0fa4de',
+        secondaryColor: '#0284c7',
+        accentColor: '#00ABC5',
+        headerBackground: 'default'
+    },
+    announcement: {
+        enabled: false,
+        text: '',
+        type: 'info', // 'info' | 'warning' | 'success' | 'danger'
+        dismissible: true
+    }
+};
+
+let configBrandingDb = { ...DEFAULT_BRANDING_SETTINGS };
+
+// Cargar configuración persistida si existe
+try {
+    if (fs.existsSync(BRANDING_FILE_PATH)) {
+        const savedData = JSON.parse(fs.readFileSync(BRANDING_FILE_PATH, 'utf8'));
+        configBrandingDb = {
+            ...DEFAULT_BRANDING_SETTINGS,
+            ...savedData,
+            login: { ...DEFAULT_BRANDING_SETTINGS.login, ...(savedData.login || {}) },
+            theme: { ...DEFAULT_BRANDING_SETTINGS.theme, ...(savedData.theme || {}) },
+            announcement: { ...DEFAULT_BRANDING_SETTINGS.announcement, ...(savedData.announcement || {}) }
+        };
+    }
+} catch (err) {
+    console.error('Error al cargar branding_settings.json:', err);
+}
+
+function saveBrandingSettings() {
+    try {
+        fs.writeFileSync(BRANDING_FILE_PATH, JSON.stringify(configBrandingDb, null, 2), 'utf8');
+    } catch (err) {
+        console.error('Error al guardar branding_settings.json:', err);
+    }
+}
+
+// Obtener personalización (Público, para pantalla de login y portal)
+app.get('/api/system/branding', (req, res) => {
+    res.status(200).json(configBrandingDb);
+});
+
+// Guardar personalización (Administradores)
+app.put('/api/system/branding', requireCrmAuth, (req, res) => {
+    if (!req.user || (req.user.rol !== 'admin' && req.user.rol !== 'admin_ecommerce')) {
+        return res.status(403).json({ error: 'Permisos insuficientes para personalizar la plataforma.' });
+    }
+
+    const updates = req.body || {};
+    configBrandingDb = {
+        ...configBrandingDb,
+        ...updates,
+        login: {
+            ...configBrandingDb.login,
+            ...(updates.login || {})
+        },
+        theme: {
+            ...configBrandingDb.theme,
+            ...(updates.theme || {})
+        },
+        announcement: {
+            ...configBrandingDb.announcement,
+            ...(updates.announcement || {})
+        }
+    };
+
+    saveBrandingSettings();
+    res.status(200).json({ mensaje: 'Personalización guardada exitosamente', branding: configBrandingDb });
+});
+
+// Subir imagen para avatar de login / logos / fondos
+app.post('/api/system/branding/upload', requireCrmAuth, (req, res) => {
+    if (!req.user || (req.user.rol !== 'admin' && req.user.rol !== 'admin_ecommerce')) {
+        return res.status(403).json({ error: 'Permisos insuficientes.' });
+    }
+
+    const singleUpload = upload.single('image');
+    singleUpload(req, res, (err) => {
+        if (err) {
+            return res.status(400).json({ error: err.message || 'Error al subir la imagen' });
+        }
+        if (!req.file) {
+            return res.status(400).json({ error: 'No se recibió ningún archivo de imagen' });
+        }
+        const fileUrl = `/uploads/${req.file.filename}`;
+        res.status(200).json({ url: fileUrl, filename: req.file.filename });
+    });
+});
+
+// Restaurar personalización a valores por defecto
+app.post('/api/system/branding/reset', requireCrmAuth, (req, res) => {
+    if (!req.user || (req.user.rol !== 'admin' && req.user.rol !== 'admin_ecommerce')) {
+        return res.status(403).json({ error: 'Permisos insuficientes.' });
+    }
+
+    configBrandingDb = JSON.parse(JSON.stringify(DEFAULT_BRANDING_SETTINGS));
+    saveBrandingSettings();
+    res.status(200).json({ mensaje: 'Personalización restaurada a valores por defecto', branding: configBrandingDb });
+});
+
+// ==========================================
 // ENDPOINTS DE AUTENTICACIÓN Y LOGIN
 // ==========================================
 
@@ -634,6 +783,16 @@ app.post('/api/login', (req, res) => {
             loginAt: new Date().toISOString()
         });
 
+        registrarLog({
+            origen: 'auth',
+            tipo: 'SECURITY',
+            accion: 'LOGIN_EXITOSO',
+            descripcion: `Inicio de sesión exitoso de "${usuario.nombre}" (${usuario.email}) con rol "${usuario.rol}".`,
+            req,
+            usuario: { id: usuario.id, nombre: usuario.nombre, email: usuario.email, rol: usuario.rol },
+            detalles: { metodo: 'credenciales_directas', sesionId }
+        });
+
         res.status(200).json({
             mensaje: "Login exitoso",
             usuario: {
@@ -653,6 +812,14 @@ app.post('/api/login', (req, res) => {
             }
         });
     } else {
+        registrarLog({
+            origen: 'auth',
+            tipo: 'WARNING',
+            accion: 'LOGIN_FALLIDO',
+            descripcion: `Intento de acceso no autorizado con correo "${email}".`,
+            req,
+            detalles: { emailIntentado: email }
+        });
         res.status(401).json({ error: "Credenciales inválidas" });
     }
 });
@@ -682,6 +849,16 @@ app.post('/api/login-microsoft', (req, res) => {
             rol: usuario.rol,
             ip: ip,
             loginAt: new Date().toISOString()
+        });
+
+        registrarLog({
+            origen: 'auth',
+            tipo: 'SECURITY',
+            accion: 'LOGIN_MICROSOFT_EXITOSO',
+            descripcion: `Inicio de sesión SSO Microsoft verificado para "${usuario.nombre}" (${usuario.email}).`,
+            req,
+            usuario: { id: usuario.id, nombre: usuario.nombre, email: usuario.email, rol: usuario.rol },
+            detalles: { metodo: 'microsoft_sso', sesionId }
         });
 
         res.status(200).json({
@@ -751,6 +928,16 @@ app.post('/api/usuarios', requireCrmAuth, requireCrmAdmin, (req, res) => {
     if (nuevoUsuario.rol === 'staff' && nuevoUsuario.equipoId) {
         sincronizarMiembroEquipo(nuevoUsuario.email, nuevoUsuario.equipoId, nuevoUsuario.rol);
     }
+
+    registrarLog({
+        origen: 'dashboard',
+        tipo: 'SUCCESS',
+        accion: 'USUARIO_CREADO',
+        descripcion: `Usuario "${nuevoUsuario.nombre}" (${nuevoUsuario.email}) creado con rol ${nuevoUsuario.rol}`,
+        usuario: req.user ? req.user.email : 'Admin',
+        req,
+        detalles: { usuarioId: nuevoUsuario.id, rol: nuevoUsuario.rol, email: nuevoUsuario.email }
+    });
 
     res.status(201).json({
         id: nuevoUsuario.id,
@@ -826,6 +1013,16 @@ app.put('/api/usuarios/:id', requireCrmAuth, requireCrmAdmin, (req, res) => {
     }
     sincronizarMiembroEquipo(email, nuevoEquipoId, nuevoRol);
 
+    registrarLog({
+        origen: 'dashboard',
+        tipo: 'INFO',
+        accion: 'USUARIO_MODIFICADO',
+        descripcion: `Usuario "${usuariosDb[index].nombre}" (${usuariosDb[index].email}) actualizado por ${req.user ? req.user.email : 'Admin'}`,
+        usuario: req.user ? req.user.email : 'Admin',
+        req,
+        detalles: { usuarioId: id, rol: nuevoRol, activo: usuariosDb[index].activo }
+    });
+
     res.status(200).json({
         id: usuariosDb[index].id,
         nombre,
@@ -858,6 +1055,17 @@ app.delete('/api/usuarios/:id', requireCrmAuth, requireCrmAdmin, (req, res) => {
     sesionesActivas = sesionesActivas.filter(s => s.usuarioId !== id);
 
     usuariosDb.splice(index, 1);
+
+    registrarLog({
+        origen: 'seguridad',
+        tipo: 'WARNING',
+        accion: 'USUARIO_ELIMINADO',
+        descripcion: `Usuario "${usuarioABorrar.nombre}" (${usuarioABorrar.email}) eliminado del sistema`,
+        usuario: req.user ? req.user.email : 'Admin',
+        req,
+        detalles: { usuarioId: id, email: usuarioABorrar.email, rol: usuarioABorrar.rol }
+    });
+
     res.status(200).json({ mensaje: "Usuario eliminado" });
 });
 
@@ -895,11 +1103,56 @@ app.post('/api/admin/desconectar', requireCrmAuth, requireCrmAdmin, (req, res) =
 
     const index = sesionesActivas.findIndex(s => s.id === sesionId);
     if (index !== -1) {
+        const sesionRemovida = sesionesActivas[index];
         sesionesActivas.splice(index, 1);
+        registrarLog({
+            origen: 'auth',
+            tipo: 'SECURITY',
+            accion: 'SESION_REVOCADA',
+            descripcion: `Sesión de ${sesionRemovida.nombre} (${sesionRemovida.email}) cerrada administrativamente.`,
+            req,
+            detalles: { sesionId, usuarioId: sesionRemovida.usuarioId, ipTarget: sesionRemovida.ip }
+        });
         res.status(200).json({ mensaje: "Usuario desconectado con éxito." });
     } else {
         res.status(404).json({ error: "Sesión no encontrada o ya inactiva." });
     }
+});
+
+// ==========================================
+// ENDPOINTS DE BITÁCORA GLOBAL DE LOGS & AUDITORÍA
+// ==========================================
+
+app.get('/api/admin/system-logs', requireCrmAuth, requireCrmAdmin, (req, res) => {
+    const data = obtenerLogs(req.query);
+    const stats = obtenerEstadisticasLogs();
+    res.status(200).json({ ...data, stats });
+});
+
+app.post('/api/admin/system-logs', (req, res) => {
+    const { origen, tipo, accion, descripcion, usuario, detalles } = req.body || {};
+    const log = registrarLog({
+        origen,
+        tipo,
+        accion,
+        descripcion,
+        usuario,
+        req,
+        detalles
+    });
+    res.status(201).json({ success: true, log });
+});
+
+app.delete('/api/admin/system-logs', requireCrmAuth, requireCrmAdmin, (req, res) => {
+    limpiarLogs();
+    registrarLog({
+        origen: 'auth',
+        tipo: 'WARNING',
+        accion: 'LOGS_PURGADOS',
+        descripcion: 'Un administrador purgó el histórico de logs del sistema.',
+        req
+    });
+    res.status(200).json({ mensaje: 'Histórico de logs purgado correctamente.' });
 });
 
 app.get('/api/verificar-sesion', (req, res) => {
@@ -1169,6 +1422,16 @@ app.post('/api/clientes', requireCrmAuth, handleUpload('documentos', 15), (req, 
         nuevoCliente.creado_por
     );
 
+    registrarLog({
+        origen: 'tickets',
+        tipo: 'SUCCESS',
+        accion: 'TICKET_CREADO',
+        descripcion: `Ticket #${nuevoCliente.id} ("${nuevoCliente.nombre}") creado por ${nuevoCliente.creado_por}`,
+        usuario: req.user ? req.user.email : nuevoCliente.creado_por,
+        req,
+        detalles: { ticketId: nuevoCliente.id, departamento: depto ? depto.nombre : 'General', estado: nuevoCliente.estado_embudo, prioridad: nuevoCliente.prioridad }
+    });
+
     res.status(201).json(nuevoCliente);
 });
 
@@ -1365,6 +1628,16 @@ app.put('/api/clientes/:id', requireCrmAuth, (req, res) => {
         );
     }
 
+    registrarLog({
+        origen: 'tickets',
+        tipo: 'INFO',
+        accion: 'TICKET_ACTUALIZADO',
+        descripcion: `Ticket #${id} modificado (${usuarioStr}): ${realNuevoEstado !== oldCliente.estado_embudo ? `Estado: ${oldCliente.estado_embudo} ➡️ ${realNuevoEstado}` : 'Campos actualizados'}`,
+        usuario: req.user ? req.user.email : usuarioStr,
+        req,
+        detalles: { ticketId: id, estado: realNuevoEstado, asignado: realNuevoAsignado, prioridad: realNuevaPrioridad }
+    });
+
     res.status(200).json(clientesDb[index]);
 });
 
@@ -1399,6 +1672,16 @@ app.post('/api/clientes/:id/notas', requireCrmAuth, handleUpload('documentos', 1
     cliente.actualizado_en = new Date();
 
     registrarAccionTicket(id, "Comentario", "Nueva respuesta registrada en el ticket.", nuevaNota.autor);
+
+    registrarLog({
+        origen: 'tickets',
+        tipo: 'INFO',
+        accion: 'TICKET_NOTA_AGREGADA',
+        descripcion: `Nueva respuesta/nota en Ticket #${id} por ${nuevaNota.autor}`,
+        usuario: req.user ? req.user.email : nuevaNota.autor,
+        req,
+        detalles: { ticketId: id, autor: nuevaNota.autor, adjuntosCount: archivos.length }
+    });
 
     res.status(201).json(nuevaNota);
 });

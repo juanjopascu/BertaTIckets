@@ -3,14 +3,31 @@ import { useNavigate } from 'react-router-dom';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 
-function AdminUsuarios({ usuario, theme, toggleTheme }) {
+function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialTab = 'usuarios' }) {
   const navigate = useNavigate();
-  const [activoTab, setActivoTab] = useState('usuarios'); // 'usuarios' | 'sesiones'
+  const [activoTab, setActivoTab] = useState(initialTab); // 'usuarios' | 'sesiones' | 'logs'
+
+  useEffect(() => {
+    if (initialTab) {
+      setActivoTab(initialTab);
+    }
+  }, [initialTab]);
+
   const [sesiones, setSesiones] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
   const [departamentos, setDepartamentos] = useState([]);
   const [estados, setEstados] = useState([]);
   const [equipos, setEquipos] = useState([]);
+
+  // Estados de Logs y Auditoría
+  const [systemLogs, setSystemLogs] = useState([]);
+  const [logStats, setLogStats] = useState({ total: 0, ecommerce: 0, dashboard: 0, auth: 0, security: 0 });
+  const [loadingLogs, setLoadingLogs] = useState(false);
+  const [logOriginFilter, setLogOriginFilter] = useState('todos');
+  const [logTypeFilter, setLogTypeFilter] = useState('todos');
+  const [logSearchText, setLogSearchText] = useState('');
+  const [autoRefreshLogs, setAutoRefreshLogs] = useState(true);
+  const [selectedLogDetail, setSelectedLogDetail] = useState(null);
   
   const [editingId, setEditingId] = useState(null);
   const [mostrarModal, setMostrarModal] = useState(false);
@@ -31,13 +48,80 @@ function AdminUsuarios({ usuario, theme, toggleTheme }) {
   });
   const [error, setError] = useState(null);
 
+  const fetchSystemLogs = async () => {
+    try {
+      setLoadingLogs(true);
+      const params = new URLSearchParams();
+      if (logOriginFilter && logOriginFilter !== 'todos') params.append('origen', logOriginFilter);
+      if (logTypeFilter && logTypeFilter !== 'todos') params.append('tipo', logTypeFilter);
+      if (logSearchText.trim()) params.append('search', logSearchText.trim());
+
+      const response = await fetch(`${API_BASE_URL}/api/admin/system-logs?${params.toString()}`);
+      const data = await response.json();
+      if (data && data.logs) {
+        setSystemLogs(data.logs);
+        if (data.stats) setLogStats(data.stats);
+      }
+    } catch (err) {
+      console.error("Error obteniendo logs del sistema:", err);
+    } finally {
+      setLoadingLogs(false);
+    }
+  };
+
   useEffect(() => {
     if (activoTab === 'sesiones') {
       fetchSesiones();
       const interval = setInterval(fetchSesiones, 4000);
       return () => clearInterval(interval);
+    } else if (activoTab === 'logs') {
+      fetchSystemLogs();
+      if (autoRefreshLogs) {
+        const interval = setInterval(fetchSystemLogs, 5000);
+        return () => clearInterval(interval);
+      }
     }
-  }, [activoTab]);
+  }, [activoTab, logOriginFilter, logTypeFilter, logSearchText, autoRefreshLogs]);
+
+  const handleClearLogs = async () => {
+    if (window.confirm('¿Estás seguro de que deseas purgar todo el historial de logs y auditoría? Esta acción registrará un evento de seguridad irreversible.')) {
+      try {
+        await fetch(`${API_BASE_URL}/api/admin/system-logs`, { method: 'DELETE' });
+        fetchSystemLogs();
+      } catch (err) {
+        console.error("Error purgando logs:", err);
+      }
+    }
+  };
+
+  const exportLogsCSV = () => {
+    if (systemLogs.length === 0) {
+      alert('No hay logs disponibles para exportar.');
+      return;
+    }
+    const headers = ['ID', 'Fecha y Hora', 'Módulo / Origen', 'Nivel', 'Acción', 'Descripción', 'Usuario', 'Email', 'Rol', 'IP'];
+    const rows = systemLogs.map(l => [
+      l.id,
+      `"${new Date(l.timestamp).toLocaleString()}"`,
+      `"${l.origen || ''}"`,
+      `"${l.tipo || ''}"`,
+      `"${(l.accion || '').replace(/"/g, '""')}"`,
+      `"${(l.descripcion || '').replace(/"/g, '""')}"`,
+      `"${(l.usuario?.nombre || '').replace(/"/g, '""')}"`,
+      `"${l.usuario?.email || ''}"`,
+      `"${l.usuario?.rol || ''}"`,
+      `"${l.ip || ''}"`
+    ]);
+
+    const csvContent = '\uFEFF' + [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `auditoria_logs_sistema_${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   const fetchSesiones = async () => {
     try {
@@ -211,83 +295,67 @@ function AdminUsuarios({ usuario, theme, toggleTheme }) {
   };
 
   return (
-    <div className="crm-container">
-      <header className="crm-header">
-        <div className="header-top">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{
-                background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
-                color: '#ffffff',
-                fontWeight: '900',
-                fontSize: '1.4rem',
-                letterSpacing: '-0.02em',
-                padding: '8px 16px',
-                borderRadius: '12px',
-                boxShadow: '0 4px 15px rgba(15, 164, 222, 0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <span>DACAS</span>
+    <div className={embedded ? "crm-embedded-view" : "crm-container"} style={embedded ? { width: '100%', maxWidth: '100%', margin: 0, padding: 0 } : {}}>
+      {!embedded && (
+        <header className="crm-header">
+          <div className="header-top">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{
+                  background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                  color: '#ffffff',
+                  fontWeight: '900',
+                  fontSize: '1.4rem',
+                  letterSpacing: '-0.02em',
+                  padding: '8px 16px',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 15px rgba(15, 164, 222, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <span>DACAS</span>
+                </div>
+                <div>
+                  <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+                    Gestión de Usuarios <span style={{ color: '#0fa4de' }}>&</span> Permisos
+                  </h1>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    Administración de roles, accesos por departamento, equipos y estados
+                  </div>
+                </div>
               </div>
-              <div>
-                <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-                  Gestión de Usuarios <span style={{ color: '#0fa4de' }}>&</span> Permisos
-                </h1>
-                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  Administración de roles, accesos por departamento, equipos y estados
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div className="user-controls">
+                  <button 
+                    type="button" 
+                    onClick={toggleTheme} 
+                    className="theme-toggle-btn"
+                    title="Cambiar Tema"
+                  >
+                    {theme === 'light' ? '🌙' : '☀️'}
+                  </button>
+                  <button className="nav-btn" style={{ background: 'var(--primary)', color: 'white', border: 'none' }} onClick={() => {
+                    setEditingId(null);
+                    setFormData({
+                      nombre: '', email: '', password: '', rol: 'cliente',
+                      accesos: { departamentos: [], estados: [] },
+                      equipoId: '',
+                      crear_tickets: true,
+                      activo: true,
+                      pais: '', sector: '', horario_atencion: '', ciudad: ''
+                    });
+                    setMostrarModal(true);
+                  }}>
+                    ➕ Añadir Nuevo Usuario
+                  </button>
                 </div>
               </div>
             </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{
-                background: 'var(--pill-bg)',
-                border: '1px solid var(--border-color)',
-                borderRadius: '999px',
-                padding: '6px 14px',
-                color: 'var(--text-main)',
-                fontSize: '0.85rem',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-              }}>
-                <span>🇦🇷</span>
-                <span>DACAS Argentina</span>
-              </div>
-
-              <div className="user-controls">
-                <button className="nav-btn" onClick={() => navigate('/')}>🔙 Volver al Portal</button>
-                <button 
-                  type="button" 
-                  onClick={toggleTheme} 
-                  className="theme-toggle-btn"
-                  title="Cambiar Tema"
-                >
-                  {theme === 'light' ? '🌙' : '☀️'}
-                </button>
-                <button className="nav-btn" style={{ background: 'var(--primary)', color: 'white', border: 'none' }} onClick={() => {
-                  setEditingId(null);
-                  setFormData({
-                    nombre: '', email: '', password: '', rol: 'cliente',
-                    accesos: { departamentos: [], estados: [] },
-                    equipoId: '',
-                    crear_tickets: true,
-                    activo: true,
-                    pais: '', sector: '', horario_atencion: '', ciudad: ''
-                  });
-                  setMostrarModal(true);
-                }}>
-                  ➕ Añadir Nuevo Usuario
-                </button>
-              </div>
-            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       <main className="crm-main">
         {/* MODAL EMERGENTE DE USUARIO (POP-UP) */}
@@ -605,12 +673,45 @@ function AdminUsuarios({ usuario, theme, toggleTheme }) {
           >
             🔒 Sesiones Activas
           </button>
+          <button 
+            type="button"
+            onClick={() => setActivoTab('logs')} 
+            style={{
+              padding: '10px 20px',
+              borderRadius: '12px',
+              border: 'none',
+              background: activoTab === 'logs' ? 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)' : 'transparent',
+              color: activoTab === 'logs' ? 'white' : '#475569',
+              fontWeight: '600',
+              cursor: 'pointer',
+              boxShadow: activoTab === 'logs' ? '0 4px 12px var(--primary-light)' : 'none',
+              transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            📜 Logs & Auditoría
+            {logStats.total > 0 && (
+              <span style={{
+                background: activoTab === 'logs' ? 'rgba(255,255,255,0.25)' : 'var(--pill-bg)',
+                color: activoTab === 'logs' ? '#ffffff' : 'var(--primary)',
+                padding: '2px 8px',
+                borderRadius: '10px',
+                fontSize: '11px',
+                fontWeight: '800'
+              }}>
+                {logStats.total}
+              </span>
+            )}
+          </button>
         </div>
 
         {activoTab === 'usuarios' ? (
           <section className="board-section">
             <h2>Usuarios del Sistema</h2>
-            <table className="users-table">
+            <div className="crm-table-container">
+              <table className="users-table">
               <thead>
                 <tr>
                   <th>Nombre / Email</th>
@@ -707,38 +808,40 @@ function AdminUsuarios({ usuario, theme, toggleTheme }) {
                 ))}
               </tbody>
             </table>
-          </section>
-        ) : (
-          <section className="board-section" style={{ animation: 'fadeIn 0.3s ease-out' }}>
-            <style>{`
-              @keyframes pulse {
-                0% {
-                  transform: scale(0.95);
-                  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
-                }
-                70% {
-                  transform: scale(1);
-                  box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
-                }
-                100% {
-                  transform: scale(0.95);
-                  box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
-                }
+          </div>
+        </section>
+      ) : activoTab === 'sesiones' ? (
+        <section className="board-section" style={{ animation: 'fadeIn 0.3s ease-out' }}>
+          <style>{`
+            @keyframes pulse {
+              0% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7);
               }
-            `}</style>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h2>Control de Sesiones Activas</h2>
-              <span style={{ background: 'var(--primary-light)', color: 'var(--primary)', padding: '6px 14px', borderRadius: '20px', fontWeight: 'bold', fontSize: '0.9rem' }}>
-                🟢 {sesiones.length} {sesiones.length === 1 ? 'Sesión activa' : 'Sesiones activas'}
-              </span>
+              70% {
+                transform: scale(1);
+                box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+              }
+              100% {
+                transform: scale(0.95);
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+              }
+            }
+          `}</style>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h2>Control de Sesiones Activas</h2>
+            <span style={{ background: 'var(--primary-light)', color: 'var(--primary)', padding: '6px 14px', borderRadius: '20px', fontWeight: 'bold', fontSize: '0.9rem' }}>
+              🟢 {sesiones.length} {sesiones.length === 1 ? 'Sesión activa' : 'Sesiones activas'}
+            </span>
+          </div>
+          
+          {sesiones.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '50px 20px', background: '#f8fafc', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+              <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>🔒</div>
+              <p style={{ color: '#64748b', fontWeight: '500' }}>No hay otras sesiones activas registradas en este momento.</p>
             </div>
-            
-            {sesiones.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '50px 20px', background: '#f8fafc', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>🔒</div>
-                <p style={{ color: '#64748b', fontWeight: '500' }}>No hay otras sesiones activas registradas en este momento.</p>
-              </div>
-            ) : (
+          ) : (
+            <div className="crm-table-container">
               <table className="users-table">
                 <thead>
                   <tr>
@@ -853,6 +956,487 @@ function AdminUsuarios({ usuario, theme, toggleTheme }) {
                   })}
                 </tbody>
               </table>
+            </div>
+          )}
+        </section>
+        ) : (
+          /* ── PESTAÑA 3: LOGS & AUDITORÍA GLOBAL (DASHBOARD & E-COMMERCE) ── */
+          <section className="board-section" style={{ animation: 'fadeIn 0.3s ease-out', display: 'flex', flexDirection: 'column', gap: '24px' }}>
+            {/* Header del apartado de logs */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span>Bitácora de Logs & Auditoría Integral</span>
+                  <span style={{ fontSize: '11px', background: 'var(--primary-light)', color: 'var(--primary)', padding: '4px 10px', borderRadius: '20px', fontWeight: '800', letterSpacing: '0.04em' }}>
+                    TIEMPO REAL
+                  </span>
+                </h2>
+                <p style={{ margin: '4px 0 0', fontSize: '0.88rem', color: 'var(--text-muted)' }}>
+                  Registro unificado y trazabilidad forense de todas las acciones del <strong>Dashboard CRM</strong> y el <strong>E-Commerce B2B</strong>.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', color: 'var(--text-muted)', cursor: 'pointer', background: 'var(--pill-bg)', padding: '6px 12px', borderRadius: '10px', border: '1px solid var(--border-color-subtle)' }}>
+                  <input 
+                    type="checkbox" 
+                    checked={autoRefreshLogs} 
+                    onChange={(e) => setAutoRefreshLogs(e.target.checked)} 
+                    style={{ cursor: 'pointer' }}
+                  />
+                  <span>Auto-actualizar (5s)</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={fetchSystemLogs}
+                  disabled={loadingLogs}
+                  style={{
+                    background: 'var(--pill-bg)',
+                    color: 'var(--text-main)',
+                    border: '1px solid var(--border-color)',
+                    padding: '8px 14px',
+                    borderRadius: '12px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  🔄 {loadingLogs ? 'Actualizando...' : 'Refrescar'}
+                </button>
+                <button
+                  type="button"
+                  onClick={exportLogsCSV}
+                  style={{
+                    background: 'var(--primary)',
+                    color: '#ffffff',
+                    border: 'none',
+                    padding: '8px 16px',
+                    borderRadius: '12px',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: 'var(--primary-glow)'
+                  }}
+                >
+                  📥 Exportar CSV
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClearLogs}
+                  style={{
+                    background: 'rgba(239, 68, 68, 0.12)',
+                    color: '#ef4444',
+                    border: '1px solid rgba(239, 68, 68, 0.25)',
+                    padding: '8px 14px',
+                    borderRadius: '12px',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🗑️ Limpiar
+                </button>
+              </div>
+            </div>
+
+            {/* 4 Mini Tarjetas Flotantes KPI de Auditoría */}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+              <div className="card floating-card" style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  TOTAL DE LOGS REGISTRADOS
+                </span>
+                <span style={{ fontSize: '1.9rem', fontWeight: '900', color: 'var(--primary)', fontFamily: 'Outfit, sans-serif' }}>
+                  {logStats.total || systemLogs.length}
+                </span>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Historial global consolidado</span>
+              </div>
+
+              <div className="card floating-card" style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <span style={{ fontSize: '11px', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  🛒 ACTIVIDAD E-COMMERCE
+                </span>
+                <span style={{ fontSize: '1.9rem', fontWeight: '900', color: '#0284c7', fontFamily: 'Outfit, sans-serif' }}>
+                  {logStats.ecommerce || 0}
+                </span>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Pedidos, catálogo, marcas y proformas</span>
+              </div>
+
+              <div className="card floating-card" style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <span style={{ fontSize: '11px', fontWeight: '800', color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  🎫 CRM & DASHBOARD
+                </span>
+                <span style={{ fontSize: '1.9rem', fontWeight: '900', color: '#10b981', fontFamily: 'Outfit, sans-serif' }}>
+                  {logStats.dashboard || 0}
+                </span>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Tickets, estados, SLAs y respuestas</span>
+              </div>
+
+              <div className="card floating-card" style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <span style={{ fontSize: '11px', fontWeight: '800', color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  🔒 SEGURIDAD & SESIONES
+                </span>
+                <span style={{ fontSize: '1.9rem', fontWeight: '900', color: '#f59e0b', fontFamily: 'Outfit, sans-serif' }}>
+                  {logStats.security || logStats.auth || 0}
+                </span>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Inicios de sesión y cambios de roles</span>
+              </div>
+            </div>
+
+            {/* Barra de Filtros Interactivos */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: 'var(--pill-bg)', padding: '16px 20px', borderRadius: '18px', border: '1px solid var(--border-color-subtle)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                {/* Selector de Origen */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                  <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)' }}>Módulo:</span>
+                  {[
+                    { id: 'todos', label: 'Todos' },
+                    { id: 'ecommerce', label: '🛒 E-Commerce' },
+                    { id: 'dashboard', label: '📊 Dashboard' },
+                    { id: 'tickets', label: '🎫 Tickets' },
+                    { id: 'auth', label: '🔒 Seguridad & Auth' },
+                    { id: 'sistema', label: '⚙️ Sistema' }
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setLogOriginFilter(tab.id)}
+                      style={{
+                        padding: '6px 14px',
+                        borderRadius: '999px',
+                        fontSize: '12px',
+                        fontWeight: logOriginFilter === tab.id ? '700' : '600',
+                        background: logOriginFilter === tab.id ? 'var(--primary)' : 'var(--card-bg)',
+                        color: logOriginFilter === tab.id ? '#ffffff' : 'var(--text-main)',
+                        border: logOriginFilter === tab.id ? '1px solid var(--primary)' : '1px solid var(--border-color-subtle)',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Selector de Nivel */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)' }}>Nivel:</span>
+                  <select
+                    value={logTypeFilter}
+                    onChange={(e) => setLogTypeFilter(e.target.value)}
+                    style={{
+                      padding: '6px 12px',
+                      borderRadius: '10px',
+                      background: 'var(--card-bg)',
+                      color: 'var(--text-main)',
+                      border: '1px solid var(--border-color-subtle)',
+                      fontSize: '12px',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <option value="todos">Todos los Niveles</option>
+                    <option value="INFO">🔵 INFO</option>
+                    <option value="SUCCESS">🟢 SUCCESS</option>
+                    <option value="WARNING">🟡 WARNING</option>
+                    <option value="SECURITY">🟣 SECURITY</option>
+                    <option value="ERROR">🔴 ERROR</option>
+                  </select>
+                </div>
+              </div>
+
+              {/* Búsqueda en Vivo */}
+              <div style={{ position: 'relative', width: '100%' }}>
+                <input
+                  type="text"
+                  placeholder="🔍 Buscar por acción, email, descripción, IP o ID..."
+                  value={logSearchText}
+                  onChange={(e) => setLogSearchText(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 16px',
+                    borderRadius: '12px',
+                    background: 'var(--card-bg)',
+                    border: '1px solid var(--border-color-subtle)',
+                    color: 'var(--text-main)',
+                    fontSize: '13px',
+                    boxSizing: 'border-box'
+                  }}
+                />
+                {logSearchText && (
+                  <button
+                    type="button"
+                    onClick={() => setLogSearchText('')}
+                    style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'transparent',
+                      border: 'none',
+                      color: 'var(--text-muted)',
+                      cursor: 'pointer',
+                      fontSize: '14px'
+                    }}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Tabla Flotante de Registros de Logs */}
+            {systemLogs.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 20px', background: 'var(--pill-bg)', borderRadius: '20px', border: '1px dashed var(--border-color)' }}>
+                <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>📜</div>
+                <h3 style={{ margin: '0 0 6px', fontSize: '1.1rem', color: 'var(--text-main)' }}>No se encontraron registros de logs</h3>
+                <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                  Intenta cambiar los filtros de módulo o la búsqueda ingresada.
+                </p>
+              </div>
+            ) : (
+              <div className="crm-table-container">
+                <table className="users-table">
+                  <thead>
+                    <tr>
+                      <th style={{ width: '160px' }}>Fecha & Hora</th>
+                      <th style={{ width: '130px' }}>Módulo</th>
+                      <th style={{ width: '100px' }}>Nivel</th>
+                      <th>Acción & Descripción</th>
+                      <th style={{ width: '220px' }}>Usuario & IP</th>
+                      <th style={{ width: '100px', textAlign: 'center' }}>Detalles</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {systemLogs.map(log => {
+                      const fecha = new Date(log.timestamp);
+                      const isEcommerce = log.origen === 'ecommerce';
+                      const isTickets = log.origen === 'tickets';
+                      const isDashboard = log.origen === 'dashboard';
+                      const isAuth = log.origen === 'auth' || log.origen === 'usuarios';
+
+                      const tipo = (log.tipo || 'INFO').toUpperCase();
+
+                      return (
+                        <tr key={log.id}>
+                          {/* Fecha */}
+                          <td>
+                            <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>
+                              📅 {fecha.toLocaleDateString()}
+                            </div>
+                            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
+                              ⏰ {fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                            </div>
+                          </td>
+
+                          {/* Módulo / Origen */}
+                          <td>
+                            <span style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              padding: '4px 10px',
+                              borderRadius: '12px',
+                              fontSize: '0.78rem',
+                              fontWeight: '700',
+                              background: isEcommerce ? 'rgba(2, 132, 199, 0.12)' : isTickets ? 'rgba(16, 185, 129, 0.12)' : isAuth ? 'rgba(245, 158, 11, 0.12)' : isDashboard ? 'rgba(15, 164, 222, 0.12)' : 'rgba(148, 163, 184, 0.12)',
+                              color: isEcommerce ? '#0284c7' : isTickets ? '#10b981' : isAuth ? '#d97706' : isDashboard ? 'var(--primary)' : 'var(--text-muted)',
+                              border: `1px solid ${isEcommerce ? 'rgba(2, 132, 199, 0.25)' : isTickets ? 'rgba(16, 185, 129, 0.25)' : isAuth ? 'rgba(245, 158, 11, 0.25)' : 'rgba(15, 164, 222, 0.25)'}`
+                            }}>
+                              {isEcommerce && '🛒 Shop'}
+                              {isTickets && '🎫 Tickets'}
+                              {isDashboard && '📊 Dashboard'}
+                              {isAuth && '🔒 Seguridad'}
+                              {!isEcommerce && !isTickets && !isDashboard && !isAuth && '⚙️ Sistema'}
+                            </span>
+                          </td>
+
+                          {/* Nivel */}
+                          <td>
+                            <span style={{
+                              padding: '3px 8px',
+                              borderRadius: '8px',
+                              fontSize: '0.74rem',
+                              fontWeight: '800',
+                              letterSpacing: '0.04em',
+                              background: tipo === 'SUCCESS' ? 'rgba(34, 197, 94, 0.15)' : tipo === 'WARNING' ? 'rgba(245, 158, 11, 0.15)' : tipo === 'SECURITY' ? 'rgba(168, 85, 247, 0.15)' : tipo === 'ERROR' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(15, 164, 222, 0.15)',
+                              color: tipo === 'SUCCESS' ? '#16a34a' : tipo === 'WARNING' ? '#d97706' : tipo === 'SECURITY' ? '#9333ea' : tipo === 'ERROR' ? '#dc2626' : '#0284c7'
+                            }}>
+                              {tipo}
+                            </span>
+                          </td>
+
+                          {/* Acción & Descripción */}
+                          <td>
+                            <div style={{ fontWeight: '750', fontSize: '0.9rem', color: 'var(--text-main)', marginBottom: '2px' }}>
+                              {log.accion}
+                            </div>
+                            <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
+                              {log.descripcion}
+                            </div>
+                          </td>
+
+                          {/* Usuario & IP */}
+                          <td>
+                            <div style={{ fontWeight: '600', fontSize: '0.88rem', color: 'var(--text-main)' }}>
+                              👤 {log.usuario?.nombre || 'Sistema'}
+                            </div>
+                            {log.usuario?.email && (
+                              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                                {log.usuario.email}
+                              </div>
+                            )}
+                            <div style={{ fontSize: '0.74rem', color: '#64748b', fontFamily: 'monospace', marginTop: '3px' }}>
+                              🌐 IP: {log.ip || '127.0.0.1'}
+                            </div>
+                          </td>
+
+                          {/* Botón Ver Payload */}
+                          <td style={{ textAlign: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={() => setSelectedLogDetail(log)}
+                              style={{
+                                background: 'var(--pill-bg)',
+                                color: 'var(--primary)',
+                                border: '1px solid var(--border-color-subtle)',
+                                padding: '6px 10px',
+                                borderRadius: '8px',
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              🔍 Ver
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* Modal de Detalle de Log / Payload JSON */}
+            {selectedLogDetail && (
+              <div style={{
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                background: 'rgba(7, 21, 36, 0.65)',
+                backdropFilter: 'blur(8px)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                zIndex: 9999,
+                padding: '20px',
+                boxSizing: 'border-box'
+              }}>
+                <div style={{
+                  background: 'var(--card-bg)',
+                  borderRadius: '24px',
+                  boxShadow: 'var(--shadow-lg)',
+                  border: '1px solid var(--border-color)',
+                  maxWidth: '680px',
+                  width: '100%',
+                  maxHeight: '85vh',
+                  overflowY: 'auto',
+                  padding: '28px',
+                  boxSizing: 'border-box',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '18px'
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '1.4rem' }}>📜</span>
+                      <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '800', color: 'var(--text-main)' }}>
+                        Detalle del Evento #{selectedLogDetail.id}
+                      </h3>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedLogDetail(null)}
+                      style={{ background: 'var(--pill-bg)', border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', fontSize: '14px', color: 'var(--text-main)' }}
+                    >
+                      ✕
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', background: 'var(--pill-bg)', padding: '16px', borderRadius: '16px' }}>
+                    <div>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Acción</span>
+                      <div style={{ fontSize: '0.92rem', fontWeight: '800', color: 'var(--text-main)' }}>{selectedLogDetail.accion}</div>
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Nivel</span>
+                      <div style={{ fontSize: '0.92rem', fontWeight: '800', color: 'var(--primary)' }}>{selectedLogDetail.tipo}</div>
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Fecha y Hora</span>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}>{new Date(selectedLogDetail.timestamp).toLocaleString()}</div>
+                    </div>
+                    <div>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>IP de Origen</span>
+                      <div style={{ fontSize: '0.85rem', color: 'var(--text-main)', fontFamily: 'monospace' }}>{selectedLogDetail.ip}</div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
+                      Descripción Forense
+                    </span>
+                    <p style={{ margin: 0, fontSize: '0.92rem', color: 'var(--text-main)', background: 'var(--pill-bg)', padding: '14px', borderRadius: '14px', lineHeight: 1.4 }}>
+                      {selectedLogDetail.descripcion}
+                    </p>
+                  </div>
+
+                  <div>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
+                      Payload & Metadatos JSON
+                    </span>
+                    <pre style={{
+                      margin: 0,
+                      background: '#071524',
+                      color: '#38bdf8',
+                      padding: '16px',
+                      borderRadius: '14px',
+                      fontSize: '12px',
+                      fontFamily: 'monospace',
+                      overflowX: 'auto',
+                      maxHeight: '220px'
+                    }}>
+                      {JSON.stringify(selectedLogDetail.detalles || {}, null, 2)}
+                    </pre>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedLogDetail(null)}
+                    style={{
+                      alignSelf: 'flex-end',
+                      background: 'var(--primary)',
+                      color: '#ffffff',
+                      border: 'none',
+                      padding: '10px 22px',
+                      borderRadius: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      fontSize: '13px'
+                    }}
+                  >
+                    Cerrar Detalle
+                  </button>
+                </div>
+              </div>
             )}
           </section>
         )}

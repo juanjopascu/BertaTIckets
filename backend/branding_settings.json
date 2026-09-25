@@ -1,0 +1,52 @@
+{
+  "portalTitle": "DACAS Portal de Gestión",
+  "portalSubtitle": "Mayorista de Tecnología, Ciberseguridad & Networking",
+  "companyName": "DACAS",
+  "companyTagline": "Distribuidor Mayorista de Valor Agregado",
+  "headerLogoType": "text_icon",
+  "headerLogoUrl": "",
+  "headerLogoIcon": "🏢",
+  "headerLogoText": "DACAS",
+  "headerLogoAccentText": "Portal de Gestión",
+  "browserTitle": "DACAS Portal de Gestión",
+  "faviconUrl": "",
+  "login": {
+    "avatarType": "preset_icon",
+    "avatarImageUrl": "",
+    "avatarIcon": "🏢",
+    "avatarShape": "circle",
+    "avatarSize": 120,
+    "title": "DACAS Portal de Gestión",
+    "subtitle": "Inicia sesión para acceder al sistema",
+    "emailPlaceholder": "tu@correo.com",
+    "passwordPlaceholder": "••••••••",
+    "submitButtonText": "Ingresar",
+    "showShopLink": true,
+    "shopLinkText": "🛍️ Ir a la Tienda DACAS Shop",
+    "showMicrosoftLogin": true,
+    "microsoftButtonText": "Iniciar sesión con Microsoft",
+    "showThemeToggle": true,
+    "footerText": "DACAS Mayorista Oficial • Todos los derechos reservados",
+    "supportContactUrl": "",
+    "cardBackground": "glass",
+    "primaryColor": "#0fa4de",
+    "accentColor": "#00ABC5",
+    "buttonGradientStart": "#0fa4de",
+    "buttonGradientEnd": "#0284c7",
+    "backgroundStyle": "default_gradient",
+    "customBackgroundImage": "",
+    "customBackgroundColor": "#0f172a"
+  },
+  "theme": {
+    "primaryColor": "#0fa4de",
+    "secondaryColor": "#0284c7",
+    "accentColor": "#00ABC5",
+    "headerBackground": "default"
+  },
+  "announcement": {
+    "enabled": false,
+    "text": "",
+    "type": "info",
+    "dismissible": true
+  }
+}

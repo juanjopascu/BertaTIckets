@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 
-function AdminDepartamentos() {
+function AdminDepartamentos({ embedded = false }) {
   const navigate = useNavigate();
   const [departamentos, setDepartamentos] = useState([]);
   const [nombre, setNombre] = useState('');
@@ -92,61 +92,42 @@ function AdminDepartamentos() {
   };
 
   return (
-    <div className="crm-container">
-      <header className="crm-header">
-        <div className="header-top">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{
-                background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
-                color: '#ffffff',
-                fontWeight: '900',
-                fontSize: '1.4rem',
-                letterSpacing: '-0.02em',
-                padding: '8px 16px',
-                borderRadius: '12px',
-                boxShadow: '0 4px 15px rgba(15, 164, 222, 0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <span>DACAS</span>
-              </div>
-              <div>
-                <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-                  Administración de Departamentos
-                </h1>
-                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  Estructuración de áreas operativas y niveles de soporte
+    <div className={embedded ? "crm-embedded-view" : "crm-container"} style={embedded ? { width: '100%', maxWidth: '100%', margin: 0, padding: 0 } : {}}>
+      {!embedded && (
+        <header className="crm-header">
+          <div className="header-top">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{
+                  background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                  color: '#ffffff',
+                  fontWeight: '900',
+                  fontSize: '1.4rem',
+                  letterSpacing: '-0.02em',
+                  padding: '8px 16px',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 15px rgba(15, 164, 222, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <span>DACAS</span>
+                </div>
+                <div>
+                  <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+                    Administración de Departamentos
+                  </h1>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    Estructuración de áreas operativas y niveles de soporte
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{
-                background: 'var(--pill-bg)',
-                border: '1px solid var(--border-color)',
-                borderRadius: '999px',
-                padding: '6px 14px',
-                color: 'var(--text-main)',
-                fontSize: '0.85rem',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-              }}>
-                <span>🇦🇷</span>
-                <span>DACAS Argentina</span>
-              </div>
 
-              <div className="user-controls">
-                <button className="nav-btn" onClick={() => navigate('/')}>🔙 Volver al Dashboard</button>
-              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       <main className="crm-main">
         <section className="form-section">
@@ -167,119 +148,121 @@ function AdminDepartamentos() {
 
         <section className="board-section">
           <h2>Lista de Departamentos</h2>
-          <table className="users-table">
-            <thead>
-              <tr>
-                <th style={{ width: '80px' }}>ID</th>
-                <th>Nombre</th>
-                <th style={{ width: '180px' }}>Límite SLA</th>
-                <th style={{ width: '220px' }}>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {departamentos.map(d => {
-                const isEditing = d.id === editingId;
-                return (
-                  <tr key={d.id}>
-                    <td>{d.id}</td>
-                    <td>
-                      {isEditing ? (
-                        <input
-                          type="text"
-                          value={editNombre}
-                          onChange={(e) => setEditNombre(e.target.value)}
-                          required
-                          disabled={d.id === 1} // General is protected
-                          style={{
-                            padding: '8px 12px',
-                            borderRadius: '8px',
-                            border: '1px solid #cbd5e1',
-                            background: 'transparent',
-                            color: 'inherit',
-                            width: '90%',
-                            fontFamily: 'inherit',
-                            fontSize: 'inherit'
-                          }}
-                        />
-                      ) : (
-                        <strong>{d.nombre}</strong>
-                      )}
-                    </td>
-                    <td>
-                      {isEditing ? (
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <div className="crm-table-container">
+            <table className="users-table">
+              <thead>
+                <tr>
+                  <th style={{ width: '80px' }}>ID</th>
+                  <th>Nombre</th>
+                  <th style={{ width: '180px' }}>Límite SLA</th>
+                  <th style={{ width: '220px' }}>Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {departamentos.map(d => {
+                  const isEditing = d.id === editingId;
+                  return (
+                    <tr key={d.id}>
+                      <td>{d.id}</td>
+                      <td>
+                        {isEditing ? (
                           <input
-                            type="number"
-                            min="1"
-                            value={editSlaHoras}
-                            onChange={(e) => setEditSlaHoras(e.target.value)}
+                            type="text"
+                            value={editNombre}
+                            onChange={(e) => setEditNombre(e.target.value)}
                             required
+                            disabled={d.id === 1} // General is protected
                             style={{
                               padding: '8px 12px',
                               borderRadius: '8px',
                               border: '1px solid #cbd5e1',
                               background: 'transparent',
                               color: 'inherit',
-                              width: '80px',
+                              width: '90%',
                               fontFamily: 'inherit',
                               fontSize: 'inherit'
                             }}
                           />
-                          <span>horas</span>
-                        </div>
-                      ) : (
-                        <span style={{
-                          fontWeight: 600,
-                          padding: '4px 10px',
-                          borderRadius: '12px',
-                          fontSize: '0.85rem',
-                          background: 'var(--primary-light)',
-                          color: 'var(--primary, #0f766e)'
-                        }}>
-                          {d.sla_horas ? `${d.sla_horas} horas` : '24 horas'}
-                        </span>
-                      )}
-                    </td>
-                    <td>
-                      {isEditing ? (
-                        <div style={{ display: 'flex', gap: '6px' }}>
-                          <button
-                            type="button"
-                            onClick={() => handleSaveEdit(d.id)}
-                            style={{ background: '#10b981', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
-                          >
-                            💾 Guardar
-                          </button>
-                          <button
-                            type="button"
-                            onClick={handleCancelEdit}
-                            style={{ background: '#6b7280', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
-                          >
-                            ✕ Cancelar
-                          </button>
-                        </div>
-                      ) : (
-                        <div style={{ display: 'flex', gap: '6px' }}>
-                          <button
-                            type="button"
-                            onClick={() => handleEditClick(d)}
-                            style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
-                          >
-                            ✏️ Editar
-                          </button>
-                          {d.id !== 1 && (
-                            <button className="btn-delete" onClick={() => handleDelete(d.id)} style={{ padding: '6px 12px', borderRadius: '8px' }}>
-                              Eliminar
+                        ) : (
+                          <strong>{d.nombre}</strong>
+                        )}
+                      </td>
+                      <td>
+                        {isEditing ? (
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <input
+                              type="number"
+                              min="1"
+                              value={editSlaHoras}
+                              onChange={(e) => setEditSlaHoras(e.target.value)}
+                              required
+                              style={{
+                                padding: '8px 12px',
+                                borderRadius: '8px',
+                                border: '1px solid #cbd5e1',
+                                background: 'transparent',
+                                color: 'inherit',
+                                width: '80px',
+                                fontFamily: 'inherit',
+                                fontSize: 'inherit'
+                              }}
+                            />
+                            <span>horas</span>
+                          </div>
+                        ) : (
+                          <span style={{
+                            fontWeight: 600,
+                            padding: '4px 10px',
+                            borderRadius: '12px',
+                            fontSize: '0.85rem',
+                            background: 'var(--primary-light)',
+                            color: 'var(--primary, #0f766e)'
+                          }}>
+                            {d.sla_horas ? `${d.sla_horas} horas` : '24 horas'}
+                          </span>
+                        )}
+                      </td>
+                      <td>
+                        {isEditing ? (
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleSaveEdit(d.id)}
+                              style={{ background: '#10b981', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
+                            >
+                              💾 Guardar
                             </button>
-                          )}
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                            <button
+                              type="button"
+                              onClick={handleCancelEdit}
+                              style={{ background: '#6b7280', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
+                            >
+                              ✕ Cancelar
+                            </button>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', gap: '6px' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleEditClick(d)}
+                              style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
+                            >
+                              ✏️ Editar
+                            </button>
+                            {d.id !== 1 && (
+                              <button className="btn-delete" onClick={() => handleDelete(d.id)} style={{ padding: '6px 12px', borderRadius: '8px' }}>
+                                Eliminar
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </section>
       </main>
     </div>

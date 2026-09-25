@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BrandingVectorIcon from './BrandingVectorIcon';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 
@@ -14,7 +15,7 @@ const PRESET_EMAILS = [
   'cobranzas@dacas.com'
 ];
 
-export default function AdminCanalesAyuda() {
+export default function AdminCanalesAyuda({ embedded = false }) {
   const navigate = useNavigate();
   const [canales, setCanales] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -118,58 +119,61 @@ export default function AdminCanalesAyuda() {
   };
 
   return (
-    <div className="crm-container" style={{ maxWidth: '1080px', margin: '0 auto', padding: '24px' }}>
+    <div className={embedded ? "crm-embedded-view" : "crm-container"} style={embedded ? { width: '100%', maxWidth: '100%', margin: 0, padding: 0 } : { maxWidth: '1080px', margin: '0 auto', padding: '24px' }}>
       {/* Header */}
-      <header className="crm-header" style={{ marginBottom: '28px' }}>
-        <div className="header-top">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{
-                background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
-                color: '#ffffff',
-                fontWeight: '900',
-                fontSize: '1.4rem',
-                letterSpacing: '-0.02em',
-                padding: '8px 16px',
-                borderRadius: '12px',
-                boxShadow: '0 4px 15px rgba(15, 164, 222, 0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <span>DACAS</span>
-              </div>
-              <div>
-                <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-                  Canales y Correos de Ayuda
-                </h1>
-                <div style={{ fontSize: '0.84rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  Configuración de correos de destino para el botón de ayuda del Shop y CRM
+      {!embedded && (
+        <header className="crm-header" style={{ marginBottom: '28px' }}>
+          <div className="header-top">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{
+                  background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                  color: '#ffffff',
+                  fontWeight: '900',
+                  fontSize: '1.4rem',
+                  letterSpacing: '-0.02em',
+                  padding: '8px 16px',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 15px rgba(15, 164, 222, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <span>DACAS</span>
+                </div>
+                <div>
+                  <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+                    Canales y Correos de Ayuda
+                  </h1>
+                  <div style={{ fontSize: '0.84rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    Configuración de correos de destino para el botón de ayuda del Shop y CRM
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <button 
-                type="button"
-                className="nav-btn" 
-                onClick={() => navigate('/shop')} 
-                style={{ cursor: 'pointer', background: 'rgba(15, 164, 222, 0.1)', color: '#0fa4de', border: '1px solid rgba(15, 164, 222, 0.2)' }}
-              >
-                🛍️ Ver Shop
-              </button>
-              <button 
-                type="button"
-                className="nav-btn" 
-                onClick={() => navigate('/')} 
-                style={{ cursor: 'pointer' }}
-              >
-                🔙 Volver al Dashboard
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button 
+                  type="button"
+                  className="nav-btn" 
+                  onClick={() => navigate('/shop')} 
+                  style={{ 
+                    cursor: 'pointer', 
+                    background: 'rgba(15, 164, 222, 0.1)', 
+                    color: '#0fa4de', 
+                    border: '1px solid rgba(15, 164, 222, 0.2)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <BrandingVectorIcon name="shopping-bag" size={14} color="#0fa4de" />
+                  <span>Ver Shop</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* Feedback Messages */}
       {mensaje && (
@@ -186,6 +190,7 @@ export default function AdminCanalesAyuda() {
           gap: '10px',
           animation: 'fadeIn 0.3s ease'
         }}>
+          <BrandingVectorIcon name="check" size={16} color="#10b981" />
           <span>{mensaje}</span>
         </div>
       )}
@@ -198,9 +203,12 @@ export default function AdminCanalesAyuda() {
           padding: '14px 20px',
           borderRadius: '10px',
           marginBottom: '20px',
-          fontWeight: '600'
+          fontWeight: '600',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px'
         }}>
-          ⚠️ {error}
+          <span>⚠️ {error}</span>
         </div>
       )}
 
@@ -229,7 +237,7 @@ export default function AdminCanalesAyuda() {
             justifyContent: 'center',
             fontSize: '1.3rem'
           }}>
-            🎯
+            <BrandingVectorIcon name="headphones" size={22} color="#0fa4de" />
           </div>
           <div>
             <h4 style={{ margin: 0, fontSize: '0.98rem', fontWeight: '700', color: 'var(--text-main)' }}>
@@ -260,7 +268,8 @@ export default function AdminCanalesAyuda() {
             boxShadow: '0 2px 8px rgba(15, 164, 222, 0.3)'
           }}
         >
-          ➕ Agregar Sector
+          <BrandingVectorIcon name="plus" size={14} color="#ffffff" strokeWidth={2.5} />
+          <span>Agregar Sector</span>
         </button>
       </div>
 
@@ -287,16 +296,24 @@ export default function AdminCanalesAyuda() {
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <span style={{
-                    width: '32px',
-                    height: '32px',
-                    borderRadius: '8px',
-                    background: 'var(--input-bg, rgba(0,0,0,0.04))',
+                    width: '34px',
+                    height: '34px',
+                    borderRadius: '10px',
+                    background: 'rgba(15, 164, 222, 0.12)',
                     display: 'flex',
                     alignItems: 'center',
-                    justifyContent: 'center',
-                    fontSize: '1.1rem'
+                    justifyContent: 'center'
                   }}>
-                    {c.id && c.id.includes('crm') ? '🛠️' : c.id && (c.id.includes('shop') || c.id.includes('ventas')) ? '🛍️' : c.id && c.id.includes('factura') ? '💳' : '🏢'}
+                    <BrandingVectorIcon 
+                      name={
+                        c.id && (c.id.includes('crm') || c.id.includes('soporte')) ? 'headphones' : 
+                        c.id && (c.id.includes('shop') || c.id.includes('ventas')) ? 'shopping-bag' : 
+                        c.id && (c.id.includes('factura') || c.id.includes('cobranza')) ? 'credit-card' : 
+                        'briefcase'
+                      }
+                      size={18}
+                      color="#0fa4de"
+                    />
                   </span>
                   <div>
                     <input
@@ -334,17 +351,20 @@ export default function AdminCanalesAyuda() {
                       type="button"
                       onClick={() => handleDeleteSector(index)}
                       style={{
-                        background: 'transparent',
-                        border: 'none',
+                        background: 'rgba(239, 68, 68, 0.08)',
+                        border: '1px solid rgba(239, 68, 68, 0.2)',
                         color: '#ef4444',
                         cursor: 'pointer',
-                        padding: '4px 8px',
-                        borderRadius: '6px',
-                        fontSize: '0.85rem'
+                        padding: '6px 10px',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        transition: 'all 0.2s ease'
                       }}
                       title="Eliminar sector"
                     >
-                      🗑️
+                      <BrandingVectorIcon name="trash" size={14} color="#ef4444" />
                     </button>
                   )}
                 </div>
@@ -469,8 +489,9 @@ export default function AdminCanalesAyuda() {
             flexWrap: 'wrap',
             gap: '16px'
           }}>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-              ℹ️ Los cambios guardados se aplicarán en tiempo real al botón flotante de ayuda en el Shop y CRM.
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <BrandingVectorIcon name="info" size={16} color="var(--primary, #0fa4de)" />
+              <span>Los cambios guardados se aplicarán en tiempo real al botón flotante de ayuda en el Shop y CRM.</span>
             </div>
 
             <button
@@ -493,7 +514,8 @@ export default function AdminCanalesAyuda() {
                 opacity: saving ? 0.7 : 1
               }}
             >
-              💾 {saving ? 'Guardando Cambios...' : 'Guardar Todos los Cambios'}
+              <BrandingVectorIcon name="check" size={16} color="#ffffff" strokeWidth={2.5} />
+              <span>{saving ? 'Guardando Cambios...' : 'Guardar Todos los Cambios'}</span>
             </button>
           </div>
         </div>
@@ -523,8 +545,9 @@ export default function AdminCanalesAyuda() {
             padding: '24px',
             boxShadow: '0 20px 40px rgba(0,0,0,0.2)'
           }}>
-            <h3 style={{ margin: '0 0 16px 0', fontSize: '1.2rem', color: 'var(--text-main)' }}>
-              ➕ Agregar Nuevo Sector de Ayuda
+            <h3 style={{ margin: '0 0 16px 0', fontSize: '1.2rem', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <BrandingVectorIcon name="plus" size={18} color="var(--primary, #0fa4de)" strokeWidth={2.5} />
+              <span>Agregar Nuevo Sector de Ayuda</span>
             </h3>
 
             <form onSubmit={handleAddNewSector} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>

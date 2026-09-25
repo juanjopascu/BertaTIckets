@@ -1,11 +1,170 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TicketModal from './TicketModal';
+import AdminPersonalizacion from './AdminPersonalizacion';
+import AdminEcommerce from './AdminEcommerce';
+import Reportes from './Reportes';
+import AdminDepartamentos from './AdminDepartamentos';
+import AdminEstados from './AdminEstados';
+import AdminTemplates from './AdminTemplates';
+import AdminOrganizaciones from './AdminOrganizaciones';
+import AdminEquipos from './AdminEquipos';
+import AdminUsuarios from './AdminUsuarios';
+import AdminImportarKayako from './AdminImportarKayako';
+import AdminConfigTickets from './AdminConfigTickets';
+import AdminCanalesAyuda from './AdminCanalesAyuda';
+import BrandingVectorIcon from './BrandingVectorIcon';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 const API_URL = `${API_BASE_URL}/api/clientes`;
 const DEPT_URL = `${API_BASE_URL}/api/departamentos`;
 const ESTADOS_URL = `${API_BASE_URL}/api/estados`;
+
+function AdminViewIcon({ name, size = 18, strokeWidth = 2 }) {
+  switch (name) {
+    case 'personalizacion':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
+          <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
+          <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
+          <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
+          <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2z" />
+        </svg>
+      );
+    case 'ecommerce':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="8" cy="21" r="1"/>
+          <circle cx="19" cy="21" r="1"/>
+          <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
+        </svg>
+      );
+    case 'reportes':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10" />
+          <line x1="12" y1="20" x2="12" y2="4" />
+          <line x1="6" y1="20" x2="6" y2="14" />
+        </svg>
+      );
+    case 'departamentos':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          <rect x="4" y="2" width="16" height="20" rx="2" ry="2"/>
+          <path d="M9 22v-4h6v4"/>
+          <path d="M8 6h.01"/>
+          <path d="M16 6h.01"/>
+          <path d="M12 6h.01"/>
+          <path d="M12 10h.01"/>
+          <path d="M12 14h.01"/>
+          <path d="M16 10h.01"/>
+          <path d="M16 14h.01"/>
+          <path d="M8 10h.01"/>
+          <path d="M8 14h.01"/>
+        </svg>
+      );
+    case 'estados':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/>
+          <path d="M7 7h.01"/>
+        </svg>
+      );
+    case 'templates':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+          <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+          <path d="M9 12h6"/>
+          <path d="M9 16h6"/>
+        </svg>
+      );
+    case 'organizaciones':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+          <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+        </svg>
+      );
+    case 'equipos':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
+          <circle cx="9" cy="7" r="4"/>
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
+          <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+        </svg>
+      );
+    case 'usuarios':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      );
+    case 'importar-kayako':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+      );
+    case 'config-tickets':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          <line x1="4" y1="21" x2="4" y2="14" />
+          <line x1="4" y1="10" x2="4" y2="3" />
+          <line x1="12" y1="21" x2="12" y2="12" />
+          <line x1="12" y1="8" x2="12" y2="3" />
+          <line x1="20" y1="21" x2="20" y2="16" />
+          <line x1="20" y1="12" x2="20" y2="3" />
+          <line x1="1" y1="14" x2="7" y2="14" />
+          <line x1="9" y1="8" x2="15" y2="8" />
+          <line x1="17" y1="16" x2="23" y2="16" />
+        </svg>
+      );
+    case 'canales-ayuda':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+      );
+    case 'logs':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+          <polyline points="14 2 14 8 20 8" />
+          <line x1="16" y1="13" x2="8" y2="13" />
+          <line x1="16" y1="17" x2="8" y2="17" />
+          <polyline points="10 9 9 9 8 9" />
+        </svg>
+      );
+    default:
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+      );
+  }
+}
+
+const ADMIN_VIEWS_INFO = {
+  personalizacion: { title: 'Personalización & Login', iconKey: 'personalizacion', route: '/admin/personalizacion' },
+  ecommerce: { title: 'Gestión E-commerce', iconKey: 'ecommerce', route: '/admin/ecommerce' },
+  reportes: { title: 'Reportes & Métricas', iconKey: 'reportes', route: '/reportes' },
+  departamentos: { title: 'Gestión de Departamentos', iconKey: 'departamentos', route: '/departamentos' },
+  estados: { title: 'Gestión de Estados', iconKey: 'estados', route: '/estados' },
+  templates: { title: 'Plantillas de Respuestas', iconKey: 'templates', route: '/templates' },
+  organizaciones: { title: 'Organizaciones', iconKey: 'organizaciones', route: '/organizaciones' },
+  equipos: { title: 'Gestión de Equipos', iconKey: 'equipos', route: '/equipos' },
+  usuarios: { title: 'Usuarios del Sistema', iconKey: 'usuarios', route: '/admin' },
+  'importar-kayako': { title: 'Importar Kayako', iconKey: 'importar-kayako', route: '/admin/importar-kayako' },
+  'config-tickets': { title: 'Configuración de Tickets', iconKey: 'config-tickets', route: '/config-tickets' },
+  'canales-ayuda': { title: 'Canales de Ayuda', iconKey: 'canales-ayuda', route: '/admin/canales-ayuda' }
+};
 
 function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
   const navigate = useNavigate();
@@ -19,6 +178,8 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
   const [filtroEstado, setFiltroEstado] = useState('Todos');
   const [viewMode, setViewMode] = useState('list');
   const [departamentoActivo, setDepartamentoActivo] = useState(null);
+  const [activeAdminView, setActiveAdminView] = useState(null); // null (Tickets) | 'personalizacion' | ...
+  const [isMaximized, setIsMaximized] = useState(false);
   const [modalCliente, setModalCliente] = useState(null);
   
   const [formData, setFormData] = useState({
@@ -99,15 +260,31 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
     habilitarReintegroGastos: true,
     habilitarReservaViajes: true
   });
+  const [branding, setBranding] = useState(null);
 
   useEffect(() => {
-    document.title = "DACAS Portal de Gestión";
     fetchDepartamentos();
     fetchEstados();
     fetchClientes();
     fetchUsuarios();
     fetchConfigTickets();
+    fetchBranding();
   }, []);
+
+  const fetchBranding = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/system/branding`);
+      if (res.ok) {
+        const data = await res.json();
+        setBranding(data);
+        if (data.browserTitle) {
+          document.title = data.browserTitle;
+        }
+      }
+    } catch (err) {
+      console.error('Error al cargar branding en Dashboard:', err);
+    }
+  };
 
   const fetchConfigTickets = async () => {
     try {
@@ -550,50 +727,41 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
         <div className="header-top">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{
-                background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
-                color: '#ffffff',
-                fontWeight: '900',
-                fontSize: '1.4rem',
-                letterSpacing: '-0.02em',
-                padding: '8px 16px',
-                borderRadius: '12px',
-                boxShadow: '0 4px 15px rgba(15, 164, 222, 0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <span>DACAS</span>
-              </div>
+              {branding?.headerLogoType === 'custom_image' && branding?.headerLogoUrl ? (
+                <img
+                  src={branding.headerLogoUrl.startsWith('http') ? branding.headerLogoUrl : `${API_BASE_URL}${branding.headerLogoUrl}`}
+                  alt="Logo"
+                  style={{ maxHeight: '46px', maxWidth: '160px', objectFit: 'contain' }}
+                />
+              ) : (
+                <div style={{
+                  background: `linear-gradient(135deg, ${branding?.login?.buttonGradientStart || '#0fa4de'} 0%, ${branding?.login?.buttonGradientEnd || '#0284c7'} 100%)`,
+                  color: '#ffffff',
+                  fontWeight: '900',
+                  fontSize: '1.4rem',
+                  letterSpacing: '-0.02em',
+                  padding: '8px 16px',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 15px rgba(15, 164, 222, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <span>{branding?.companyName || 'DACAS'}</span>
+                </div>
+              )}
               <div>
                 <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-                  Portal de Gestión
+                  {branding?.portalTitle || 'Portal de Gestión'}
                 </h1>
                 <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  Mayorista de Tecnología, Ciberseguridad & Networking
+                  {branding?.portalSubtitle || 'Mayorista de Tecnología, Ciberseguridad & Networking'}
                 </div>
               </div>
             </div>
 
-            {/* Selector de Mercado / País estilo DACAS */}
+            {/* Controles de Usuario */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{
-                background: 'var(--pill-bg)',
-                border: '1px solid var(--border-color)',
-                borderRadius: '999px',
-                padding: '6px 14px',
-                color: 'var(--text-main)',
-                fontSize: '0.85rem',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-              }}>
-                <span>🇦🇷</span>
-                <span>DACAS Argentina</span>
-              </div>
-
               <div className="user-controls" style={{ width: 'auto', padding: 0 }}>
                 <span style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>Hola, <strong style={{ color: 'var(--text-main)' }}>{usuario?.nombre}</strong></span>
                 <button 
@@ -615,7 +783,23 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                     color: 'var(--text-main)'
                   }}
                 >
-                  {theme === 'light' ? '🌙' : '☀️'}
+                  {theme === 'light' ? (
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/>
+                    </svg>
+                  ) : (
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="4"/>
+                      <path d="M12 2v2"/>
+                      <path d="M12 20v2"/>
+                      <path d="m4.93 4.93 1.41 1.41"/>
+                      <path d="m17.66 17.66 1.41 1.41"/>
+                      <path d="M2 12h2"/>
+                      <path d="M20 12h2"/>
+                      <path d="m6.34 17.66-1.41 1.41"/>
+                      <path d="m19.07 4.93-1.41 1.41"/>
+                    </svg>
+                  )}
                 </button>
                 <button className="logout-btn" onClick={handleLogout}>Cerrar Sesión</button>
               </div>
@@ -623,6 +807,25 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
           </div>
         </div>
       </header>
+
+      {/* BANNER DE ANUNCIO GLOBAL DEL SISTEMA */}
+      {branding?.announcement?.enabled && branding?.announcement?.text && (
+        <div style={{
+          background: branding.announcement.type === 'danger' ? '#ef4444' : branding.announcement.type === 'warning' ? '#f59e0b' : branding.announcement.type === 'success' ? '#10b981' : 'linear-gradient(90deg, #0fa4de 0%, #0284c7 100%)',
+          color: '#ffffff',
+          padding: '10px 24px',
+          fontWeight: '700',
+          fontSize: '13px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '10px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+        }}>
+          <span>{branding.announcement.type === 'danger' ? '🚨' : branding.announcement.type === 'warning' ? '⚠️' : branding.announcement.type === 'success' ? '✅' : '📢'}</span>
+          <span>{branding.announcement.text}</span>
+        </div>
+      )}
 
       <main className="crm-main-grid">
         {/* BARRA LATERAL DE DEPARTAMENTOS Y ADMINISTRACION */}
@@ -653,70 +856,147 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
               {adminAbierto && (
                 <ul className="admin-menu-list" style={{ animation: 'fadeIn 0.2s ease-out' }}>
                   <li>
-                    <button className="sidebar-menu-btn" onClick={() => navigate('/admin/ecommerce')}>
-                      <span className="sidebar-btn-icon">🛒</span>
+                    <button 
+                      className={`sidebar-menu-btn ${activeAdminView === 'personalizacion' ? 'active' : ''}`}
+                      onClick={() => setActiveAdminView(activeAdminView === 'personalizacion' ? null : 'personalizacion')}
+                    >
+                      <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                        <AdminViewIcon name="personalizacion" size={17} />
+                      </span>
+                      <span className="sidebar-btn-text">Personalización & Login</span>
+                    </button>
+                  </li>
+                  <li>
+                    <button 
+                      className={`sidebar-menu-btn ${activeAdminView === 'ecommerce' ? 'active' : ''}`}
+                      onClick={() => setActiveAdminView(activeAdminView === 'ecommerce' ? null : 'ecommerce')}
+                    >
+                      <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                        <AdminViewIcon name="ecommerce" size={17} />
+                      </span>
                       <span className="sidebar-btn-text">E-commerce</span>
                     </button>
                   </li>
                   <li>
-                    <button className="sidebar-menu-btn" onClick={() => navigate('/reportes')}>
-                      <span className="sidebar-btn-icon">📊</span>
+                    <button 
+                      className={`sidebar-menu-btn ${activeAdminView === 'reportes' ? 'active' : ''}`}
+                      onClick={() => setActiveAdminView(activeAdminView === 'reportes' ? null : 'reportes')}
+                    >
+                      <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                        <AdminViewIcon name="reportes" size={17} />
+                      </span>
                       <span className="sidebar-btn-text">Reportes</span>
                     </button>
                   </li>
                   {usuario?.rol === 'admin' && (
                     <>
                       <li>
-                        <button className="sidebar-menu-btn" onClick={() => navigate('/departamentos')}>
-                          <span className="sidebar-btn-icon">🏢</span>
+                        <button 
+                          className={`sidebar-menu-btn ${activeAdminView === 'departamentos' ? 'active' : ''}`}
+                          onClick={() => setActiveAdminView(activeAdminView === 'departamentos' ? null : 'departamentos')}
+                        >
+                          <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                            <AdminViewIcon name="departamentos" size={17} />
+                          </span>
                           <span className="sidebar-btn-text">Gestionar Deptos</span>
                         </button>
                       </li>
                       <li>
-                        <button className="sidebar-menu-btn" onClick={() => navigate('/estados')}>
-                          <span className="sidebar-btn-icon">🏷️</span>
+                        <button 
+                          className={`sidebar-menu-btn ${activeAdminView === 'estados' ? 'active' : ''}`}
+                          onClick={() => setActiveAdminView(activeAdminView === 'estados' ? null : 'estados')}
+                        >
+                          <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                            <AdminViewIcon name="estados" size={17} />
+                          </span>
                           <span className="sidebar-btn-text">Gestionar Estados</span>
                         </button>
                       </li>
                       <li>
-                        <button className="sidebar-menu-btn" onClick={() => navigate('/templates')}>
-                          <span className="sidebar-btn-icon">📋</span>
+                        <button 
+                          className={`sidebar-menu-btn ${activeAdminView === 'templates' ? 'active' : ''}`}
+                          onClick={() => setActiveAdminView(activeAdminView === 'templates' ? null : 'templates')}
+                        >
+                          <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                            <AdminViewIcon name="templates" size={17} />
+                          </span>
                           <span className="sidebar-btn-text">Plantillas</span>
                         </button>
                       </li>
                       <li>
-                        <button className="sidebar-menu-btn" onClick={() => navigate('/organizaciones')}>
-                          <span className="sidebar-btn-icon">🏢</span>
+                        <button 
+                          className={`sidebar-menu-btn ${activeAdminView === 'organizaciones' ? 'active' : ''}`}
+                          onClick={() => setActiveAdminView(activeAdminView === 'organizaciones' ? null : 'organizaciones')}
+                        >
+                          <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                            <AdminViewIcon name="organizaciones" size={17} />
+                          </span>
                           <span className="sidebar-btn-text">Organizaciones</span>
                         </button>
                       </li>
                       <li>
-                        <button className="sidebar-menu-btn" onClick={() => navigate('/equipos')}>
-                          <span className="sidebar-btn-icon">👥</span>
+                        <button 
+                          className={`sidebar-menu-btn ${activeAdminView === 'equipos' ? 'active' : ''}`}
+                          onClick={() => setActiveAdminView(activeAdminView === 'equipos' ? null : 'equipos')}
+                        >
+                          <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                            <AdminViewIcon name="equipos" size={17} />
+                          </span>
                           <span className="sidebar-btn-text">Gestionar Equipos</span>
                         </button>
                       </li>
                       <li>
-                        <button className="sidebar-menu-btn" onClick={() => navigate('/admin')}>
-                          <span className="sidebar-btn-icon">⚙️</span>
-                          <span className="sidebar-btn-text">Usuarios</span>
+                        <button 
+                          className={`sidebar-menu-btn ${activeAdminView === 'usuarios' ? 'active' : ''}`}
+                          onClick={() => setActiveAdminView(activeAdminView === 'usuarios' ? null : 'usuarios')}
+                        >
+                          <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                            <AdminViewIcon name="usuarios" size={17} />
+                          </span>
+                          <span className="sidebar-btn-text">Usuarios y Sesiones</span>
                         </button>
                       </li>
                       <li>
-                        <button className="sidebar-menu-btn" onClick={() => navigate('/admin/importar-kayako')}>
-                          <span className="sidebar-btn-icon">📥</span>
+                        <button 
+                          className={`sidebar-menu-btn ${activeAdminView === 'logs' ? 'active' : ''}`}
+                          onClick={() => setActiveAdminView(activeAdminView === 'logs' ? null : 'logs')}
+                        >
+                          <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                            <AdminViewIcon name="logs" size={17} />
+                          </span>
+                          <span className="sidebar-btn-text">Logs & Auditoría</span>
+                        </button>
+                      </li>
+                      <li>
+                        <button 
+                          className={`sidebar-menu-btn ${activeAdminView === 'importar-kayako' ? 'active' : ''}`}
+                          onClick={() => setActiveAdminView(activeAdminView === 'importar-kayako' ? null : 'importar-kayako')}
+                        >
+                          <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                            <AdminViewIcon name="importar-kayako" size={17} />
+                          </span>
                           <span className="sidebar-btn-text">Importar Kayako</span>
                         </button>
                       </li>
                       <li>
-                        <button className="sidebar-menu-btn" onClick={() => navigate('/config-tickets')}>
-                          <span className="sidebar-btn-icon">⚙️</span>
+                        <button 
+                          className={`sidebar-menu-btn ${activeAdminView === 'config-tickets' ? 'active' : ''}`}
+                          onClick={() => setActiveAdminView(activeAdminView === 'config-tickets' ? null : 'config-tickets')}
+                        >
+                          <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                            <AdminViewIcon name="config-tickets" size={17} />
+                          </span>
                           <span className="sidebar-btn-text">Configuración Tickets</span>
                         </button>
                       </li>
                       <li>
-                        <button className="sidebar-menu-btn" onClick={() => navigate('/admin/canales-ayuda')}>
-                          <span className="sidebar-btn-icon">💬</span>
+                        <button 
+                          className={`sidebar-menu-btn ${activeAdminView === 'canales-ayuda' ? 'active' : ''}`}
+                          onClick={() => setActiveAdminView(activeAdminView === 'canales-ayuda' ? null : 'canales-ayuda')}
+                        >
+                          <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                            <AdminViewIcon name="canales-ayuda" size={17} />
+                          </span>
                           <span className="sidebar-btn-text">Canales de Ayuda</span>
                         </button>
                       </li>
@@ -739,8 +1019,9 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                 return (
                   <li key={dept.id} className="dept-group-item" style={{ listStyle: 'none' }}>
                     <div 
-                      className={`dept-item ${isActive ? 'active' : ''}`}
+                      className={`dept-item ${isActive && !activeAdminView ? 'active' : ''}`}
                       onClick={() => {
+                        setActiveAdminView(null);
                         if (isActive) {
                           setFiltroEstado('Todos');
                         } else {
@@ -798,6 +1079,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                           className={`state-subitem ${filtroEstado === 'Todos' ? 'active' : ''}`}
                           onClick={(e) => {
                             e.stopPropagation();
+                            setActiveAdminView(null);
                             setFiltroEstado('Todos');
                           }}
                           style={{
@@ -836,6 +1118,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                               className={`state-subitem ${isStateActive ? 'active' : ''}`}
                               onClick={(e) => {
                                 e.stopPropagation();
+                                setActiveAdminView(null);
                                 setFiltroEstado(est.nombre);
                               }}
                               style={{
@@ -870,11 +1153,183 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
           </div>
         </aside>
 
-        {/* TABLERO PRINCIPAL */}
-        <div className="board-wrapper">
-          <div className="board-header">
-            <h2>Tickets en: <span>{activeDeptName}</span></h2>
+        {/* VISTAS EMBEBIDAS DE ADMINISTRACIÓN O TABLERO PRINCIPAL DE TICKETS */}
+        {activeAdminView ? (
+          <div
+            style={
+              isMaximized
+                ? {
+                    position: 'fixed',
+                    inset: 0,
+                    zIndex: 9999,
+                    background: theme === 'dark' ? '#0b0f19' : '#f8fafc',
+                    overflowY: 'auto',
+                    padding: '20px 28px',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '16px',
+                    animation: 'fadeIn 0.2s ease-out'
+                  }
+                : {
+                    flex: 1,
+                    minWidth: 0,
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '16px',
+                    animation: 'fadeIn 0.2s ease-out'
+                  }
+            }
+          >
+            {/* Top Toolbar for Embedded View */}
+            <div
+              style={{
+                background: theme === 'dark' ? 'rgba(30, 41, 59, 0.95)' : 'rgba(255, 255, 255, 0.95)',
+                backdropFilter: 'blur(12px)',
+                border: `1px solid ${theme === 'dark' ? '#334155' : '#e2e8f0'}`,
+                borderRadius: '16px',
+                padding: '10px 18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '12px',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.05)'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {isMaximized && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setActiveAdminView(null);
+                      setIsMaximized(false);
+                    }}
+                    style={{
+                      background: 'var(--pill-bg)',
+                      border: '1px solid var(--border-color)',
+                      color: 'var(--text-main)',
+                      borderRadius: '50%',
+                      width: '36px',
+                      height: '36px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.15s ease'
+                    }}
+                    title="Volver a Tickets"
+                  >
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="19" y1="12" x2="5" y2="12"></line>
+                      <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                  </button>
+                )}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ display: 'inline-flex', alignItems: 'center', color: '#0fa4de' }}>
+                    <AdminViewIcon name={activeAdminView} size={20} />
+                  </span>
+                  <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)' }}>
+                    {ADMIN_VIEWS_INFO[activeAdminView]?.title || 'Administración'}
+                  </h3>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                {/* Botón Maximizar / Pantalla Completa (Estilo Android) */}
+                <button
+                  type="button"
+                  onClick={() => setIsMaximized(!isMaximized)}
+                  style={{
+                    background: isMaximized ? 'var(--primary)' : 'var(--pill-bg)',
+                    border: `1px solid ${isMaximized ? 'var(--primary)' : 'var(--border-color)'}`,
+                    color: isMaximized ? '#ffffff' : 'var(--text-main)',
+                    borderRadius: '50%',
+                    width: '36px',
+                    height: '36px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    transition: 'all 0.15s ease',
+                    boxShadow: isMaximized ? '0 4px 12px rgba(15, 164, 222, 0.3)' : 'none'
+                  }}
+                  title={isMaximized ? "Restaurar vista normal" : "Maximizar a pantalla completa"}
+                >
+                  {isMaximized ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3"></path>
+                    </svg>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"></path>
+                    </svg>
+                  )}
+                </button>
+
+                {/* Botón Abrir en Nueva Pestaña (Estilo Android) */}
+                {ADMIN_VIEWS_INFO[activeAdminView]?.route && (
+                  <button
+                    type="button"
+                    onClick={() => window.open(ADMIN_VIEWS_INFO[activeAdminView].route, '_blank')}
+                    style={{
+                      background: 'var(--pill-bg)',
+                      border: '1px solid var(--border-color)',
+                      color: 'var(--text-main)',
+                      borderRadius: '50%',
+                      width: '36px',
+                      height: '36px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transition: 'all 0.15s ease'
+                    }}
+                    title="Abrir en nueva pestaña"
+                  >
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                      <polyline points="15 3 21 3 21 9"></polyline>
+                      <line x1="10" y1="14" x2="21" y2="3"></line>
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Contenido de la Vista Activa */}
+            <div style={{ flex: 1, minWidth: 0, width: '100%' }}>
+              {activeAdminView === 'personalizacion' && (
+                <AdminPersonalizacion
+                  usuario={usuario}
+                  theme={theme}
+                  toggleTheme={toggleTheme}
+                  embedded={true}
+                  onBack={() => {
+                    setActiveAdminView(null);
+                    setIsMaximized(false);
+                  }}
+                />
+              )}
+              {activeAdminView === 'ecommerce' && <AdminEcommerce embedded={true} />}
+              {activeAdminView === 'reportes' && <Reportes embedded={true} />}
+              {activeAdminView === 'departamentos' && <AdminDepartamentos embedded={true} />}
+              {activeAdminView === 'estados' && <AdminEstados embedded={true} />}
+              {activeAdminView === 'templates' && <AdminTemplates embedded={true} />}
+              {activeAdminView === 'organizaciones' && <AdminOrganizaciones embedded={true} />}
+              {activeAdminView === 'equipos' && <AdminEquipos embedded={true} />}
+              {activeAdminView === 'usuarios' && <AdminUsuarios usuario={usuario} theme={theme} toggleTheme={toggleTheme} embedded={true} initialTab="usuarios" />}
+              {activeAdminView === 'logs' && <AdminUsuarios usuario={usuario} theme={theme} toggleTheme={toggleTheme} embedded={true} initialTab="logs" />}
+              {activeAdminView === 'importar-kayako' && <AdminImportarKayako embedded={true} />}
+              {activeAdminView === 'config-tickets' && <AdminConfigTickets embedded={true} />}
+              {activeAdminView === 'canales-ayuda' && <AdminCanalesAyuda embedded={true} />}
+            </div>
           </div>
+        ) : (
+          <div className="board-wrapper">
+            <div className="board-header">
+              <h2>Tickets en: <span>{activeDeptName}</span></h2>
+            </div>
 
           {/* BOTÓN NUEVO TICKET (ONE UI STYLE) */}
 
@@ -889,9 +1344,10 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                     fetchConfigTickets();
                   }
                 }}
-                style={{ width: 'fit-content', background: mostrarFormulario ? 'var(--danger-bg)' : 'var(--card-bg)', color: mostrarFormulario ? 'var(--danger)' : 'var(--text-main)' }}
+                style={{ width: 'fit-content', background: mostrarFormulario ? 'var(--danger-bg)' : 'var(--card-bg)', color: mostrarFormulario ? 'var(--danger)' : 'var(--text-main)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
               >
-                {mostrarFormulario ? '❌ Cancelar Nuevo Ticket' : '➕ Nuevo Ticket'}
+                <BrandingVectorIcon name={mostrarFormulario ? "x" : "plus"} size={14} color="currentColor" />
+                <span>{mostrarFormulario ? 'Cancelar Nuevo Ticket' : 'Nuevo Ticket'}</span>
               </button>
 
               {mostrarFormulario && (
@@ -901,7 +1357,9 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
 
                   {(!configTickets.habilitarNuevoTicketProcesos && !configTickets.habilitarReintegroGastos && !configTickets.habilitarReservaViajes) ? (
                     <div style={{ textAlign: 'center', padding: '40px 20px', background: 'rgba(239, 68, 68, 0.04)', border: '1px dashed rgba(239, 68, 68, 0.2)', borderRadius: '24px', margin: '20px 0' }}>
-                      <div style={{ fontSize: '3rem', marginBottom: '15px' }}>⚠️</div>
+                      <div style={{ marginBottom: '15px' }}>
+                        <BrandingVectorIcon name="alert-triangle" size={44} color="#ef4444" />
+                      </div>
                       <h4 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700', color: '#ef4444' }}>Creación de Tickets Deshabilitada</h4>
                       <p style={{ margin: '8px 0 0 0', fontSize: '0.85rem', color: '#6e6e73', lineHeight: '1.5' }}>
                         El administrador ha deshabilitado temporalmente la creación de nuevos tickets de todo tipo. Por favor, ponte en contacto con soporte si consideras que esto es un error.
@@ -931,10 +1389,15 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                             fontWeight: '600',
                             fontSize: '0.85rem',
                             cursor: 'pointer',
-                            transition: 'all 0.2s ease'
+                            transition: 'all 0.2s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px'
                           }}
                         >
-                          👤 Cliente Existente
+                          <BrandingVectorIcon name="user" size={14} color={registroModo === 'existente' ? '#ffffff' : 'var(--text-main)'} />
+                          <span>Cliente Existente</span>
                         </button>
                         <button 
                           type="button" 
@@ -953,10 +1416,15 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                             fontWeight: '600',
                             fontSize: '0.85rem',
                             cursor: 'pointer',
-                            transition: 'all 0.2s ease'
+                            transition: 'all 0.2s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px'
                           }}
                         >
-                          ✍️ Cliente Nuevo (Ingreso Manual)
+                          <BrandingVectorIcon name="edit" size={14} color={registroModo === 'manual' ? '#ffffff' : 'var(--text-main)'} />
+                          <span>Cliente Nuevo (Manual)</span>
                         </button>
                       </div>
 
@@ -971,7 +1439,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                             <option value="">-- Selecciona un cliente/manager registrado --</option>
                             {usuarios.filter(u => u.rol === 'cliente' || u.rol === 'manager').map(u => (
                               <option key={u.id} value={u.email}>
-                                👤 {u.nombre} ({u.email}) - Rol: {u.rol}
+                                {u.nombre} ({u.email}) - Rol: {u.rol}
                               </option>
                             ))}
                           </select>
@@ -1949,11 +2417,12 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
             }
             .board-column {
               flex: 1 1 180px;
-              min-width: 150px;
-              background: rgba(120, 120, 128, 0.04);
-              border-radius: 20px;
-              padding: 12px;
-              box-shadow: inset 0 0 0 1px rgba(0,0,0,0.03);
+              min-width: 160px;
+              background: var(--pill-bg);
+              border-radius: var(--radius-xl, 22px);
+              padding: 14px;
+              box-shadow: inset 0 0 0 1px var(--border-color-subtle);
+              border: 1px solid var(--border-color-subtle);
               box-sizing: border-box;
             }
             .column-header {
@@ -1967,16 +2436,17 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
               margin: 0;
               font-size: 0.95rem;
               font-weight: 700;
-              color: #1c1c1e;
+              color: var(--text-main);
               font-family: 'Outfit', sans-serif;
             }
             .column-count {
-              background: rgba(0,0,0,0.06);
-              padding: 2px 10px;
-              border-radius: 12px;
+              background: var(--card-bg);
+              padding: 3px 10px;
+              border-radius: var(--radius-pill);
               font-size: 0.75rem;
               font-weight: 700;
-              color: #8e8e93;
+              color: var(--text-muted);
+              border: 1px solid var(--border-color-subtle);
             }
             .column-cards {
               display: flex;
@@ -1987,18 +2457,18 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
               padding-right: 4px;
             }
             .ticket-card {
-              background: white;
-              border-radius: 16px;
+              background: var(--card-bg);
+              border-radius: var(--radius-lg, 18px);
               padding: 16px;
-              box-shadow: 0 4px 12px rgba(0,0,0,0.03);
-              border: 1px solid rgba(0,0,0,0.05);
+              box-shadow: var(--shadow-sm);
+              border: 1px solid var(--border-color-subtle);
               cursor: pointer;
-              transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+              transition: var(--transition-bezier);
               text-align: left;
             }
             .ticket-card:hover {
               transform: translateY(-2px);
-              box-shadow: 0 8px 20px rgba(0,0,0,0.06);
+              box-shadow: var(--shadow-md);
               border-color: var(--primary);
             }
             .card-top {
@@ -2053,7 +2523,9 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '20px', gap: '15px', flexWrap: 'wrap' }}>
             {/* Buscador */}
             <div style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
-              <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#8e8e93', fontSize: '1rem' }}>🔍</span>
+              <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#8e8e93', display: 'flex', alignItems: 'center' }}>
+                <BrandingVectorIcon name="search" size={16} color="#8e8e93" />
+              </span>
               <input 
                 type="text" 
                 placeholder="Buscar por ID, cliente, asunto..." 
@@ -2147,10 +2619,14 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                   fontWeight: '600',
                   cursor: 'pointer',
                   boxShadow: '0 4px 10px rgba(15, 118, 110, 0.15)',
-                  transition: 'all 0.2s ease'
+                  transition: 'all 0.2s ease',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
                 }}
               >
-                {viewMode === 'list' ? '🗂️ Ver Tablero' : '📋 Ver Lista'}
+                <BrandingVectorIcon name={viewMode === 'list' ? "layers" : "file-text"} size={14} color="#ffffff" />
+                <span>{viewMode === 'list' ? 'Ver Tablero' : 'Ver Lista'}</span>
               </button>
             </div>
           </div>
@@ -2181,8 +2657,9 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                             <h4 className="card-title">{ticket.nombre}</h4>
                             <p className="card-subject">{ticket.empresa || 'Sin asunto'}</p>
                             <div className="card-footer">
-                              <span className="card-assignee" title={ticket.asignado_a || 'Sin asignar'}>
-                                👤 {ticket.asignado_a || 'Sin asignar'}
+                              <span className="card-assignee" title={ticket.asignado_a || 'Sin asignar'} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                <BrandingVectorIcon name="user" size={12} color="#64748b" />
+                                <span>{ticket.asignado_a || 'Sin asignar'}</span>
                               </span>
                               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                 {((ticket.archivos && ticket.archivos.length > 0) || ticket.archivo_url) && (
@@ -2190,7 +2667,10 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                                     📎 {ticket.archivos ? ticket.archivos.length : 1}
                                   </span>
                                 )}
-                                <span className="card-activity">💬 {ticket.notas ? ticket.notas.length : 0}</span>
+                                <span className="card-activity" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                  <BrandingVectorIcon name="message-square" size={11} color="var(--primary)" />
+                                  <span>{ticket.notas ? ticket.notas.length : 0}</span>
+                                </span>
                               </div>
                             </div>
                           </div>
@@ -2247,8 +2727,11 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                         <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>
                           {cliente.notas?.length > 0 ? new Date(cliente.notas[cliente.notas.length-1].fecha).toLocaleString() : new Date(cliente.creado_en).toLocaleString()}
                         </span>
-                        <div style={{ marginTop: '4px', fontSize: '0.75rem', color: 'var(--primary)', display: 'flex', gap: '8px' }}>
-                          <span>💬 {cliente.notas ? cliente.notas.length : 0} Notas</span>
+                        <div style={{ marginTop: '4px', fontSize: '0.75rem', color: 'var(--primary)', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <BrandingVectorIcon name="message-square" size={11} color="var(--primary)" />
+                            <span>{cliente.notas ? cliente.notas.length : 0} Notas</span>
+                          </span>
                           {((cliente.archivos && cliente.archivos.length > 0) || cliente.archivo_url) && (
                             <span style={{ color: '#10b981', fontWeight: 'bold' }}>📎 {cliente.archivos ? cliente.archivos.length : 1} Adjuntos</span>
                           )}
@@ -2268,7 +2751,8 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
             </table>
           </section>
         )}
-        </div>
+          </div>
+        )}
       </main>
 
       {modalCliente && (

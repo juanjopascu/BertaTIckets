@@ -14,7 +14,7 @@ const COLORS = ['#0fa4de', '#38bdf8', '#0284c7', '#10b981', '#f59e0b', '#8b5cf6'
 const COMPLIANT_COLOR = '#10b981'; // Green
 const VIOLATED_COLOR = '#ef4444'; // Red
 
-function Reportes() {
+function Reportes({ embedded = false }) {
   const navigate = useNavigate();
   const [clientes, setClientes] = useState([]);
   const [departamentos, setDepartamentos] = useState([]);
@@ -391,7 +391,10 @@ function Reportes() {
   }
 
   return (
-    <div className="crm-container">
+    <div
+      className={embedded ? "crm-embedded-view" : "crm-container"}
+      style={embedded ? { width: '100%', maxWidth: '100%', margin: 0, padding: 0 } : {}}
+    >
       {/* Estilos locales para impresión e interactividad premium */}
       <style>{`
         .tab-buttons {
@@ -484,67 +487,49 @@ function Reportes() {
         }
       `}</style>
 
-      <header className="crm-header grid-header">
-        <div className="header-top">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{
-                background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
-                color: '#ffffff',
-                fontWeight: '900',
-                fontSize: '1.4rem',
-                letterSpacing: '-0.02em',
-                padding: '8px 16px',
-                borderRadius: '12px',
-                boxShadow: '0 4px 15px rgba(15, 164, 222, 0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <span>DACAS</span>
+      {!embedded && (
+        <header className="crm-header grid-header">
+          <div className="header-top">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{
+                  background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                  color: '#ffffff',
+                  fontWeight: '900',
+                  fontSize: '1.4rem',
+                  letterSpacing: '-0.02em',
+                  padding: '8px 16px',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 15px rgba(15, 164, 222, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <span>DACAS</span>
+                </div>
+                <div>
+                  <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+                    Reportería <span style={{ color: '#0fa4de' }}>&</span> SLA Avanzado
+                  </h1>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    Métricas de cumplimiento, tiempos de resolución y trazabilidad de operaciones
+                  </div>
+                </div>
               </div>
-              <div>
-                <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-                  Reportería <span style={{ color: '#0fa4de' }}>&</span> SLA Avanzado
-                </h1>
-                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  Métricas de cumplimiento, tiempos de resolución y trazabilidad de operaciones
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div className="user-controls">
+                  <button className="nav-btn" onClick={() => window.print()} style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+                    🖨️ Exportar PDF / Imprimir
+                  </button>
                 </div>
               </div>
             </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{
-                background: 'var(--pill-bg)',
-                border: '1px solid var(--border-color)',
-                borderRadius: '999px',
-                padding: '6px 14px',
-                color: 'var(--text-main)',
-                fontSize: '0.85rem',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-              }}>
-                <span>🇦🇷</span>
-                <span>DACAS Argentina</span>
-              </div>
-
-              <div className="user-controls">
-                <button className="nav-btn" onClick={() => window.print()} style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-                  🖨️ Exportar PDF / Imprimir
-                </button>
-                <button className="nav-btn" onClick={() => navigate('/')}>
-                  🔙 Volver al Dashboard
-                </button>
-              </div>
-            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
-      <main className="crm-main" style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '20px' }}>
+      <main className={embedded ? "crm-main-embedded" : "crm-main"} style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: embedded ? '0' : '20px', width: '100%', maxWidth: '100%' }}>
         
         {/* Sección KPIs */}
         <section className="kpi-section" style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>

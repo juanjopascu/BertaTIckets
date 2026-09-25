@@ -7,6 +7,7 @@ const path = require('path');
 const fs = require('fs');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_mock');
 const { generateProductDescription, generateDimensionsAI, generateCategoriesAI } = require('./services/geminiService');
+const { registrarLog } = require('./services/auditLoggerService');
 
 const router = express.Router();
 
@@ -177,9 +178,98 @@ const DEFAULT_VISUAL_SETTINGS = {
   }
 };
 
+// --- DEFAULT CHECKOUT METHODS (SHIPPING & PAYMENT) ---
+const DEFAULT_CHECKOUT_METHODS = {
+  shipping: [
+    {
+      id: 'express',
+      enabled: true,
+      title: 'Envío Express a Domicilio',
+      subtitle: 'Despacho a Planta / Oficina',
+      badge: 'Recomendado',
+      icon: '🚚',
+      priceText: 'Bonificado (B2B)',
+      description: 'Envío directo puerta a puerta a la dirección declarada de la empresa.'
+    },
+    {
+      id: 'hub',
+      enabled: true,
+      title: 'Retiro en HUB DACAS',
+      subtitle: 'Depósito Central (Sin Cargo)',
+      badge: 'Gratis',
+      icon: '🏢',
+      priceText: 'Sin cargo',
+      description: 'Retiro por depósito central o centro logístico DACAS en el país.'
+    },
+    {
+      id: 'expreso',
+      enabled: true,
+      title: 'Expreso / Transporte Propio',
+      subtitle: 'Despacho a receptoría de expreso',
+      badge: 'Interior',
+      icon: '🚛',
+      priceText: 'A cargo del cliente',
+      description: 'Despacho hacia la receptoría o transporte que el integrador contrate.'
+    }
+  ],
+  payment: [
+    {
+      id: 'cuenta_corriente',
+      enabled: true,
+      title: 'Cuenta Corriente Comercial B2B DACAS',
+      subtitle: 'Pago diferido contra factura y límite crediticio asignado a tu empresa.',
+      badge: 'Crédito Aprobado',
+      icon: '🏦',
+      terms: ['30_dias', '60_dias'],
+      terms_label: 'Plazo de Facturación:',
+      instrucciones: 'Sujeto a verificación de línea crediticia aprobada en DACAS.'
+    },
+    {
+      id: 'transferencia',
+      enabled: true,
+      title: 'Transferencia Bancaria Directa (CBU / SWIFT)',
+      subtitle: 'Se emitirá la Factura Proforma con cuentas en BBVA / Banco Santander para depósito en USD o ARS al tipo de cambio oficial.',
+      badge: 'Inmediato',
+      icon: '💸',
+      banco: 'Banco Santander / BBVA Argentina',
+      titular: 'DACAS S.A.',
+      cuit: '30-68942158-9',
+      cbu: '0720123920000001234567',
+      alias: 'DACAS.PAGOS.B2B',
+      swift: 'BAPROARBAXXX',
+      tipo_cuenta: 'Cuenta Corriente Especial en USD / ARS',
+      instrucciones: 'Una vez efectuada la transferencia, adjuntá el comprobante a cobranzas@dacas.com indicando tu número de orden.'
+    },
+    {
+      id: 'tarjeta',
+      enabled: true,
+      title: 'Tarjeta Corporativa / Débito (Stripe Secure)',
+      subtitle: 'Procesamiento online seguro e inmediato con Visa, Mastercard, American Express B2B.',
+      badge: 'Online',
+      icon: '💳',
+      gateway: 'Stripe SSL 256-bit',
+      instrucciones: 'Transacción encriptada y protegida bajo normativa PCI-DSS Nivel 1.'
+    },
+    {
+      id: 'echeq',
+      enabled: true,
+      title: 'Cheque de Pago Diferido / E-Cheq',
+      subtitle: 'Endoso y recepción de cheques electrónicos interbancarios COELSA.',
+      badge: 'Financiamiento',
+      icon: '📑',
+      cuit_receptor: '30-68942158-9',
+      banco_receptor: 'Banco Santander',
+      plazos_admitidos: '30 y 60 días fecha factura',
+      instrucciones: 'Emitir o endosar el E-Cheq a favor de DACAS S.A. (CUIT 30-68942158-9) mediante homebanking.'
+    }
+  ],
+  terms_conditions_text: 'Acepto las condiciones comerciales de DACAS B2B, términos de garantía oficial de fabricante de 12/36 meses y la emisión de la orden de compra con carácter vinculante para reserva de stock.'
+};
+
 // --- IN-MEMORY DATABASE FALLBACK STORE ---
 const inMem = {
   visualSettings: JSON.parse(JSON.stringify(DEFAULT_VISUAL_SETTINGS)),
+  checkoutMethods: JSON.parse(JSON.stringify(DEFAULT_CHECKOUT_METHODS)),
   users: [
     {
       id: 1,
@@ -210,6 +300,7 @@ const inMem = {
       email: 'carlos@redesnet.com.ar',
       password_hash: bcrypt.hashSync('password123', 10),
       razon_social: 'RedesNet Soluciones IT S.R.L.',
+      cargo: 'Director Comercial',
       tipo_cliente: 'Integrador IT',
       phone: '+54 11 5555-8899',
       numero_nit: '30-71458922-4',
@@ -218,6 +309,24 @@ const inMem = {
       status: 'pendiente',
       avatar_url: null,
       created_at: new Date(Date.now() - 3600000).toISOString()
+    },
+    {
+      id: 3,
+      name: 'Laura Gómez',
+      email: 'compras@empresademo.com.ar',
+      password_hash: bcrypt.hashSync('password123', 10),
+      razon_social: 'Empresa Demo S.A.',
+      cargo: 'Encargada de Compras',
+      tipo_cliente: 'Integrador IT / Reseller',
+      phone: '+54 11 4000-1235',
+      numero_nit: '30-12345678-9',
+      direccion_legal: 'Av. Corrientes 1234, Piso 8',
+      direccion_entrega: 'Av. del Libertador 4500, Depósito 2',
+      ciudad: 'Buenos Aires',
+      country_id: 1,
+      status: 'activo',
+      avatar_url: null,
+      created_at: new Date(Date.now() - 7200000).toISOString()
     }
   ],
   change_requests: [
@@ -353,6 +462,7 @@ const inMem = {
     {
       id: 1,
       name: 'Descuento Mayorista Integradores IT en Fortinet (Argentina)',
+      coupon_code: null,
       rule_type: 'discount',
       value_type: 'percentage',
       value: '18.00',
@@ -362,12 +472,17 @@ const inMem = {
       product_id: null,
       user_id: null,
       priority: 10,
+      min_order_amount: null,
+      valid_until: null,
+      usage_limit: null,
+      times_used: 0,
       is_active: true,
       created_at: new Date().toISOString()
     },
     {
       id: 2,
       name: 'Descuento Especial ISPs en MikroTik y Aruba',
+      coupon_code: null,
       rule_type: 'discount',
       value_type: 'percentage',
       value: '20.00',
@@ -377,36 +492,90 @@ const inMem = {
       product_id: null,
       user_id: null,
       priority: 8,
+      min_order_amount: null,
+      valid_until: null,
+      usage_limit: null,
+      times_used: 0,
       is_active: true,
       created_at: new Date().toISOString()
     },
     {
       id: 3,
-      name: 'Convenio Corporativo AudioCodes Enterprise',
+      name: 'Cupón 15% OFF en Marca Fortinet',
+      coupon_code: 'FORTINET15',
       rule_type: 'discount',
       value_type: 'percentage',
-      value: '12.00',
-      tipo_cliente: 'Empresa Corporativa',
+      value: '15.00',
+      tipo_cliente: null,
       country_id: null,
-      brand: 'AudioCodes',
+      brand: 'Fortinet',
       product_id: null,
       user_id: null,
-      priority: 5,
+      priority: 15,
+      min_order_amount: 300,
+      valid_until: '2026-12-31',
+      usage_limit: 100,
+      times_used: 12,
       is_active: true,
       created_at: new Date().toISOString()
     },
     {
       id: 4,
-      name: 'Descuento General Integradores IT en Networking & WiFi (Chile)',
+      name: 'Cupón Exclusivo DACAS Argentina 10% OFF',
+      coupon_code: 'ARGENTINA10',
       rule_type: 'discount',
       value_type: 'percentage',
-      value: '15.00',
-      tipo_cliente: 'Integrador IT / Reseller',
-      country_id: 3,
+      value: '10.00',
+      tipo_cliente: null,
+      country_id: 1,
       brand: null,
       product_id: null,
       user_id: null,
-      priority: 6,
+      priority: 12,
+      min_order_amount: 500,
+      valid_until: '2026-12-31',
+      usage_limit: 50,
+      times_used: 8,
+      is_active: true,
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 5,
+      name: 'Cupón VIP Especial Cliente Laura Gómez / Empresa Demo',
+      coupon_code: 'CLIENTEVIP25',
+      rule_type: 'discount',
+      value_type: 'percentage',
+      value: '25.00',
+      tipo_cliente: null,
+      country_id: null,
+      brand: null,
+      product_id: null,
+      user_id: 1,
+      priority: 20,
+      min_order_amount: null,
+      valid_until: '2026-12-31',
+      usage_limit: 20,
+      times_used: 3,
+      is_active: true,
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 6,
+      name: 'Cupón $50 USD OFF en Switch Aruba 2930F',
+      coupon_code: 'ARUBA50OFF',
+      rule_type: 'discount',
+      value_type: 'fixed',
+      value: '50.00',
+      tipo_cliente: null,
+      country_id: null,
+      brand: null,
+      product_id: 1,
+      user_id: null,
+      priority: 10,
+      min_order_amount: 200,
+      valid_until: '2026-12-31',
+      usage_limit: 30,
+      times_used: 5,
       is_active: true,
       created_at: new Date().toISOString()
     }
@@ -649,6 +818,17 @@ function executeInMemoryQuery(sql, params = []) {
     return { rows: [] };
   }
 
+  // 6.1 DELETE FROM ecommerce_users
+  if (/^DELETE FROM ecommerce_users WHERE id = \$1/i.test(norm)) {
+    const userId = parseInt(params[0]);
+    const idx = inMem.users.findIndex(u => u.id === userId);
+    if (idx !== -1) {
+      const removed = inMem.users.splice(idx, 1);
+      return { rows: removed };
+    }
+    return { rows: [] };
+  }
+
   // 7. PRICING RULES
   if (/FROM ecommerce_pricing_rules/i.test(norm)) {
     if (/is_active = true/i.test(norm)) {
@@ -671,7 +851,7 @@ function executeInMemoryQuery(sql, params = []) {
 
   if (/^INSERT INTO ecommerce_pricing_rules/i.test(norm)) {
     let newRule;
-    if (params.length >= 11) {
+    if (params.length >= 16) {
       newRule = {
         id: inMem.nextIds.rules++,
         name: params[0],
@@ -685,6 +865,32 @@ function executeInMemoryQuery(sql, params = []) {
         user_id: params[8] ? parseInt(params[8]) : null,
         priority: parseInt(params[9]) || 0,
         is_active: params[10] !== false,
+        coupon_code: params[11] ? String(params[11]).trim().toUpperCase() : null,
+        min_order_amount: params[12] ? parseFloat(params[12]) : null,
+        valid_until: params[13] || null,
+        usage_limit: params[14] ? parseInt(params[14]) : null,
+        times_used: params[15] ? parseInt(params[15]) : 0,
+        created_at: new Date().toISOString()
+      };
+    } else if (params.length >= 11) {
+      newRule = {
+        id: inMem.nextIds.rules++,
+        name: params[0],
+        rule_type: params[1],
+        value_type: params[2],
+        value: String(params[3]),
+        tipo_cliente: params[4] || null,
+        country_id: params[5] ? parseInt(params[5]) : null,
+        brand: params[6] || null,
+        product_id: params[7] ? parseInt(params[7]) : null,
+        user_id: params[8] ? parseInt(params[8]) : null,
+        priority: parseInt(params[9]) || 0,
+        is_active: params[10] !== false,
+        coupon_code: null,
+        min_order_amount: null,
+        valid_until: null,
+        usage_limit: null,
+        times_used: 0,
         created_at: new Date().toISOString()
       };
     } else {
@@ -701,6 +907,11 @@ function executeInMemoryQuery(sql, params = []) {
         is_active: params[8] !== false,
         tipo_cliente: null,
         brand: null,
+        coupon_code: null,
+        min_order_amount: null,
+        valid_until: null,
+        usage_limit: null,
+        times_used: 0,
         created_at: new Date().toISOString()
       };
     }
@@ -712,7 +923,27 @@ function executeInMemoryQuery(sql, params = []) {
     const id = parseInt(params[params.length - 1]);
     const idx = inMem.pricing_rules.findIndex(r => r.id === id);
     if (idx !== -1) {
-      if (params.length >= 12) {
+      if (params.length >= 17) {
+        inMem.pricing_rules[idx] = {
+          ...inMem.pricing_rules[idx],
+          name: params[0],
+          rule_type: params[1],
+          value_type: params[2],
+          value: String(params[3]),
+          tipo_cliente: params[4] || null,
+          country_id: params[5] ? parseInt(params[5]) : null,
+          brand: params[6] || null,
+          product_id: params[7] ? parseInt(params[7]) : null,
+          user_id: params[8] ? parseInt(params[8]) : null,
+          priority: parseInt(params[9]) || 0,
+          is_active: params[10] !== false,
+          coupon_code: params[11] ? String(params[11]).trim().toUpperCase() : null,
+          min_order_amount: params[12] ? parseFloat(params[12]) : null,
+          valid_until: params[13] || null,
+          usage_limit: params[14] ? parseInt(params[14]) : null,
+          times_used: params[15] !== undefined ? parseInt(params[15]) : (inMem.pricing_rules[idx].times_used || 0)
+        };
+      } else if (params.length >= 12) {
         inMem.pricing_rules[idx] = {
           ...inMem.pricing_rules[idx],
           name: params[0],
@@ -1267,6 +1498,8 @@ function calculateCustomProductPrice(product, user, allRules) {
   // Filter rules matching dimensions: user_id, tipo_cliente, country_id, brand, product_id
   const matchingRules = (allRules || []).filter(r => {
     if (!r.is_active) return false;
+    // Promotional coupons with code must not apply automatically in catalog
+    if (r.coupon_code && String(r.coupon_code).trim() !== '') return false;
     
     // Dimension: Specific user override
     if (r.user_id && parseInt(r.user_id) !== parseInt(user.id)) {
@@ -1963,7 +2196,8 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
       billing_info,
       po_number,
       delivery_notes,
-      notes 
+      notes,
+      coupon_code
     } = req.body;
     const userId = req.user ? req.user.id : null;
 
@@ -2036,6 +2270,43 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
       });
     }
 
+    // Coupon discount application if provided
+    let appliedCoupon = null;
+    let couponDiscountAmount = 0;
+    if (coupon_code && String(coupon_code).trim()) {
+      const cleanCode = String(coupon_code).trim().toUpperCase();
+      const cRule = allRules.find(r => r.coupon_code && String(r.coupon_code).trim().toUpperCase() === cleanCode);
+      if (cRule) {
+        // Calculate eligible subtotal
+        let eligibleSub = subtotal;
+        if (cRule.product_id) {
+          const matchingItms = orderItems.filter(oi => parseInt(oi.product_id) === parseInt(cRule.product_id));
+          eligibleSub = matchingItms.reduce((acc, oi) => acc + (parseFloat(oi.price_at_purchase) * oi.quantity), 0);
+        } else if (cRule.brand && cRule.brand.toLowerCase() !== 'all') {
+          const matchingItms = orderItems.filter(oi => (oi.brand || '').toLowerCase() === cRule.brand.toLowerCase());
+          eligibleSub = matchingItms.reduce((acc, oi) => acc + (parseFloat(oi.price_at_purchase) * oi.quantity), 0);
+        }
+
+        if (eligibleSub > 0) {
+          const cVal = parseFloat(cRule.value) || 0;
+          if (cRule.value_type === 'percentage') {
+            couponDiscountAmount = (eligibleSub * cVal) / 100;
+          } else {
+            couponDiscountAmount = Math.min(eligibleSub, cVal);
+          }
+          appliedCoupon = { code: cleanCode, discount: couponDiscountAmount, id: cRule.id };
+          totalDiscount += couponDiscountAmount;
+
+          // Increment times_used
+          if (isPgConnected) {
+            pool.query('UPDATE ecommerce_pricing_rules SET times_used = COALESCE(times_used, 0) + 1 WHERE id = $1', [cRule.id]).catch(() => {});
+          } else {
+            cRule.times_used = (cRule.times_used || 0) + 1;
+          }
+        }
+      }
+    }
+
     const totalFinal = Math.max(0, subtotal - totalDiscount);
     const orderNumber = Math.floor(1000 + Math.random() * 9000);
     const effectivePo = po_number || `OC-${orderNumber}`;
@@ -2061,6 +2332,8 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
 
       orderToReturn = {
         ...newOrder,
+        coupon_code: appliedCoupon ? appliedCoupon.code : null,
+        coupon_discount: couponDiscountAmount.toFixed(2),
         payment_method: payment_method || 'Cuenta Corriente Corporativa',
         shipping_method: shipping_method || 'Envío a Domicilio / Planta',
         shipping_address: shipping_address || (user ? user.direccion_entrega : 'Dirección registrada'),
@@ -2078,6 +2351,8 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
         total: totalFinal.toFixed(2),
         subtotal: subtotal.toFixed(2),
         discount_applied: totalDiscount.toFixed(2),
+        coupon_code: appliedCoupon ? appliedCoupon.code : null,
+        coupon_discount: couponDiscountAmount.toFixed(2),
         tax_applied: '0.00',
         shipping_applied: '0.00',
         nationalization_applied: '0.00',
@@ -2108,6 +2383,16 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
         items: orderItems
       };
     }
+
+    registrarLog({
+      origen: 'ecommerce',
+      tipo: 'SUCCESS',
+      accion: 'ORDEN_SHOP_CREADA',
+      descripcion: `Pedido mayorista #${orderToReturn.id} registrado por "${user?.empresa || user?.name || 'Cliente B2B'}" por USD $${orderToReturn.total}.`,
+      req,
+      usuario: { nombre: user?.name || 'Cliente B2B', email: user?.email || '', rol: 'cliente' },
+      detalles: { orderId: orderToReturn.id, total: orderToReturn.total, payment_method, itemsCount: orderItems.length }
+    });
 
     // ── NOTIFICAR AUTOMÁTICAMENTE Y CREAR TICKET EN DEPARTAMENTO DE OPERACIONES ──
     let createdTicket = null;
@@ -2145,13 +2430,199 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
 });
 
 // ==========================================
-// RULES ENGINE (Pricing & Costs)
+// COUPON VALIDATION & PRICING RULES ENGINE
 // ==========================================
+
+// Endpoint para validar cupones en el checkout (por país, cliente, marca o producto)
+router.post('/coupons/validate', optionalAuthToken, async (req, res) => {
+  try {
+    const { code, country_id, user_id, items, subtotal } = req.body;
+    if (!code || !String(code).trim()) {
+      return res.status(400).json({ valid: false, error: 'Por favor ingresá un código de cupón válido.' });
+    }
+
+    const cleanCode = String(code).trim().toUpperCase();
+
+    // Obtener reglas activas
+    let rules = [];
+    if (isPgConnected) {
+      const rRes = await pool.query('SELECT * FROM ecommerce_pricing_rules WHERE is_active = true');
+      rules = rRes.rows;
+    } else {
+      rules = inMem.pricing_rules.filter(r => r.is_active);
+    }
+
+    const couponRule = rules.find(r => r.coupon_code && String(r.coupon_code).trim().toUpperCase() === cleanCode);
+    if (!couponRule) {
+      return res.status(404).json({ valid: false, error: `El código "${cleanCode}" no existe o no está activo.` });
+    }
+
+    // 1. Validar fecha de expiración
+    if (couponRule.valid_until) {
+      const expDate = new Date(couponRule.valid_until);
+      // set to end of day
+      expDate.setHours(23, 59, 59, 999);
+      const now = new Date();
+      if (expDate < now) {
+        return res.status(400).json({ 
+          valid: false, 
+          error: `El cupón "${cleanCode}" expiró el ${new Date(couponRule.valid_until).toLocaleDateString('es-AR')}.` 
+        });
+      }
+    }
+
+    // 2. Validar límite de usos
+    if (couponRule.usage_limit && (couponRule.times_used || 0) >= parseInt(couponRule.usage_limit)) {
+      return res.status(400).json({ 
+        valid: false, 
+        error: `El cupón "${cleanCode}" ha alcanzado su límite máximo de ${couponRule.usage_limit} canjes permitidos.` 
+      });
+    }
+
+    // 3. Validar Cliente / Usuario específico
+    const effectiveUserId = req.user ? req.user.id : user_id;
+    if (couponRule.user_id) {
+      if (!effectiveUserId || parseInt(effectiveUserId) !== parseInt(couponRule.user_id)) {
+        let clientDesc = `el cliente asignado`;
+        if (isPgConnected) {
+          const uRes = await pool.query('SELECT razon_social, name, email FROM ecommerce_users WHERE id = $1', [couponRule.user_id]);
+          if (uRes.rows.length > 0) clientDesc = uRes.rows[0].razon_social || uRes.rows[0].name || uRes.rows[0].email;
+        } else {
+          const u = inMem.users.find(user => user.id === couponRule.user_id);
+          if (u) clientDesc = u.razon_social || u.name || u.email;
+        }
+        return res.status(403).json({ 
+          valid: false, 
+          error: `Este cupón es exclusivo para la cuenta de cliente: "${clientDesc}". Iniciá sesión con la cuenta correspondiente.` 
+        });
+      }
+    }
+
+    // 4. Validar Tipo de Cliente (Segmento B2B)
+    if (couponRule.tipo_cliente && couponRule.tipo_cliente !== 'all') {
+      let clientTipo = null;
+      if (effectiveUserId) {
+        if (isPgConnected) {
+          const uRes = await pool.query('SELECT tipo_cliente FROM ecommerce_users WHERE id = $1', [effectiveUserId]);
+          if (uRes.rows.length > 0) clientTipo = uRes.rows[0].tipo_cliente;
+        } else {
+          const u = inMem.users.find(user => user.id === effectiveUserId);
+          if (u) clientTipo = u.tipo_cliente;
+        }
+      }
+      if (clientTipo && clientTipo !== couponRule.tipo_cliente) {
+        return res.status(403).json({ 
+          valid: false, 
+          error: `Este cupón es de uso exclusivo para empresas del segmento "${couponRule.tipo_cliente}".` 
+        });
+      }
+    }
+
+    // 5. Validar País de Destino
+    if (couponRule.country_id) {
+      const targetCountryId = parseInt(country_id) || (req.user ? parseInt(req.user.country_id) : null);
+      if (targetCountryId && targetCountryId !== parseInt(couponRule.country_id)) {
+        let countryName = 'el país asignado';
+        if (isPgConnected) {
+          const cRes = await pool.query('SELECT name FROM ecommerce_countries WHERE id = $1', [couponRule.country_id]);
+          if (cRes.rows.length > 0) countryName = cRes.rows[0].name;
+        } else {
+          const c = inMem.countries.find(country => country.id === couponRule.country_id);
+          if (c) countryName = c.name;
+        }
+        return res.status(400).json({ 
+          valid: false, 
+          error: `Este cupón es exclusivo para pedidos con destino en ${countryName}.` 
+        });
+      }
+    }
+
+    // 6. Validar Monto Mínimo de Compra
+    const cartSubtotal = parseFloat(subtotal) || 0;
+    if (couponRule.min_order_amount && cartSubtotal < parseFloat(couponRule.min_order_amount)) {
+      return res.status(400).json({ 
+        valid: false, 
+        error: `El cupón "${cleanCode}" requiere una compra mínima de $${parseFloat(couponRule.min_order_amount).toFixed(2)} USD (Subtotal actual: $${cartSubtotal.toFixed(2)} USD).` 
+      });
+    }
+
+    // 7. Validar Marca o Producto y calcular el subtotal elegible
+    let applicableItems = Array.isArray(items) ? [...items] : [];
+    let eligibleSubtotal = 0;
+    let targetDetail = 'Todo el carrito';
+
+    if (couponRule.product_id) {
+      applicableItems = applicableItems.filter(i => parseInt(i.id || i.product_id) === parseInt(couponRule.product_id));
+      if (applicableItems.length === 0) {
+        let prodName = 'el producto seleccionado';
+        if (isPgConnected) {
+          const pRes = await pool.query('SELECT name FROM ecommerce_products WHERE id = $1', [couponRule.product_id]);
+          if (pRes.rows.length > 0) prodName = pRes.rows[0].name;
+        } else {
+          const p = inMem.products.find(prod => prod.id === couponRule.product_id);
+          if (p) prodName = p.name;
+        }
+        return res.status(400).json({ 
+          valid: false, 
+          error: `El cupón "${cleanCode}" aplica únicamente al producto "${prodName}", que no está en tu carrito.` 
+        });
+      }
+      eligibleSubtotal = applicableItems.reduce((acc, i) => acc + (parseFloat(i.price || 0) * (parseInt(i.quantity || i.qty) || 1)), 0);
+      targetDetail = `Producto: ${applicableItems[0]?.name || 'Producto en promoción'}`;
+    } else if (couponRule.brand && couponRule.brand.toLowerCase() !== 'all') {
+      applicableItems = applicableItems.filter(i => (i.brand || '').toLowerCase() === couponRule.brand.toLowerCase());
+      if (applicableItems.length === 0) {
+        return res.status(400).json({ 
+          valid: false, 
+          error: `El cupón "${cleanCode}" aplica únicamente a equipos de la marca "${couponRule.brand}". Agregá productos de esta marca para aprovecharlo.` 
+        });
+      }
+      eligibleSubtotal = applicableItems.reduce((acc, i) => acc + (parseFloat(i.price || 0) * (parseInt(i.quantity || i.qty) || 1)), 0);
+      targetDetail = `Marca: ${couponRule.brand}`;
+    } else {
+      eligibleSubtotal = cartSubtotal > 0 ? cartSubtotal : applicableItems.reduce((acc, i) => acc + (parseFloat(i.price || 0) * (parseInt(i.quantity || i.qty) || 1)), 0);
+    }
+
+    const discountVal = parseFloat(couponRule.value) || 0;
+    let discountAmount = 0;
+
+    if (couponRule.value_type === 'percentage') {
+      discountAmount = (eligibleSubtotal * discountVal) / 100;
+    } else {
+      discountAmount = Math.min(eligibleSubtotal, discountVal);
+    }
+
+    return res.json({
+      valid: true,
+      coupon: {
+        id: couponRule.id,
+        code: cleanCode,
+        name: couponRule.name,
+        discount_amount: parseFloat(discountAmount.toFixed(2)),
+        discount_display: couponRule.value_type === 'percentage' ? `${discountVal}% OFF` : `-$${discountVal.toFixed(2)} USD`,
+        value_type: couponRule.value_type,
+        value: couponRule.value,
+        rule_type: couponRule.rule_type,
+        brand: couponRule.brand,
+        country_id: couponRule.country_id,
+        product_id: couponRule.product_id,
+        user_id: couponRule.user_id,
+        tipo_cliente: couponRule.tipo_cliente,
+        min_order_amount: couponRule.min_order_amount,
+        valid_until: couponRule.valid_until,
+        target_detail: targetDetail
+      }
+    });
+  } catch (error) {
+    console.error('Error al validar cupón:', error);
+    res.status(500).json({ valid: false, error: error.message });
+  }
+});
 
 router.get('/admin/rules', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT r.*, p.name as product_name, c.name as country_name, u.email as user_email 
+      SELECT r.*, p.name as product_name, c.name as country_name, u.email as user_email, u.razon_social as user_razon_social 
       FROM ecommerce_pricing_rules r
       LEFT JOIN ecommerce_products p ON r.product_id = p.id
       LEFT JOIN ecommerce_countries c ON r.country_id = c.id
@@ -2166,15 +2637,36 @@ router.get('/admin/rules', authenticateToken, requireAdmin, async (req, res) => 
 
 router.post('/admin/rules', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const { name, rule_type, value_type, value, tipo_cliente, country_id, brand, product_id, user_id, priority, is_active } = req.body;
-    const query = `
-      INSERT INTO ecommerce_pricing_rules (name, rule_type, value_type, value, tipo_cliente, country_id, brand, product_id, user_id, priority, is_active)
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11) RETURNING *
-    `;
-    const values = [
+    const { 
       name, 
       rule_type, 
       value_type, 
+      value, 
+      tipo_cliente, 
+      country_id, 
+      brand, 
+      product_id, 
+      user_id, 
+      priority, 
+      is_active,
+      coupon_code,
+      min_order_amount,
+      valid_until,
+      usage_limit,
+      times_used
+    } = req.body;
+
+    const query = `
+      INSERT INTO ecommerce_pricing_rules (
+        name, rule_type, value_type, value, tipo_cliente, country_id, brand, product_id, user_id, priority, is_active,
+        coupon_code, min_order_amount, valid_until, usage_limit, times_used
+      )
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *
+    `;
+    const values = [
+      name, 
+      rule_type || 'discount', 
+      value_type || 'percentage', 
       value, 
       tipo_cliente || null, 
       country_id ? parseInt(country_id) : null, 
@@ -2182,7 +2674,12 @@ router.post('/admin/rules', authenticateToken, requireAdmin, async (req, res) =>
       product_id ? parseInt(product_id) : null, 
       user_id ? parseInt(user_id) : null, 
       priority ? parseInt(priority) : 0, 
-      is_active !== false
+      is_active !== false,
+      coupon_code ? String(coupon_code).trim().toUpperCase() : null,
+      min_order_amount ? parseFloat(min_order_amount) : null,
+      valid_until || null,
+      usage_limit ? parseInt(usage_limit) : null,
+      times_used ? parseInt(times_used) : 0
     ];
     const result = await pool.query(query, values);
     res.status(201).json(result.rows[0]);
@@ -2194,16 +2691,35 @@ router.post('/admin/rules', authenticateToken, requireAdmin, async (req, res) =>
 router.put('/admin/rules/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, rule_type, value_type, value, tipo_cliente, country_id, brand, product_id, user_id, priority, is_active } = req.body;
-    const query = `
-      UPDATE ecommerce_pricing_rules 
-      SET name=$1, rule_type=$2, value_type=$3, value=$4, tipo_cliente=$5, country_id=$6, brand=$7, product_id=$8, user_id=$9, priority=$10, is_active=$11 
-      WHERE id=$12 RETURNING *
-    `;
-    const values = [
+    const { 
       name, 
       rule_type, 
       value_type, 
+      value, 
+      tipo_cliente, 
+      country_id, 
+      brand, 
+      product_id, 
+      user_id, 
+      priority, 
+      is_active,
+      coupon_code,
+      min_order_amount,
+      valid_until,
+      usage_limit,
+      times_used
+    } = req.body;
+
+    const query = `
+      UPDATE ecommerce_pricing_rules 
+      SET name=$1, rule_type=$2, value_type=$3, value=$4, tipo_cliente=$5, country_id=$6, brand=$7, product_id=$8, user_id=$9, priority=$10, is_active=$11,
+          coupon_code=$12, min_order_amount=$13, valid_until=$14, usage_limit=$15, times_used=$16 
+      WHERE id=$17 RETURNING *
+    `;
+    const values = [
+      name, 
+      rule_type || 'discount', 
+      value_type || 'percentage', 
       value, 
       tipo_cliente || null, 
       country_id ? parseInt(country_id) : null, 
@@ -2211,7 +2727,12 @@ router.put('/admin/rules/:id', authenticateToken, requireAdmin, async (req, res)
       product_id ? parseInt(product_id) : null, 
       user_id ? parseInt(user_id) : null, 
       priority ? parseInt(priority) : 0, 
-      is_active !== false, 
+      is_active !== false,
+      coupon_code ? String(coupon_code).trim().toUpperCase() : null,
+      min_order_amount ? parseFloat(min_order_amount) : null,
+      valid_until || null,
+      usage_limit ? parseInt(usage_limit) : null,
+      times_used !== undefined ? parseInt(times_used) : 0,
       id
     ];
     const result = await pool.query(query, values);
@@ -2307,7 +2828,17 @@ router.post('/admin/products', authenticateToken, requireAdmin, async (req, res)
     } else {
       result = await pool.query('INSERT INTO ecommerce_products', [req.body]);
     }
-    res.status(201).json(result.rows[0]);
+    const nuevoProducto = result.rows[0];
+    registrarLog({
+      origen: 'ecommerce',
+      tipo: 'SUCCESS',
+      accion: 'ECOMMERCE_PRODUCTO_CREADO',
+      descripcion: `Producto "${nuevoProducto.name}" creado en catálogo (${nuevoProducto.sku || 'ID: ' + nuevoProducto.id})`,
+      usuario: req.user ? req.user.email : 'Admin',
+      req,
+      detalles: { productoId: nuevoProducto.id, name: nuevoProducto.name, price: nuevoProducto.price, stock: nuevoProducto.stock }
+    });
+    res.status(201).json(nuevoProducto);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -2457,7 +2988,17 @@ router.put('/admin/products/:id', authenticateToken, requireAdmin, async (req, r
       result = await pool.query('UPDATE ecommerce_products', [req.body, id]);
     }
     if (result.rows.length === 0) return res.status(404).json({ error: 'Product not found' });
-    res.json(result.rows[0]);
+    const prod = result.rows[0];
+    registrarLog({
+      origen: 'ecommerce',
+      tipo: 'INFO',
+      accion: 'ECOMMERCE_PRODUCTO_ACTUALIZADO',
+      descripcion: `Producto #${id} ("${prod.name}") modificado por ${req.user ? req.user.email : 'Admin'}`,
+      usuario: req.user ? req.user.email : 'Admin',
+      req,
+      detalles: { productoId: id, name: prod.name, price: prod.price, stock: prod.stock }
+    });
+    res.json(prod);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -2468,6 +3009,16 @@ router.delete('/admin/products/:id', authenticateToken, requireAdmin, async (req
     const { id } = req.params;
     const result = await pool.query('DELETE FROM ecommerce_products WHERE id = $1 RETURNING *', [id]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'Product not found' });
+    const prodEliminado = result.rows[0];
+    registrarLog({
+      origen: 'ecommerce',
+      tipo: 'WARNING',
+      accion: 'ECOMMERCE_PRODUCTO_ELIMINADO',
+      descripcion: `Producto #${id} ("${prodEliminado?.name || id}") eliminado del catálogo`,
+      usuario: req.user ? req.user.email : 'Admin',
+      req,
+      detalles: { productoId: id }
+    });
     res.json({ message: 'Product deleted successfully' });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -2498,7 +3049,17 @@ router.put('/admin/orders/:id/status', authenticateToken, requireAdmin, async (r
     if (!result.rows || result.rows.length === 0) {
       return res.status(404).json({ error: 'Orden no encontrada' });
     }
-    res.json(result.rows[0]);
+    const orden = result.rows[0];
+    registrarLog({
+      origen: 'ecommerce',
+      tipo: 'INFO',
+      accion: 'ECOMMERCE_PEDIDO_ESTADO',
+      descripcion: `Pedido #${id} actualizado a estado "${status}"`,
+      usuario: req.user ? req.user.email : 'Admin',
+      req,
+      detalles: { ordenId: id, nuevoEstado: status, total: orden.total_amount }
+    });
+    res.json(orden);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -2643,8 +3204,32 @@ router.get('/admin/users/:id', authenticateToken, requireAdmin, async (req, res)
     const userClean = { ...userResult.rows[0] };
     delete userClean.password_hash;
 
+    // Buscar todos los usuarios asociados a la misma empresa / razón social o CUIT
+    const companyName = userClean.razon_social || userClean.company || '';
+    const companyNit = userClean.numero_nit || '';
+    let companyUsers = [];
+    if (companyName || companyNit) {
+      const allUsersRes = await pool.query(`
+        SELECT u.id, u.name, u.email, u.phone, u.status, u.cargo, u.tipo_cliente, u.created_at, u.razon_social, u.numero_nit
+        FROM ecommerce_users u
+      `);
+      companyUsers = (allUsersRes.rows || [])
+        .filter(u => (companyName && (u.razon_social?.toLowerCase() === companyName.toLowerCase())) || (companyNit && u.numero_nit === companyNit))
+        .map(u => ({
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          phone: u.phone,
+          status: u.status || 'activo',
+          cargo: u.cargo || 'Contacto / Usuario',
+          tipo_cliente: u.tipo_cliente,
+          created_at: u.created_at
+        }));
+    }
+
     res.json({
       ...userClean,
+      company_users: companyUsers,
       orders: ordersResult.rows
     });
   } catch (error) {
@@ -2662,26 +3247,35 @@ router.put('/admin/users/:id', authenticateToken, requireAdmin, async (req, res)
         name = $1, email = $2, razon_social = $3, tipo_cliente = $4, direccion_legal = $5, localidad = $6, codigo_postal = $7, ciudad = $8, country_id = $9, phone = $10, fecha_limite_facturacion = $11, web = $12,
         report_to_country_id = $13, vendedor = $14, direccion_entrega = $15, localidad_entrega = $16, codigo_postal_entrega = $17, ciudad_entrega = $18, pais_entrega_id = $19, tipo_iva = $20, numero_nit = $21,
         nombre_compras = $22, telefono_compras = $23, email_compras = $24, nombre_pagos = $25, telefono_pagos = $26, email_pagos = $27, nombre_admin = $28, telefono_admin = $29, email_admin = $30,
-        email_factura_electronica = $31, email_contacto_compras = $32, email_cotizaciones_automaticas = $33, address = $34, company = $35
+        email_factura_electronica = $31, email_contacto_compras = $32, email_cotizaciones_automaticas = $33, address = $34, company = $35, cargo = $36
     `;
     let values = [
       data.name, data.email, data.razon_social, data.tipo_cliente, data.direccion_legal, data.localidad, data.codigo_postal, data.ciudad, data.country_id || null, data.phone, data.fecha_limite_facturacion || null, data.web,
       data.report_to_country_id || null, data.vendedor, data.direccion_entrega, data.localidad_entrega, data.codigo_postal_entrega, data.ciudad_entrega, data.pais_entrega_id || null, data.tipo_iva, data.numero_nit,
       data.nombre_compras, data.telefono_compras, data.email_compras, data.nombre_pagos, data.telefono_pagos, data.email_pagos, data.nombre_admin, data.telefono_admin, data.email_admin,
-      data.email_factura_electronica, data.email_contacto_compras, data.email_cotizaciones_automaticas, data.address, data.company
+      data.email_factura_electronica, data.email_contacto_compras, data.email_cotizaciones_automaticas, data.address, data.company, data.cargo || 'Contacto / Usuario'
     ];
     
     // Update password if provided
     if (data.password) {
         const hashedPassword = await bcrypt.hash(data.password, 10);
-        query += `, password_hash = $36 WHERE id = $37 RETURNING id, email`;
+        query += `, password_hash = $37 WHERE id = $38 RETURNING id, email, name`;
         values.push(hashedPassword, id);
     } else {
-        query += ` WHERE id = $36 RETURNING id, email`;
+        query += ` WHERE id = $37 RETURNING id, email, name`;
         values.push(id);
     }
 
     const result = await pool.query(query, values);
+    registrarLog({
+      origen: 'ecommerce',
+      tipo: 'INFO',
+      accion: 'ECOMMERCE_CLIENTE_MODIFICADO',
+      descripcion: `Cliente / Usuario #${id} ("${data.name}" / ${data.email}) actualizado`,
+      usuario: req.user ? req.user.email : 'Admin',
+      req,
+      detalles: { userId: id, razon_social: data.razon_social, email: data.email }
+    });
     res.json(result.rows[0]);
   } catch (error) {
     if (error.code === '23505') return res.status(400).json({ error: 'Email already exists' });
@@ -2700,6 +3294,15 @@ router.put('/admin/users/:id/status', authenticateToken, requireAdmin, async (re
 
     const result = await pool.query('UPDATE ecommerce_users SET status = $1 WHERE id = $2 RETURNING id, name, email, status', [status, id]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
+    registrarLog({
+      origen: 'ecommerce',
+      tipo: 'INFO',
+      accion: 'ECOMMERCE_CLIENTE_ESTADO',
+      descripcion: `Estado del cliente / usuario #${id} cambiado a "${status}"`,
+      usuario: req.user ? req.user.email : 'Admin',
+      req,
+      detalles: { userId: id, status }
+    });
     res.json({ message: `Estado actualizado a ${status}`, user: result.rows[0] });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -2711,7 +3314,36 @@ router.post('/admin/users/:id/approve', authenticateToken, requireAdmin, async (
     const { id } = req.params;
     const result = await pool.query('UPDATE ecommerce_users SET status = $1 WHERE id = $2 RETURNING id, name, email, status', ['activo', id]);
     if (result.rows.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
+    registrarLog({
+      origen: 'ecommerce',
+      tipo: 'SUCCESS',
+      accion: 'ECOMMERCE_CLIENTE_APROBADO',
+      descripcion: `Cliente / Usuario #${id} ("${result.rows[0].name}" / ${result.rows[0].email}) aprobado y activado`,
+      usuario: req.user ? req.user.email : 'Admin',
+      req,
+      detalles: { userId: id }
+    });
     res.json({ message: 'Cliente aprobado y activado exitosamente', user: result.rows[0] });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.delete('/admin/users/:id', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const result = await pool.query('DELETE FROM ecommerce_users WHERE id = $1 RETURNING id, name, email', [id]);
+    if (result.rows.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
+    registrarLog({
+      origen: 'ecommerce',
+      tipo: 'WARNING',
+      accion: 'ECOMMERCE_USUARIO_ELIMINADO',
+      descripcion: `Usuario #${id} ("${result.rows[0].name}" / ${result.rows[0].email}) eliminado de clientes`,
+      usuario: req.user ? req.user.email : 'Admin',
+      req,
+      detalles: { userId: id, email: result.rows[0].email }
+    });
+    res.json({ message: 'Usuario eliminado correctamente' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -2791,6 +3423,86 @@ router.post('/settings/visual/reset', authenticateToken, requireAdmin, async (re
       success: true,
       message: 'Diseño restablecido a los valores oficiales de DACAS',
       config: inMem.visualSettings
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ── Checkout Methods (Shipping & Payment) Settings API ──
+router.get('/settings/checkout-methods', async (req, res) => {
+  try {
+    if (isPgConnected) {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS ecommerce_checkout_settings (
+          id INT PRIMARY KEY DEFAULT 1,
+          config JSONB NOT NULL,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      const row = await pool.query('SELECT config FROM ecommerce_checkout_settings WHERE id = 1');
+      if (row.rows.length > 0 && row.rows[0].config) {
+        return res.json(row.rows[0].config);
+      }
+    }
+    return res.json(inMem.checkoutMethods || DEFAULT_CHECKOUT_METHODS);
+  } catch (error) {
+    console.error('Error fetching checkout methods settings:', error);
+    return res.json(inMem.checkoutMethods || DEFAULT_CHECKOUT_METHODS);
+  }
+});
+
+router.put('/settings/checkout-methods', optionalAuthToken, async (req, res) => {
+  try {
+    const updated = req.body;
+    if (!updated || typeof updated !== 'object') {
+      return res.status(400).json({ error: 'Configuración de métodos inválida' });
+    }
+
+    inMem.checkoutMethods = { ...DEFAULT_CHECKOUT_METHODS, ...updated };
+
+    if (isPgConnected) {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS ecommerce_checkout_settings (
+          id INT PRIMARY KEY DEFAULT 1,
+          config JSONB NOT NULL,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      await pool.query(`
+        INSERT INTO ecommerce_checkout_settings (id, config, updated_at)
+        VALUES (1, $1, CURRENT_TIMESTAMP)
+        ON CONFLICT (id) DO UPDATE SET config = $1, updated_at = CURRENT_TIMESTAMP
+      `, [JSON.stringify(inMem.checkoutMethods)]);
+    }
+
+    res.json({
+      success: true,
+      message: 'Métodos de envío y formas de pago guardados exitosamente',
+      config: inMem.checkoutMethods
+    });
+  } catch (error) {
+    console.error('Error updating checkout methods:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/settings/checkout-methods/reset', optionalAuthToken, async (req, res) => {
+  try {
+    inMem.checkoutMethods = JSON.parse(JSON.stringify(DEFAULT_CHECKOUT_METHODS));
+
+    if (isPgConnected) {
+      await pool.query(`
+        INSERT INTO ecommerce_checkout_settings (id, config, updated_at)
+        VALUES (1, $1, CURRENT_TIMESTAMP)
+        ON CONFLICT (id) DO UPDATE SET config = $1, updated_at = CURRENT_TIMESTAMP
+      `, [JSON.stringify(DEFAULT_CHECKOUT_METHODS)]);
+    }
+
+    res.json({
+      success: true,
+      message: 'Métodos de envío y pago restablecidos a los valores por defecto',
+      config: inMem.checkoutMethods
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 
-function AdminOrganizaciones() {
+function AdminOrganizaciones({ embedded = false }) {
   const navigate = useNavigate();
   const [organizaciones, setOrganizaciones] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
@@ -181,71 +181,55 @@ function AdminOrganizaciones() {
   };
 
   return (
-    <div className="crm-container">
-      <header className="crm-header">
-        <div className="header-top">
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{
-                background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
-                color: '#ffffff',
-                fontWeight: '900',
-                fontSize: '1.4rem',
-                letterSpacing: '-0.02em',
-                padding: '8px 16px',
-                borderRadius: '12px',
-                boxShadow: '0 4px 15px rgba(15, 164, 222, 0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <span>DACAS</span>
+    <div className={embedded ? "crm-embedded-view" : "crm-container"} style={embedded ? { width: '100%', maxWidth: '100%', margin: 0, padding: 0 } : {}}>
+      {!embedded && (
+        <header className="crm-header">
+          <div className="header-top">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{
+                  background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                  color: '#ffffff',
+                  fontWeight: '900',
+                  fontSize: '1.4rem',
+                  letterSpacing: '-0.02em',
+                  padding: '8px 16px',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 15px rgba(15, 164, 222, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <span>DACAS</span>
+                </div>
+                <div>
+                  <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+                    Gestión de Organizaciones
+                  </h1>
+                  <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                    Agrupación de clientes corporativos y asignación de Managers
+                  </div>
+                </div>
               </div>
-              <div>
-                <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-                  Gestión de Organizaciones
-                </h1>
-                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  Agrupación de clientes corporativos y asignación de Managers
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div className="user-controls">
+                  <button 
+                    className="nav-btn" 
+                    style={{ background: 'var(--primary)', color: 'white', border: 'none' }}
+                    onClick={() => {
+                      handleResetForm();
+                      setMostrarModal(true);
+                    }}
+                  >
+                    ➕ Añadir Nueva Organización
+                  </button>
                 </div>
               </div>
             </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{
-                background: 'var(--pill-bg)',
-                border: '1px solid var(--border-color)',
-                borderRadius: '999px',
-                padding: '6px 14px',
-                color: 'var(--text-main)',
-                fontSize: '0.85rem',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-              }}>
-                <span>🇦🇷</span>
-                <span>DACAS Argentina</span>
-              </div>
-
-              <div className="user-controls">
-                <button className="nav-btn" onClick={() => navigate('/')}>🔙 Volver al Dashboard</button>
-                <button 
-                  className="nav-btn" 
-                  style={{ background: 'var(--primary)', color: 'white', border: 'none' }}
-                  onClick={() => {
-                    handleResetForm();
-                    setMostrarModal(true);
-                  }}
-                >
-                  ➕ Añadir Nueva Organización
-                </button>
-              </div>
-            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       <main className="crm-main">
         {success && (

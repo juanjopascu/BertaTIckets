@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useMsal } from "@azure/msal-react";
 import { loginRequest } from "./authConfig";
+import BrandingVectorIcon from './BrandingVectorIcon';
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 
 // Helper component for the animated avatar Berto the Golden Retriever puppy
@@ -181,9 +182,25 @@ function Login({ setUsuario, initialError, clearInitialError, theme, toggleTheme
   const [error, setError] = useState('');
   const [avatarState, setAvatarState] = useState('normal'); // 'normal' | 'typing' | 'angry'
   const [shakeBox, setShakeBox] = useState(false);
+  const [branding, setBranding] = useState(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { instance } = useMsal();
+
+  useEffect(() => {
+    // Cargar personalización visual del backend
+    fetch(`${API_BASE_URL}/api/system/branding`)
+      .then(res => res.json())
+      .then(data => {
+        if (data) {
+          setBranding(data);
+          if (data.browserTitle) {
+            document.title = data.browserTitle;
+          }
+        }
+      })
+      .catch(err => console.error('Error al cargar branding en login:', err));
+  }, []);
 
   useEffect(() => {
     if (initialError) {
@@ -281,31 +298,124 @@ function Login({ setUsuario, initialError, clearInitialError, theme, toggleTheme
     }
   };
 
+  const loginCfg = branding?.login || {};
+  const avatarType = loginCfg.avatarType || 'berto_svg';
+  const customAvatarImg = loginCfg.avatarImageUrl
+    ? (loginCfg.avatarImageUrl.startsWith('http') || loginCfg.avatarImageUrl.startsWith('data:')
+        ? loginCfg.avatarImageUrl
+        : `${API_BASE_URL}${loginCfg.avatarImageUrl}`)
+    : '';
+
+  const customBgImg = loginCfg.customBackgroundImage
+    ? (loginCfg.customBackgroundImage.startsWith('http') || loginCfg.customBackgroundImage.startsWith('data:')
+        ? loginCfg.customBackgroundImage
+        : `${API_BASE_URL}${loginCfg.customBackgroundImage}`)
+    : '';
+
+  const backgroundStyle = loginCfg.backgroundStyle || 'default_gradient';
+  const containerCustomStyle = {
+    position: 'relative'
+  };
+
+  if (backgroundStyle === 'custom_image' && customBgImg) {
+    containerCustomStyle.backgroundImage = `url(${customBgImg})`;
+    containerCustomStyle.backgroundSize = 'cover';
+    containerCustomStyle.backgroundPosition = 'center';
+    containerCustomStyle.backgroundRepeat = 'no-repeat';
+  } else if (backgroundStyle === 'deep_blue') {
+    containerCustomStyle.background = 'linear-gradient(135deg, #091e3a 0%, #2f80ed 50%, #2d9ee0 100%)';
+  } else if (backgroundStyle === 'dark_slate') {
+    containerCustomStyle.background = 'linear-gradient(135deg, #0b0f19 0%, #1e293b 100%)';
+  }
+
+  const btnGradStart = loginCfg.buttonGradientStart || '#0fa4de';
+  const btnGradEnd = loginCfg.buttonGradientEnd || '#0284c7';
+
   return (
-    <div className="login-container" style={{ position: 'relative' }}>
+    <div className="login-container" style={containerCustomStyle}>
       {/* Botón flotante para cambiar el tema */}
-      <button
-        type="button"
-        onClick={toggleTheme}
-        className="theme-toggle-btn"
-        style={{
-          position: 'absolute',
-          top: '20px',
-          right: '20px',
-          zIndex: 100
-        }}
-        title="Cambiar Tema"
-      >
-        {theme === 'light' ? '🌙' : '☀️'}
-      </button>
+      {loginCfg.showThemeToggle !== false && (
+        <button
+          type="button"
+          onClick={toggleTheme}
+          className="theme-toggle-btn"
+          style={{
+            position: 'absolute',
+            top: '20px',
+            right: '20px',
+            zIndex: 100
+          }}
+          title="Cambiar Tema"
+        >
+          {theme === 'light' ? '🌙' : '☀️'}
+        </button>
+      )}
 
       <div className={`login-box ${shakeBox ? 'shake-box' : ''}`}>
 
-        {/* Berto the interactive SVG mascot */}
-        <BertoAvatar state={avatarState} />
+        {/* Dynamic Avatar / Logo Customizer */}
+        {avatarType === 'berto_svg' && (
+          <BertoAvatar state={avatarState} />
+        )}
 
-        <h1>DACAS Portal de Gestión</h1>
-        <p>Inicia sesión para acceder al sistema</p>
+        {avatarType === 'custom_image' && customAvatarImg && (
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '18px' }}>
+            <div style={{
+              width: `${loginCfg.avatarSize || 120}px`,
+              height: `${loginCfg.avatarSize || 120}px`,
+              borderRadius: loginCfg.avatarShape === 'circle' ? '50%' : loginCfg.avatarShape === 'rounded' ? '18px' : '0px',
+              overflow: 'hidden',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+              background: '#ffffff',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '6px'
+            }}>
+              <img
+                src={customAvatarImg}
+                alt="Logo Login"
+                style={{
+                  maxWidth: '100%',
+                  maxHeight: '100%',
+                  objectFit: 'contain'
+                }}
+              />
+            </div>
+          </div>
+        )}
+
+        {avatarType === 'preset_icon' && (
+          <div style={{
+            display: 'flex',
+            justifyContent: 'center',
+            marginBottom: '16px'
+          }}>
+            <div style={{
+              width: '84px',
+              height: '84px',
+              borderRadius: '24px',
+              background: 'linear-gradient(135deg, rgba(15, 164, 222, 0.12) 0%, rgba(2, 132, 199, 0.06) 100%)',
+              border: '1.5px solid rgba(15, 164, 222, 0.25)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              boxShadow: '0 12px 28px -6px rgba(15, 164, 222, 0.22)',
+              color: 'var(--primary, #0fa4de)',
+              backdropFilter: 'blur(8px)'
+            }}>
+              <BrandingVectorIcon 
+                name={loginCfg.avatarIcon || 'building'} 
+                size={44} 
+                color="var(--primary, #0fa4de)" 
+                strokeWidth={1.9} 
+              />
+            </div>
+          </div>
+        )}
+
+        <h1>{loginCfg.title || 'DACAS Portal de Gestión'}</h1>
+        <p>{loginCfg.subtitle || 'Inicia sesión para acceder al sistema'}</p>
 
         {error && (
           <div className="error-alert">
@@ -326,7 +436,7 @@ function Login({ setUsuario, initialError, clearInitialError, theme, toggleTheme
               onFocus={handleInputFocus}
               onBlur={handleInputBlur}
               required
-              placeholder="tu@correo.com"
+              placeholder={loginCfg.emailPlaceholder || 'tu@correo.com'}
             />
           </div>
           <div className="form-group">
@@ -338,42 +448,62 @@ function Login({ setUsuario, initialError, clearInitialError, theme, toggleTheme
               onFocus={handleInputFocus}
               onBlur={handleInputBlur}
               required
-              placeholder="••••••••"
+              placeholder={loginCfg.passwordPlaceholder || '••••••••'}
             />
           </div>
-          <button type="submit" className="btn-submit">Ingresar</button>
-        </form>
-
-        <div style={{ marginTop: '12px', textAlign: 'center', width: '100%' }}>
           <button
-            type="button"
-            onClick={() => navigate('/shop')}
+            type="submit"
+            className="btn-submit"
             style={{
-              background: 'transparent',
-              border: 'none',
-              color: '#0fa4de',
-              fontSize: '13px',
-              fontWeight: '700',
-              cursor: 'pointer',
-              textDecoration: 'underline',
-              padding: '4px'
+              background: `linear-gradient(135deg, ${btnGradStart} 0%, ${btnGradEnd} 100%)`,
+              boxShadow: `0 4px 15px ${btnGradStart}40`
             }}
           >
-            🛍️ Ir a la Tienda DACAS Shop
+            {loginCfg.submitButtonText || 'Ingresar'}
           </button>
-        </div>
+        </form>
 
-        <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginTop: '16px', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
-          <button
-            onClick={handleMicrosoftLogin}
-            style={{ width: '100%', background: '#0078d4', color: 'white', border: 'none', padding: '12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
-              <path d="M7.462 0H0v7.462h7.462V0zM16 0H8.538v7.462H16V0zM7.462 8.538H0V16h7.462V8.538zM16 8.538H8.538V16H16V8.538z" />
-            </svg>
-            Iniciar sesión con Microsoft
-          </button>
-        </div>
+        {loginCfg.showShopLink !== false && (
+          <div style={{ marginTop: '14px', textAlign: 'center', width: '100%' }}>
+            <button
+              type="button"
+              onClick={() => navigate('/shop')}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: btnGradStart,
+                fontSize: '13px',
+                fontWeight: '700',
+                cursor: 'pointer',
+                textDecoration: 'underline',
+                padding: '4px'
+              }}
+            >
+              {loginCfg.shopLinkText || '🛍️ Ir a la Tienda DACAS Shop'}
+            </button>
+          </div>
+        )}
+
+        {loginCfg.showMicrosoftLogin !== false && (
+          <div style={{ display: 'flex', flexDirection: 'column', width: '100%', marginTop: '16px', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
+            <button
+              onClick={handleMicrosoftLogin}
+              style={{ width: '100%', background: '#0078d4', color: 'white', border: 'none', padding: '12px', borderRadius: '4px', cursor: 'pointer', fontWeight: 'bold', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                <path d="M7.462 0H0v7.462h7.462V0zM16 0H8.538v7.462H16V0zM7.462 8.538H0V16h7.462V8.538zM16 8.538H8.538V16H16V8.538z" />
+              </svg>
+              {loginCfg.microsoftButtonText || 'Iniciar sesión con Microsoft'}
+            </button>
+          </div>
+        )}
+
+        {loginCfg.footerText && (
+          <div style={{ marginTop: '16px', fontSize: '11px', color: '#94a3b8', textAlign: 'center' }}>
+            {loginCfg.footerText}
+          </div>
+        )}
+
       </div>
     </div>
   );

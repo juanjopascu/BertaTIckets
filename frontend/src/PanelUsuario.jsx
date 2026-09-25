@@ -530,23 +530,6 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div style={{
-                background: 'var(--pill-bg)',
-                border: '1px solid var(--border-color)',
-                borderRadius: '999px',
-                padding: '6px 14px',
-                color: 'var(--text-main)',
-                fontSize: '0.85rem',
-                fontWeight: '600',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
-              }}>
-                <span>🇦🇷</span>
-                <span>DACAS Argentina</span>
-              </div>
-
               <div className="user-controls">
                 <span style={{ color: 'var(--text-muted)' }}>Hola, <strong style={{ color: 'var(--text-main)' }}>{usuario.nombre}</strong></span>
                 <button className="nav-btn" onClick={() => setMostrarFormulario(!mostrarFormulario)}>
@@ -1862,10 +1845,10 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
                 })}
               </div>
             ) : (
-              <div className="users-table" style={{ background: 'white', borderRadius: '8px', overflow: 'hidden', boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+              <div className="crm-table-container">
+                <table className="users-table" style={{ width: '100%', textAlign: 'left' }}>
                   <thead>
-                    <tr style={{ background: '#f8fafc', borderBottom: '2px solid #e2e8f0' }}>
+                    <tr>
                       <th style={{ padding: '15px' }}>ID</th>
                       {usuario.rol === 'manager' && <th style={{ padding: '15px' }}>Cliente</th>}
                       <th style={{ padding: '15px' }}>Asunto</th>

@@ -38,16 +38,17 @@
   --input-bg: #0b1d33;
 
   /* Redondeados y Píldoras DACAS */
-  --radius-xl: 20px;
-  --radius-lg: 16px;
-  --radius-md: 12px;
+  --radius-xl: 22px;
+  --radius-lg: 18px;
+  --radius-md: 14px;
   --radius-sm: 8px;
   --radius-pill: 9999px;
 
-  /* Sombras y Resplandores Tecnológicos */
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.35);
-  --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.7);
+  /* Sombras Flotantes Elegantes con Relieve Suave (Floating Card System) */
+  --shadow-sm: 0 4px 16px -2px rgba(7, 21, 36, 0.05), 0 2px 6px rgba(7, 21, 36, 0.03);
+  --shadow-md: 0 14px 34px -4px rgba(7, 21, 36, 0.08), 0 4px 14px rgba(7, 21, 36, 0.03);
+  --shadow-lg: 0 24px 54px -6px rgba(7, 21, 36, 0.12), 0 8px 24px rgba(7, 21, 36, 0.05);
+  --shadow-floating: 0 16px 38px -4px rgba(7, 21, 36, 0.10), 0 6px 18px rgba(7, 21, 36, 0.04);
   --shadow-glow: 0 0 25px rgba(15, 164, 222, 0.3);
 
   --transition-bezier: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
@@ -94,6 +95,33 @@ body::before {
   padding: 32px 24px 60px;
   position: relative;
   z-index: 1;
+}
+
+/* Embedded Admin Views Styling inside Dashboard */
+.crm-embedded-view,
+.crm-main-grid .crm-container {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box;
+}
+
+.crm-main-embedded {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  box-sizing: border-box;
+}
+
+.crm-table-container {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: var(--radius-lg, 16px);
+  margin-top: 10px;
 }
 
 /* Título de gran altura y margen superior generoso (One UI) */
@@ -273,6 +301,20 @@ body::before {
   color: var(--primary);
   border-color: var(--border-color);
   transform: translateX(3px);
+}
+
+.sidebar-menu-btn.active {
+  background: var(--primary-light, #e0f2fe);
+  color: var(--primary, #0fa4de);
+  border: 1.5px solid var(--primary, #0fa4de);
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(15, 164, 222, 0.15);
+}
+
+[data-theme='dark'] .sidebar-menu-btn.active {
+  background: rgba(15, 164, 222, 0.2);
+  color: #38bdf8;
+  border-color: #0fa4de;
 }
 
 .sidebar-menu-btn:active {
@@ -461,32 +503,132 @@ body::before {
   flex: 0 0 auto;
 }
 
-/* Tab buttons */
-.tab-btn {
-  background: var(--pill-bg);
-  color: var(--text-muted);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius-pill);
-  padding: 10px 22px;
-  font-weight: 600;
-  font-size: 0.88rem;
+/* Tab buttons & Interactive Pills (DACAS Design System) */
+.tab-btn, .dacas-tab-pill {
+  background: transparent;
+  color: #475569;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-weight: 700;
+  font-size: 0.86rem;
   font-family: inherit;
   cursor: pointer;
-  transition: var(--transition-bezier);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  white-space: nowrap;
 }
 
-.tab-btn:hover {
-  background: var(--pill-hover);
-  color: #ffffff;
-  border-color: var(--primary);
+.tab-btn:hover, .dacas-tab-pill:hover {
+  background: rgba(15, 164, 222, 0.08);
+  color: #0fa4de;
   transform: translateY(-1px);
 }
 
-.tab-btn.active {
+.tab-btn.active, .dacas-tab-pill.active {
+  background: linear-gradient(135deg, #0fa4de 0%, #0284c7 100%) !important;
+  color: #ffffff !important;
+  border-color: #0fa4de !important;
+  box-shadow: 0 4px 14px rgba(15, 164, 222, 0.35) !important;
+}
+
+:root[data-theme='dark'] .tab-btn,
+:root[data-theme='dark'] .dacas-tab-pill {
+  color: #94a3b8;
+}
+
+:root[data-theme='dark'] .tab-btn:hover,
+:root[data-theme='dark'] .dacas-tab-pill:hover {
+  background: rgba(15, 164, 222, 0.15);
+  color: #38bdf8;
+}
+
+:root[data-theme='dark'] .tab-btn.active,
+:root[data-theme='dark'] .dacas-tab-pill.active {
+  background: linear-gradient(135deg, #0fa4de 0%, #0284c7 100%) !important;
+  color: #ffffff !important;
+}
+
+/* Action Pills */
+.dacas-action-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+  font-family: inherit;
+}
+
+.dacas-action-pill.primary {
   background: linear-gradient(135deg, #0fa4de 0%, #0284c7 100%);
   color: #ffffff;
   border-color: #0fa4de;
-  box-shadow: var(--primary-glow);
+  box-shadow: 0 3px 10px rgba(15, 164, 222, 0.28);
+}
+.dacas-action-pill.primary:hover {
+  background: linear-gradient(135deg, #38bdf8 0%, #0fa4de 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(15, 164, 222, 0.4);
+}
+
+.dacas-action-pill.secondary {
+  background: #f1f5f9;
+  color: #334155;
+  border-color: #e2e8f0;
+}
+.dacas-action-pill.secondary:hover {
+  background: #0fa4de;
+  color: #ffffff;
+  border-color: #0fa4de;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(15, 164, 222, 0.25);
+}
+
+.dacas-action-pill.success {
+  background: #dcfce7;
+  color: #15803d;
+  border-color: #bbf7d0;
+}
+.dacas-action-pill.success:hover {
+  background: #16a34a;
+  color: #ffffff;
+  border-color: #16a34a;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(22, 163, 74, 0.25);
+}
+
+.dacas-action-pill.danger {
+  background: #fee2e2;
+  color: #dc2626;
+  border-color: #fecaca;
+}
+.dacas-action-pill.danger:hover {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #dc2626;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(220, 38, 38, 0.25);
+}
+
+.dacas-action-pill.warning {
+  background: #fef3c7;
+  color: #d97706;
+  border-color: #fde68a;
+}
+.dacas-action-pill.warning:hover {
+  background: #d97706;
+  color: #ffffff;
+  border-color: #d97706;
+  transform: translateY(-1px);
 }
 
 /* ==========================================
@@ -494,72 +636,134 @@ body::before {
    ========================================== */
 .board-section {
   width: 100%;
-  overflow: hidden;
-}
-
-.board-section, .users-table {
   background: var(--card-bg) !important;
   border-radius: var(--radius-xl) !important;
   box-shadow: var(--shadow-md) !important;
   border: 1px solid var(--border-color) !important;
-  padding: 18px 22px !important;
+  padding: 24px !important;
   box-sizing: border-box;
-  overflow-x: auto;
+  overflow: hidden;
 }
 
-.board-section table, .users-table table {
+div.users-table, .crm-table-container {
   width: 100%;
-  border-collapse: collapse;
-  text-align: left;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 14px;
+  border: 1px solid var(--border-color-subtle, rgba(15, 164, 222, 0.15));
+  background: var(--card-bg);
+  box-shadow: none;
+  padding: 0 !important;
+  margin-top: 14px;
+  box-sizing: border-box;
 }
 
-.board-section th, .users-table th {
-  padding: 14px 14px !important;
+table.users-table, 
+.board-section table, 
+.crm-table-container table {
+  width: 100%;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  text-align: left;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid var(--border-color-subtle, rgba(15, 164, 222, 0.15));
+  box-sizing: border-box;
+}
+
+div.users-table table,
+.crm-table-container table {
+  border: none !important;
+  border-radius: 0 !important;
+}
+
+.board-section th, .users-table th, .crm-table-container th {
+  padding: 8px 12px !important;
   font-family: 'Outfit', sans-serif;
-  font-size: 0.84rem;
+  font-size: 0.76rem;
   font-weight: 700;
   color: var(--primary-dark) !important;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
   border-bottom: 2px solid rgba(15, 164, 222, 0.25) !important;
   background: var(--pill-bg) !important;
+  white-space: nowrap;
+}
+
+/* Puntas redondeadas superiores en thead */
+.board-section table thead tr:first-child th:first-child,
+.users-table thead tr:first-child th:first-child,
+.users-table table thead tr:first-child th:first-child,
+.crm-table-container table thead tr:first-child th:first-child {
+  border-top-left-radius: 12px;
+}
+
+.board-section table thead tr:first-child th:last-child,
+.users-table thead tr:first-child th:last-child,
+.users-table table thead tr:first-child th:last-child,
+.crm-table-container table thead tr:first-child th:last-child {
+  border-top-right-radius: 12px;
+}
+
+/* Puntas redondeadas inferiores en el último tr */
+.board-section table tbody tr:last-child td:first-child,
+.users-table tbody tr:last-child td:first-child,
+.users-table table tbody tr:last-child td:first-child,
+.crm-table-container table tbody tr:last-child td:first-child {
+  border-bottom-left-radius: 12px;
+}
+
+.board-section table tbody tr:last-child td:last-child,
+.users-table tbody tr:last-child td:last-child,
+.users-table table tbody tr:last-child td:last-child,
+.crm-table-container table tbody tr:last-child td:last-child {
+  border-bottom-right-radius: 12px;
 }
 
 :root[data-theme='dark'] .board-section th,
-:root[data-theme='dark'] .users-table th {
+:root[data-theme='dark'] .users-table th,
+:root[data-theme='dark'] .crm-table-container th {
   color: #38bdf8 !important;
 }
 
-.board-section td, .users-table td {
-  padding: 16px 14px !important;
+.board-section td, .users-table td, .crm-table-container td {
+  padding: 8px 12px !important;
   border-bottom: 1px solid var(--border-color-subtle) !important;
-  font-size: 0.92rem;
+  font-size: 0.84rem;
   color: var(--text-main) !important;
   transition: var(--transition-bezier);
+  vertical-align: middle;
 }
 
-.board-section tr, .users-table tr {
+.board-section table tbody tr:last-child td,
+.users-table tbody tr:last-child td,
+.crm-table-container tbody tr:last-child td {
+  border-bottom: none !important;
+}
+
+.board-section tr, .users-table tr, .crm-table-container tr {
   transition: var(--transition-bezier);
 }
 
-.board-section tbody tr:hover, .users-table tbody tr:hover {
+.board-section tbody tr:hover, .users-table tbody tr:hover, .crm-table-container tbody tr:hover {
   background-color: rgba(15, 164, 222, 0.08) !important;
 }
 
 /* Botones en filas de tablas */
-.board-section button:not(.btn-delete), .users-table button:not(.btn-delete) {
+.board-section button:not(.btn-delete), .users-table button:not(.btn-delete), .crm-table-container button:not(.btn-delete) {
   background: var(--pill-bg) !important;
   color: var(--primary) !important;
   border: 1px solid var(--border-color) !important;
-  padding: 8px 16px !important;
-  border-radius: var(--radius-pill) !important;
-  font-weight: 600 !important;
-  font-size: 0.82rem !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  font-size: 0.76rem !important;
   cursor: pointer;
   transition: var(--transition-bezier) !important;
+  white-space: nowrap;
 }
 
-.board-section button:not(.btn-delete):hover, .users-table button:not(.btn-delete):hover {
+.board-section button:not(.btn-delete):hover, .users-table button:not(.btn-delete):hover, .crm-table-container button:not(.btn-delete):hover {
   background: var(--primary) !important;
   color: #ffffff !important;
   border-color: var(--primary) !important;
@@ -571,12 +775,13 @@ body::before {
   background: rgba(239, 68, 68, 0.15) !important;
   color: #f87171 !important;
   border: 1px solid rgba(239, 68, 68, 0.3) !important;
-  padding: 8px 16px !important;
-  border-radius: var(--radius-pill) !important;
-  font-weight: 600 !important;
-  font-size: 0.82rem !important;
+  padding: 4px 10px !important;
+  border-radius: 8px !important;
+  font-weight: 700 !important;
+  font-size: 0.76rem !important;
   cursor: pointer;
   transition: var(--transition-bezier) !important;
+  white-space: nowrap;
 }
 
 .btn-delete:hover {
@@ -1575,9 +1780,10 @@ span.prioridad-baja {
   --purple-brand: #0fa4de;
   --expenses-gradient-end: #0284c7;
 
-  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.55);
-  --shadow-lg: 0 20px 50px rgba(0, 0, 0, 0.7);
+  --shadow-sm: 0 4px 16px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 14px 34px rgba(0, 0, 0, 0.55);
+  --shadow-lg: 0 24px 54px rgba(0, 0, 0, 0.7);
+  --shadow-floating: 0 16px 38px rgba(0, 0, 0, 0.6);
 }
 
 :root[data-theme='light'] {
@@ -1592,9 +1798,68 @@ span.prioridad-baja {
   --primary-hover: #0284c7;
   --primary-dark: #0369a1;
   --primary-light: rgba(15, 164, 222, 0.12);
-  --border-color: #cbd5e1;
-  --border-color-subtle: #e2e8f0;
+  --border-color: rgba(203, 213, 225, 0.85);
+  --border-color-subtle: rgba(226, 232, 240, 0.9);
   --input-bg: #ffffff;
+
+  --shadow-sm: 0 4px 16px -2px rgba(7, 21, 36, 0.05), 0 2px 6px rgba(7, 21, 36, 0.03);
+  --shadow-md: 0 14px 34px -4px rgba(7, 21, 36, 0.08), 0 4px 14px rgba(7, 21, 36, 0.03);
+  --shadow-lg: 0 24px 54px -6px rgba(7, 21, 36, 0.12), 0 8px 24px rgba(7, 21, 36, 0.05);
+  --shadow-floating: 0 16px 38px -4px rgba(7, 21, 36, 0.10), 0 6px 18px rgba(7, 21, 36, 0.04);
+}
+
+/* ==========================================
+   CUADROS FLOTANTES UNIFICADOS (FLOATING CARDS)
+   ========================================== */
+.card,
+.crm-card,
+.floating-card,
+.board-section,
+.form-section,
+.form-section-compact,
+.kpi-card,
+.chart-card,
+.report-section-card,
+.sidebar-depts,
+.admin-card,
+.ticket-detail-view,
+.help-card-premium {
+  background: var(--card-bg) !important;
+  border-radius: var(--radius-xl, 22px) !important;
+  box-shadow: var(--shadow-md) !important;
+  border: 1px solid var(--border-color) !important;
+  transition: var(--transition-bezier) !important;
+}
+
+.kpi-card:hover,
+.chart-card:hover,
+.floating-card:hover,
+.card-interactive:hover {
+  transform: translateY(-3px) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+
+.ticket-card,
+.ticket-card-kanban {
+  background: var(--card-bg) !important;
+  border-radius: var(--radius-lg, 18px) !important;
+  box-shadow: var(--shadow-sm) !important;
+  border: 1px solid var(--border-color-subtle) !important;
+  transition: var(--transition-bezier) !important;
+}
+
+.ticket-card:hover,
+.ticket-card-kanban:hover {
+  transform: translateY(-2px) !important;
+  box-shadow: var(--shadow-md) !important;
+  border-color: var(--primary) !important;
+}
+
+.board-column {
+  background: var(--pill-bg) !important;
+  border-radius: 22px !important;
+  box-shadow: inset 0 0 0 1px var(--border-color-subtle) !important;
+  border: 1px solid var(--border-color-subtle) !important;
 }
 
 /* Transiciones globales para un paso ultra-suave */
@@ -1606,6 +1871,13 @@ body,
 .sidebar-depts,
 header, 
 aside, 
+input, 
+select, 
+textarea,
+button {
+  font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+}
+
 input, 
 select, 
 textarea,
@@ -2175,49 +2447,90 @@ button:not(.btn-submit):not(.logout-btn):not(.btn-delete) {
    HOJA DE ESTILOS DE IMPRESIÓN (EXPORTAR A PDF)
    ========================================== */
 @media print {
-  /* Ocultar absolutamente todo en el viewport detrás y encima de la página */
-  body * {
-    visibility: hidden;
+  /* Ocultar elementos globales de navegación, botones y barras */
+  header,
+  nav,
+  aside,
+  .shop-header,
+  .no-print,
+  .no-print *,
+  .floating-help-btn-container,
+  .btn-print-pdf {
+    display: none !important;
   }
 
-  /* Hacer visible únicamente la ventana del modal y su árbol completo de hijos */
+  body {
+    background: #FFFFFF !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Si hay un modal o proforma activa, ocultar el resto del body */
+  body:has(.modal-overlay) > *:not(.modal-overlay),
+  body:has(.proforma-overlay) > *:not(.proforma-overlay) {
+    display: none !important;
+  }
+
+  /* Ajustar overlay de modal y proforma para imprimir */
   .modal-overlay,
-  .modal-overlay *,
-  .modal-container,
-  .modal-container * {
-    visibility: visible !important;
-  }
-
-  /* Ajustar el fondo del overlay a blanco y eliminar blurs */
-  .modal-overlay {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
+  .proforma-overlay {
+    position: static !important;
     width: 100% !important;
     height: auto !important;
-    background: white !important;
+    background: #FFFFFF !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     padding: 0 !important;
     margin: 0 !important;
     display: block !important;
     z-index: auto !important;
+    box-shadow: none !important;
   }
 
-  /* El contenedor del modal se adapta a pantalla completa sin scrolls */
-  .modal-container {
+  /* El contenedor del modal y proforma se adapta al 100% */
+  .modal-container,
+  .ecommerce-proforma-voucher,
+  .printable-proforma,
+  .proforma-container {
     border: none !important;
     box-shadow: none !important;
     width: 100% !important;
     max-width: 100% !important;
     height: auto !important;
     min-height: auto !important;
+    max-height: none !important;
     overflow: visible !important;
     display: block !important;
     margin: 0 !important;
-    padding: 0 !important;
-    background: white !important;
+    padding: 10px 0 !important;
+    background: #FFFFFF !important;
+    color: #000000 !important;
     animation: none !important;
+  }
+
+  /* Asegurar visibilidad total de tablas y contenidos */
+  .ecommerce-proforma-voucher *,
+  .printable-proforma *,
+  .proforma-container * {
+    visibility: visible !important;
+  }
+
+  table {
+    page-break-inside: auto !important;
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+    page-break-after: auto !important;
+  }
+
+  thead {
+    display: table-header-group !important;
   }
 
   /* La cabecera del modal se limpia para verse como un título formal */
@@ -2341,5 +2654,51 @@ button:not(.btn-submit):not(.logout-btn):not(.btn-delete) {
   }
 }
 
+/* ==========================================
+   CRM COMPACT & RESPONSIVE TABLES
+   ========================================== */
+.crm-compact-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  table-layout: auto !important;
+  margin: 0 !important;
+}
 
+.crm-compact-table th {
+  padding: 10px 12px !important;
+  font-size: 0.78rem !important;
+  white-space: nowrap !important;
+  letter-spacing: 0.03em !important;
+}
 
+.crm-compact-table td {
+  padding: 10px 12px !important;
+  font-size: 0.85rem !important;
+  vertical-align: middle !important;
+}
+
+.crm-compact-table td span:not(.no-badge-style) {
+  padding: 3px 8px !important;
+  font-size: 0.76rem !important;
+  border-radius: 8px !important;
+}
+
+.crm-compact-table td span.no-badge-style,
+.crm-compact-table td small.no-badge-style {
+  padding: 0 !important;
+  border-radius: 0 !important;
+  display: inline !important;
+}
+
+.crm-compact-table .action-btn {
+  padding: 5px 9px !important;
+  font-size: 0.78rem !important;
+  border-radius: 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  white-space: nowrap !important;
+  cursor: pointer !important;
+  border: 1px solid var(--border-color) !important;
+  font-weight: 600 !important;
+}

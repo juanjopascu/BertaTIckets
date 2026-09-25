@@ -14,6 +14,7 @@ import AdminEquipos from './AdminEquipos';
 import AdminConfigTickets from './AdminConfigTickets';
 import AdminEcommerce from './AdminEcommerce';
 import AdminCanalesAyuda from './AdminCanalesAyuda';
+import AdminPersonalizacion from './AdminPersonalizacion';
 import Shop from './Shop';
 import ShopClientPortal from './ShopClientPortal';
 import ShopCheckout from './ShopCheckout';
@@ -241,6 +242,14 @@ function App() {
           element={
             <ProtectedRoute rolesPermitidos={['admin']}>
               <AdminCanalesAyuda />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/personalizacion"
+          element={
+            <ProtectedRoute rolesPermitidos={['admin', 'admin_ecommerce']}>
+              <AdminPersonalizacion usuario={usuario} theme={theme} toggleTheme={toggleTheme} />
             </ProtectedRoute>
           }
         />
