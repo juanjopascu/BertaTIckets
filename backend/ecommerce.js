@@ -66,8 +66,120 @@ rawPool.connect()
     console.log('ℹ️ PostgreSQL no disponible. Usando motor E-commerce En Memoria con datos iniciales.');
   });
 
+// --- DEFAULT VISUAL & SHOP CUSTOMIZATION SETTINGS ---
+const DEFAULT_VISUAL_SETTINGS = {
+  announcement: {
+    enabled: true,
+    text: 'Distribución Oficial y Soporte Certificado en 12 Países de América Latina y USA',
+    badgeText: 'COBERTURA DACAS',
+    link: '#paises'
+  },
+  general: {
+    shopTitle: 'DACAS B2B Shop',
+    shopSubtitle: 'Plataforma Corporativa de Soluciones IT, Ciberseguridad & Conectividad Enterprise',
+    showCountryBar: true,
+    contactPhone: '+54 11 4110-3300',
+    contactEmail: 'ventas@dacas.com',
+    whatsappNumber: '+5491141103300',
+    headerBadge: 'DISTRIBUIDOR OFICIAL MAYORISTA',
+    primaryColor: '#0fa4de'
+  },
+  heroSlides: [
+    {
+      id: 0,
+      badge: 'RED REGIONAL DACAS',
+      badgeIcon: '🌎',
+      titleLine1: 'Distribución Mayorista Oficial',
+      titleLine2: 'En 12 Países de América',
+      titleColor: '#0fa4de',
+      desc: 'Más de 25 años conectando a los principales fabricantes mundiales de ciberseguridad, networking, infraestructura y comunicaciones unificadas con integradores de toda la región.',
+      primaryBtn: { text: 'Explorar Catálogo', cat: 'all' },
+      secondaryBtn: { text: 'Nuestros Países', cat: 'all' },
+      type: 'animated_stats',
+      stats: [
+        { key: 'exp', target: 25, suffix: '+ Años', label: 'Liderando el Mercado IT' },
+        { key: 'part', target: 100, suffix: '%', label: 'Partners Certificados' },
+        { key: 'cov', target: 24, suffix: '/7', label: 'Soporte y Garantía Oficial' }
+      ]
+    },
+    {
+      id: 1,
+      badge: 'CIBERSEGURIDAD AVANZADA',
+      badgeIcon: '🛡️',
+      titleLine1: 'Next-Gen Firewalls & IA',
+      titleLine2: 'Protección Integral Fortinet',
+      titleColor: '#0fa4de',
+      desc: 'Soluciones perimetrales y de centro de datos con tecnología ASIC y suscripciones FortiGuard Enterprise con entrega inmediata.',
+      primaryBtn: { text: 'Ver Seguridad', cat: 'security' },
+      secondaryBtn: { text: 'Ver Catálogo Completo', cat: 'all' },
+      type: 'metrics',
+      metrics: [
+        { value: '1.4 Gbps', label: 'Rendimiento IPS Real' },
+        { value: '99.99%', label: 'Disponibilidad Uptime' },
+        { value: 'Zero-Day', label: 'Protección con IA' }
+      ]
+    },
+    {
+      id: 2,
+      badge: 'INFRAESTRUCTURA & ENERGÍA CRÍTICA',
+      badgeIcon: '⚡',
+      titleLine1: 'Sistemas UPS Online Vertiv & Eaton',
+      titleLine2: '& Racks de Alta Densidad Panduit',
+      titleColor: '#38bdf8',
+      desc: 'Protección de energía crítica doble conversión, gabinetes acústicos y cableado estructurado certificado CommScope para salas de servidores y centros de datos.',
+      primaryBtn: { text: 'Ver Infraestructura', cat: 'infraestructura' },
+      secondaryBtn: { text: 'Consultar Stock', cat: 'infraestructura' },
+      type: 'metrics',
+      metrics: [
+        { value: '3kVA - 20kVA', label: 'Potencia Doble Conversión' },
+        { value: 'Factor 1.0', label: 'Eficiencia Energética' },
+        { value: 'Vertiv/Panduit', label: 'Garantía Oficial DACAS' }
+      ]
+    },
+    {
+      id: 3,
+      badge: 'COMUNICACIONES UNIFICADAS & COLABORACIÓN',
+      badgeIcon: '📞',
+      titleLine1: 'Telefonía IP AudioCodes Teams',
+      titleLine2: '& Colaboración Corporativa Avaya',
+      titleColor: '#10b981',
+      desc: 'Soluciones enterprise de audio y videoconferencia HD certificadas para Microsoft Teams y Zoom, con audio de alta fidelidad y conmutación SIP.',
+      primaryBtn: { text: 'Ver Comunicaciones Unificadas', cat: 'comunicaciones_unificadas' },
+      secondaryBtn: { text: 'Explorar Modelos', cat: 'comunicaciones_unificadas' },
+      type: 'metrics',
+      metrics: [
+        { value: 'Audio HD', label: 'Resolución Óptica y Voz' },
+        { value: 'Avaya Bar', label: 'Salas Inteligentes' },
+        { value: 'Teams/Zoom', label: 'Certificación Oficial' }
+      ]
+    }
+  ],
+  categories: [
+    { key: 'networking', name: 'Networking', icon: '🌐', desc: 'Conmutación L2/L3, Routing Core, Wi-Fi 6 y Conectividad Cloud', enabled: true },
+    { key: 'infraestructura', name: 'Infraestructura', icon: '⚡', desc: 'Energía Crítica UPS, Gabinetes Racks 42U y Cableado Estructurado', enabled: true },
+    { key: 'comunicaciones_unificadas', name: 'Comunicaciones Unificadas', icon: '📞', desc: 'Telefonía IP Corporativa, AudioCodes Teams & Salas Colaborativas Avaya', enabled: true },
+    { key: 'security', name: 'Seguridad & Ciberseguridad', icon: '🛡️', desc: 'Next-Gen Firewalls, Sandboxing IA y Protección de Datos', enabled: true }
+  ],
+  categoryBrands: {
+    'comunicaciones_unificadas': ['audiocodes', 'avaya'],
+    'security': [
+      'algosec', 'barracuda', 'fortinet', 'f5', 'imperva', 'hitachi vantara',
+      'infoblox', 'nsfocus', 'radware', 'silver peak', 'sophos', 'sonicwall',
+      'veracode', 'vicarius', 'viewtinet'
+    ],
+    'infraestructura': [
+      'avocent', 'commscope', 'commscope netconnect', 'commscope systimax',
+      'eaton', 'gabitel', 'panduit', 'siemon', 'vertiv', 'tz'
+    ],
+    'networking': [
+      'mikrotik', 'aruba', 'infoblox', 'silver peak', 'commscope'
+    ]
+  }
+};
+
 // --- IN-MEMORY DATABASE FALLBACK STORE ---
 const inMem = {
+  visualSettings: JSON.parse(JSON.stringify(DEFAULT_VISUAL_SETTINGS)),
   users: [
     {
       id: 1,
@@ -122,19 +234,25 @@ const inMem = {
     }
   ],
   countries: [
-    { id: 1, code: 'AR', name: 'Argentina', tax_rate: '21.00', shipping_cost: '15.00', nationalization_cost: '5.00', discount_rate: '0.00' },
-    { id: 2, code: 'UY', name: 'Uruguay', tax_rate: '22.00', shipping_cost: '20.00', nationalization_cost: '0.00', discount_rate: '0.00' },
-    { id: 3, code: 'CL', name: 'Chile', tax_rate: '19.00', shipping_cost: '18.00', nationalization_cost: '2.00', discount_rate: '5.00' },
-    { id: 4, code: 'MX', name: 'México', tax_rate: '16.00', shipping_cost: '25.00', nationalization_cost: '10.00', discount_rate: '0.00' },
-    { id: 5, code: 'ES', name: 'España', tax_rate: '21.00', shipping_cost: '30.00', nationalization_cost: '0.00', discount_rate: '10.00' },
-    { id: 6, code: 'US', name: 'Estados Unidos', tax_rate: '0.00', shipping_cost: '20.00', nationalization_cost: '0.00', discount_rate: '0.00' }
+    { id: 1, code: 'US', name: 'Estados Unidos', tax_rate: '0.00', shipping_cost: '20.00', nationalization_cost: '0.00', discount_rate: '0.00' },
+    { id: 2, code: 'AR', name: 'Argentina', tax_rate: '21.00', shipping_cost: '15.00', nationalization_cost: '5.00', discount_rate: '0.00' },
+    { id: 3, code: 'BO', name: 'Bolivia', tax_rate: '13.00', shipping_cost: '18.00', nationalization_cost: '0.00', discount_rate: '0.00' },
+    { id: 4, code: 'CL', name: 'Chile', tax_rate: '19.00', shipping_cost: '18.00', nationalization_cost: '2.00', discount_rate: '5.00' },
+    { id: 5, code: 'CO', name: 'Colombia', tax_rate: '19.00', shipping_cost: '18.00', nationalization_cost: '0.00', discount_rate: '0.00' },
+    { id: 6, code: 'CR', name: 'Costa Rica', tax_rate: '13.00', shipping_cost: '20.00', nationalization_cost: '0.00', discount_rate: '0.00' },
+    { id: 7, code: 'EC', name: 'Ecuador', tax_rate: '12.00', shipping_cost: '20.00', nationalization_cost: '0.00', discount_rate: '0.00' },
+    { id: 8, code: 'MX', name: 'México', tax_rate: '16.00', shipping_cost: '25.00', nationalization_cost: '10.00', discount_rate: '0.00' },
+    { id: 9, code: 'PY', name: 'Paraguay', tax_rate: '10.00', shipping_cost: '18.00', nationalization_cost: '0.00', discount_rate: '0.00' },
+    { id: 10, code: 'PE', name: 'Perú', tax_rate: '18.00', shipping_cost: '18.00', nationalization_cost: '0.00', discount_rate: '0.00' },
+    { id: 11, code: 'DO', name: 'República Dominicana', tax_rate: '18.00', shipping_cost: '22.00', nationalization_cost: '0.00', discount_rate: '0.00' },
+    { id: 12, code: 'UY', name: 'Uruguay', tax_rate: '22.00', shipping_cost: '20.00', nationalization_cost: '0.00', discount_rate: '0.00' }
   ],
   products: [
     {
       id: 1,
       name: 'Fortinet FortiGate 60F - Next Generation Firewall',
       brand: 'Fortinet',
-      category: 'ciberseguridad',
+      category: 'security',
       sku: 'FG-60F-BDL-950-12',
       description: '<p>Firewall empresarial de última generación con procesador de seguridad SOC4 (SD-WAN seguro, IPS, Antivirus, Control de Aplicaciones y VPN SSL).</p>',
       price: '890.00',
@@ -148,13 +266,13 @@ const inMem = {
     },
     {
       id: 2,
-      name: 'Cisco Catalyst C9200L Switch 24 Puertos PoE+ (4x10G Uplink)',
-      brand: 'Cisco',
+      name: 'Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router',
+      brand: 'MikroTik',
       category: 'networking',
-      sku: 'C9200L-24P-4X-E',
-      description: '<p>Switch empresarial capa 3 administrable con 24 puertos Gigabit PoE+ (370W de presupuesto) y 4 uplinks fijos 10G SFP+.</p>',
-      price: '1650.00',
-      stock: 22,
+      sku: 'CRS328-24P-4S',
+      description: '<p>Switch empresarial capa 2/3 con 24 puertos Gigabit PoE dual 802.3af/at y 4 puertos 10G SFP+ para fibra óptica de alta velocidad.</p>',
+      price: '480.00',
+      stock: 18,
       image_url: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000&auto=format&fit=crop',
       images: [
         'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000&auto=format&fit=crop',
@@ -164,13 +282,13 @@ const inMem = {
     },
     {
       id: 3,
-      name: 'Ubiquiti UniFi Dream Machine Pro (UDM-Pro Enterprise Gateway)',
-      brand: 'Ubiquiti',
+      name: 'Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22',
+      brand: 'Aruba',
       category: 'networking',
-      sku: 'UDM-PRO-ENT',
-      description: '<p>Consola de red todo en uno: Security Gateway 10G SFP+, NVR UniFi Protect para videovigilancia y controlador UniFi OS integrado.</p>',
-      price: '520.00',
-      stock: 35,
+      sku: 'R4W02A-AP22',
+      description: '<p>Access Point de techo para alta densidad corporativa. Ofrece tecnología Wi-Fi 6 MU-MIMO con gestión centralizada en la nube sin costo adicional de licencias.</p>',
+      price: '195.00',
+      stock: 40,
       image_url: 'https://images.unsplash.com/photo-1563770660941-20978e870e26?q=80&w=1000&auto=format&fit=crop',
       images: [
         'https://images.unsplash.com/photo-1563770660941-20978e870e26?q=80&w=1000&auto=format&fit=crop'
@@ -179,31 +297,31 @@ const inMem = {
     },
     {
       id: 4,
-      name: 'MikroTik Cloud Router Switch CRS328-24P-4S+RM (PoE Dual)',
-      brand: 'MikroTik',
-      category: 'networking',
-      sku: 'CRS328-24P-4S+RM',
-      description: '<p>Switch de 24 puertos Gigabit con salida PoE automática 802.3af/at y 24V Pasivo + 4 puertos SFP+ de 10Gbps y fuente redundante.</p>',
-      price: '480.00',
-      stock: 28,
-      image_url: 'https://images.unsplash.com/photo-1520869562399-e772f342b00a?q=80&w=1000&auto=format&fit=crop',
+      name: 'Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA',
+      brand: 'Vertiv',
+      category: 'infraestructura',
+      sku: 'GXT5-3000IRT2UXLE',
+      description: '<p>UPS de alta confiabilidad factor de potencia 1.0 para centros de datos y racks críticos con protección contra microcortes.</p>',
+      price: '2150.00',
+      stock: 12,
+      image_url: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000&auto=format&fit=crop',
       images: [
-        'https://images.unsplash.com/photo-1520869562399-e772f342b00a?q=80&w=1000&auto=format&fit=crop'
+        'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000&auto=format&fit=crop'
       ],
       created_at: new Date().toISOString()
     },
     {
       id: 5,
-      name: 'Aruba Instant On AP22 Wi-Fi 6 (802.11ax 2x2 MU-MIMO)',
-      brand: 'Aruba',
-      category: 'wifi',
-      sku: 'R4W02A-AP22',
-      description: '<p>Punto de acceso empresarial Wi-Fi 6 de alta densidad con gestión en la nube sin costo de licencias, portal cautivo y soporte Mesh.</p>',
-      price: '195.00',
-      stock: 60,
-      image_url: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1000&auto=format&fit=crop',
+      name: 'Sistema de Videoconferencia Avaya Collaboration Bar B109',
+      brand: 'Avaya',
+      category: 'comunicaciones_unificadas',
+      sku: 'AVAYA-B109-CONF',
+      description: '<p>Solución de colaboración y videoconferencia HD con audio OmniSound cristalino, cancelación de eco y conectividad Bluetooth/USB.</p>',
+      price: '680.00',
+      stock: 14,
+      image_url: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=1000&auto=format&fit=crop',
       images: [
-        'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1000&auto=format&fit=crop'
+        'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=1000&auto=format&fit=crop'
       ],
       created_at: new Date().toISOString()
     },
@@ -211,7 +329,7 @@ const inMem = {
       id: 6,
       name: 'Licencia Anual FortiGuard Enterprise Protection Bundle',
       brand: 'Fortinet',
-      category: 'licencias',
+      category: 'security',
       sku: 'LIC-FG-ENT-1Y',
       description: '<p>Renovación y suscripción anual a servicios de seguridad avanzada: Anti-Malware en la nube, DLP, Sandboxing y filtrado Web DNS.</p>',
       price: '340.00',
@@ -249,13 +367,13 @@ const inMem = {
     },
     {
       id: 2,
-      name: 'Descuento Especial ISPs en Ubiquiti y MikroTik',
+      name: 'Descuento Especial ISPs en MikroTik y Aruba',
       rule_type: 'discount',
       value_type: 'percentage',
       value: '20.00',
       tipo_cliente: 'Proveedor de Internet (ISP / WISP)',
       country_id: null,
-      brand: 'Ubiquiti',
+      brand: 'MikroTik',
       product_id: null,
       user_id: null,
       priority: 8,
@@ -264,13 +382,13 @@ const inMem = {
     },
     {
       id: 3,
-      name: 'Convenio Corporativo Cisco Enterprise',
+      name: 'Convenio Corporativo AudioCodes Enterprise',
       rule_type: 'discount',
       value_type: 'percentage',
       value: '12.00',
       tipo_cliente: 'Empresa Corporativa',
       country_id: null,
-      brand: 'Cisco',
+      brand: 'AudioCodes',
       product_id: null,
       user_id: null,
       priority: 5,
@@ -360,22 +478,22 @@ const inMem = {
       id: 2,
       order_id: 1042,
       product_id: 3,
-      product_name: 'Ubiquiti UniFi Dream Machine Pro (UDM-Pro Enterprise Gateway)',
-      brand: 'Ubiquiti',
-      sku: 'UDM-PRO-ENT',
+      product_name: 'Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22',
+      brand: 'Aruba',
+      sku: 'R4W02A-AP22',
       quantity: 1,
-      price_at_purchase: '520.00',
+      price_at_purchase: '195.00',
       image_url: 'https://images.unsplash.com/photo-1563770660941-20978e870e26?q=80&w=1000&auto=format&fit=crop'
     },
     {
       id: 3,
       order_id: 1049,
       product_id: 2,
-      product_name: 'Cisco Catalyst C9200L Switch 24 Puertos PoE+ (4x10G Uplink)',
-      brand: 'Cisco',
-      sku: 'C9200L-24P-4X-E',
+      product_name: 'Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router',
+      brand: 'MikroTik',
+      sku: 'CRS328-24P-4S',
       quantity: 1,
-      price_at_purchase: '1452.00',
+      price_at_purchase: '449.00',
       image_url: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000&auto=format&fit=crop'
     },
     {
@@ -2599,5 +2717,86 @@ router.post('/admin/users/:id/approve', authenticateToken, requireAdmin, async (
   }
 });
 
+// ── Visual / Customization Settings API ──
+router.get('/settings/visual', async (req, res) => {
+  try {
+    if (isPgConnected) {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS ecommerce_visual_settings (
+          id INT PRIMARY KEY DEFAULT 1,
+          config JSONB NOT NULL,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      const row = await pool.query('SELECT config FROM ecommerce_visual_settings WHERE id = 1');
+      if (row.rows.length > 0 && row.rows[0].config) {
+        return res.json(row.rows[0].config);
+      }
+    }
+    return res.json(inMem.visualSettings || DEFAULT_VISUAL_SETTINGS);
+  } catch (error) {
+    console.error('Error fetching visual settings:', error);
+    return res.json(inMem.visualSettings || DEFAULT_VISUAL_SETTINGS);
+  }
+});
+
+router.put('/settings/visual', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const updated = req.body;
+    if (!updated || typeof updated !== 'object') {
+      return res.status(400).json({ error: 'Configuración visual inválida' });
+    }
+
+    inMem.visualSettings = { ...DEFAULT_VISUAL_SETTINGS, ...updated };
+
+    if (isPgConnected) {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS ecommerce_visual_settings (
+          id INT PRIMARY KEY DEFAULT 1,
+          config JSONB NOT NULL,
+          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      await pool.query(`
+        INSERT INTO ecommerce_visual_settings (id, config, updated_at)
+        VALUES (1, $1, CURRENT_TIMESTAMP)
+        ON CONFLICT (id) DO UPDATE SET config = $1, updated_at = CURRENT_TIMESTAMP
+      `, [JSON.stringify(inMem.visualSettings)]);
+    }
+
+    res.json({
+      success: true,
+      message: 'Diseño y personalización del Shop guardados exitosamente',
+      config: inMem.visualSettings
+    });
+  } catch (error) {
+    console.error('Error updating visual settings:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/settings/visual/reset', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    inMem.visualSettings = JSON.parse(JSON.stringify(DEFAULT_VISUAL_SETTINGS));
+
+    if (isPgConnected) {
+      await pool.query(`
+        INSERT INTO ecommerce_visual_settings (id, config, updated_at)
+        VALUES (1, $1, CURRENT_TIMESTAMP)
+        ON CONFLICT (id) DO UPDATE SET config = $1, updated_at = CURRENT_TIMESTAMP
+      `, [JSON.stringify(DEFAULT_VISUAL_SETTINGS)]);
+    }
+
+    res.json({
+      success: true,
+      message: 'Diseño restablecido a los valores oficiales de DACAS',
+      config: inMem.visualSettings
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 module.exports = router;
+
 

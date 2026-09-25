@@ -1,5 +1,12 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 
+const OFFICIAL_CATEGORIES = [
+  { key: 'networking', label: 'Networking', icon: '🌐', desc: 'Switches, Routers, Wi-Fi 6, Access Points, Gateways' },
+  { key: 'infraestructura', label: 'Infraestructura', icon: '🏗️', desc: 'Servidores Rack/Tower, Datacenter, Storage, Racks' },
+  { key: 'comunicaciones_unificadas', label: 'Comunicaciones Unificadas', icon: '📞', desc: 'Videoconferencia, Telefonía IP, Poly, Colaboración' },
+  { key: 'security', label: 'Security', icon: '🔒', desc: 'Next-Gen Firewalls Fortinet, EDR, Licencias Ciberseguridad' }
+];
+
 export default function AdminProductFormTiendanube({
   product,
   onSave,
@@ -55,14 +62,22 @@ export default function AdminProductFormTiendanube({
   const [ageGroup, setAgeGroup] = useState(product?.age_group || '');
   const [gender, setGender] = useState(product?.gender || '');
 
-  // 8. Categories
+  // 8. Categories (Restricted to the 4 official DACAS sections)
   const [categories, setCategories] = useState(() => {
-    if (Array.isArray(product?.categories) && product.categories.length > 0) return product.categories;
-    if (product?.category) return [product.category];
-    return [];
+    if (Array.isArray(product?.categories) && product.categories.length > 0) {
+      const valid = product.categories.filter(c => OFFICIAL_CATEGORIES.some(o => o.key === c));
+      if (valid.length > 0) return valid;
+    }
+    if (product?.category) {
+      const match = OFFICIAL_CATEGORIES.find(o => o.key === product.category);
+      if (match) return [match.key];
+      const p = (product.category || '').toLowerCase();
+      if (p.includes('ciber') || p.includes('secur') || p.includes('licencia')) return ['security'];
+      if (p.includes('infra') || p.includes('servidor') || p.includes('server')) return ['infraestructura'];
+      if (p.includes('comunic') || p.includes('voip') || p.includes('video')) return ['comunicaciones_unificadas'];
+    }
+    return ['networking'];
   });
-  const [showCategoryInput, setShowCategoryInput] = useState(false);
-  const [newCategoryInput, setNewCategoryInput] = useState('');
 
   // 9. Variants
   const [variants, setVariants] = useState(product?.variants || []);
@@ -228,11 +243,11 @@ export default function AdminProductFormTiendanube({
   // AI Categories Generator
   const handleGenerateCategoriesAi = async () => {
     if (!name.trim()) {
-      alert('Ingresa el nombre del producto para sugerir categorías.');
+      alert('Ingresa el nombre del producto para sugerir la sección correspondiente.');
       return;
     }
     setIsGeneratingCategories(true);
-    setAiToast('✨ Sugiriendo categorías con IA...');
+    setAiToast('✨ Analizando sección con IA...');
 
     try {
       const res = await fetch(`${apiBaseUrl}/api/ecommerce/ai/generate-categories`, {
@@ -241,9 +256,23 @@ export default function AdminProductFormTiendanube({
         body: JSON.stringify({ name })
       });
       const data = await res.json();
-      if (data.success && Array.isArray(data.categories)) {
-        setCategories(prev => Array.from(new Set([...prev, ...data.categories])));
-        setAiToast('✅ Categorías añadidas con IA');
+      if (data.success && Array.isArray(data.categories) && data.categories.length > 0) {
+        const valid = data.categories.filter(c => OFFICIAL_CATEGORIES.some(o => o.key === c));
+        if (valid.length > 0) {
+          setCategories(valid);
+        } else {
+          const p = name.toLowerCase();
+          if (p.includes('firewall') || p.includes('fortinet') || p.includes('security') || p.includes('licencia') || p.includes('antivirus') || p.includes('ciber')) {
+            setCategories(['security']);
+          } else if (p.includes('servidor') || p.includes('server') || p.includes('dell') || p.includes('rack') || p.includes('datacenter')) {
+            setCategories(['infraestructura']);
+          } else if (p.includes('poly') || p.includes('video') || p.includes('telefono') || p.includes('voip') || p.includes('colaboracion')) {
+            setCategories(['comunicaciones_unificadas']);
+          } else {
+            setCategories(['networking']);
+          }
+        }
+        setAiToast('✅ Sección oficial asignada con IA');
         setTimeout(() => setAiToast(null), 3000);
       }
     } catch (e) {
@@ -310,18 +339,16 @@ export default function AdminProductFormTiendanube({
     });
   };
 
-  // Categories Handlers
-  const handleAddCategory = () => {
-    if (!newCategoryInput.trim()) return;
-    if (!categories.includes(newCategoryInput.trim())) {
-      setCategories(prev => [...prev, newCategoryInput.trim()]);
-    }
-    setNewCategoryInput('');
-    setShowCategoryInput(false);
-  };
-
-  const handleRemoveCategory = (cat) => {
-    setCategories(prev => prev.filter(c => c !== cat));
+  // Categories Handlers (4 Official DACAS Sections)
+  const handleToggleCategory = (catKey) => {
+    setCategories(prev => {
+      if (prev.includes(catKey)) {
+        if (prev.length === 1) return prev; // Keep at least 1 category selected
+        return prev.filter(c => c !== catKey);
+      } else {
+        return [...prev, catKey];
+      }
+    });
   };
 
   // Variants Handlers
@@ -992,17 +1019,21 @@ export default function AdminProductFormTiendanube({
               >
                 <option value="">-- Seleccionar Marca --</option>
                 <option value="Fortinet">Fortinet</option>
-                <option value="Cisco">Cisco</option>
-                <option value="Ubiquiti">Ubiquiti</option>
+                <option value="AudioCodes">AudioCodes</option>
+                <option value="Avaya">Avaya</option>
                 <option value="MikroTik">MikroTik</option>
                 <option value="Aruba">Aruba Networks</option>
-                <option value="Dell Technologies">Dell Technologies</option>
-                <option value="Palo Alto Networks">Palo Alto Networks</option>
+                <option value="Vertiv">Vertiv</option>
+                <option value="Panduit">Panduit</option>
+                <option value="CommScope">CommScope</option>
+                <option value="Eaton">Eaton</option>
+                <option value="Sophos">Sophos</option>
+                <option value="SonicWall">SonicWall</option>
                 <option value="Microsoft">Microsoft</option>
                 <option value="Dacas">Dacas Eventos / Soluciones</option>
                 <option value="Otro">Otra Marca (escribir abajo)</option>
               </select>
-              {(!['Fortinet', 'Cisco', 'Ubiquiti', 'MikroTik', 'Aruba', 'Dell Technologies', 'Palo Alto Networks', 'Microsoft', 'Dacas', ''].includes(brand) || brand === 'Otro') && (
+              {(!['Fortinet', 'AudioCodes', 'Avaya', 'MikroTik', 'Aruba', 'Vertiv', 'Panduit', 'CommScope', 'Eaton', 'Sophos', 'SonicWall', 'Microsoft', 'Dacas', ''].includes(brand) || brand === 'Otro') && (
                 <input
                   type="text"
                   placeholder="Nombre de la marca personalizada"
@@ -1216,7 +1247,7 @@ export default function AdminProductFormTiendanube({
         {/* ══════════════════════════════════════════════════ */}
         <div style={cardStyle}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-            <h2 style={{ ...cardTitleStyle, margin: 0 }}>Categorías</h2>
+            <h2 style={{ ...cardTitleStyle, margin: 0 }}>Categoría / Sección del Catálogo</h2>
             <button
               type="button"
               onClick={handleGenerateCategoriesAi}
@@ -1226,7 +1257,7 @@ export default function AdminProductFormTiendanube({
                 border: '1px solid #c4b5fd',
                 color: '#6d28d9',
                 borderRadius: '20px',
-                padding: '3px 10px',
+                padding: '4px 12px',
                 fontSize: '0.78rem',
                 fontWeight: '600',
                 cursor: isGeneratingCategories ? 'not-allowed' : 'pointer',
@@ -1236,91 +1267,63 @@ export default function AdminProductFormTiendanube({
               }}
             >
               <span>✨</span>
-              {isGeneratingCategories ? 'Sugiriendo...' : 'Generar con IA'}
+              {isGeneratingCategories ? 'Determinando...' : 'Sugerir con IA'}
             </button>
           </div>
 
           <p style={{ fontSize: '0.85rem', color: '#4b5563', margin: '0 0 16px' }}>
-            Ayudá a tus clientes a encontrar más rápido tus productos.
+            Selecciona la sección oficial a la que pertenece este producto (únicamente las 4 secciones habilitadas de DACAS):
           </p>
 
-          {/* Category Badges */}
-          {categories.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '14px' }}>
-              {categories.map((cat, idx) => (
-                <span
-                  key={idx}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+            {OFFICIAL_CATEGORIES.map((cat) => {
+              const isSelected = categories.includes(cat.key);
+              return (
+                <div
+                  key={cat.key}
+                  onClick={() => handleToggleCategory(cat.key)}
                   style={{
-                    background: '#eff6ff',
-                    color: '#1d4ed8',
-                    border: '1px solid #bfdbfe',
-                    borderRadius: '16px',
-                    padding: '4px 10px',
-                    fontSize: '0.82rem',
-                    fontWeight: '500',
+                    padding: '14px 16px',
+                    borderRadius: '12px',
+                    border: isSelected ? '2px solid #0fa4de' : '1.5px solid #e5e7eb',
+                    background: isSelected ? '#f0f9ff' : '#ffffff',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
                     display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
+                    alignItems: 'flex-start',
+                    gap: '12px',
+                    boxShadow: isSelected ? '0 2px 10px rgba(15, 164, 222, 0.15)' : 'none'
                   }}
                 >
-                  {cat}
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveCategory(cat)}
-                    style={{ background: 'transparent', border: 'none', color: '#6b7280', cursor: 'pointer', padding: 0, fontSize: '0.85rem' }}
-                  >
-                    ×
-                  </button>
-                </span>
-              ))}
-            </div>
-          )}
-
-          {!showCategoryInput ? (
-            <button
-              type="button"
-              onClick={() => setShowCategoryInput(true)}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: '#2563eb',
-                fontSize: '0.88rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '6px',
-                padding: 0
-              }}
-            >
-              <span>⊕</span> Agregar categorías
-            </button>
-          ) : (
-            <div style={{ display: 'flex', gap: '8px', maxWidth: '380px' }}>
-              <input
-                type="text"
-                placeholder="Nombre de categoría (ej: Calzado, VIP)"
-                value={newCategoryInput}
-                onChange={(e) => setNewCategoryInput(e.target.value)}
-                style={inputStyle}
-                onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddCategory(); } }}
-              />
-              <button
-                type="button"
-                onClick={handleAddCategory}
-                style={{ background: '#2563eb', color: '#fff', border: 'none', borderRadius: '8px', padding: '8px 14px', fontSize: '0.85rem', fontWeight: '600', cursor: 'pointer' }}
-              >
-                Agregar
-              </button>
-              <button
-                type="button"
-                onClick={() => setShowCategoryInput(false)}
-                style={{ background: '#f3f4f6', color: '#4b5563', border: 'none', borderRadius: '8px', padding: '8px 10px', fontSize: '0.85rem', cursor: 'pointer' }}
-              >
-                Cancelar
-              </button>
-            </div>
-          )}
+                  <div style={{
+                    width: '20px',
+                    height: '20px',
+                    borderRadius: '6px',
+                    border: isSelected ? 'none' : '1.5px solid #d1d5db',
+                    background: isSelected ? '#0fa4de' : '#ffffff',
+                    color: '#ffffff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '12px',
+                    fontWeight: 'bold',
+                    flexShrink: 0,
+                    marginTop: '2px'
+                  }}>
+                    {isSelected && '✓'}
+                  </div>
+                  <div>
+                    <div style={{ fontWeight: '700', fontSize: '0.92rem', color: isSelected ? '#0369a1' : '#111827', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>{cat.icon}</span> {cat.label}
+                    </div>
+                    <div style={{ fontSize: '0.78rem', color: '#6b7280', marginTop: '2px', lineHeight: 1.3 }}>
+                      {cat.desc}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* ══════════════════════════════════════════════════ */}

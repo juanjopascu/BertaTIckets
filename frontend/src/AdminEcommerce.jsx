@@ -10,7 +10,7 @@ const API_BASE_URL = `http://${window.location.hostname}:3001`;
 const COLORS = ['#0fa4de', '#38bdf8', '#0284c7', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4'];
 const PIE_COLORS = ['#0fa4de', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
-const CATEGORIES = ['ciberseguridad', 'networking', 'wifi', 'servidores', 'licencias', 'tickets', 'General'];
+const CATEGORIES = ['networking', 'infraestructura', 'comunicaciones_unificadas', 'security', 'General'];
 
 // ── Mock data ──
 const MOCK_ORDERS = [
@@ -73,11 +73,11 @@ const MOCK_ORDERS = [
     items: [
       {
         id: 3,
-        product_name: 'Cisco Catalyst C9200L Switch 24 Puertos PoE+ (4x10G Uplink)',
-        brand: 'Cisco',
-        sku: 'C9200L-24P-4X-E',
+        product_name: 'MikroTik Cloud Router Switch 24 Puertos PoE+ (4x10G SFP+)',
+        brand: 'MikroTik',
+        sku: 'CRS328-24P-4S',
         quantity: 1,
-        price_at_purchase: '1452.00',
+        price_at_purchase: '449.00',
         image_url: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000&auto=format&fit=crop'
       }
     ]
@@ -116,11 +116,11 @@ const MOCK_ORDERS = [
       },
       {
         id: 2,
-        product_name: 'Ubiquiti UniFi Dream Machine Pro (UDM-Pro Enterprise Gateway)',
-        brand: 'Ubiquiti',
-        sku: 'UDM-PRO-ENT',
+        product_name: 'Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22',
+        brand: 'Aruba',
+        sku: 'R4W02A-AP22',
         quantity: 1,
-        price_at_purchase: '520.00',
+        price_at_purchase: '195.00',
         image_url: 'https://images.unsplash.com/photo-1563770660941-20978e870e26?q=80&w=1000&auto=format&fit=crop'
       }
     ]
@@ -255,13 +255,157 @@ function AdminEcommerce() {
   const [bulkError, setBulkError] = useState(null);
   const [bulkDragOver, setBulkDragOver] = useState(false);
 
+  // ── Visual & Shop Customization State ──
+  const [visualConfig, setVisualConfig] = useState(null);
+  const [visualSubTab, setVisualSubTab] = useState('hero'); // 'hero' | 'announcement' | 'categories' | 'brands' | 'contact'
+  const [isSavingVisual, setIsSavingVisual] = useState(false);
+  const [visualSaveSuccess, setVisualSaveSuccess] = useState(false);
+  const [editingSlideIdx, setEditingSlideIdx] = useState(0);
+
   useEffect(() => {
     fetchProducts();
     fetchOrders();
     fetchCountries();
     fetchUsers();
     fetchRules();
+    fetchVisualSettings();
   }, []);
+
+  const fetchVisualSettings = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/visual`);
+      if (res.ok) {
+        const data = await res.json();
+        setVisualConfig(data);
+      }
+    } catch (err) {
+      console.error('Error fetching visual settings:', err);
+    }
+  };
+
+  const getAuthHeader = () => {
+    const token = localStorage.getItem('token') || localStorage.getItem('dacas_token') || sessionStorage.getItem('token');
+    const sessionId = sessionStorage.getItem('sessionId') || localStorage.getItem('sessionId');
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+    if (sessionId) headers['x-session-id'] = sessionId;
+    return headers;
+  };
+
+  const handleSaveVisualSettings = async () => {
+    setIsSavingVisual(true);
+    setVisualSaveSuccess(false);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/visual`, {
+        method: 'PUT',
+        headers: getAuthHeader(),
+        body: JSON.stringify(visualConfig)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al guardar diseño');
+      setVisualConfig(data.config || visualConfig);
+      setVisualSaveSuccess(true);
+      setTimeout(() => setVisualSaveSuccess(false), 4000);
+    } catch (err) {
+      alert('Error guardando personalización: ' + err.message);
+    } finally {
+      setIsSavingVisual(false);
+    }
+  };
+
+  const handleResetVisualSettings = async () => {
+    if (!window.confirm('¿Deseas restaurar la configuración visual a la plantilla oficial de DACAS?')) return;
+    setIsSavingVisual(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/visual/reset`, {
+        method: 'POST',
+        headers: getAuthHeader()
+      });
+      const data = await res.json();
+      if (res.ok && data.config) {
+        setVisualConfig(data.config);
+        setVisualSaveSuccess(true);
+        setTimeout(() => setVisualSaveSuccess(false), 3000);
+      }
+    } catch (err) {
+      alert('Error al restablecer: ' + err.message);
+    } finally {
+      setIsSavingVisual(false);
+    }
+  };
+
+  const handleAddSlide = () => {
+    if (!visualConfig) return;
+    const newSlide = {
+      id: Date.now(),
+      badge: 'NUEVA SOLUCIÓN DACAS',
+      badgeIcon: '🚀',
+      titleLine1: 'Título de la Solución',
+      titleLine2: 'Hardware & Licencias Oficiales',
+      titleColor: '#0fa4de',
+      desc: 'Descripción destacada de la tecnología, marcas y servicios de valor agregado para integradores.',
+      primaryBtn: { text: 'Ver Catálogo', cat: 'all' },
+      secondaryBtn: { text: 'Consultar Stock', cat: 'all' },
+      type: 'metrics',
+      metrics: [
+        { value: 'Entrega Inmediata', label: 'Stock Regional' },
+        { value: 'Garantía Oficial', label: 'Respaldo DACAS' },
+        { value: 'Soporte 24/7', label: 'Preventa Certificada' }
+      ]
+    };
+    const updatedSlides = [...(visualConfig.heroSlides || []), newSlide];
+    setVisualConfig({ ...visualConfig, heroSlides: updatedSlides });
+    setEditingSlideIdx(updatedSlides.length - 1);
+  };
+
+  const handleDeleteSlide = (index) => {
+    if (!visualConfig || (visualConfig.heroSlides || []).length <= 1) {
+      alert('Debe existir al menos un banner en el carousel del Shop.');
+      return;
+    }
+    const updated = visualConfig.heroSlides.filter((_, idx) => idx !== index);
+    setVisualConfig({ ...visualConfig, heroSlides: updated });
+    setEditingSlideIdx(Math.max(0, index - 1));
+  };
+
+  const handleMoveSlide = (index, direction) => {
+    if (!visualConfig || !visualConfig.heroSlides) return;
+    const slides = [...visualConfig.heroSlides];
+    const targetIdx = index + direction;
+    if (targetIdx < 0 || targetIdx >= slides.length) return;
+    const temp = slides[index];
+    slides[index] = slides[targetIdx];
+    slides[targetIdx] = temp;
+    setVisualConfig({ ...visualConfig, heroSlides: slides });
+    setEditingSlideIdx(targetIdx);
+  };
+
+  const handleUpdateSlideField = (index, field, value) => {
+    if (!visualConfig || !visualConfig.heroSlides) return;
+    const slides = [...visualConfig.heroSlides];
+    slides[index] = { ...slides[index], [field]: value };
+    setVisualConfig({ ...visualConfig, heroSlides: slides });
+  };
+
+  const handleUpdateSlideBtn = (index, btnType, field, value) => {
+    if (!visualConfig || !visualConfig.heroSlides) return;
+    const slides = [...visualConfig.heroSlides];
+    const btn = slides[index][btnType] || {};
+    slides[index] = {
+      ...slides[index],
+      [btnType]: { ...btn, [field]: value }
+    };
+    setVisualConfig({ ...visualConfig, heroSlides: slides });
+  };
+
+  const handleUpdateSlideMetric = (slideIdx, metricIdx, field, value) => {
+    if (!visualConfig || !visualConfig.heroSlides) return;
+    const slides = [...visualConfig.heroSlides];
+    const metrics = [...(slides[slideIdx].metrics || [])];
+    metrics[metricIdx] = { ...metrics[metricIdx], [field]: value };
+    slides[slideIdx] = { ...slides[slideIdx], metrics };
+    setVisualConfig({ ...visualConfig, heroSlides: slides });
+  };
 
   const fetchProducts = async () => {
     try {
@@ -694,7 +838,7 @@ function AdminEcommerce() {
       [
         'Fortinet FortiGate 60F NGFW',
         'Fortinet',
-        'ciberseguridad',
+        'security',
         'FG-60F-BDL-950-12',
         '890.00',
         '845.00',
@@ -703,25 +847,25 @@ function AdminEcommerce() {
         'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1000'
       ],
       [
-        'Cisco Catalyst C9200L 24P PoE+',
-        'Cisco',
+        'MikroTik Cloud Router Switch 24P PoE+',
+        'MikroTik',
         'networking',
-        'C9200L-24P-4X-E',
-        '1650.00',
-        '',
+        'CRS328-24P-4S',
+        '480.00',
+        '449.00',
         '22',
-        'Switch administrable de 24 puertos Gigabit PoE+ 370W con 4 uplinks fijos 10G SFP+',
+        'Switch administrable de 24 puertos Gigabit PoE+ dual 802.3af/at con 4 uplinks fijos 10G SFP+',
         'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000'
       ],
       [
-        'Ubiquiti UniFi Dream Machine Pro',
-        'Ubiquiti',
+        'Aruba Instant On AP22 Wi-Fi 6',
+        'Aruba',
         'networking',
-        'UDM-PRO-ENT',
-        '520.00',
+        'R4W02A-AP22',
+        '195.00',
         '',
         '35',
-        'Consola de red todo en uno: Security Gateway 10G SFP+ y controlador UniFi OS integrado',
+        'Access Point Wi-Fi 6 MU-MIMO para alta densidad de clientes y gestión centralizada en la nube',
         'https://images.unsplash.com/photo-1563770660941-20978e870e26?q=80&w=1000'
       ],
       [
@@ -1019,6 +1163,7 @@ function AdminEcommerce() {
           </button>
           <button className={`tab-btn${activeTab === 'orders' ? ' active' : ''}`} onClick={() => setActiveTab('orders')}>📋 Órdenes</button>
           <button className={`tab-btn${activeTab === 'reportes' ? ' active' : ''}`} onClick={() => setActiveTab('reportes')}>📊 Reportería</button>
+          <button className={`tab-btn${activeTab === 'visual' ? ' active' : ''}`} onClick={() => setActiveTab('visual')}>🎨 Personalización Shop</button>
         </div>
 
         {error && <div style={{ color: 'red', marginBottom: '20px' }}>{error}</div>}
@@ -1401,12 +1546,16 @@ function AdminEcommerce() {
                       >
                         <option value="">Aplica a todas las marcas</option>
                         <option value="Fortinet">Fortinet</option>
-                        <option value="Cisco">Cisco</option>
-                        <option value="Ubiquiti">Ubiquiti</option>
+                        <option value="AudioCodes">AudioCodes</option>
+                        <option value="Avaya">Avaya</option>
                         <option value="MikroTik">MikroTik</option>
                         <option value="Aruba">Aruba Networks</option>
-                        <option value="Dell Technologies">Dell Technologies</option>
-                        <option value="Palo Alto Networks">Palo Alto Networks</option>
+                        <option value="Vertiv">Vertiv</option>
+                        <option value="Panduit">Panduit</option>
+                        <option value="CommScope">CommScope</option>
+                        <option value="Eaton">Eaton</option>
+                        <option value="Sophos">Sophos</option>
+                        <option value="SonicWall">SonicWall</option>
                         <option value="Microsoft">Microsoft</option>
                         <option value="Dacas">Dacas Eventos / Soluciones</option>
                       </select>
@@ -2336,6 +2485,965 @@ function AdminEcommerce() {
               </div>
             )}
           </>
+        )}
+
+        {/* ═══════════════ VISUAL & SHOP CUSTOMIZATION ═══════════════ */}
+        {activeTab === 'visual' && (
+          <section className="board-section" style={{ maxWidth: '1280px', margin: '0 auto' }}>
+            
+            {/* ── Header & Action Toolbar ── */}
+            <div style={{
+              background: '#FFFFFF',
+              borderRadius: '20px',
+              padding: '24px 28px',
+              border: '1px solid #E2E8F0',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
+              marginBottom: '24px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '20px',
+              flexWrap: 'wrap'
+            }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                  <span style={{ fontSize: '26px' }}>🎨</span>
+                  <h2 style={{ margin: 0, fontSize: '1.45rem', fontWeight: '900', color: '#0F172A', letterSpacing: '-0.02em' }}>
+                    Personalización Visual del Shop
+                  </h2>
+                  <span style={{
+                    background: 'linear-gradient(135deg, rgba(15, 164, 222, 0.15), rgba(2, 132, 199, 0.2))',
+                    color: '#0284c7',
+                    fontWeight: '800',
+                    fontSize: '11px',
+                    padding: '3px 10px',
+                    borderRadius: '999px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em'
+                  }}>
+                    CMS B2B Live
+                  </span>
+                </div>
+                <p style={{ margin: 0, color: '#64748B', fontSize: '13.5px', maxWidth: '650px' }}>
+                  Edita y personaliza en tiempo real los banners principales del carousel, textos de cabecera, anuncios de cobertura, categorías activas y marcas asignadas.
+                </p>
+              </div>
+
+              {/* Action Buttons */}
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() => window.open('/shop', '_blank')}
+                  style={{
+                    background: '#F8FAFC',
+                    color: '#0F172A',
+                    border: '1px solid #CBD5E1',
+                    borderRadius: '12px',
+                    padding: '11px 18px',
+                    fontWeight: '700',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.background = '#E2E8F0'}
+                  onMouseLeave={(e) => e.currentTarget.style.background = '#F8FAFC'}
+                >
+                  <span>👁️</span> Previsualizar en Shop
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleResetVisualSettings}
+                  disabled={isSavingVisual}
+                  style={{
+                    background: '#FEF2F2',
+                    color: '#DC2626',
+                    border: '1px solid #FECACA',
+                    borderRadius: '12px',
+                    padding: '11px 16px',
+                    fontWeight: '700',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                  title="Restaura la configuración oficial de DACAS"
+                >
+                  <span>🔄</span> Restaurar Oficial
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleSaveVisualSettings}
+                  disabled={isSavingVisual}
+                  style={{
+                    background: 'linear-gradient(135deg, #0fa4de, #0284c7)',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '11px 22px',
+                    fontWeight: '800',
+                    fontSize: '13.5px',
+                    cursor: isSavingVisual ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 4px 14px rgba(15, 164, 222, 0.35)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'transform 0.2s'
+                  }}
+                  onMouseEnter={(e) => { if (!isSavingVisual) e.currentTarget.style.transform = 'translateY(-1px)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; }}
+                >
+                  {isSavingVisual ? (
+                    <><span>⏳</span> Guardando...</>
+                  ) : (
+                    <><span>💾</span> Guardar Cambios</>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Success Toast */}
+            {visualSaveSuccess && (
+              <div style={{
+                background: '#DCFCE7',
+                border: '1px solid #86EFAC',
+                color: '#166534',
+                padding: '14px 20px',
+                borderRadius: '14px',
+                marginBottom: '20px',
+                fontSize: '13.5px',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                boxShadow: '0 4px 12px rgba(22, 101, 52, 0.1)'
+              }}>
+                <span style={{ fontSize: '18px' }}>✅</span>
+                <span>¡Diseño y configuración visual del Shop actualizados correctamente en tiempo real!</span>
+              </div>
+            )}
+
+            {visualConfig ? (
+              <div>
+                {/* ── Sub-Tab Navigation Bar ── */}
+                <div style={{
+                  display: 'flex',
+                  gap: '8px',
+                  background: '#F1F5F9',
+                  padding: '6px',
+                  borderRadius: '16px',
+                  marginBottom: '24px',
+                  overflowX: 'auto'
+                }}>
+                  {[
+                    { id: 'hero', label: '🚀 Carousel de Banners (Hero)', desc: `${(visualConfig.heroSlides || []).length} Slides Activos` },
+                    { id: 'announcement', label: '📢 Anuncio & Barra Superior', desc: 'Mensaje de cobertura' },
+                    { id: 'categories', label: '🏷️ 4 Categorías del Shop', desc: 'Títulos, íconos y orden' },
+                    { id: 'brands', label: '🏭 Marcas por Categoría', desc: 'Fabricantes autorizados' },
+                    { id: 'contact', label: '📞 Contacto B2B & WhatsApp', desc: 'Canales de atención' }
+                  ].map(tab => (
+                    <button
+                      key={tab.id}
+                      type="button"
+                      onClick={() => setVisualSubTab(tab.id)}
+                      style={{
+                        flex: 1,
+                        minWidth: '180px',
+                        background: visualSubTab === tab.id ? '#FFFFFF' : 'transparent',
+                        border: 'none',
+                        borderRadius: '12px',
+                        padding: '10px 16px',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        boxShadow: visualSubTab === tab.id ? '0 2px 8px rgba(0,0,0,0.06)' : 'none',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      <div style={{ fontWeight: '800', fontSize: '13px', color: visualSubTab === tab.id ? '#0284c7' : '#334155' }}>
+                        {tab.label}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#64748B', marginTop: '2px', fontWeight: '500' }}>
+                        {tab.desc}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* ── SUBTAB 1: HERO CAROUSEL ── */}
+                {visualSubTab === 'hero' && (
+                  <div>
+                    {/* Live Slide Preview Box */}
+                    {visualConfig.heroSlides && visualConfig.heroSlides.length > 0 && (() => {
+                      const slide = visualConfig.heroSlides[editingSlideIdx] || visualConfig.heroSlides[0];
+                      return (
+                        <div style={{
+                          background: '#071524',
+                          borderRadius: '20px',
+                          padding: '30px',
+                          color: '#FFFFFF',
+                          marginBottom: '24px',
+                          border: '1px solid rgba(15, 164, 222, 0.3)',
+                          boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+                          position: 'relative',
+                          overflow: 'hidden'
+                        }}>
+                          <div style={{
+                            position: 'absolute',
+                            top: '12px',
+                            right: '16px',
+                            background: 'rgba(15, 164, 222, 0.2)',
+                            color: '#38bdf8',
+                            fontSize: '11px',
+                            fontWeight: '800',
+                            padding: '3px 10px',
+                            borderRadius: '999px',
+                            letterSpacing: '0.05em'
+                          }}>
+                            VISTA PREVIA EN VIVO (SLIDE #{editingSlideIdx + 1})
+                          </div>
+
+                          <div style={{ maxWidth: '900px' }}>
+                            <div style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              background: 'rgba(15, 164, 222, 0.15)',
+                              border: `1px solid ${slide.titleColor || '#0fa4de'}`,
+                              color: slide.titleColor || '#38bdf8',
+                              fontSize: '11.5px',
+                              fontWeight: '700',
+                              padding: '4px 12px',
+                              borderRadius: '999px',
+                              marginBottom: '12px'
+                            }}>
+                              <span>{slide.badgeIcon || '🛡️'}</span> {slide.badge || 'BADGE DEL BANNER'}
+                            </div>
+
+                            <h3 style={{ margin: '0 0 10px', fontSize: '1.75rem', fontWeight: '900', lineHeight: 1.2 }}>
+                              {slide.titleLine1 || 'Título Línea 1'} <br />
+                              <span style={{ color: slide.titleColor || '#0fa4de' }}>
+                                {slide.titleLine2 || 'Título Línea 2'}
+                              </span>
+                            </h3>
+
+                            <p style={{ color: '#94A3B8', fontSize: '13.5px', lineHeight: 1.5, margin: '0 0 18px', maxWidth: '650px' }}>
+                              {slide.desc || 'Descripción del slide para el cliente'}
+                            </p>
+
+                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                              {slide.primaryBtn?.text && (
+                                <span style={{
+                                  background: 'linear-gradient(135deg, #0fa4de, #0284c7)',
+                                  color: '#fff',
+                                  padding: '8px 18px',
+                                  borderRadius: '999px',
+                                  fontSize: '12.5px',
+                                  fontWeight: '700'
+                                }}>
+                                  {slide.primaryBtn.text} →
+                                </span>
+                              )}
+                              {slide.secondaryBtn?.text && (
+                                <span style={{
+                                  background: 'rgba(255,255,255,0.1)',
+                                  border: '1px solid rgba(15, 164, 222, 0.3)',
+                                  color: '#fff',
+                                  padding: '8px 18px',
+                                  borderRadius: '999px',
+                                  fontSize: '12.5px',
+                                  fontWeight: '600'
+                                }}>
+                                  {slide.secondaryBtn.text}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })()}
+
+                    {/* Slides Grid Selector & Slide Form */}
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+                      
+                      {/* Left: Slides List */}
+                      <div style={{ background: '#FFFFFF', padding: '20px', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                          <h4 style={{ margin: 0, fontSize: '14px', fontWeight: '800', color: '#0F172A' }}>
+                            Diapositivas Activas ({visualConfig.heroSlides?.length || 0})
+                          </h4>
+                          <button
+                            type="button"
+                            onClick={handleAddSlide}
+                            style={{
+                              background: '#E0F2FE',
+                              color: '#0369A1',
+                              border: '1px solid #BAE6FD',
+                              borderRadius: '8px',
+                              padding: '6px 12px',
+                              fontSize: '12px',
+                              fontWeight: '700',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                          >
+                            ➕ Nuevo Slide
+                          </button>
+                        </div>
+
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          {visualConfig.heroSlides?.map((s, idx) => {
+                            const isSelected = editingSlideIdx === idx;
+                            return (
+                              <div
+                                key={s.id || idx}
+                                onClick={() => setEditingSlideIdx(idx)}
+                                style={{
+                                  padding: '14px 16px',
+                                  borderRadius: '12px',
+                                  background: isSelected ? '#F0F9FF' : '#F8FAFC',
+                                  border: isSelected ? '2px solid #0284c7' : '1px solid #E2E8F0',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  gap: '12px',
+                                  transition: 'all 0.15s'
+                                }}
+                              >
+                                <div style={{ minWidth: 0 }}>
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '800', color: s.titleColor || '#0284c7' }}>
+                                    <span>{s.badgeIcon || '🛡️'}</span>
+                                    <span>SLIDE #{idx + 1}</span>
+                                    {isSelected && <span style={{ color: '#0369A1' }}>• Editando</span>}
+                                  </div>
+                                  <div style={{ fontWeight: '700', fontSize: '13px', color: '#0F172A', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                    {s.titleLine1 || 'Sin título'}
+                                  </div>
+                                </div>
+
+                                <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }} onClick={(e) => e.stopPropagation()}>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMoveSlide(idx, -1)}
+                                    disabled={idx === 0}
+                                    style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '4px 7px', cursor: idx === 0 ? 'not-allowed' : 'pointer', fontSize: '12px' }}
+                                    title="Mover arriba"
+                                  >
+                                    ⬆️
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleMoveSlide(idx, 1)}
+                                    disabled={idx === visualConfig.heroSlides.length - 1}
+                                    style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '4px 7px', cursor: idx === visualConfig.heroSlides.length - 1 ? 'not-allowed' : 'pointer', fontSize: '12px' }}
+                                    title="Mover abajo"
+                                  >
+                                    ⬇️
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteSlide(idx)}
+                                    style={{ background: '#FEE2E2', border: '1px solid #FECACA', color: '#DC2626', borderRadius: '6px', padding: '4px 7px', cursor: 'pointer', fontSize: '12px' }}
+                                    title="Eliminar slide"
+                                  >
+                                    🗑️
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Right: Slide Editor Form */}
+                      {visualConfig.heroSlides && visualConfig.heroSlides[editingSlideIdx] && (() => {
+                        const cur = visualConfig.heroSlides[editingSlideIdx];
+                        return (
+                          <div style={{ background: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+                            <h4 style={{ margin: '0 0 16px', fontSize: '14px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span>✏️</span> Editando Slide #{editingSlideIdx + 1}: {cur.titleLine1}
+                            </h4>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '14px' }}>
+                              <div>
+                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '5px' }}>
+                                  Ícono / Emoji del Badge
+                                </label>
+                                <input
+                                  type="text"
+                                  value={cur.badgeIcon || ''}
+                                  onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'badgeIcon', e.target.value)}
+                                  style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                                  placeholder="🛡️"
+                                />
+                              </div>
+                              <div>
+                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '5px' }}>
+                                  Texto del Badge Superior
+                                </label>
+                                <input
+                                  type="text"
+                                  value={cur.badge || ''}
+                                  onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'badge', e.target.value)}
+                                  style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                                  placeholder="DISTRIBUIDOR OFICIAL MAYORISTA"
+                                />
+                              </div>
+                            </div>
+
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '14px' }}>
+                              <div>
+                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '5px' }}>
+                                  Título Línea 1
+                                </label>
+                                <input
+                                  type="text"
+                                  value={cur.titleLine1 || ''}
+                                  onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'titleLine1', e.target.value)}
+                                  style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px', fontWeight: '700' }}
+                                  placeholder="Equipamiento IT, Redes"
+                                />
+                              </div>
+                              <div>
+                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '5px' }}>
+                                  Título Línea 2 (Color Resaltado)
+                                </label>
+                                <input
+                                  type="text"
+                                  value={cur.titleLine2 || ''}
+                                  onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'titleLine2', e.target.value)}
+                                  style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px', fontWeight: '700' }}
+                                  placeholder="& Ciberseguridad Enterprise"
+                                />
+                              </div>
+                            </div>
+
+                            {/* Color Picker & Presets */}
+                            <div style={{ marginBottom: '14px' }}>
+                              <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                                Color de Acento del Título
+                              </label>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                                <input
+                                  type="color"
+                                  value={cur.titleColor || '#0fa4de'}
+                                  onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'titleColor', e.target.value)}
+                                  style={{ width: '40px', height: '36px', borderRadius: '8px', border: '1px solid #CBD5E1', cursor: 'pointer', padding: '2px' }}
+                                />
+                                {[
+                                  { color: '#0fa4de', label: 'Cyan DACAS' },
+                                  { color: '#10b981', label: 'Verde Esmeralda' },
+                                  { color: '#38bdf8', label: 'Azul Sky' },
+                                  { color: '#f59e0b', label: 'Ámbar' },
+                                  { color: '#6366f1', label: 'Índigo' },
+                                  { color: '#EE3124', label: 'Rojo Fortinet' }
+                                ].map(p => (
+                                  <button
+                                    key={p.color}
+                                    type="button"
+                                    onClick={() => handleUpdateSlideField(editingSlideIdx, 'titleColor', p.color)}
+                                    style={{
+                                      background: cur.titleColor === p.color ? p.color : '#F1F5F9',
+                                      color: cur.titleColor === p.color ? '#FFF' : '#334155',
+                                      border: `1px solid ${cur.titleColor === p.color ? p.color : '#CBD5E1'}`,
+                                      borderRadius: '8px',
+                                      padding: '5px 10px',
+                                      fontSize: '11.5px',
+                                      fontWeight: '700',
+                                      cursor: 'pointer'
+                                    }}
+                                  >
+                                    <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: p.color, marginRight: '4px' }}></span>
+                                    {p.label}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Description */}
+                            <div style={{ marginBottom: '14px' }}>
+                              <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '5px' }}>
+                                Descripción del Slide
+                              </label>
+                              <textarea
+                                value={cur.desc || ''}
+                                onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'desc', e.target.value)}
+                                rows={3}
+                                style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px', resize: 'vertical' }}
+                                placeholder="Texto explicativo para los clientes..."
+                              />
+                            </div>
+
+                            {/* Buttons */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
+                              <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                                <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '800', color: '#0284c7', marginBottom: '6px' }}>
+                                  🔘 Botón Primario
+                                </label>
+                                <input
+                                  type="text"
+                                  value={cur.primaryBtn?.text || ''}
+                                  onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'primaryBtn', 'text', e.target.value)}
+                                  placeholder="Texto botón (ej: Ver Networking)"
+                                  style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12.5px', marginBottom: '6px' }}
+                                />
+                                <select
+                                  value={cur.primaryBtn?.cat || 'all'}
+                                  onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'primaryBtn', 'cat', e.target.value)}
+                                  style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12.5px' }}
+                                >
+                                  <option value="all">Ir a: Todo el Catálogo</option>
+                                  <option value="networking">Ir a: Networking</option>
+                                  <option value="infraestructura">Ir a: Infraestructura</option>
+                                  <option value="comunicaciones_unificadas">Ir a: Comunicaciones Unificadas</option>
+                                  <option value="security">Ir a: Seguridad</option>
+                                </select>
+                              </div>
+
+                              <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                                <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '800', color: '#64748B', marginBottom: '6px' }}>
+                                  🔘 Botón Secundario
+                                </label>
+                                <input
+                                  type="text"
+                                  value={cur.secondaryBtn?.text || ''}
+                                  onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'secondaryBtn', 'text', e.target.value)}
+                                  placeholder="Texto botón (ej: Consultar Stock)"
+                                  style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12.5px', marginBottom: '6px' }}
+                                />
+                                <select
+                                  value={cur.secondaryBtn?.cat || 'all'}
+                                  onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'secondaryBtn', 'cat', e.target.value)}
+                                  style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12.5px' }}
+                                >
+                                  <option value="all">Ir a: Todo el Catálogo</option>
+                                  <option value="networking">Ir a: Networking</option>
+                                  <option value="infraestructura">Ir a: Infraestructura</option>
+                                  <option value="comunicaciones_unificadas">Ir a: Comunicaciones Unificadas</option>
+                                  <option value="security">Ir a: Seguridad</option>
+                                </select>
+                              </div>
+                            </div>
+
+                            {/* Metrics (3 boxes) */}
+                            {cur.type !== 'animated_stats' && (
+                              <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', color: '#0F172A', marginBottom: '8px' }}>
+                                  📊 3 Métricas Destacadas del Banner
+                                </label>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
+                                  {[0, 1, 2].map(mIdx => {
+                                    const m = cur.metrics?.[mIdx] || { value: '', label: '' };
+                                    return (
+                                      <div key={mIdx} style={{ background: '#FFFFFF', padding: '8px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                                        <input
+                                          type="text"
+                                          value={m.value || ''}
+                                          onChange={(e) => handleUpdateSlideMetric(editingSlideIdx, mIdx, 'value', e.target.value)}
+                                          placeholder="Valor (ej: 1.4 Gbps)"
+                                          style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', fontWeight: '700', marginBottom: '4px' }}
+                                        />
+                                        <input
+                                          type="text"
+                                          value={m.label || ''}
+                                          onChange={(e) => handleUpdateSlideMetric(editingSlideIdx, mIdx, 'label', e.target.value)}
+                                          placeholder="Etiqueta (ej: Uptime)"
+                                          style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '11px', color: '#64748B' }}
+                                        />
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            )}
+
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── SUBTAB 2: ANNOUNCEMENT & HEADER ── */}
+                {visualSubTab === 'announcement' && (
+                  <div style={{ background: '#FFFFFF', padding: '28px', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+                    <h3 style={{ margin: '0 0 18px', fontSize: '1.1rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span>📢</span> Configuración de la Barra Superior & Textos de Cabecera
+                    </h3>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', background: '#F8FAFC', padding: '14px 18px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+                      <input
+                        type="checkbox"
+                        id="toggleAnnouncement"
+                        checked={visualConfig.announcement?.enabled !== false}
+                        onChange={(e) => setVisualConfig({
+                          ...visualConfig,
+                          announcement: { ...(visualConfig.announcement || {}), enabled: e.target.checked }
+                        })}
+                        style={{ width: '18px', height: '18px', cursor: 'pointer' }}
+                      />
+                      <label htmlFor="toggleAnnouncement" style={{ fontWeight: '700', fontSize: '13.5px', color: '#0F172A', cursor: 'pointer' }}>
+                        Mostrar Barra Superior de Anuncios y Cobertura Regional
+                      </label>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '18px' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                          Texto del Anuncio Regional
+                        </label>
+                        <input
+                          type="text"
+                          value={visualConfig.announcement?.text || ''}
+                          onChange={(e) => setVisualConfig({
+                            ...visualConfig,
+                            announcement: { ...(visualConfig.announcement || {}), text: e.target.value }
+                          })}
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                          placeholder="Distribución Oficial y Soporte Certificado en 12 Países..."
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                          Teléfono de Atención en Cabecera
+                        </label>
+                        <input
+                          type="text"
+                          value={visualConfig.general?.contactPhone || ''}
+                          onChange={(e) => setVisualConfig({
+                            ...visualConfig,
+                            general: { ...(visualConfig.general || {}), contactPhone: e.target.value }
+                          })}
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                          placeholder="+54 11 4110-3300"
+                        />
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                          Título de la Tienda (Header)
+                        </label>
+                        <input
+                          type="text"
+                          value={visualConfig.general?.shopTitle || ''}
+                          onChange={(e) => setVisualConfig({
+                            ...visualConfig,
+                            general: { ...(visualConfig.general || {}), shopTitle: e.target.value }
+                          })}
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                          placeholder="DACAS B2B Shop"
+                        />
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                          Subtítulo de la Tienda (Header)
+                        </label>
+                        <input
+                          type="text"
+                          value={visualConfig.general?.shopSubtitle || ''}
+                          onChange={(e) => setVisualConfig({
+                            ...visualConfig,
+                            general: { ...(visualConfig.general || {}), shopSubtitle: e.target.value }
+                          })}
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                          placeholder="Plataforma Corporativa de Soluciones IT..."
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* ── SUBTAB 3: CATEGORIES ── */}
+                {visualSubTab === 'categories' && (
+                  <div style={{ background: '#FFFFFF', padding: '28px', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>🏷️</span> Las 4 Secciones Principales del Shop
+                        </h3>
+                        <p style={{ margin: '4px 0 0', color: '#64748B', fontSize: '13px' }}>
+                          Personaliza el nombre, ícono y descripción visible para los integradores y clientes.
+                        </p>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '18px' }}>
+                      {(visualConfig.categories || []).map((cat, idx) => (
+                        <div
+                          key={cat.key || idx}
+                          style={{
+                            background: '#F8FAFC',
+                            padding: '20px',
+                            borderRadius: '14px',
+                            border: '1px solid #E2E8F0',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '12px'
+                          }}
+                        >
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span style={{ fontSize: '12px', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                              SECCIÓN #{idx + 1} ({cat.key})
+                            </span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <input
+                                type="checkbox"
+                                id={`cat-enabled-${idx}`}
+                                checked={cat.enabled !== false}
+                                onChange={(e) => {
+                                  const updatedCats = [...visualConfig.categories];
+                                  updatedCats[idx] = { ...updatedCats[idx], enabled: e.target.checked };
+                                  setVisualConfig({ ...visualConfig, categories: updatedCats });
+                                }}
+                                style={{ cursor: 'pointer' }}
+                              />
+                              <label htmlFor={`cat-enabled-${idx}`} style={{ fontSize: '11px', fontWeight: '700', color: '#475569', cursor: 'pointer' }}>
+                                Activa
+                              </label>
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: '60px 1fr', gap: '10px' }}>
+                            <div>
+                              <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                                Ícono
+                              </label>
+                              <input
+                                type="text"
+                                value={cat.icon || ''}
+                                onChange={(e) => {
+                                  const updatedCats = [...visualConfig.categories];
+                                  updatedCats[idx] = { ...updatedCats[idx], icon: e.target.value };
+                                  setVisualConfig({ ...visualConfig, categories: updatedCats });
+                                }}
+                                style={{ width: '100%', textAlign: 'center', padding: '8px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '16px' }}
+                              />
+                            </div>
+                            <div>
+                              <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                                Nombre de la Categoría
+                              </label>
+                              <input
+                                type="text"
+                                value={cat.name || cat.label || ''}
+                                onChange={(e) => {
+                                  const updatedCats = [...visualConfig.categories];
+                                  updatedCats[idx] = { ...updatedCats[idx], name: e.target.value, label: e.target.value };
+                                  setVisualConfig({ ...visualConfig, categories: updatedCats });
+                                }}
+                                style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', fontWeight: '700' }}
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                              Descripción Breve
+                            </label>
+                            <textarea
+                              value={cat.desc || ''}
+                              onChange={(e) => {
+                                const updatedCats = [...visualConfig.categories];
+                                updatedCats[idx] = { ...updatedCats[idx], desc: e.target.value };
+                                setVisualConfig({ ...visualConfig, categories: updatedCats });
+                              }}
+                              rows={2}
+                              style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12px', resize: 'vertical' }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── SUBTAB 4: BRANDS PER CATEGORY ── */}
+                {visualSubTab === 'brands' && (
+                  <div style={{ background: '#FFFFFF', padding: '28px', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+                    <h3 style={{ margin: '0 0 18px', fontSize: '1.1rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span>🏭</span> Fabricantes / Marcas Asignadas por Sección
+                    </h3>
+                    <p style={{ margin: '0 0 20px', color: '#64748B', fontSize: '13px' }}>
+                      Gestiona qué marcas aparecen en el selector previo antes de mostrar los productos de cada categoría.
+                    </p>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px' }}>
+                      {[
+                        { key: 'networking', title: '🌐 Networking' },
+                        { key: 'infraestructura', title: '⚡ Infraestructura' },
+                        { key: 'comunicaciones_unificadas', title: '📞 Comunicaciones Unificadas' },
+                        { key: 'security', title: '🛡️ Seguridad' }
+                      ].map(group => {
+                        const brandsList = (visualConfig.categoryBrands && visualConfig.categoryBrands[group.key]) || [];
+                        return (
+                          <div
+                            key={group.key}
+                            style={{
+                              background: '#F8FAFC',
+                              padding: '20px',
+                              borderRadius: '14px',
+                              border: '1px solid #E2E8F0'
+                            }}
+                          >
+                            <h4 style={{ margin: '0 0 12px', fontSize: '13.5px', fontWeight: '800', color: '#0F172A' }}>
+                              {group.title} ({brandsList.length})
+                            </h4>
+
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '14px' }}>
+                              {brandsList.map((brandKey, bIdx) => (
+                                <span
+                                  key={bIdx}
+                                  style={{
+                                    background: '#FFFFFF',
+                                    border: '1px solid #CBD5E1',
+                                    padding: '4px 10px',
+                                    borderRadius: '8px',
+                                    fontSize: '12px',
+                                    fontWeight: '700',
+                                    color: '#0F172A',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px'
+                                  }}
+                                >
+                                  {brandKey.toUpperCase()}
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      const updatedMap = { ...(visualConfig.categoryBrands || {}) };
+                                      updatedMap[group.key] = brandsList.filter((_, i) => i !== bIdx);
+                                      setVisualConfig({ ...visualConfig, categoryBrands: updatedMap });
+                                    }}
+                                    style={{
+                                      background: 'transparent',
+                                      border: 'none',
+                                      color: '#94A3B8',
+                                      cursor: 'pointer',
+                                      padding: '0',
+                                      fontWeight: '900',
+                                      fontSize: '11px'
+                                    }}
+                                    onMouseEnter={(e) => e.currentTarget.style.color = '#DC2626'}
+                                    onMouseLeave={(e) => e.currentTarget.style.color = '#94A3B8'}
+                                    title="Quitar marca"
+                                  >
+                                    ✕
+                                  </button>
+                                </span>
+                              ))}
+                            </div>
+
+                            {/* Add Brand Input */}
+                            <div style={{ display: 'flex', gap: '6px' }}>
+                              <input
+                                type="text"
+                                placeholder="Añadir marca (ej: sophos)"
+                                id={`new-brand-input-${group.key}`}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    const val = e.target.value.trim().toLowerCase();
+                                    if (val && !brandsList.includes(val)) {
+                                      const updatedMap = { ...(visualConfig.categoryBrands || {}) };
+                                      updatedMap[group.key] = [...brandsList, val];
+                                      setVisualConfig({ ...visualConfig, categoryBrands: updatedMap });
+                                      e.target.value = '';
+                                    }
+                                  }
+                                }}
+                                style={{ flex: 1, padding: '7px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12px' }}
+                              />
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  const input = document.getElementById(`new-brand-input-${group.key}`);
+                                  if (input) {
+                                    const val = input.value.trim().toLowerCase();
+                                    if (val && !brandsList.includes(val)) {
+                                      const updatedMap = { ...(visualConfig.categoryBrands || {}) };
+                                      updatedMap[group.key] = [...brandsList, val];
+                                      setVisualConfig({ ...visualConfig, categoryBrands: updatedMap });
+                                      input.value = '';
+                                    }
+                                  }
+                                }}
+                                style={{ background: '#0284c7', color: '#fff', border: 'none', borderRadius: '8px', padding: '7px 12px', fontSize: '12px', fontWeight: '700', cursor: 'pointer' }}
+                              >
+                                + Añadir
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── SUBTAB 5: CONTACT & WHATSAPP ── */}
+                {visualSubTab === 'contact' && (
+                  <div style={{ background: '#FFFFFF', padding: '28px', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+                    <h3 style={{ margin: '0 0 18px', fontSize: '1.1rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span>📞</span> Canales de Atención Directa y Cotización B2B
+                    </h3>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      <div>
+                        <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                          WhatsApp Corporativo (con código de país)
+                        </label>
+                        <input
+                          type="text"
+                          value={visualConfig.general?.whatsappNumber || ''}
+                          onChange={(e) => setVisualConfig({
+                            ...visualConfig,
+                            general: { ...(visualConfig.general || {}), whatsappNumber: e.target.value }
+                          })}
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                          placeholder="+5491141103300"
+                        />
+                        <p style={{ margin: '4px 0 0', fontSize: '11px', color: '#64748B' }}>
+                          Permite a los integradores enviar sus carritos de cotización directo a WhatsApp.
+                        </p>
+                      </div>
+
+                      <div>
+                        <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                          Email de Ventas & Preventa
+                        </label>
+                        <input
+                          type="email"
+                          value={visualConfig.general?.contactEmail || ''}
+                          onChange={(e) => setVisualConfig({
+                            ...visualConfig,
+                            general: { ...(visualConfig.general || {}), contactEmail: e.target.value }
+                          })}
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                          placeholder="ventas@dacas.com"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            ) : (
+              <div style={{ padding: '40px', textAlign: 'center', color: '#64748B' }}>
+                Cargando configuración visual del Shop...
+              </div>
+            )}
+
+          </section>
         )}
 
       </main>

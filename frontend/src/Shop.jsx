@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 
@@ -22,7 +22,7 @@ const MOCK_PRODUCTS = [
       'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1000&auto=format&fit=crop'
     ],
-    category: 'ciberseguridad',
+    category: 'security',
     sku: 'FG-60F-BDL',
     weight: '1.2',
     width: '21.6',
@@ -31,22 +31,21 @@ const MOCK_PRODUCTS = [
   },
   {
     id: 2,
-    name: 'Switch Gestionable Gigabit 24 Puertos PoE+ Cisco Catalyst',
-    brand: 'Cisco',
-    description: '<p>Switch empresarial capa 2/3 con capacidad de alimentación PoE+ de 370W. Ideal para infraestructura de cámaras IP, puntos de acceso Wi-Fi y telefonía VoIP con gestión centralizada en la nube.</p><ul><li>Puertos: 24 x 10/100/1000 Mbps PoE+</li><li>Uplinks: 4 x 10G SFP+</li><li>Capacidad de conmutación: 128 Gbps</li></ul>',
-    price: 1290,
-    promotional_price: 1199,
-    stock: 15,
+    name: 'Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router',
+    brand: 'MikroTik',
+    description: '<p>Switch empresarial capa 2/3 con 24 puertos Gigabit PoE dual 802.3af/at y 4 puertos 10G SFP+ para fibra óptica de alta velocidad.</p><ul><li>Puertos: 24 x 10/100/1000 Mbps PoE+</li><li>Uplinks: 4 x 10G SFP+</li><li>Sistema operativo: RouterOS / SwOS</li></ul>',
+    price: 480,
+    promotional_price: 449,
+    stock: 18,
     badge: 'DESTACADO',
     badgeColor: '#10b981',
     image_url: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000&auto=format&fit=crop',
     images: [
       'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1000&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1563770660941-20978e870e26?q=80&w=1000&auto=format&fit=crop'
+      'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1000&auto=format&fit=crop'
     ],
     category: 'networking',
-    sku: 'CAT-24P-POE',
+    sku: 'CRS328-24P-4S',
     weight: '4.5',
     width: '44.5',
     depth: '30.2',
@@ -54,10 +53,10 @@ const MOCK_PRODUCTS = [
   },
   {
     id: 3,
-    name: 'Punto de Acceso Wi-Fi 6 Mesh Enterprise Ubiquiti UniFi Pro',
-    brand: 'Ubiquiti',
-    description: '<p>Access Point de techo para alta densidad de clientes. Ofrece velocidades agregadas de hasta 5.3 Gbps en bandas de 2.4 GHz y 5 GHz con roaming transparente y análisis RF en tiempo real.</p><ul><li>Estándar: 802.11ax Wi-Fi 6</li><li>Cobertura: Hasta 140 m²</li><li>Conexión simultánea: +300 usuarios</li></ul>',
-    price: 240,
+    name: 'Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22',
+    brand: 'Aruba',
+    description: '<p>Access Point de techo para alta densidad corporativa. Ofrece tecnología Wi-Fi 6 MU-MIMO con gestión centralizada en la nube sin costo adicional de licencias.</p><ul><li>Estándar: 802.11ax Wi-Fi 6</li><li>Cobertura: Hasta 150 m²</li><li>Soporte Mesh Inteligente y Portal Cautivo</li></ul>',
+    price: 195,
     promotional_price: null,
     stock: 40,
     badge: 'NUEVO',
@@ -67,8 +66,8 @@ const MOCK_PRODUCTS = [
       'https://images.unsplash.com/photo-1563770660941-20978e870e26?q=80&w=1000&auto=format&fit=crop',
       'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1000&auto=format&fit=crop'
     ],
-    category: 'wifi',
-    sku: 'U6-PRO-AP',
+    category: 'networking',
+    sku: 'R4W02A-AP22',
     weight: '0.8',
     width: '19.7',
     depth: '19.7',
@@ -76,28 +75,91 @@ const MOCK_PRODUCTS = [
   },
   {
     id: 4,
-    name: 'Servidor Rack 1U Dell PowerEdge Intel Xeon 16-Core',
-    brand: 'Dell Technologies',
-    description: '<p>Servidor empresarial de alta eficiencia energética para virtualización, bases de datos y servicios en la nube híbrida. Equipado con doble fuente redundante y controladora iDRAC9 Enterprise.</p><ul><li>Procesador: Intel Xeon Silver 4314 (16C/32T)</li><li>Memoria: 64GB DDR4 ECC RDIMM (Expandible a 1TB)</li><li>Almacenamiento: 2 x 960GB SSD Enterprise NVMe</li></ul>',
-    price: 3450,
-    promotional_price: 3200,
-    stock: 8,
+    name: 'Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA',
+    brand: 'Vertiv',
+    description: '<p>UPS de alta confiabilidad factor de potencia 1.0 para centros de datos y racks críticos. Proporciona protección total contra cortes, sobretensiones y microcortes.</p><ul><li>Capacidad: 3000VA / 3000W</li><li>Topología: Online Doble Conversión</li><li>Baterías hot-swappable y tarjeta SNMP de gestión</li></ul>',
+    price: 2150,
+    promotional_price: 1980,
+    stock: 12,
     badge: 'ENTERPRISE',
     badgeColor: '#6366f1',
-    image_url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1000&auto=format&fit=crop',
+    image_url: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000&auto=format&fit=crop',
     images: [
-      'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=1000&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000&auto=format&fit=crop'
+      'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000&auto=format&fit=crop',
+      'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1000&auto=format&fit=crop'
     ],
-    category: 'servidores',
-    sku: 'PE-R450-SRV',
-    weight: '16.5',
-    width: '48.2',
-    depth: '60.5',
-    height: '4.3'
+    category: 'infraestructura',
+    sku: 'GXT5-3000IRT2UXLE',
+    weight: '28.2',
+    width: '43.0',
+    depth: '54.0',
+    height: '8.5'
   },
   {
     id: 5,
+    name: 'Teléfono IP Ejecutivo AudioCodes 450HD con Microsoft Teams',
+    brand: 'AudioCodes',
+    description: '<p>Teléfono IP de escritorio corporativo de alta gama certificado para Microsoft Teams y SIP, con pantalla táctil color de 5 pulgadas, audio HD SILK y switch Gigabit PoE integrado.</p>',
+    price: 320,
+    promotional_price: 295,
+    stock: 25,
+    badge: 'TEAMS CERT',
+    badgeColor: '#0fa4de',
+    image_url: 'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?q=80&w=1000&auto=format&fit=crop',
+    images: [
+      'https://images.unsplash.com/photo-1583863788434-e58a36330cf0?q=80&w=1000&auto=format&fit=crop'
+    ],
+    category: 'comunicaciones_unificadas',
+    sku: 'AC-450HD-TEAMS',
+    weight: '1.4',
+    width: '25.7',
+    depth: '22.8',
+    height: '9.8'
+  },
+  {
+    id: 6,
+    name: 'Sistema de Videoconferencia Avaya Collaboration Bar B109',
+    brand: 'Avaya',
+    description: '<p>Solución de colaboración y videoconferencia HD con audio OmniSound cristalino, cancelación de eco y conectividad Bluetooth/USB para salas de reuniones empresariales.</p>',
+    price: 680,
+    promotional_price: 620,
+    stock: 14,
+    badge: 'COLABORACIÓN',
+    badgeColor: '#10b981',
+    image_url: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=1000&auto=format&fit=crop',
+    images: [
+      'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=1000&auto=format&fit=crop'
+    ],
+    category: 'comunicaciones_unificadas',
+    sku: 'AVAYA-B109-HD',
+    weight: '2.1',
+    width: '60.0',
+    depth: '10.5',
+    height: '12.0'
+  },
+  {
+    id: 7,
+    name: 'Gabinete Rack Servidores 42U Panduit Net-Access Insonorizado',
+    brand: 'Panduit',
+    description: '<p>Rack para centros de datos de 42 unidades con puertas microperforadas de alta ventilación, organizadores verticales de cableado y cerraduras de seguridad integradas.</p>',
+    price: 1890,
+    promotional_price: null,
+    stock: 6,
+    badge: 'DATACENTER',
+    badgeColor: '#6366f1',
+    image_url: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000&auto=format&fit=crop',
+    images: [
+      'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000&auto=format&fit=crop'
+    ],
+    category: 'infraestructura',
+    sku: 'PANDUIT-42U-RCK',
+    weight: '98.0',
+    width: '60.0',
+    depth: '100.0',
+    height: '200.0'
+  },
+  {
+    id: 8,
     name: 'Licencia Anual Ciberseguridad Cloud & Endpoint Protection',
     brand: 'Fortinet',
     description: '<p>Suscripción anual por usuario con protección avanzada contra Ransomware, EDR (Endpoint Detection and Response), filtrado DNS y sandboxing en la nube de nivel corporativo.</p>',
@@ -110,45 +172,449 @@ const MOCK_PRODUCTS = [
     images: [
       'https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=1000&auto=format&fit=crop'
     ],
-    category: 'licencias',
+    category: 'security',
     sku: 'LIC-EDR-ANNUAL',
     weight: '0',
     width: '0',
     depth: '0',
     height: '0'
-  },
-  {
-    id: 6,
-    name: 'Ticket DACAS Tech Summit & Ciberseguridad 2026',
-    brand: 'Dacas',
-    description: '<p>Pase VIP exclusivo para la cumbre anual de tecnología y ciberseguridad DACAS. Incluye acceso a keynotes ejecutivas, acreditación para laboratorios prácticos, almuerzo ejecutivo y kit oficial.</p>',
-    price: 150,
-    promotional_price: 135,
-    stock: 50,
-    badge: 'EVENTO',
-    badgeColor: '#0fa4de',
-    image_url: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1000&auto=format&fit=crop',
-    images: [
-      'https://images.unsplash.com/photo-1540575467063-178a50c2df87?q=80&w=1000&auto=format&fit=crop',
-      'https://images.unsplash.com/photo-1492539438225-2178229c92cc?q=80&w=1000&auto=format&fit=crop'
-    ],
-    category: 'tickets',
-    sku: 'EVT-DACAS-2026',
-    weight: '0.2',
-    width: '10.0',
-    depth: '15.0',
-    height: '0.1'
   }
+];
+
+const DACAS_COUNTRIES = [
+  { code: 'US', name: 'Estados Unidos', flag: '🇺🇸' },
+  { code: 'AR', name: 'Argentina', flag: '🇦🇷' },
+  { code: 'BO', name: 'Bolivia', flag: '🇧🇴' },
+  { code: 'CL', name: 'Chile', flag: '🇨🇱' },
+  { code: 'CO', name: 'Colombia', flag: '🇨🇴' },
+  { code: 'CR', name: 'Costa Rica', flag: '🇨🇷' },
+  { code: 'EC', name: 'Ecuador', flag: '🇪🇨' },
+  { code: 'MX', name: 'México', flag: '🇲🇽' },
+  { code: 'PY', name: 'Paraguay', flag: '🇵🇾' },
+  { code: 'PE', name: 'Perú', flag: '🇵🇪' },
+  { code: 'DO', name: 'República Dominicana', flag: '🇩🇴' },
+  { code: 'UY', name: 'Uruguay', flag: '🇺🇾' }
 ];
 
 const CATEGORIES = [
   { key: 'all', label: 'Todos los productos', icon: '🛒' },
-  { key: 'networking', label: 'Networking & Switches', icon: '🌐' },
-  { key: 'ciberseguridad', label: 'Ciberseguridad & Firewalls', icon: '🔒' },
-  { key: 'wifi', label: 'Wi-Fi & Wireless', icon: '📶' },
-  { key: 'servidores', label: 'Servidores & Cloud', icon: '💻' },
-  { key: 'licencias', label: 'Licencias & Software', icon: '🔑' },
-  { key: 'tickets', label: 'Tickets & Eventos', icon: '🎫' },
+  { key: 'networking', label: 'Networking', icon: '🌐' },
+  { key: 'infraestructura', label: 'Infraestructura', icon: '🏗️' },
+  { key: 'comunicaciones_unificadas', label: 'Comunicaciones Unificadas', icon: '📞' },
+  { key: 'security', label: 'Security', icon: '🔒' },
+];
+
+const BRAND_INFO = {
+  // ── Comunicaciones Unificadas ──
+  'audiocodes': {
+    name: 'AudioCodes',
+    logo: null,
+    tagline: 'Gateways de Voz, SBCs y Teléfonos IP Teams',
+    color: '#005596',
+    bg: 'linear-gradient(135deg, rgba(0, 85, 150, 0.08) 0%, rgba(0, 85, 150, 0.02) 100%)'
+  },
+  'avaya': {
+    name: 'Avaya',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4e/Avaya_Logo.svg',
+    tagline: 'Líder en Contact Center y Comunicaciones Unificadas',
+    color: '#CC0000',
+    bg: 'linear-gradient(135deg, rgba(204, 0, 0, 0.08) 0%, rgba(204, 0, 0, 0.02) 100%)'
+  },
+
+  // ── Seguridad - Ciberseguridad ──
+  'algosec': {
+    name: 'AlgoSec',
+    logo: null,
+    tagline: 'Automatización de Seguridad y Políticas de Firewall',
+    color: '#0084C7',
+    bg: 'linear-gradient(135deg, rgba(0, 132, 199, 0.08) 0%, rgba(0, 132, 199, 0.02) 100%)'
+  },
+  'barracuda': {
+    name: 'Barracuda Networks',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/5/52/Barracuda_Networks_logo.svg',
+    tagline: 'Seguridad de Email, WAF y Respaldo en la Nube',
+    color: '#006699',
+    bg: 'linear-gradient(135deg, rgba(0, 102, 153, 0.08) 0%, rgba(0, 102, 153, 0.02) 100%)'
+  },
+  'fortinet': {
+    name: 'Fortinet',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/6/64/Fortinet_logo.svg',
+    tagline: 'Seguridad de Red Convergente y Firewalls NGFW FortiGate',
+    color: '#EE3124',
+    bg: 'linear-gradient(135deg, rgba(238, 49, 36, 0.08) 0%, rgba(238, 49, 36, 0.02) 100%)'
+  },
+  'f5': {
+    name: 'F5 Networks',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/2/23/F5_Networks_logo.svg',
+    tagline: 'Seguridad y Entrega Multi-Cloud de Aplicaciones & DDoS',
+    color: '#E2231A',
+    bg: 'linear-gradient(135deg, rgba(226, 35, 26, 0.08) 0%, rgba(226, 35, 26, 0.02) 100%)'
+  },
+  'imperva': {
+    name: 'Imperva',
+    logo: null,
+    tagline: 'Protección Integral de Datos, APIs y WAF Avanzado',
+    color: '#001E62',
+    bg: 'linear-gradient(135deg, rgba(0, 30, 98, 0.08) 0%, rgba(0, 30, 98, 0.02) 100%)'
+  },
+  'hitachi vantara': {
+    name: 'Hitachi Vantara',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/3/36/Hitachi_Inspire_the_Next_logo.svg',
+    tagline: 'Almacenamiento Seguro e Infraestructura de Datos Críticos',
+    color: '#E8112D',
+    bg: 'linear-gradient(135deg, rgba(232, 17, 45, 0.08) 0%, rgba(232, 17, 45, 0.02) 100%)'
+  },
+  'infoblox': {
+    name: 'Infoblox',
+    logo: null,
+    tagline: 'Gestión DDI Segura (DNS, DHCP, IPAM) y BloxOne Threat Defense',
+    color: '#68BC45',
+    bg: 'linear-gradient(135deg, rgba(104, 188, 69, 0.08) 0%, rgba(104, 188, 69, 0.02) 100%)'
+  },
+  'nsfocus': {
+    name: 'NSFOCUS',
+    logo: null,
+    tagline: 'Defensa contra Ataques DDoS Carrier-Grade y Seguridad Web',
+    color: '#008542',
+    bg: 'linear-gradient(135deg, rgba(0, 133, 66, 0.08) 0%, rgba(0, 133, 66, 0.02) 100%)'
+  },
+  'radware': {
+    name: 'Radware',
+    logo: null,
+    tagline: 'Control de Entrega de Aplicaciones y Mitigación DDoS',
+    color: '#F26522',
+    bg: 'linear-gradient(135deg, rgba(242, 101, 34, 0.08) 0%, rgba(242, 101, 34, 0.02) 100%)'
+  },
+  'silver peak': {
+    name: 'Silver Peak',
+    logo: null,
+    tagline: 'EdgeConnect SD-WAN Seguro y Optimización de Red WAN',
+    color: '#0085CA',
+    bg: 'linear-gradient(135deg, rgba(0, 133, 202, 0.08) 0%, rgba(0, 133, 202, 0.02) 100%)'
+  },
+  'sophos': {
+    name: 'Sophos',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/3/36/Sophos_Logo_2017.svg',
+    tagline: 'Ciberseguridad Sincronizada, Intercept X Endpoint y XGS',
+    color: '#00549A',
+    bg: 'linear-gradient(135deg, rgba(0, 84, 154, 0.08) 0%, rgba(0, 84, 154, 0.02) 100%)'
+  },
+  'sonicwall': {
+    name: 'SonicWall',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/1/18/SonicWall_Logo.svg',
+    tagline: 'Firewalls de Nueva Generación TZ / NSa y Acceso Seguro',
+    color: '#F37023',
+    bg: 'linear-gradient(135deg, rgba(243, 112, 35, 0.08) 0%, rgba(243, 112, 35, 0.02) 100%)'
+  },
+  'veracode': {
+    name: 'Veracode',
+    logo: null,
+    tagline: 'Seguridad en Desarrollo y Análisis de Código de Software',
+    color: '#00B3E3',
+    bg: 'linear-gradient(135deg, rgba(0, 179, 227, 0.08) 0%, rgba(0, 179, 227, 0.02) 100%)'
+  },
+  'vicarius': {
+    name: 'Vicarius',
+    logo: null,
+    tagline: 'Gestión y Remediación Autónoma de Vulnerabilidades vRx',
+    color: '#1E293B',
+    bg: 'linear-gradient(135deg, rgba(30, 41, 59, 0.08) 0%, rgba(30, 41, 59, 0.02) 100%)'
+  },
+  'viewtinet': {
+    name: 'Viewtinet',
+    logo: null,
+    tagline: 'Monitoreo de Tráfico de Red, Calidad de Experiencia y QoS',
+    color: '#00A8E1',
+    bg: 'linear-gradient(135deg, rgba(0, 168, 225, 0.08) 0%, rgba(0, 168, 225, 0.02) 100%)'
+  },
+
+  // ── Infraestructura ──
+  'avocent': {
+    name: 'Avocent',
+    logo: null,
+    tagline: 'Gestión KVM-over-IP y Control Fuera de Banda para Datacenters',
+    color: '#333333',
+    bg: 'linear-gradient(135deg, rgba(51, 51, 51, 0.08) 0%, rgba(51, 51, 51, 0.02) 100%)'
+  },
+  'commscope': {
+    name: 'CommScope',
+    logo: null,
+    tagline: 'Infraestructura Integral de Redes Ópticas y Cableado',
+    color: '#005596',
+    bg: 'linear-gradient(135deg, rgba(0, 85, 150, 0.08) 0%, rgba(0, 85, 150, 0.02) 100%)'
+  },
+  'commscope netconnect': {
+    name: 'CommScope NETCONNECT',
+    logo: null,
+    tagline: 'Sistemas de Cableado Estructurado y Conectividad de Cobre',
+    color: '#005596',
+    bg: 'linear-gradient(135deg, rgba(0, 85, 150, 0.08) 0%, rgba(0, 85, 150, 0.02) 100%)'
+  },
+  'commscope systimax': {
+    name: 'CommScope SYSTIMAX',
+    logo: null,
+    tagline: 'Infraestructura Premium de Ultra Alta Velocidad y Fibra',
+    color: '#005596',
+    bg: 'linear-gradient(135deg, rgba(0, 85, 150, 0.08) 0%, rgba(0, 85, 150, 0.02) 100%)'
+  },
+  'eaton': {
+    name: 'Eaton',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/2/29/Eaton_Corporation_logo.svg',
+    tagline: 'Sistemas UPS, PDUs y Protección de Energía Crítica',
+    color: '#005EB8',
+    bg: 'linear-gradient(135deg, rgba(0, 94, 184, 0.08) 0%, rgba(0, 94, 184, 0.02) 100%)'
+  },
+  'gabitel': {
+    name: 'Gabitel',
+    logo: null,
+    tagline: 'Racks de Servidores, Gabinetes Exteriores y Cajas Murales',
+    color: '#72BF44',
+    bg: 'linear-gradient(135deg, rgba(114, 191, 68, 0.08) 0%, rgba(114, 191, 68, 0.02) 100%)'
+  },
+  'panduit': {
+    name: 'Panduit',
+    logo: null,
+    tagline: 'Cableado Estructurado, Canalización y Datacenter Solutions',
+    color: '#005A9C',
+    bg: 'linear-gradient(135deg, rgba(0, 90, 156, 0.08) 0%, rgba(0, 90, 156, 0.02) 100%)'
+  },
+  'siemon': {
+    name: 'Siemon',
+    logo: null,
+    tagline: 'Sistemas de Cableado de Red de Alto Rendimiento',
+    color: '#D2232A',
+    bg: 'linear-gradient(135deg, rgba(210, 35, 42, 0.08) 0%, rgba(210, 35, 42, 0.02) 100%)'
+  },
+  'vertiv': {
+    name: 'Vertiv',
+    logo: null,
+    tagline: 'Climatización Crítica Liebert, UPS y Micro-Datacenters',
+    color: '#FF4500',
+    bg: 'linear-gradient(135deg, rgba(255, 69, 0, 0.08) 0%, rgba(255, 69, 0, 0.02) 100%)'
+  },
+  'tz': {
+    name: 'TZ',
+    logo: null,
+    tagline: 'Cerraduras Electrónicas Inteligentes y Control de Acceso SMA',
+    color: '#EAB308',
+    bg: 'linear-gradient(135deg, rgba(234, 179, 8, 0.08) 0%, rgba(234, 179, 8, 0.02) 100%)'
+  },
+
+  // ── Networking ──
+  'mikrotik': {
+    name: 'MikroTik',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/5/53/MikroTik_Logo.svg',
+    tagline: 'Routers, Switches de alta capacidad y RouterOS',
+    color: '#D8232A',
+    bg: 'linear-gradient(135deg, rgba(216, 35, 42, 0.08) 0%, rgba(216, 35, 42, 0.02) 100%)'
+  },
+  'aruba': {
+    name: 'Aruba',
+    logo: null,
+    tagline: 'Puntos de Acceso Wi-Fi 6 y Switching Corporativo Cloud',
+    color: '#FF8300',
+    bg: 'linear-gradient(135deg, rgba(255, 131, 0, 0.08) 0%, rgba(255, 131, 0, 0.02) 100%)'
+  },
+  'microsoft': {
+    name: 'Microsoft',
+    logo: 'https://upload.wikimedia.org/wikipedia/commons/9/96/Microsoft_logo_%282012%29.svg',
+    tagline: 'Licenciamiento Corporativo CSP, Windows Server y M365',
+    color: '#00A4EF',
+    bg: 'linear-gradient(135deg, rgba(0, 164, 239, 0.08) 0%, rgba(0, 164, 239, 0.02) 100%)'
+  },
+  'dacas': {
+    name: 'DACAS',
+    logo: '/favicon-shop.svg',
+    tagline: 'Servicios Oficiales, Soporte y Capacitaciones',
+    color: '#0FA4DE',
+    bg: 'linear-gradient(135deg, rgba(15, 164, 222, 0.08) 0%, rgba(15, 164, 222, 0.02) 100%)'
+  }
+};
+
+const CATEGORY_BRANDS_MAP = {
+  'comunicaciones_unificadas': ['audiocodes', 'avaya'],
+  'security': [
+    'algosec', 'barracuda', 'fortinet', 'f5', 'imperva', 'hitachi vantara',
+    'infoblox', 'nsfocus', 'radware', 'silver peak', 'sophos', 'sonicwall',
+    'veracode', 'vicarius', 'viewtinet'
+  ],
+  'infraestructura': [
+    'avocent', 'commscope', 'commscope netconnect', 'commscope systimax',
+    'eaton', 'gabitel', 'panduit', 'siemon', 'vertiv', 'tz'
+  ],
+  'networking': [
+    'mikrotik', 'aruba', 'infoblox', 'silver peak', 'commscope'
+  ]
+};
+
+/* ─── Animated Number Counter for Slide 0 (Efecto animado de números) ─── */
+function AnimatedHeroStats({ active }) {
+  const [count25, setCount25] = useState(0);
+  const [count100, setCount100] = useState(0);
+  const [count24, setCount24] = useState(0);
+  const [glowing, setGlowing] = useState(false);
+
+  useEffect(() => {
+    if (!active) {
+      setCount25(0);
+      setCount100(0);
+      setCount24(0);
+      setGlowing(false);
+      return;
+    }
+
+    setGlowing(true);
+    const glowTimer = setTimeout(() => setGlowing(false), 2200);
+
+    // Animación de +25 Años
+    let start25 = 0;
+    const dur25 = 1100;
+    const step25Time = Math.max(15, dur25 / 25);
+    const interval25 = setInterval(() => {
+      start25 += 1;
+      setCount25(start25);
+      if (start25 >= 25) clearInterval(interval25);
+    }, step25Time);
+
+    // Animación de 100% Oficial
+    let start100 = 0;
+    const dur100 = 1300;
+    const step100Time = Math.max(15, dur100 / 50);
+    const interval100 = setInterval(() => {
+      start100 += 2;
+      setCount100(Math.min(start100, 100));
+      if (start100 >= 100) clearInterval(interval100);
+    }, step100Time);
+
+    // Animación de 24/7 Soporte
+    let start24 = 0;
+    const dur24 = 1000;
+    const step24Time = Math.max(15, dur24 / 24);
+    const interval24 = setInterval(() => {
+      start24 += 1;
+      setCount24(start24);
+      if (start24 >= 24) clearInterval(interval24);
+    }, step24Time);
+
+    return () => {
+      clearTimeout(glowTimer);
+      clearInterval(interval25);
+      clearInterval(interval100);
+      clearInterval(interval24);
+    };
+  }, [active]);
+
+  const stats = [
+    { value: `+${count25} Años`, label: 'Liderazgo Regional' },
+    { value: `${count100}% Oficial`, label: 'Garantía de Fábrica' },
+    { value: `${count24}/7`, label: 'Soporte Técnico' }
+  ];
+
+  return (
+    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+      {stats.map((stat, idx) => (
+        <div
+          key={stat.label}
+          style={{
+            textAlign: 'center',
+            background: 'rgba(15, 39, 66, 0.75)',
+            backdropFilter: 'blur(12px)',
+            border: glowing ? '1.5px solid #38bdf8' : '1px solid rgba(15, 164, 222, 0.25)',
+            borderRadius: '20px',
+            padding: '24px 28px',
+            minWidth: '115px',
+            transition: 'all 0.45s cubic-bezier(0.16, 1, 0.3, 1)',
+            boxShadow: glowing 
+              ? '0 0 30px rgba(15, 164, 222, 0.45), inset 0 0 15px rgba(56, 189, 248, 0.25)' 
+              : '0 4px 20px rgba(0,0,0,0.2)',
+            transform: glowing ? 'translateY(-4px) scale(1.03)' : 'translateY(0) scale(1)',
+            animationDelay: `${idx * 0.1}s`
+          }}
+        >
+          <div style={{
+            fontSize: '2.2rem',
+            fontWeight: '900',
+            color: '#0fa4de',
+            textShadow: glowing ? '0 0 20px rgba(56, 189, 248, 0.85)' : 'none',
+            letterSpacing: '-0.02em',
+            fontVariantNumeric: 'tabular-nums',
+            transition: 'color 0.3s, text-shadow 0.3s'
+          }}>
+            {stat.value}
+          </div>
+          <div style={{ fontSize: '13px', color: '#94A3B8', marginTop: '4px', fontWeight: '600' }}>
+            {stat.label}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const HERO_SLIDES = [
+  {
+    id: 0,
+    badge: 'DISTRIBUIDOR MAYORISTA DE VALOR AGREGADO',
+    badgeIcon: '🛡️',
+    titleLine1: 'Equipamiento IT, Redes',
+    titleLine2: '& Ciberseguridad Enterprise',
+    titleColor: '#0fa4de',
+    desc: 'Hardware empresarial de alta disponibilidad, licencias oficiales y soluciones completas para integradores y canales con respaldo técnico oficial.',
+    primaryBtn: { text: 'Ver Networking & Switches', cat: 'networking' },
+    secondaryBtn: { text: 'Security & Firewalls', cat: 'security' },
+    type: 'animated_stats'
+  },
+  {
+    id: 1,
+    badge: 'SEGURIDAD ZERO TRUST & FIREWALLS FORTINET',
+    badgeIcon: '🔒',
+    titleLine1: 'Protección Perimetral Avanzada',
+    titleLine2: '& Detección de Amenazas con IA',
+    titleColor: '#EE3124',
+    desc: 'Firewalls NGFW FortiGate con procesamiento SOC4 de ultra baja latencia, SD-WAN seguro y licencias oficiales FortiGuard con entrega inmediata.',
+    primaryBtn: { text: 'Explorar Soluciones Security', cat: 'security' },
+    secondaryBtn: { text: 'Ver Catálogo Completo', cat: 'all' },
+    type: 'metrics',
+    metrics: [
+      { value: '1.4 Gbps', label: 'Rendimiento IPS Real' },
+      { value: '99.99%', label: 'Disponibilidad Uptime' },
+      { value: 'Zero-Day', label: 'Protección con IA' }
+    ]
+  },
+  {
+    id: 2,
+    badge: 'INFRAESTRUCTURA & ENERGÍA CRÍTICA',
+    badgeIcon: '⚡',
+    titleLine1: 'Sistemas UPS Online Vertiv & Eaton',
+    titleLine2: '& Racks de Alta Densidad Panduit',
+    titleColor: '#38bdf8',
+    desc: 'Protección de energía crítica doble conversión, gabinetes acústicos y cableado estructurado certificado CommScope para salas de servidores y centros de datos.',
+    primaryBtn: { text: 'Ver Infraestructura', cat: 'infraestructura' },
+    secondaryBtn: { text: 'Consultar Stock', cat: 'infraestructura' },
+    type: 'metrics',
+    metrics: [
+      { value: '3kVA - 20kVA', label: 'Potencia Doble Conversión' },
+      { value: 'Factor 1.0', label: 'Eficiencia Energética' },
+      { value: 'Vertiv/Panduit', label: 'Garantía Oficial DACAS' }
+    ]
+  },
+  {
+    id: 3,
+    badge: 'COMUNICACIONES UNIFICADAS & COLABORACIÓN',
+    badgeIcon: '📞',
+    titleLine1: 'Telefonía IP AudioCodes Teams',
+    titleLine2: '& Colaboración Corporativa Avaya',
+    titleColor: '#10b981',
+    desc: 'Soluciones enterprise de audio y videoconferencia HD certificadas para Microsoft Teams y Zoom, con audio de alta fidelidad y conmutación SIP.',
+    primaryBtn: { text: 'Ver Comunicaciones Unificadas', cat: 'comunicaciones_unificadas' },
+    secondaryBtn: { text: 'Explorar Modelos', cat: 'comunicaciones_unificadas' },
+    type: 'metrics',
+    metrics: [
+      { value: 'Audio HD', label: 'Resolución Óptica y Voz' },
+      { value: 'Avaya Bar', label: 'Salas Inteligentes' },
+      { value: 'Teams/Zoom', label: 'Certificación Oficial' }
+    ]
+  }
 ];
 
 export default function Shop() {
@@ -165,6 +631,63 @@ export default function Shop() {
     }
   });
   const [cartOpen, setCartOpen] = useState(false);
+  const [selectedCountryCode, setSelectedCountryCode] = useState(() => {
+    try {
+      return localStorage.getItem('dacas_selected_country') || 'AR';
+    } catch {
+      return 'AR';
+    }
+  });
+
+  const [visualSettings, setVisualSettings] = useState(null);
+
+  const heroSlides = useMemo(() => {
+    if (visualSettings?.heroSlides && Array.isArray(visualSettings.heroSlides) && visualSettings.heroSlides.length > 0) {
+      return visualSettings.heroSlides;
+    }
+    return HERO_SLIDES;
+  }, [visualSettings]);
+
+  const categories = useMemo(() => {
+    if (visualSettings?.categories && Array.isArray(visualSettings.categories) && visualSettings.categories.length > 0) {
+      return visualSettings.categories.filter(c => c.enabled !== false);
+    }
+    return CATEGORIES;
+  }, [visualSettings]);
+
+  const categoryBrandsMap = useMemo(() => {
+    return visualSettings?.categoryBrands || CATEGORY_BRANDS_MAP;
+  }, [visualSettings]);
+
+  const announcement = visualSettings?.announcement || {
+    enabled: true,
+    text: 'Distribución Oficial y Soporte Certificado en 12 Países de América Latina y USA',
+    badgeText: 'COBERTURA DACAS',
+    link: '#paises'
+  };
+
+  const generalSettings = visualSettings?.general || {
+    shopTitle: 'DACAS B2B Shop',
+    shopSubtitle: 'Plataforma Corporativa de Soluciones IT, Ciberseguridad & Conectividad Enterprise',
+    showCountryBar: true,
+    contactPhone: '+54 11 4110-3300',
+    contactEmail: 'ventas@dacas.com',
+    whatsappNumber: '+5491141103300',
+    headerBadge: 'DISTRIBUIDOR OFICIAL MAYORISTA',
+    primaryColor: '#0fa4de'
+  };
+
+  // Hero Carousel State
+  const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
+  const [isHeroHovered, setIsHeroHovered] = useState(false);
+
+  useEffect(() => {
+    if (isHeroHovered) return;
+    const slideTimer = setInterval(() => {
+      setCurrentHeroSlide((prev) => (prev + 1) % heroSlides.length);
+    }, 6000);
+    return () => clearInterval(slideTimer);
+  }, [isHeroHovered, heroSlides.length]);
 
   useEffect(() => {
     try {
@@ -175,6 +698,7 @@ export default function Shop() {
   }, [cart]);
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
+  const [selectedBrand, setSelectedBrand] = useState(null);
   const [addedId, setAddedId] = useState(null);
   
   // Modal de detalles de producto y carrusel
@@ -214,7 +738,18 @@ export default function Shop() {
   useEffect(() => {
     fetchProducts();
     fetchCountries();
+    fetchVisualSettings();
   }, []);
+
+  const fetchVisualSettings = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/visual`);
+      if (res.ok) {
+        const data = await res.json();
+        setVisualSettings(data);
+      }
+    } catch (_) {}
+  };
 
   useEffect(() => {
     function handleClickOutside(e) {
@@ -314,6 +849,8 @@ export default function Shop() {
     fetchProducts();
   }, [clientUser]);
 
+  const DISALLOWED_BRANDS = ['cisco', 'poly', 'ubiquiti', 'dell', 'dell technologies'];
+
   const fetchProducts = async () => {
     try {
       const token = localStorage.getItem('dacas_client_token');
@@ -322,13 +859,15 @@ export default function Shop() {
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
-          // Normalize images property
-          const normalized = data.map(p => ({
-            ...p,
-            images: Array.isArray(p.images) && p.images.length > 0 
-              ? p.images 
-              : (p.image_url ? [p.image_url] : [])
-          }));
+          // Normalize images property and filter disallowed brands
+          const normalized = data
+            .filter((p) => !p.brand || !DISALLOWED_BRANDS.includes(p.brand.toLowerCase()))
+            .map((p) => ({
+              ...p,
+              images: Array.isArray(p.images) && p.images.length > 0 
+                ? p.images 
+                : (p.image_url ? [p.image_url] : [])
+            }));
           setProducts(normalized);
           setLoading(false);
           return;
@@ -337,11 +876,12 @@ export default function Shop() {
     } catch (_) {}
     
     // Fallback to rich DACAS mock with lock simulation if no clientUser
+    const cleanMocks = MOCK_PRODUCTS.filter((p) => !p.brand || !DISALLOWED_BRANDS.includes(p.brand.toLowerCase()));
     const token = localStorage.getItem('dacas_client_token');
     if (!token) {
-      setProducts(MOCK_PRODUCTS.map(p => ({ ...p, price: null, promotional_price: null, is_locked: true })));
+      setProducts(cleanMocks.map((p) => ({ ...p, price: null, promotional_price: null, is_locked: true })));
     } else {
-      setProducts(MOCK_PRODUCTS);
+      setProducts(cleanMocks);
     }
     setLoading(false);
   };
@@ -366,34 +906,158 @@ export default function Shop() {
   const cartTotal = cart.reduce((sum, i) => sum + (parseFloat(i.price) || 0) * i.qty, 0);
   const cartCount = cart.reduce((sum, i) => sum + i.qty, 0);
 
+  const isProductInCat = (p, catKey) => {
+    if (!catKey || catKey === 'all') return true;
+    const pCat = (p.category || '').toLowerCase();
+    if (pCat === catKey.toLowerCase()) return true;
+    if (catKey === 'networking') {
+      return pCat.includes('network') || pCat.includes('switch') || pCat.includes('wifi') || pCat.includes('wireless') || pCat.includes('router');
+    }
+    if (catKey === 'infraestructura') {
+      return pCat.includes('infra') || pCat.includes('servidor') || pCat.includes('server') || pCat.includes('cloud') || pCat.includes('rack') || pCat.includes('datacenter');
+    }
+    if (catKey === 'comunicaciones_unificadas') {
+      return pCat.includes('comunicacion') || pCat.includes('unificada') || pCat.includes('voip') || pCat.includes('video') || pCat.includes('telef') || pCat.includes('colaboracion');
+    }
+    if (catKey === 'security') {
+      return pCat.includes('secur') || pCat.includes('seguridad') || pCat.includes('firewall') || pCat.includes('ciber') || pCat.includes('licencia');
+    }
+    return false;
+  };
+
+  const handleSelectCategory = (catKey) => {
+    setActiveCategory(catKey);
+    setSelectedBrand(null);
+    setSearch('');
+  };
+
+  const currentCategoryObj = categories.find((c) => c.key === activeCategory) || categories[0];
+  const categoryProducts = products.filter((p) => isProductInCat(p, activeCategory));
+
+  const availableBrands = useMemo(() => {
+    if (activeCategory === 'all') {
+      const productBrands = Array.from(new Set(products.map((p) => p.brand).filter(Boolean)))
+        .filter((b) => !DISALLOWED_BRANDS.includes(b.toLowerCase()));
+      return productBrands.map((bName) => {
+        const brandKey = bName.toLowerCase();
+        const info = BRAND_INFO[brandKey] || {
+          name: bName,
+          logo: null,
+          tagline: `Equipos y soluciones oficiales ${bName}`,
+          color: '#0fa4de',
+          bg: 'linear-gradient(135deg, rgba(15, 164, 222, 0.08) 0%, rgba(15, 164, 222, 0.02) 100%)'
+        };
+        const count = products.filter((p) => p.brand && p.brand.toLowerCase() === bName.toLowerCase()).length;
+        return {
+          ...info,
+          rawName: info.name || bName,
+          count
+        };
+      });
+    }
+
+    const officialKeys = categoryBrandsMap[activeCategory] || [];
+    const productBrands = categoryProducts.map((p) => p.brand).filter(Boolean);
+    const combinedKeys = Array.from(new Set([...officialKeys, ...productBrands.map((b) => b.toLowerCase())]))
+      .filter((k) => !DISALLOWED_BRANDS.includes(k.toLowerCase()));
+
+    return combinedKeys.map((key) => {
+      const info = BRAND_INFO[key] || {
+        name: key.toUpperCase(),
+        logo: null,
+        tagline: `Equipos y soluciones oficiales ${key}`,
+        color: '#0fa4de',
+        bg: 'linear-gradient(135deg, rgba(15, 164, 222, 0.08) 0%, rgba(15, 164, 222, 0.02) 100%)'
+      };
+      const count = categoryProducts.filter((p) => p.brand && p.brand.toLowerCase() === (info.name || key).toLowerCase()).length;
+      return {
+        ...info,
+        rawName: info.name || key,
+        count
+      };
+    });
+  }, [activeCategory, categoryProducts, products, categoryBrandsMap]);
+
   const filtered = products.filter((p) => {
+    if (p.brand && DISALLOWED_BRANDS.includes(p.brand.toLowerCase())) return false;
     const q = search.toLowerCase();
     const matchSearch = !search || 
       (p.name && p.name.toLowerCase().includes(q)) || 
       (p.description && p.description.toLowerCase().includes(q)) ||
-      (p.sku && p.sku.toLowerCase().includes(q));
-    const matchCat = activeCategory === 'all' || (p.category === activeCategory);
-    return matchSearch && matchCat;
+      (p.sku && p.sku.toLowerCase().includes(q)) ||
+      (p.brand && p.brand.toLowerCase().includes(q));
+    const matchCat = isProductInCat(p, activeCategory);
+    const matchBrand = !selectedBrand || selectedBrand === 'all' || (p.brand && p.brand.toLowerCase() === selectedBrand.toLowerCase());
+    return matchSearch && matchCat && matchBrand;
   });
+
+  const selectedCountryObj = DACAS_COUNTRIES.find((c) => c.code === selectedCountryCode) || DACAS_COUNTRIES[1];
 
   return (
     <div style={{ fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif", background: '#F8FAFC', minHeight: '100vh', color: '#0F172A' }}>
 
-      {/* ── Top Announcement Bar ── */}
-      <div style={{ background: '#071524', color: '#94A3B8', fontSize: '12px', padding: '7px 0', borderBottom: '1px solid rgba(15, 164, 222, 0.15)' }}>
-        <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '0 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span>🇦🇷</span>
-            <span><strong>DACAS Mayorista Oficial</strong> · Envíos asegurados y distribución regional de valor agregado</span>
+      {/* ── Top Regional Countries Flag Bar (12 Países DACAS) ── */}
+      <div style={{ background: '#E2E8F0', borderBottom: '1px solid #CBD5E1', padding: '5px 0' }}>
+        <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '800', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <span>🌎</span> Cobertura Regional DACAS:
           </div>
-          <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
-            <span style={{ color: '#0fa4de', fontWeight: '600' }}>📞 Soporte Preventa IT</span>
-            <a href="#" onClick={(e) => { e.preventDefault(); navigate('/login'); }} style={{ color: '#E2E8F0', textDecoration: 'none', fontWeight: '600' }}>
-              Portal Admin →
-            </a>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', padding: '2px 0' }}>
+            {DACAS_COUNTRIES.map((c) => {
+              const isSelected = selectedCountryCode === c.code;
+              return (
+                <button
+                  key={c.code}
+                  onClick={() => {
+                    setSelectedCountryCode(c.code);
+                    localStorage.setItem('dacas_selected_country', c.code);
+                  }}
+                  title={`${c.name} (${c.code})`}
+                  style={{
+                    background: isSelected ? '#CBD5E1' : 'transparent',
+                    border: isSelected ? '1.5px solid #94A3B8' : '1px solid transparent',
+                    borderRadius: '8px',
+                    padding: '3px 7px',
+                    cursor: 'pointer',
+                    fontSize: '18px',
+                    lineHeight: 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    transition: 'all 0.15s ease',
+                    boxShadow: isSelected ? '0 1px 4px rgba(0,0,0,0.12)' : 'none',
+                    transform: isSelected ? 'scale(1.06)' : 'none'
+                  }}
+                  onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.6)'; }}
+                  onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
+                >
+                  <span>{c.flag}</span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
+
+      {/* ── Top Announcement Bar ── */}
+      {announcement.enabled && (
+        <div style={{ background: '#071524', color: '#94A3B8', fontSize: '12px', padding: '7px 0', borderBottom: '1px solid rgba(15, 164, 222, 0.15)' }}>
+          <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '0 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>{selectedCountryObj.flag}</span>
+              <span><strong>DACAS {selectedCountryObj.name}</strong> · {announcement.text || 'Envíos asegurados y distribución mayorista regional de valor agregado'}</span>
+            </div>
+            <div style={{ display: 'flex', gap: '20px', alignItems: 'center' }}>
+              {generalSettings.contactPhone && (
+                <span style={{ color: '#0fa4de', fontWeight: '600' }}>📞 {generalSettings.contactPhone}</span>
+              )}
+              <a href="#" onClick={(e) => { e.preventDefault(); navigate('/login'); }} style={{ color: '#E2E8F0', textDecoration: 'none', fontWeight: '600' }}>
+                Portal Admin →
+              </a>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── Main Sticky Header ── */}
       <header style={{ background: 'rgba(255,255,255,0.98)', backdropFilter: 'blur(16px)', WebkitBackdropFilter: 'blur(16px)', position: 'sticky', top: 0, zIndex: 100, borderBottom: '1px solid #E2E8F0', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
@@ -826,185 +1490,620 @@ export default function Shop() {
       </header>
 
       {/* ── Category Navigation Bar ── */}
-      <nav style={{ background: '#071524', borderBottom: '1px solid rgba(15, 164, 222, 0.2)', position: 'sticky', top: '72px', zIndex: 99 }}>
-        <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', height: '48px', gap: '8px', overflowX: 'auto' }}>
-          {CATEGORIES.map((cat) => (
+      <nav style={{ background: '#071524', borderBottom: '1px solid rgba(15, 164, 222, 0.2)', position: 'sticky', top: '72px', zIndex: 99, boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
+        <div style={{ maxWidth: '1320px', width: '100%', margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', minHeight: '52px', gap: '8px', boxSizing: 'border-box' }}>
+          {categories.map((cat) => (
             <button
               key={cat.key}
-              onClick={() => setActiveCategory(cat.key)}
+              onClick={() => handleSelectCategory(cat.key)}
               style={{
+                flex: 1,
+                minWidth: 0,
                 display: 'flex',
                 alignItems: 'center',
-                gap: '6px',
-                padding: '7px 16px',
-                fontSize: '13px',
-                fontWeight: '600',
+                justifyContent: 'center',
+                gap: '8px',
+                padding: '9px 12px',
+                fontSize: '13.5px',
+                fontWeight: activeCategory === cat.key ? '700' : '600',
                 color: activeCategory === cat.key ? '#FFFFFF' : '#94A3B8',
-                background: activeCategory === cat.key ? '#0fa4de' : 'transparent',
-                border: 'none',
-                borderRadius: '999px',
+                background: activeCategory === cat.key ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : 'rgba(255, 255, 255, 0.03)',
+                border: activeCategory === cat.key ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.06)',
+                borderRadius: '10px',
                 cursor: 'pointer',
-                transition: 'all 0.2s',
+                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
                 whiteSpace: 'nowrap',
-                boxShadow: activeCategory === cat.key ? '0 2px 10px rgba(15, 164, 222, 0.4)' : 'none'
+                boxShadow: activeCategory === cat.key ? '0 4px 14px rgba(15, 164, 222, 0.35)' : 'none',
+                textAlign: 'center'
               }}
-              onMouseEnter={(e) => { if (activeCategory !== cat.key) e.currentTarget.style.background = '#12354c'; }}
-              onMouseLeave={(e) => { if (activeCategory !== cat.key) e.currentTarget.style.background = 'transparent'; }}
+              onMouseEnter={(e) => {
+                if (activeCategory !== cat.key) {
+                  e.currentTarget.style.background = 'rgba(15, 164, 222, 0.12)';
+                  e.currentTarget.style.borderColor = 'rgba(15, 164, 222, 0.3)';
+                  e.currentTarget.style.color = '#F1F5F9';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (activeCategory !== cat.key) {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
+                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.06)';
+                  e.currentTarget.style.color = '#94A3B8';
+                }
+              }}
             >
-              <span>{cat.icon}</span>{cat.label}
+              <span style={{ fontSize: '15px' }}>{cat.icon}</span>
+              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.label || cat.name}</span>
             </button>
           ))}
         </div>
       </nav>
 
-      {/* ── Hero Banner DACAS ── */}
-      <div style={{
-        background: 'linear-gradient(135deg, #071524 0%, #0f2742 60%, #12354c 100%)',
-        color: '#fff',
-        padding: '60px 20px',
-        position: 'relative',
-        overflow: 'hidden'
-      }}>
-        {/* Glow de fondo */}
-        <div style={{
-          position: 'absolute',
-          top: '-50%',
-          right: '-10%',
-          width: '600px',
-          height: '600px',
-          background: 'radial-gradient(circle, rgba(15,164,222,0.22) 0%, rgba(0,0,0,0) 70%)',
-          pointerEvents: 'none'
-        }} />
+      {/* ── Hero Banner Carousel DACAS ── */}
+      {heroSlides.length > 0 && (() => {
+        const slideIndex = currentHeroSlide >= heroSlides.length ? 0 : currentHeroSlide;
+        const currentSlideObj = heroSlides[slideIndex] || heroSlides[0] || HERO_SLIDES[0];
 
-        <div style={{ maxWidth: '1320px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '30px', position: 'relative', zIndex: 1 }}>
-          <div style={{ flex: 1, minWidth: '300px' }}>
+        return (
+          <div 
+            onMouseEnter={() => setIsHeroHovered(true)}
+            onMouseLeave={() => setIsHeroHovered(false)}
+            style={{
+              background: 'linear-gradient(135deg, #071524 0%, #0f2742 60%, #12354c 100%)',
+              color: '#fff',
+              padding: '56px 20px 64px',
+              position: 'relative',
+              overflow: 'hidden',
+              minHeight: '340px',
+              display: 'flex',
+              alignItems: 'center'
+            }}
+          >
+            {/* Glow dinámico de fondo */}
             <div style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '8px',
-              background: 'rgba(15, 164, 222, 0.15)',
-              border: '1px solid rgba(15, 164, 222, 0.4)',
-              color: '#38bdf8',
-              fontSize: '12px',
-              fontWeight: '700',
-              padding: '6px 14px',
-              borderRadius: '999px',
-              marginBottom: '18px',
-              letterSpacing: '0.05em'
-            }}>
-              <span>🛡️</span> DISTRIBUIDOR MAYORISTA DE VALOR AGREGADO
-            </div>
-            <h1 style={{ margin: '0 0 16px', fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: '900', letterSpacing: '-0.03em', lineHeight: 1.15 }}>
-              Equipamiento IT, Redes <br />
-              <span style={{ color: '#0fa4de' }}>& Ciberseguridad Enterprise</span>
-            </h1>
-            <p style={{ margin: '0 0 28px', color: '#94A3B8', fontSize: '1.05rem', lineHeight: 1.6, maxWidth: '520px' }}>
-              Hardware empresarial de alta disponibilidad, licencias oficiales y soluciones completas para integradores y canales con respaldo técnico oficial.
-            </p>
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-              <button
-                onClick={() => setActiveCategory('networking')}
-                style={{
-                  background: 'linear-gradient(135deg, #0fa4de, #0284c7)',
-                  color: '#fff',
-                  border: 'none',
-                  borderRadius: '999px',
-                  padding: '14px 28px',
+              position: 'absolute',
+              top: '-50%',
+              right: '-10%',
+              width: '650px',
+              height: '650px',
+              background: `radial-gradient(circle, ${currentSlideObj.titleColor || '#0fa4de'}2E 0%, rgba(0,0,0,0) 70%)`,
+              pointerEvents: 'none',
+              transition: 'background 0.8s ease'
+            }} />
+
+            {/* Carousel Navigation Arrows */}
+            {heroSlides.length > 1 && (
+              <>
+                <button
+                  onClick={() => setCurrentHeroSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)}
+                  aria-label="Slide anterior"
+                  style={{
+                    position: 'absolute',
+                    left: '16px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'rgba(15, 39, 66, 0.7)',
+                    border: '1px solid rgba(15, 164, 222, 0.3)',
+                    borderRadius: '50%',
+                    width: '42px',
+                    height: '42px',
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    zIndex: 10,
+                    backdropFilter: 'blur(8px)',
+                    transition: 'all 0.2s',
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.3)'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#0fa4de'; e.currentTarget.style.borderColor = '#38bdf8'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(15, 39, 66, 0.7)'; e.currentTarget.style.borderColor = 'rgba(15, 164, 222, 0.3)'; }}
+                >
+                  ‹
+                </button>
+
+                <button
+                  onClick={() => setCurrentHeroSlide((prev) => (prev + 1) % heroSlides.length)}
+                  aria-label="Siguiente slide"
+                  style={{
+                    position: 'absolute',
+                    right: '16px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    background: 'rgba(15, 39, 66, 0.7)',
+                    border: '1px solid rgba(15, 164, 222, 0.3)',
+                    borderRadius: '50%',
+                    width: '42px',
+                    height: '42px',
+                    color: '#fff',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    cursor: 'pointer',
+                    zIndex: 10,
+                    backdropFilter: 'blur(8px)',
+                    transition: 'all 0.2s',
+                    boxShadow: '0 4px 14px rgba(0,0,0,0.3)'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.background = '#0fa4de'; e.currentTarget.style.borderColor = '#38bdf8'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(15, 39, 66, 0.7)'; e.currentTarget.style.borderColor = 'rgba(15, 164, 222, 0.3)'; }}
+                >
+                  ›
+                </button>
+              </>
+            )}
+
+            {/* Slide Content Container */}
+            <div style={{ maxWidth: '1320px', width: '100%', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '30px', position: 'relative', zIndex: 1, padding: '0 40px' }}>
+              
+              {/* Left Text / CTAs */}
+              <div style={{ flex: 1, minWidth: '300px', transition: 'all 0.4s ease' }}>
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: 'rgba(15, 164, 222, 0.15)',
+                  border: '1px solid rgba(15, 164, 222, 0.4)',
+                  color: currentSlideObj.titleColor || '#38bdf8',
+                  fontSize: '12px',
                   fontWeight: '700',
-                  fontSize: '15px',
-                  cursor: 'pointer',
-                  boxShadow: '0 4px 20px rgba(15, 164, 222, 0.4)',
-                  transition: 'transform 0.2s'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
-              >
-                Ver Networking & Switches
-              </button>
-              <button
-                onClick={() => setActiveCategory('ciberseguridad')}
-                style={{
-                  background: 'rgba(255,255,255,0.08)',
-                  color: '#fff',
-                  border: '1px solid rgba(15, 164, 222, 0.3)',
+                  padding: '6px 14px',
                   borderRadius: '999px',
-                  padding: '14px 28px',
-                  fontWeight: '600',
-                  fontSize: '15px',
-                  cursor: 'pointer',
-                  transition: 'background 0.2s'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(15, 164, 222, 0.18)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-              >
-                Ciberseguridad & Firewalls
-              </button>
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-            {[
-              { value: '+25 Años', label: 'Liderazgo Regional' },
-              { value: '100% Oficial', label: 'Garantía de Fábrica' },
-              { value: '24/7', label: 'Soporte Técnico' }
-            ].map((stat) => (
-              <div key={stat.label} style={{ textAlign: 'center', background: 'rgba(15, 39, 66, 0.7)', border: '1px solid rgba(15, 164, 222, 0.25)', borderRadius: '20px', padding: '24px 28px', minWidth: '110px' }}>
-                <div style={{ fontSize: '2.2rem', fontWeight: '900', color: '#0fa4de' }}>{stat.value}</div>
-                <div style={{ fontSize: '13px', color: '#94A3B8', marginTop: '4px', fontWeight: '600' }}>{stat.label}</div>
+                  marginBottom: '18px',
+                  letterSpacing: '0.05em'
+                }}>
+                  <span>{currentSlideObj.badgeIcon}</span> {currentSlideObj.badge}
+                </div>
+                <h1 style={{ margin: '0 0 16px', fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: '900', letterSpacing: '-0.03em', lineHeight: 1.15 }}>
+                  {currentSlideObj.titleLine1} <br />
+                  <span style={{ color: currentSlideObj.titleColor || '#0fa4de' }}>
+                    {currentSlideObj.titleLine2}
+                  </span>
+                </h1>
+                <p style={{ margin: '0 0 28px', color: '#94A3B8', fontSize: '1.05rem', lineHeight: 1.6, maxWidth: '520px' }}>
+                  {currentSlideObj.desc}
+                </p>
+                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  {currentSlideObj.primaryBtn?.text && (
+                    <button
+                      onClick={() => handleSelectCategory(currentSlideObj.primaryBtn.cat)}
+                      style={{
+                        background: 'linear-gradient(135deg, #0fa4de, #0284c7)',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '999px',
+                        padding: '14px 28px',
+                        fontWeight: '700',
+                        fontSize: '15px',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 20px rgba(15, 164, 222, 0.4)',
+                        transition: 'transform 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                      onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
+                    >
+                      {currentSlideObj.primaryBtn.text}
+                    </button>
+                  )}
+                  {currentSlideObj.secondaryBtn?.text && (
+                    <button
+                      onClick={() => handleSelectCategory(currentSlideObj.secondaryBtn.cat)}
+                      style={{
+                        background: 'rgba(255,255,255,0.08)',
+                        color: '#fff',
+                        border: '1px solid rgba(15, 164, 222, 0.3)',
+                        borderRadius: '999px',
+                        padding: '14px 28px',
+                        fontWeight: '600',
+                        fontSize: '15px',
+                        cursor: 'pointer',
+                        transition: 'background 0.2s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(15, 164, 222, 0.18)'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
+                    >
+                      {currentSlideObj.secondaryBtn.text}
+                    </button>
+                  )}
+                </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </div>
 
-      {/* ── Product Catalog Grid ── */}
+              {/* Right Visual / Animated Stats */}
+              {currentSlideObj.type === 'animated_stats' ? (
+                <AnimatedHeroStats active={slideIndex === 0} />
+              ) : (
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                  {currentSlideObj.metrics?.map((metric, mIdx) => (
+                    <div 
+                      key={metric.label || mIdx} 
+                      style={{ 
+                        textAlign: 'center', 
+                        background: 'rgba(15, 39, 66, 0.75)', 
+                        backdropFilter: 'blur(12px)',
+                        border: '1px solid rgba(15, 164, 222, 0.25)', 
+                        borderRadius: '20px', 
+                        padding: '24px 28px', 
+                        minWidth: '115px',
+                        boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                        transition: 'all 0.3s ease'
+                      }}
+                    >
+                      <div style={{ fontSize: '2.1rem', fontWeight: '900', color: currentSlideObj.titleColor || '#0fa4de' }}>
+                        {metric.value}
+                      </div>
+                      <div style={{ fontSize: '13px', color: '#94A3B8', marginTop: '4px', fontWeight: '600' }}>
+                        {metric.label}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Carousel Bottom Indicator Dots */}
+            {heroSlides.length > 1 && (
+              <div style={{
+                position: 'absolute',
+                bottom: '16px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                display: 'flex',
+                gap: '8px',
+                alignItems: 'center',
+                zIndex: 10
+              }}>
+                {heroSlides.map((slide, idx) => (
+                  <button
+                    key={slide.id || idx}
+                    onClick={() => setCurrentHeroSlide(idx)}
+                    aria-label={`Ir al slide ${idx + 1}`}
+                    style={{
+                      width: slideIndex === idx ? '28px' : '8px',
+                      height: '8px',
+                      borderRadius: '999px',
+                      background: slideIndex === idx ? '#0fa4de' : 'rgba(255, 255, 255, 0.3)',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)',
+                      padding: 0,
+                      boxShadow: slideIndex === idx ? '0 0 10px rgba(15, 164, 222, 0.6)' : 'none'
+                    }}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })()}
+
+      {/* ── Main Catalog / Brand Selection View ── */}
       <main style={{ maxWidth: '1320px', margin: '0 auto', padding: '48px 20px 60px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '28px', flexWrap: 'wrap', gap: '12px' }}>
+        {/* ── PASO 1: SELECCIÓN PREVIA DE MARCA / FABRICANTE (Cuando se selecciona un grupo específico) ── */}
+        {activeCategory !== 'all' && !selectedBrand && !search ? (
           <div>
-            <h2 style={{ margin: 0, fontSize: '1.6rem', fontWeight: '800', color: '#071524' }}>
-              {CATEGORIES.find(c => c.key === activeCategory)?.label}
-            </h2>
-            <p style={{ margin: '4px 0 0', fontSize: '0.9rem', color: '#64748B' }}>
-              Haz clic en cualquier producto para ver su ficha técnica completa y galería multimedia.
-            </p>
-          </div>
-          {search && (
-            <button onClick={() => setSearch('')} style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '999px', padding: '8px 16px', color: '#071524', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
-              Limpiar búsqueda ×
-            </button>
-          )}
-        </div>
+            {/* Breadcrumb y encabezado de paso previo */}
+            <div style={{ marginBottom: '32px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#64748B', marginBottom: '14px' }}>
+                <span onClick={() => { setActiveCategory('all'); setSelectedBrand(null); }} style={{ cursor: 'pointer', color: '#0fa4de', fontWeight: '600' }}>
+                  🛒 Catálogo
+                </span>
+                <span>/</span>
+                <span style={{ fontWeight: '700', color: '#071524' }}>
+                  {currentCategoryObj?.icon} {currentCategoryObj?.label}
+                </span>
+                <span>/</span>
+                <span style={{ color: '#94A3B8' }}>Seleccionar Marca</span>
+              </div>
 
-        {loading ? (
-          <div style={{ textAlign: 'center', padding: '80px 0', color: '#64748B' }}>
-            <div style={{ fontSize: '36px', marginBottom: '12px' }}>⏳</div>
-            <p style={{ fontWeight: '600' }}>Cargando catálogo de productos DACAS...</p>
-          </div>
-        ) : filtered.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '80px 0', color: '#64748B', background: '#FFFFFF', borderRadius: '24px', border: '1px solid #E2E8F0' }}>
-            <div style={{ fontSize: '3.5rem', marginBottom: '12px' }}>🔍</div>
-            <h3 style={{ margin: '0 0 8px', color: '#071524' }}>No encontramos coincidencias</h3>
-            <p style={{ margin: 0, color: '#64748B' }}>No se encontraron productos para "<strong>{search}</strong>"</p>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+                <div>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(15, 164, 222, 0.12)', color: '#0fa4de', padding: '4px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: '800', letterSpacing: '0.05em', marginBottom: '8px' }}>
+                    PASO 1 DE 2 · SELECCIÓN DE FABRICANTE
+                  </div>
+                  <h2 style={{ margin: '0 0 6px', fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: '900', color: '#071524', letterSpacing: '-0.02em' }}>
+                    {currentCategoryObj?.icon} {currentCategoryObj?.label}
+                  </h2>
+                  <p style={{ margin: 0, fontSize: '0.95rem', color: '#64748B', maxWidth: '680px', lineHeight: 1.5 }}>
+                    Selecciona una marca para explorar sus modelos certificados, stock en tiempo real y precios mayoristas oficiales:
+                  </p>
+                </div>
+
+                <button
+                  onClick={() => setSelectedBrand('all')}
+                  style={{
+                    background: '#FFFFFF',
+                    border: '1px solid #CBD5E1',
+                    borderRadius: '12px',
+                    padding: '10px 18px',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    color: '#071524',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0fa4de'; e.currentTarget.style.color = '#0fa4de'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#CBD5E1'; e.currentTarget.style.color = '#071524'; }}
+                >
+                  <span>📦</span> Ver Todos los Productos ({categoryProducts.length}) →
+                </button>
+              </div>
+            </div>
+
+            {/* Grid de Marcas */}
+            {availableBrands.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 0', background: '#FFFFFF', borderRadius: '24px', border: '1px solid #E2E8F0' }}>
+                <div style={{ fontSize: '3rem', marginBottom: '12px' }}>📦</div>
+                <h3 style={{ margin: '0 0 8px', color: '#071524' }}>No hay marcas registradas en esta categoría</h3>
+                <p style={{ margin: '0 0 16px', color: '#64748B' }}>Pronto incorporaremos nuevos fabricantes para {currentCategoryObj?.label}.</p>
+                <button
+                  onClick={() => setSelectedBrand('all')}
+                  style={{ background: '#0fa4de', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 20px', fontWeight: '700', cursor: 'pointer' }}
+                >
+                  Ver todos los productos disponibles
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
+                {availableBrands.map((b) => (
+                  <div
+                    key={b.rawName}
+                    onClick={() => setSelectedBrand(b.rawName)}
+                    style={{
+                      background: '#FFFFFF',
+                      border: '1.5px solid #E2E8F0',
+                      borderRadius: '20px',
+                      padding: '28px',
+                      cursor: 'pointer',
+                      transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'space-between',
+                      position: 'relative',
+                      overflow: 'hidden',
+                      boxShadow: '0 4px 15px rgba(0,0,0,0.03)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.transform = 'translateY(-4px)';
+                      e.currentTarget.style.borderColor = b.color || '#0fa4de';
+                      e.currentTarget.style.boxShadow = `0 12px 30px rgba(0,0,0,0.08), 0 0 0 1px ${b.color || '#0fa4de'}`;
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.transform = 'none';
+                      e.currentTarget.style.borderColor = '#E2E8F0';
+                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.03)';
+                    }}
+                  >
+                    <div>
+                      {/* Brand Header */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+                        <div style={{
+                          width: '64px',
+                          height: '64px',
+                          borderRadius: '16px',
+                          background: b.bg || 'rgba(15, 164, 222, 0.08)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '12px',
+                          border: '1px solid rgba(0,0,0,0.06)'
+                        }}>
+                          {b.logo ? (
+                            <img src={b.logo} alt={b.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                          ) : (
+                            <span style={{ fontSize: '1.6rem', fontWeight: '900', color: b.color || '#0fa4de' }}>
+                              {b.name.charAt(0)}
+                            </span>
+                          )}
+                        </div>
+
+                        <span style={{
+                          background: 'rgba(15, 164, 222, 0.1)',
+                          color: b.color || '#0fa4de',
+                          fontWeight: '800',
+                          fontSize: '12px',
+                          padding: '6px 12px',
+                          borderRadius: '999px',
+                          border: `1px solid ${b.color ? `${b.color}33` : 'rgba(15, 164, 222, 0.2)'}`
+                        }}>
+                          {b.count} {b.count === 1 ? 'Producto' : 'Productos'}
+                        </span>
+                      </div>
+
+                      {/* Brand Title & Tagline */}
+                      <h3 style={{ margin: '0 0 8px', fontSize: '1.35rem', fontWeight: '800', color: '#071524' }}>
+                        {b.name}
+                      </h3>
+                      <p style={{ margin: '0 0 24px', fontSize: '0.88rem', color: '#64748B', lineHeight: 1.5 }}>
+                        {b.tagline}
+                      </p>
+                    </div>
+
+                    {/* Action button */}
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      paddingTop: '16px',
+                      borderTop: '1px solid #F1F5F9'
+                    }}>
+                      <span style={{ fontSize: '12px', fontWeight: '700', color: '#94A3B8' }}>
+                        Garantía Oficial DACAS
+                      </span>
+                      <span style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        fontSize: '13px',
+                        fontWeight: '750',
+                        color: b.color || '#0fa4de'
+                      }}>
+                        Ver Productos ➔
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: '26px' }}>
-            {filtered.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                clientUser={clientUser}
-                onOpenAuth={() => {
-                  setAuthMode('login');
-                  setAuthModalOpen(true);
-                }}
-                onSelectProduct={() => setSelectedProduct(product)}
-                onAddToCart={(e) => {
-                  e.stopPropagation();
-                  addToCart(product, 1);
-                }}
-                justAdded={addedId === product.id}
-              />
-            ))}
+          /* ── PASO 2: LISTADO DE PRODUCTOS FILTRADOS ── */
+          <div>
+            <div style={{ marginBottom: '28px' }}>
+              {/* Breadcrumbs de navegación */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#64748B', marginBottom: '12px', flexWrap: 'wrap' }}>
+                <span onClick={() => { setActiveCategory('all'); setSelectedBrand(null); }} style={{ cursor: 'pointer', color: '#0fa4de', fontWeight: '600' }}>
+                  🛒 Catálogo
+                </span>
+                <span>/</span>
+                <span 
+                  onClick={() => setSelectedBrand(null)} 
+                  style={{ cursor: activeCategory !== 'all' ? 'pointer' : 'default', color: activeCategory !== 'all' ? '#0fa4de' : '#071524', fontWeight: '700' }}
+                >
+                  {currentCategoryObj?.icon} {currentCategoryObj?.label}
+                </span>
+                {selectedBrand && (
+                  <>
+                    <span>/</span>
+                    <span style={{ fontWeight: '750', color: '#071524' }}>
+                      🏷️ {selectedBrand === 'all' ? 'Todas las Marcas' : selectedBrand}
+                    </span>
+                  </>
+                )}
+              </div>
+
+              {/* Encabezado con título y acciones */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: '1.6rem', fontWeight: '800', color: '#071524', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    <span>{currentCategoryObj?.label}</span>
+                    {selectedBrand && selectedBrand !== 'all' && (
+                      <span style={{ fontSize: '1.1rem', fontWeight: '600', color: '#64748B' }}>
+                        · Marca: <strong style={{ color: '#0fa4de' }}>{selectedBrand}</strong>
+                      </span>
+                    )}
+                  </h2>
+                  <p style={{ margin: '4px 0 0', fontSize: '0.9rem', color: '#64748B' }}>
+                    {filtered.length} {filtered.length === 1 ? 'producto disponible' : 'productos disponibles'} para compras corporativas y cotizaciones.
+                  </p>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  {activeCategory !== 'all' && (
+                    <button
+                      onClick={() => setSelectedBrand(null)}
+                      style={{
+                        background: '#FFFFFF',
+                        border: '1px solid #CBD5E1',
+                        borderRadius: '999px',
+                        padding: '8px 16px',
+                        color: '#071524',
+                        cursor: 'pointer',
+                        fontSize: '13px',
+                        fontWeight: '700',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
+                      }}
+                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0fa4de'; e.currentTarget.style.color = '#0fa4de'; }}
+                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#CBD5E1'; e.currentTarget.style.color = '#071524'; }}
+                    >
+                      ← Cambiar Marca
+                    </button>
+                  )}
+                  {search && (
+                    <button onClick={() => setSearch('')} style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '999px', padding: '8px 16px', color: '#071524', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
+                      Limpiar búsqueda ×
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Selector de Marcas rápido (Pills) cuando se está dentro de una categoría */}
+              {activeCategory !== 'all' && availableBrands.length > 1 && (
+                <div style={{ display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <span style={{ fontSize: '12px', fontWeight: '700', color: '#64748B', marginRight: '4px' }}>Filtrar Marca:</span>
+                  <button
+                    onClick={() => setSelectedBrand('all')}
+                    style={{
+                      padding: '5px 14px',
+                      borderRadius: '999px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      border: selectedBrand === 'all' || !selectedBrand ? '1px solid #0fa4de' : '1px solid #E2E8F0',
+                      background: selectedBrand === 'all' || !selectedBrand ? '#0fa4de' : '#FFFFFF',
+                      color: selectedBrand === 'all' || !selectedBrand ? '#FFFFFF' : '#475569',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    Todas ({categoryProducts.length})
+                  </button>
+                  {availableBrands.map((b) => (
+                    <button
+                      key={b.rawName}
+                      onClick={() => setSelectedBrand(b.rawName)}
+                      style={{
+                        padding: '5px 14px',
+                        borderRadius: '999px',
+                        fontSize: '12px',
+                        fontWeight: '700',
+                        border: selectedBrand?.toLowerCase() === b.rawName.toLowerCase() ? `1px solid ${b.color || '#0fa4de'}` : '1px solid #E2E8F0',
+                        background: selectedBrand?.toLowerCase() === b.rawName.toLowerCase() ? (b.color || '#0fa4de') : '#FFFFFF',
+                        color: selectedBrand?.toLowerCase() === b.rawName.toLowerCase() ? '#FFFFFF' : '#475569',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s'
+                      }}
+                    >
+                      {b.name} ({b.count})
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '80px 0', color: '#64748B' }}>
+                <div style={{ fontSize: '36px', marginBottom: '12px' }}>⏳</div>
+                <p style={{ fontWeight: '600' }}>Cargando catálogo de productos DACAS...</p>
+              </div>
+            ) : filtered.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '80px 0', color: '#64748B', background: '#FFFFFF', borderRadius: '24px', border: '1px solid #E2E8F0' }}>
+                <div style={{ fontSize: '3.5rem', marginBottom: '12px' }}>🔍</div>
+                <h3 style={{ margin: '0 0 8px', color: '#071524' }}>No encontramos coincidencias</h3>
+                <p style={{ margin: 0, color: '#64748B' }}>No se encontraron productos para los filtros seleccionados.</p>
+                <button
+                  onClick={() => setSelectedBrand('all')}
+                  style={{ marginTop: '16px', background: '#0fa4de', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 20px', fontWeight: '700', cursor: 'pointer' }}
+                >
+                  Ver todos los productos de esta categoría
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: '26px' }}>
+                {filtered.map((product) => (
+                  <ProductCard
+                    key={product.id}
+                    product={product}
+                    clientUser={clientUser}
+                    onOpenAuth={() => {
+                      setAuthMode('login');
+                      setAuthModalOpen(true);
+                    }}
+                    onSelectProduct={() => setSelectedProduct(product)}
+                    onAddToCart={(e) => {
+                      e.stopPropagation();
+                      addToCart(product, 1);
+                    }}
+                    justAdded={addedId === product.id}
+                  />
+                ))}
+              </div>
+            )}
           </div>
         )}
       </main>

@@ -1947,7 +1947,7 @@ button:not(.btn-submit):not(.logout-btn):not(.btn-delete) {
   position: absolute;
   bottom: 70px;
   right: 0;
-  width: 290px;
+  width: 310px;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-lg);
@@ -1975,7 +1975,7 @@ button:not(.btn-submit):not(.logout-btn):not(.btn-delete) {
 .floating-help-card h4 {
   margin: 0;
   font-family: 'Outfit', sans-serif;
-  font-size: 1.1rem;
+  font-size: 1.05rem;
   font-weight: 750;
   color: var(--text-main);
   display: flex;
@@ -1985,15 +1985,81 @@ button:not(.btn-submit):not(.logout-btn):not(.btn-delete) {
 
 .floating-help-card p {
   margin: 0;
-  font-size: 0.85rem;
+  font-size: 0.83rem;
   color: var(--text-muted);
   line-height: 1.4;
   text-align: left;
 }
 
+.floating-help-select-group {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: left;
+}
+
+.floating-help-label {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text-secondary, #64748B);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.floating-help-select-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.floating-help-select {
+  width: 100%;
+  padding: 9px 30px 9px 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-main);
+  background: var(--input-bg, rgba(0, 0, 0, 0.04));
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md, 8px);
+  appearance: none;
+  -webkit-appearance: none;
+  cursor: pointer;
+  outline: none;
+  transition: var(--transition-bezier, all 0.2s ease);
+  font-family: inherit;
+}
+
+:root[data-theme='dark'] .floating-help-select {
+  background: var(--input-bg, rgba(255, 255, 255, 0.05));
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.floating-help-select:hover {
+  border-color: var(--primary);
+}
+
+.floating-help-select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(58, 123, 246, 0.15);
+}
+
+.floating-help-select option {
+  background: var(--card-bg, #ffffff);
+  color: var(--text-main, #1e293b);
+  font-weight: 500;
+}
+
+.floating-help-select-chevron {
+  position: absolute;
+  right: 12px;
+  pointer-events: none;
+  color: var(--text-muted);
+}
+
 .floating-help-card-btn {
   width: 100%;
-  padding: 11px 14px;
+  padding: 10px 14px;
   border-radius: var(--radius-md);
   font-weight: 600;
   font-size: 0.85rem;
@@ -2036,6 +2102,26 @@ button:not(.btn-submit):not(.logout-btn):not(.btn-delete) {
 
 .floating-help-card-btn:active {
   transform: scale(0.97);
+}
+
+.floating-help-footer-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--input-bg, rgba(0,0,0,0.03));
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.floating-help-footer-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--success, #10B981);
 }
 
 .floating-help-toast {

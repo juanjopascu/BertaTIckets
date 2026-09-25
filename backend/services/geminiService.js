@@ -66,18 +66,18 @@ const generateDimensionsAI = async (productName) => {
 };
 
 const generateCategoriesAI = async (productName) => {
-    console.log("✨ [Gemini AI Service] Sugiriendo categorías para:", productName);
+    console.log("✨ [Gemini AI Service] Sugiriendo categoría DACAS para:", productName);
     const p = (productName || '').toLowerCase();
-    if (p.includes('campera') || p.includes('cuero') || p.includes('ropa') || p.includes('remera') || p.includes('t-shirt')) {
-        return ['Indumentaria', 'Moda y Accesorios', 'Ropa'];
+    if (p.includes('firewall') || p.includes('fortinet') || p.includes('security') || p.includes('seguridad') || p.includes('licencia') || p.includes('antivirus') || p.includes('edr') || p.includes('ciber') || p.includes('soc')) {
+        return ['security'];
     }
-    if (p.includes('ticket') || p.includes('conferencia') || p.includes('evento')) {
-        return ['Tickets & Entradas', 'Eventos Tech', 'Capacitaciones'];
+    if (p.includes('servidor') || p.includes('server') || p.includes('dell') || p.includes('rack') || p.includes('cloud') || p.includes('datacenter') || p.includes('almacenamiento') || p.includes('storage') || p.includes('ups') || p.includes('fuente')) {
+        return ['infraestructura'];
     }
-    if (p.includes('tecnologia') || p.includes('tech') || p.includes('computacion') || p.includes('cable') || p.includes('auricular')) {
-        return ['Tecnología', 'Accesorios Electrónicos', 'Hardware'];
+    if (p.includes('poly') || p.includes('video') || p.includes('conferencia') || p.includes('camara') || p.includes('telefono') || p.includes('phone') || p.includes('voip') || p.includes('auricular') || p.includes('headset') || p.includes('colaboracion')) {
+        return ['comunicaciones_unificadas'];
     }
-    return ['General', 'Destacados', 'Novedades'];
+    return ['networking'];
 };
 
 module.exports = {

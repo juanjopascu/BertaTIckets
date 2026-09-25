@@ -283,6 +283,65 @@ function AdminConfigTickets() {
             </div>
           </section>
 
+          {/* Direct link to Support and Help Email Channels */}
+          <section style={{
+            background: 'var(--card-bg, #ffffff)',
+            border: '1px solid var(--border-color, #e2e8f0)',
+            borderRadius: '20px',
+            padding: '24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '20px',
+            boxShadow: 'var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05))',
+            flexWrap: 'wrap'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{
+                width: '46px',
+                height: '46px',
+                borderRadius: '12px',
+                background: 'rgba(15, 164, 222, 0.12)',
+                color: '#0fa4de',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontSize: '1.4rem'
+              }}>
+                💬
+              </div>
+              <div>
+                <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '750', color: 'var(--text-main)' }}>
+                  Canales y Correos de Ayuda / Soporte
+                </h4>
+                <p style={{ margin: '4px 0 0 0', fontSize: '0.84rem', color: 'var(--text-muted)' }}>
+                  Configura a qué dirección de correo apunta el botón de ayuda para cada sector (Soporte Técnico, Ventas, Facturación, etc.).
+                </p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => navigate('/admin/canales-ayuda')}
+              style={{
+                background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '10px',
+                padding: '10px 18px',
+                fontWeight: '700',
+                fontSize: '0.88rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                boxShadow: '0 2px 10px rgba(15, 164, 222, 0.3)'
+              }}
+            >
+              ⚙️ Gestionar Correos de Ayuda →
+            </button>
+          </section>
+
           {/* Premium Preview Box */}
           <section style={{ background: 'var(--primary-light)', border: '1px dashed var(--primary)', borderRadius: '24px', padding: '25px', display: 'flex', gap: '15px', alignItems: 'flex-start' }}>
             <div style={{ fontSize: '1.5rem' }}>💡</div>

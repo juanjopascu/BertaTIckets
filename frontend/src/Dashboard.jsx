@@ -714,6 +714,12 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                           <span className="sidebar-btn-text">Configuración Tickets</span>
                         </button>
                       </li>
+                      <li>
+                        <button className="sidebar-menu-btn" onClick={() => navigate('/admin/canales-ayuda')}>
+                          <span className="sidebar-btn-icon">💬</span>
+                          <span className="sidebar-btn-text">Canales de Ayuda</span>
+                        </button>
+                      </li>
                     </>
                   )}
                 </ul>

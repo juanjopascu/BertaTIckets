@@ -125,6 +125,41 @@ let configTicketsDb = {
     habilitarReservaViajes: true
 };
 
+let configAyudaDb = [
+    {
+        id: 'soporte_crm',
+        sector: 'Soporte Técnico / CRM',
+        email: 'soporte.interno@dacas.com',
+        asunto: 'Soporte CRM - Solicitud de Ayuda',
+        descripcion: 'Inconvenientes técnicos, acceso y uso del CRM / Tickets',
+        activo: true
+    },
+    {
+        id: 'ventas_shop',
+        sector: 'Ventas y E-Commerce / Shop',
+        email: 'ventas@dacas.com',
+        asunto: 'Consulta Comercial / E-Commerce Shop',
+        descripcion: 'Consultas sobre productos, pedidos, cotizaciones y stock',
+        activo: true
+    },
+    {
+        id: 'facturacion',
+        sector: 'Facturación y Cobranzas',
+        email: 'facturacion@dacas.com',
+        asunto: 'Consulta de Facturación y Cuentas',
+        descripcion: 'Comprobantes, facturas A/B, pagos y cuentas corrientes',
+        activo: true
+    },
+    {
+        id: 'general',
+        sector: 'Atención General Dacas',
+        email: 'info@dacas.com',
+        asunto: 'Consulta General - Dacas',
+        descripcion: 'Consultas generales, recepción y contacto institucional',
+        activo: true
+    }
+];
+
 let clientesDb = [
     {
         id: 1,
@@ -540,6 +575,28 @@ app.post('/api/config-tickets', requireCrmAuth, requireCrmAdmin, (req, res) => {
     if (habilitarReservaViajes !== undefined) configTicketsDb.habilitarReservaViajes = !!habilitarReservaViajes;
 
     res.status(200).json(configTicketsDb);
+});
+
+// ==========================================
+// ENDPOINTS DE CONFIGURACIÓN DE CANALES DE AYUDA
+// ==========================================
+app.get('/api/config-ayuda', (req, res) => {
+    res.status(200).json(configAyudaDb);
+});
+
+app.post('/api/config-ayuda', requireCrmAuth, requireCrmAdmin, (req, res) => {
+    const { canales } = req.body;
+    if (Array.isArray(canales)) {
+        configAyudaDb = canales.map(c => ({
+            id: c.id || `sector_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+            sector: (c.sector || c.nombre || '').trim(),
+            email: (c.email || '').trim(),
+            asunto: (c.asunto || '').trim(),
+            descripcion: (c.descripcion || '').trim(),
+            activo: c.activo !== false
+        }));
+    }
+    res.status(200).json(configAyudaDb);
 });
 
 // ==========================================

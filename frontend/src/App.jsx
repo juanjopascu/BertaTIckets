@@ -13,6 +13,7 @@ import AdminOrganizaciones from './AdminOrganizaciones';
 import AdminEquipos from './AdminEquipos';
 import AdminConfigTickets from './AdminConfigTickets';
 import AdminEcommerce from './AdminEcommerce';
+import AdminCanalesAyuda from './AdminCanalesAyuda';
 import Shop from './Shop';
 import ShopClientPortal from './ShopClientPortal';
 import ShopCheckout from './ShopCheckout';
@@ -235,6 +236,14 @@ function App() {
             </ProtectedRoute>
           }
         />
+        <Route
+          path="/admin/canales-ayuda"
+          element={
+            <ProtectedRoute rolesPermitidos={['admin']}>
+              <AdminCanalesAyuda />
+            </ProtectedRoute>
+          }
+        />
 
         {/* Ruta de Usuario / Empleado / Cliente / Manager */}
         <Route
@@ -251,11 +260,90 @@ function App() {
   );
 }
 
+const DEFAULT_SUPPORT_DESTINATIONS = [
+  {
+    id: 'soporte_crm',
+    nombre: 'Soporte Técnico / CRM',
+    email: 'soporte.interno@dacas.com',
+    asunto: 'Soporte CRM - Solicitud de Ayuda',
+  },
+  {
+    id: 'ventas_shop',
+    nombre: 'Ventas y E-Commerce',
+    email: 'ventas@dacas.com',
+    asunto: 'Consulta Comercial / E-Commerce Shop',
+  },
+  {
+    id: 'facturacion',
+    nombre: 'Facturación y Cobranzas',
+    email: 'facturacion@dacas.com',
+    asunto: 'Consulta de Facturación y Cuentas',
+  },
+  {
+    id: 'general',
+    nombre: 'Atención General Dacas',
+    email: 'info@dacas.com',
+    asunto: 'Consulta General - Dacas',
+  }
+];
+
 // Beautiful and premium floating support and help button (FAB)
 function FloatingHelpButton({ usuario }) {
   const [isOpen, setIsOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
+  const [destinations, setDestinations] = useState(DEFAULT_SUPPORT_DESTINATIONS);
+  const [shopUser, setShopUser] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem('dacas_client_user') || localStorage.getItem('shop_user') || 'null');
+    } catch {
+      return null;
+    }
+  });
+
+  // Track login state in shop or CRM
+  useEffect(() => {
+    const checkAuth = () => {
+      try {
+        const u = JSON.parse(localStorage.getItem('dacas_client_user') || localStorage.getItem('shop_user') || 'null');
+        setShopUser(u);
+      } catch {
+        setShopUser(null);
+      }
+    };
+    window.addEventListener('storage', checkAuth);
+    const interval = setInterval(checkAuth, 1000);
+    return () => {
+      window.removeEventListener('storage', checkAuth);
+      clearInterval(interval);
+    };
+  }, []);
+
+  const isShopRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/shop');
+  const activeUser = usuario || shopUser;
+
   const cardRef = React.useRef(null);
+
+  useEffect(() => {
+    const apiHost = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
+    fetch(`http://${apiHost}:3001/api/config-ayuda`)
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          const active = data.filter(d => d.activo !== false);
+          if (active.length > 0) {
+            setDestinations(active.map(d => ({
+              id: d.id,
+              nombre: d.sector || d.nombre,
+              email: d.email,
+              asunto: d.asunto || 'Consulta - DACAS'
+            })));
+          }
+        }
+      })
+      .catch(err => {
+        console.warn('Usando configuración local por defecto para canales de ayuda:', err);
+      });
+  }, [isOpen]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -271,23 +359,33 @@ function FloatingHelpButton({ usuario }) {
     };
   }, [isOpen]);
 
+  // If user is not logged in, do not render the floating help button
+  if (!activeUser) {
+    return null;
+  }
+
+  // Choose the destination email based on the current section
+  const currentDept = isShopRoute
+    ? destinations.find(d => d.id === 'ventas_shop' || d.id.includes('shop') || d.id.includes('ventas')) || destinations[0] || DEFAULT_SUPPORT_DESTINATIONS[1]
+    : destinations.find(d => d.id === 'soporte_crm' || d.id.includes('crm') || d.id.includes('soporte')) || destinations[0] || DEFAULT_SUPPORT_DESTINATIONS[0];
+
   const getMailtoUrl = () => {
-    const recipient = 'soporte.interno@dacas.com';
-    const subject = encodeURIComponent('Soporte CRM - Solicitud de Ayuda');
+    const recipient = currentDept.email;
+    const subject = encodeURIComponent(currentDept.asunto || (isShopRoute ? 'Consulta Shop DACAS' : 'Soporte CRM DACAS'));
     
-    let bodyContent = `Hola Equipo de Soporte,\n\nTengo la siguiente consulta o inconveniente en la plataforma CRM:\n\n[Escribe tu consulta o inconveniente aquí]\n\n--------------------------------------------------\n`;
+    let bodyContent = `Hola Equipo de ${currentDept.nombre},\n\nTengo la siguiente consulta o requerimiento:\n\n[Escribe tu mensaje o consulta aquí]\n\n--------------------------------------------------\n`;
     bodyContent += `Detalles de diagnóstico automático:\n`;
+    bodyContent += `- Canal de destino: ${currentDept.nombre} (${currentDept.email})\n`;
     bodyContent += `- URL de origen: ${window.location.href}\n`;
     bodyContent += `- Fecha y hora del reporte: ${new Date().toLocaleString()}\n`;
     
-    if (usuario) {
-      bodyContent += `- Usuario: ${usuario.nombre} (${usuario.email})\n`;
-      bodyContent += `- Rol: ${usuario.rol}\n`;
-      if (usuario.pais) bodyContent += `- País: ${usuario.pais}\n`;
-      if (usuario.sector) bodyContent += `- Sector: ${usuario.sector}\n`;
-      if (usuario.ciudad) bodyContent += `- Ciudad: ${usuario.ciudad}\n`;
-    } else {
-      bodyContent += `- Estado de autenticación: No autenticado / Login\n`;
+    if (activeUser) {
+      bodyContent += `- Usuario: ${activeUser.nombre || activeUser.name || 'Cliente'} (${activeUser.email})\n`;
+      if (activeUser.empresa || activeUser.company) bodyContent += `- Empresa: ${activeUser.empresa || activeUser.company}\n`;
+      if (activeUser.rol || activeUser.role) bodyContent += `- Rol: ${activeUser.rol || activeUser.role}\n`;
+      if (activeUser.pais) bodyContent += `- País: ${activeUser.pais}\n`;
+      if (activeUser.sector) bodyContent += `- Sector: ${activeUser.sector}\n`;
+      if (activeUser.ciudad) bodyContent += `- Ciudad: ${activeUser.ciudad}\n`;
     }
     bodyContent += `--------------------------------------------------\n`;
     
@@ -296,7 +394,7 @@ function FloatingHelpButton({ usuario }) {
   };
 
   const handleCopyEmail = () => {
-    navigator.clipboard.writeText('soporte.interno@dacas.com')
+    navigator.clipboard.writeText(currentDept.email)
       .then(() => {
         setShowToast(true);
         setTimeout(() => setShowToast(false), 2500);
@@ -327,10 +425,14 @@ function FloatingHelpButton({ usuario }) {
               <path d="m4.93 4.93 4.24 4.24M14.83 9.17l4.24-4.24M14.83 14.83l4.24 4.24M9.17 14.83l-4.24 4.24" />
               <circle cx="12" cy="12" r="4" />
             </svg>
-            Soporte Interno Dacas
+            {isShopRoute ? 'Soporte y Ventas Shop' : 'Soporte Interno DACAS'}
           </h4>
-          <p>¿Tienes dudas o algún inconveniente con el CRM? Contáctanos de forma directa:</p>
-          
+          <p>
+            {isShopRoute
+              ? '¿Tienes dudas sobre productos, pedidos o cotizaciones? Contáctanos de forma directa:'
+              : '¿Tienes dudas o algún inconveniente con el CRM? Contáctanos de forma directa:'}
+          </p>
+
           {/* Botón enviar correo nativo */}
           <a 
             className="floating-help-card-btn primary" 
@@ -347,8 +449,9 @@ function FloatingHelpButton({ usuario }) {
             Enviar Correo Electrónico
           </a>
 
-          {/* Botón copiar correo a portapapeles (Fallback de alta confianza) */}
+          {/* Botón copiar correo a portapapeles */}
           <button 
+            type="button"
             className="floating-help-card-btn secondary"
             onClick={handleCopyEmail}
           >
@@ -359,9 +462,10 @@ function FloatingHelpButton({ usuario }) {
             Copiar Email de Soporte
           </button>
           
-          <p style={{ fontSize: '0.75rem', marginTop: '4px', textAlign: 'center', opacity: 0.8 }}>
-            soporte.interno@dacas.com
-          </p>
+          <div className="floating-help-footer-badge">
+            <span className="floating-help-footer-dot"></span>
+            {currentDept.email}
+          </div>
         </div>
       )}
 
@@ -370,6 +474,7 @@ function FloatingHelpButton({ usuario }) {
         ¿Necesitas ayuda?
       </span>
       <button 
+        type="button"
         className="floating-help-btn" 
         onClick={() => setIsOpen(!isOpen)}
         aria-label="Botón de ayuda y soporte técnico"
