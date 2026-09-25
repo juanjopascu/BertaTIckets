@@ -324,6 +324,9 @@ function AdminEcommerce({ embedded = false }) {
   const [showUserForm, setShowUserForm] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
   const [userFilterStatus, setUserFilterStatus] = useState('all');
+  const [userSearch, setUserSearch] = useState('');
+  const [openActionDropdown, setOpenActionDropdown] = useState(null); // stores user.id of open dropdown
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0 }); // pixel coords for fixed dropdown
   const [userCreateMode, setUserCreateMode] = useState('new_company'); // 'new_company' | 'existing_company'
   const [selectedExistingCompany, setSelectedExistingCompany] = useState('');
   const initialUserForm = {
@@ -1553,6 +1556,7 @@ function AdminEcommerce({ embedded = false }) {
     <div
       className={embedded ? "crm-embedded-view" : "crm-container"}
       style={embedded ? { width: '100%', maxWidth: '100%', margin: 0, padding: 0 } : {}}
+      onClick={() => { if (openActionDropdown !== null) setOpenActionDropdown(null); }}
     >
       <style>{`
         .tab-buttons {
@@ -2929,47 +2933,81 @@ function AdminEcommerce({ embedded = false }) {
               </button>
             </div>
 
-            {/* Filtros por Estado */}
-            <div style={{ display: 'flex', gap: '6px', marginBottom: '16px', flexWrap: 'wrap' }}>
-              {[
-                { key: 'all', label: 'Todos los Clientes', icon: null, count: users.length },
-                { key: 'pendiente', label: 'Solicitudes Pendientes', icon: <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#eab308', display: 'inline-block' }}></span>, count: users.filter(u => u.status === 'pendiente').length, highlight: true },
-                { key: 'activo', label: 'Clientes Activos', icon: <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }}></span>, count: users.filter(u => (u.status || 'activo') === 'activo').length },
-                { key: 'inactivo', label: 'Inactivos', icon: <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', display: 'inline-block' }}></span>, count: users.filter(u => u.status === 'inactivo').length }
-              ].map(f => (
-                <button
-                  key={f.key}
-                  onClick={() => setUserFilterStatus(f.key)}
+            {/* Barra de Filtros por Estado y Buscador de Clientes */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                {[
+                  { key: 'all', label: 'Todos los Clientes', icon: null, count: users.length },
+                  { key: 'pendiente', label: 'Solicitudes Pendientes', icon: <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#eab308', display: 'inline-block' }}></span>, count: users.filter(u => u.status === 'pendiente').length, highlight: true },
+                  { key: 'activo', label: 'Clientes Activos', icon: <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }}></span>, count: users.filter(u => (u.status || 'activo') === 'activo').length },
+                  { key: 'inactivo', label: 'Inactivos', icon: <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', display: 'inline-block' }}></span>, count: users.filter(u => u.status === 'inactivo').length }
+                ].map(f => (
+                  <button
+                    key={f.key}
+                    onClick={() => setUserFilterStatus(f.key)}
+                    style={{
+                      padding: '5px 11px',
+                      borderRadius: '8px',
+                      border: '1px solid',
+                      borderColor: userFilterStatus === f.key ? '#0fa4de' : 'var(--border-color)',
+                      background: userFilterStatus === f.key ? '#0fa4de' : 'var(--card-bg)',
+                      color: userFilterStatus === f.key ? '#ffffff' : 'var(--text-main)',
+                      fontWeight: userFilterStatus === f.key ? '700' : '600',
+                      cursor: 'pointer',
+                      fontSize: '0.78rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      boxShadow: userFilterStatus === f.key ? '0 2px 6px rgba(15, 164, 222, 0.2)' : 'none'
+                    }}
+                  >
+                    {f.icon}
+                    <span>{f.label}</span>
+                    <span style={{
+                      background: userFilterStatus === f.key ? 'rgba(255,255,255,0.25)' : (f.highlight && f.count > 0 ? '#fef3c7' : '#f1f5f9'),
+                      color: userFilterStatus === f.key ? '#ffffff' : (f.highlight && f.count > 0 ? '#d97706' : '#64748b'),
+                      padding: '1px 5px',
+                      borderRadius: '999px',
+                      fontSize: '10px',
+                      fontWeight: '700'
+                    }}>
+                      {f.count}
+                    </span>
+                  </button>
+                ))}
+              </div>
+
+              {/* Buscador de clientes */}
+              <div style={{ position: 'relative', width: '280px', minWidth: '220px' }}>
+                <input
+                  type="text"
+                  placeholder="Buscar empresa, usuario, CUIT, email..."
+                  value={userSearch}
+                  onChange={(e) => setUserSearch(e.target.value)}
                   style={{
-                    padding: '6px 12px',
+                    width: '100%',
+                    padding: '6px 10px 6px 30px',
                     borderRadius: '8px',
-                    border: '1px solid',
-                    borderColor: userFilterStatus === f.key ? '#0fa4de' : 'var(--border-color)',
-                    background: userFilterStatus === f.key ? '#0fa4de' : 'var(--card-bg)',
-                    color: userFilterStatus === f.key ? '#ffffff' : 'var(--text-main)',
-                    fontWeight: userFilterStatus === f.key ? '700' : '600',
-                    cursor: 'pointer',
-                    fontSize: '0.8rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    boxShadow: userFilterStatus === f.key ? '0 2px 6px rgba(15, 164, 222, 0.2)' : 'none'
+                    border: '1px solid var(--border-color, #cbd5e1)',
+                    background: 'var(--card-bg, #ffffff)',
+                    color: 'var(--text-main)',
+                    fontSize: '12px',
+                    boxSizing: 'border-box'
                   }}
-                >
-                  {f.icon}
-                  <span>{f.label}</span>
-                  <span style={{
-                    background: userFilterStatus === f.key ? 'rgba(255,255,255,0.25)' : (f.highlight && f.count > 0 ? '#fef3c7' : '#f1f5f9'),
-                    color: userFilterStatus === f.key ? '#ffffff' : (f.highlight && f.count > 0 ? '#d97706' : '#64748b'),
-                    padding: '1px 5px',
-                    borderRadius: '999px',
-                    fontSize: '10.5px',
-                    fontWeight: '700'
-                  }}>
-                    {f.count}
-                  </span>
-                </button>
-              ))}
+                />
+                <span style={{ position: 'absolute', left: '8px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none', display: 'flex', alignItems: 'center', color: '#94a3b8' }}>
+                  <BrandingVectorIcon name="search" size={13} color="#94a3b8" />
+                </span>
+                {userSearch && (
+                  <button 
+                    type="button" 
+                    onClick={() => setUserSearch('')}
+                    style={{ position: 'absolute', right: '6px', top: '50%', transform: 'translateY(-50%)', background: 'transparent', border: 'none', cursor: 'pointer', color: '#94a3b8', fontSize: '12px', padding: '2px' }}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* ALTA / EDICIÓN DE USUARIO B2B */}
@@ -3286,29 +3324,41 @@ function AdminEcommerce({ embedded = false }) {
               </div>
             )}
 
-            {/* TABLA DE USUARIOS / CLIENTES */}
-            <div className="crm-table-container" style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-              <table className="users-table crm-compact-table" style={{ width: '100%' }}>
+            {/* TABLA DE USUARIOS / CLIENTES - COMPACT 2 LINES */}
+            <div className="crm-table-container" style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)' }}>
+              <table className="users-table crm-compact-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
               <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>Empresa / Razón Social</th>
-                  <th>Usuario & Acceso LogIn</th>
-                  <th>Cargo / Rol</th>
-                  <th>Teléfono</th>
-                  <th>País / CUIT</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
+                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left' }}>
+                  <th style={{ padding: '7px 10px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750' }}>ID</th>
+                  <th style={{ padding: '7px 10px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750' }}>Empresa / Razón Social</th>
+                  <th style={{ padding: '7px 10px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750' }}>Usuario & Acceso LogIn</th>
+                  <th style={{ padding: '7px 10px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750' }}>Cargo / Rol</th>
+                  <th style={{ padding: '7px 10px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750' }}>Teléfono</th>
+                  <th style={{ padding: '7px 10px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750' }}>País / CUIT</th>
+                  <th style={{ padding: '7px 10px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750' }}>Estado</th>
+                  <th style={{ padding: '7px 10px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', textAlign: 'center' }}>Acciones</th>
                 </tr>
               </thead>
               <tbody>
                 {users
                   .filter(u => {
-                    if (userFilterStatus === 'all') return true;
                     if (userFilterStatus === 'pendiente') return u.status === 'pendiente';
                     if (userFilterStatus === 'activo') return (u.status || 'activo') === 'activo';
                     if (userFilterStatus === 'inactivo') return u.status === 'inactivo';
                     return true;
+                  })
+                  .filter(u => {
+                    if (!userSearch) return true;
+                    const term = userSearch.toLowerCase().trim();
+                    const company = (u.razon_social || '').toLowerCase();
+                    const name = (u.name || '').toLowerCase();
+                    const email = (u.email || '').toLowerCase();
+                    const cuit = (u.numero_nit || '').toLowerCase();
+                    const phone = (u.phone || '').toLowerCase();
+                    const country = (u.country_name || countries.find(c => c.id === u.country_id)?.name || '').toLowerCase();
+                    const tipo = (u.tipo_cliente || '').toLowerCase();
+                    const cargo = (u.cargo || '').toLowerCase();
+                    return company.includes(term) || name.includes(term) || email.includes(term) || cuit.includes(term) || phone.includes(term) || country.includes(term) || tipo.includes(term) || cargo.includes(term);
                   })
                   .map(u => {
                     const isPending = u.status === 'pendiente';
@@ -3317,11 +3367,13 @@ function AdminEcommerce({ embedded = false }) {
                     const sameCompanyCount = users.filter(x => (x.razon_social || x.name || '').trim().toLowerCase() === companyKey).length;
                     
                     return (
-                      <tr key={u.id} style={{ background: isPending ? 'rgba(245, 158, 11, 0.04)' : 'transparent' }}>
-                        <td><strong style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>#{u.id}</strong></td>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
-                            <strong style={{ color: 'var(--text-main)', fontSize: '0.84rem' }}>{u.razon_social || u.name}</strong>
+                      <tr key={u.id} style={{ borderBottom: '1px solid var(--border-color-subtle, #f1f5f9)', background: isPending ? 'rgba(245, 158, 11, 0.04)' : 'transparent', transition: 'background 0.15s ease' }}>
+                        <td style={{ padding: '6px 10px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                          <strong style={{ color: 'var(--primary, #0fa4de)', fontSize: '0.8rem', fontWeight: '800' }}>#{u.id}</strong>
+                        </td>
+                        <td style={{ padding: '6px 10px', verticalAlign: 'middle' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap', lineHeight: 1.25 }}>
+                            <strong style={{ color: 'var(--text-main)', fontSize: '0.82rem' }}>{u.razon_social || u.name}</strong>
                             {sameCompanyCount > 1 && (
                               <span 
                                 title={`Esta empresa cuenta con ${sameCompanyCount} usuarios con acceso al Shop`}
@@ -3329,63 +3381,70 @@ function AdminEcommerce({ embedded = false }) {
                                   background: 'rgba(15, 164, 222, 0.1)',
                                   color: '#0284c7',
                                   border: '1px solid rgba(15, 164, 222, 0.25)',
-                                  padding: '1px 6px',
+                                  padding: '0 5px',
                                   borderRadius: '999px',
-                                  fontSize: '10px',
+                                  fontSize: '9.5px',
                                   fontWeight: '700',
                                   display: 'inline-flex',
                                   alignItems: 'center',
-                                  gap: '3px'
+                                  gap: '2px'
                                 }}
                               >
-                                <BrandingVectorIcon name="users" size={10} color="#0284c7" />
+                                <BrandingVectorIcon name="users" size={9} color="#0284c7" />
                                 {sameCompanyCount}
                               </span>
                             )}
                           </div>
                           {u.tipo_cliente && (
-                            <div style={{ fontSize: '0.74rem', color: '#64748b', marginTop: '1px', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                              <BrandingVectorIcon name="briefcase" size={11} color="#64748b" />
+                            <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '1px', display: 'flex', alignItems: 'center', gap: '3px', lineHeight: 1.2 }}>
+                              <BrandingVectorIcon name="briefcase" size={10} color="#64748b" />
                               <span>{u.tipo_cliente}</span>
                             </div>
                           )}
                         </td>
-                        <td>
-                          <div style={{ fontWeight: '600', color: 'var(--text-main)', fontSize: '0.82rem' }}>{u.name}</div>
-                          <div style={{ fontSize: '0.74rem', color: '#0fa4de', marginTop: '1px', display: 'flex', alignItems: 'center', gap: '3px' }}>
-                            <BrandingVectorIcon name="mail" size={11} color="#0fa4de" />
+                        <td style={{ padding: '6px 10px', verticalAlign: 'middle' }}>
+                          <div style={{ fontWeight: '650', color: 'var(--text-main)', fontSize: '0.8rem', lineHeight: 1.25 }}>{u.name}</div>
+                          <div style={{ fontSize: '0.72rem', color: '#0fa4de', marginTop: '1px', display: 'flex', alignItems: 'center', gap: '3px', lineHeight: 1.2 }}>
+                            <BrandingVectorIcon name="mail" size={10} color="#0fa4de" />
                             <span>{u.email}</span>
                           </div>
                         </td>
-                        <td>
+                        <td style={{ padding: '6px 10px', verticalAlign: 'middle' }}>
                           <span style={{
                             background: 'rgba(0,0,0,0.03)',
                             color: 'var(--text-main)',
                             padding: '2px 6px',
                             borderRadius: '5px',
-                            fontSize: '0.74rem',
+                            fontSize: '0.72rem',
                             fontWeight: '600',
                             display: 'inline-block',
-                            border: '1px solid var(--border-color)'
+                            border: '1px solid var(--border-color)',
+                            whiteSpace: 'nowrap'
                           }}>
                             {u.cargo || 'Encargado de Compras'}
                           </span>
                         </td>
-                        <td style={{ fontSize: '0.78rem' }}>{u.phone || '—'}</td>
-                        <td>
-                          <div style={{ fontSize: '0.8rem' }}>{u.country_name || countries.find(c => c.id === u.country_id)?.name || '—'}</div>
-                          <div style={{ fontSize: '0.72rem', color: '#64748b', fontWeight: '600' }}>{u.numero_nit || ''}</div>
+                        <td style={{ padding: '6px 10px', fontSize: '0.76rem', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                          {u.phone || '—'}
                         </td>
-                        <td>
+                        <td style={{ padding: '6px 10px', verticalAlign: 'middle' }}>
+                          <div style={{ fontSize: '0.78rem', fontWeight: '600', color: 'var(--text-main)', lineHeight: 1.25 }}>
+                            {u.country_name || countries.find(c => c.id === u.country_id)?.name || '—'}
+                          </div>
+                          <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: '600', lineHeight: 1.2 }}>
+                            {u.numero_nit || 'Sin CUIT'}
+                          </div>
+                        </td>
+                        <td style={{ padding: '6px 10px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
                           {isPending ? (
                             <span style={{
                               background: '#fef3c7',
                               color: '#d97706',
                               border: '1px solid #fde68a',
-                              padding: '2px 8px',
+                              padding: '2px 7px',
                               borderRadius: '999px',
-                              fontSize: '0.72rem',
-                              fontWeight: '700',
+                              fontSize: '0.7rem',
+                              fontWeight: '750',
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '4px'
@@ -3398,10 +3457,10 @@ function AdminEcommerce({ embedded = false }) {
                               background: '#fee2e2',
                               color: '#dc2626',
                               border: '1px solid #fecaca',
-                              padding: '2px 8px',
+                              padding: '2px 7px',
                               borderRadius: '999px',
-                              fontSize: '0.72rem',
-                              fontWeight: '700',
+                              fontSize: '0.7rem',
+                              fontWeight: '750',
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '4px'
@@ -3414,10 +3473,10 @@ function AdminEcommerce({ embedded = false }) {
                               background: '#dcfce7',
                               color: '#16a34a',
                               border: '1px solid #bbf7d0',
-                              padding: '2px 8px',
+                              padding: '2px 7px',
                               borderRadius: '999px',
-                              fontSize: '0.72rem',
-                              fontWeight: '700',
+                              fontSize: '0.7rem',
+                              fontWeight: '750',
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '4px'
@@ -3427,65 +3486,170 @@ function AdminEcommerce({ embedded = false }) {
                             </span>
                           )}
                         </td>
-                        <td>
-                          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', alignItems: 'center' }}>
-                            {isPending && (
-                              <button
-                                onClick={() => handleApproveUser(u.id)}
-                                className="dacas-action-pill success"
-                                title="Aprobar solicitud de cliente"
-                              >
-                                <BrandingVectorIcon name="check" size={11} color="#ffffff" />
-                                <span>Aprobar</span>
-                              </button>
-                            )}
+                        <td style={{ padding: '6px 10px', verticalAlign: 'middle', textAlign: 'center' }}>
+                          {/* Dropdown de Acciones */}
+                          <div style={{ position: 'relative', display: 'inline-block' }}>
                             <button
-                              onClick={() => handleOpenAddUserToCompany(u)}
-                              className="dacas-action-pill secondary"
-                              title="Agregar otro usuario a esta misma empresa"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (openActionDropdown === u.id) {
+                                  setOpenActionDropdown(null);
+                                } else {
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  setDropdownPos({ top: rect.bottom + 4, left: rect.left });
+                                  setOpenActionDropdown(u.id);
+                                }
+                              }}
+                              style={{
+                                display: 'inline-flex', alignItems: 'center', gap: '5px',
+                                padding: '3px 10px', borderRadius: '7px', cursor: 'pointer',
+                                fontSize: '11px', fontWeight: '700',
+                                background: isPending ? '#fef3c7' : '#F1F5F9',
+                                color: isPending ? '#d97706' : '#334155',
+                                border: isPending ? '1px solid #fde68a' : '1px solid #CBD5E1',
+                                transition: 'background 0.15s'
+                              }}
                             >
-                              <BrandingVectorIcon name="plus" size={11} color="currentColor" />
-                              <span>Usuario</span>
+                              <BrandingVectorIcon name="settings" size={11} color={isPending ? '#d97706' : '#334155'} />
+                              <span>Acciones</span>
+                              <BrandingVectorIcon name="chevron-down" size={10} color={isPending ? '#d97706' : '#64748B'} />
                             </button>
-                            <button
-                              onClick={() => openUserModal(u.id)}
-                              className="dacas-action-pill secondary"
-                              title="Ver perfil completo"
-                            >
-                              <span>Ver Perfil</span>
-                            </button>
-                            <button
-                              onClick={() => handleEditUser(u)}
-                              className="dacas-action-pill secondary"
-                              title="Editar cliente"
-                            >
-                              <BrandingVectorIcon name="edit" size={11} color="currentColor" />
-                              <span>Editar</span>
-                            </button>
-                            {isPending ? (
-                              <button
-                                onClick={() => handleToggleUserStatus(u.id, 'inactivo')}
-                                className="dacas-action-pill danger"
-                                title="Rechazar solicitud"
+
+                            {openActionDropdown === u.id && (
+                              <div
+                                onClick={(e) => e.stopPropagation()}
+                                style={{
+                                  position: 'fixed',
+                                  top: dropdownPos.top,
+                                  left: dropdownPos.left,
+                                  zIndex: 9999,
+                                  background: '#ffffff',
+                                  border: '1px solid #E2E8F0',
+                                  borderRadius: '10px',
+                                  boxShadow: '0 8px 24px rgba(0,0,0,0.13)',
+                                  minWidth: '160px',
+                                  padding: '4px'
+                                }}
                               >
-                                <span>Rechazar</span>
-                              </button>
-                            ) : isInactive ? (
-                              <button
-                                onClick={() => handleToggleUserStatus(u.id, 'activo')}
-                                className="dacas-action-pill success"
-                                title="Reactivar cliente"
-                              >
-                                <span>Reactivar</span>
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() => handleToggleUserStatus(u.id, 'inactivo')}
-                                className="dacas-action-pill secondary"
-                                title="Desactivar cuenta"
-                              >
-                                <span>Desactivar</span>
-                              </button>
+                                {/* Aprobar / Agregar Usuario */}
+                                {isPending ? (
+                                  <button
+                                    onClick={() => { handleApproveUser(u.id); setOpenActionDropdown(null); }}
+                                    style={{
+                                      display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
+                                      padding: '6px 10px', borderRadius: '7px', cursor: 'pointer',
+                                      border: 'none', background: 'transparent',
+                                      fontSize: '11.5px', fontWeight: '600', color: '#16a34a',
+                                      transition: 'background 0.12s'
+                                    }}
+                                    onMouseEnter={e => e.currentTarget.style.background = '#f0fdf4'}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                  >
+                                    <BrandingVectorIcon name="check" size={12} color="#16a34a" />
+                                    Aprobar
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => { handleOpenAddUserToCompany(u); setOpenActionDropdown(null); }}
+                                    style={{
+                                      display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
+                                      padding: '6px 10px', borderRadius: '7px', cursor: 'pointer',
+                                      border: 'none', background: 'transparent',
+                                      fontSize: '11.5px', fontWeight: '600', color: '#334155',
+                                      transition: 'background 0.12s'
+                                    }}
+                                    onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                  >
+                                    <BrandingVectorIcon name="plus" size={12} color="#334155" />
+                                    Agregar Usuario
+                                  </button>
+                                )}
+
+                                <button
+                                  onClick={() => { openUserModal(u.id); setOpenActionDropdown(null); }}
+                                  style={{
+                                    display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
+                                    padding: '6px 10px', borderRadius: '7px', cursor: 'pointer',
+                                    border: 'none', background: 'transparent',
+                                    fontSize: '11.5px', fontWeight: '600', color: '#334155',
+                                    transition: 'background 0.12s'
+                                  }}
+                                  onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                >
+                                  <BrandingVectorIcon name="eye" size={12} color="#334155" />
+                                  Ver Perfil
+                                </button>
+
+                                <button
+                                  onClick={() => { handleEditUser(u); setOpenActionDropdown(null); }}
+                                  style={{
+                                    display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
+                                    padding: '6px 10px', borderRadius: '7px', cursor: 'pointer',
+                                    border: 'none', background: 'transparent',
+                                    fontSize: '11.5px', fontWeight: '600', color: '#334155',
+                                    transition: 'background 0.12s'
+                                  }}
+                                  onMouseEnter={e => e.currentTarget.style.background = '#f8fafc'}
+                                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                >
+                                  <BrandingVectorIcon name="edit" size={12} color="#334155" />
+                                  Editar
+                                </button>
+
+                                <div style={{ height: '1px', background: '#F1F5F9', margin: '3px 0' }} />
+
+                                {isPending ? (
+                                  <button
+                                    onClick={() => { handleToggleUserStatus(u.id, 'inactivo'); setOpenActionDropdown(null); }}
+                                    style={{
+                                      display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
+                                      padding: '6px 10px', borderRadius: '7px', cursor: 'pointer',
+                                      border: 'none', background: 'transparent',
+                                      fontSize: '11.5px', fontWeight: '600', color: '#dc2626',
+                                      transition: 'background 0.12s'
+                                    }}
+                                    onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                  >
+                                    <BrandingVectorIcon name="x" size={12} color="#dc2626" />
+                                    Rechazar
+                                  </button>
+                                ) : isInactive ? (
+                                  <button
+                                    onClick={() => { handleToggleUserStatus(u.id, 'activo'); setOpenActionDropdown(null); }}
+                                    style={{
+                                      display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
+                                      padding: '6px 10px', borderRadius: '7px', cursor: 'pointer',
+                                      border: 'none', background: 'transparent',
+                                      fontSize: '11.5px', fontWeight: '600', color: '#16a34a',
+                                      transition: 'background 0.12s'
+                                    }}
+                                    onMouseEnter={e => e.currentTarget.style.background = '#f0fdf4'}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                  >
+                                    <BrandingVectorIcon name="check" size={12} color="#16a34a" />
+                                    Activar
+                                  </button>
+                                ) : (
+                                  <button
+                                    onClick={() => { handleToggleUserStatus(u.id, 'inactivo'); setOpenActionDropdown(null); }}
+                                    style={{
+                                      display: 'flex', alignItems: 'center', gap: '8px', width: '100%',
+                                      padding: '6px 10px', borderRadius: '7px', cursor: 'pointer',
+                                      border: 'none', background: 'transparent',
+                                      fontSize: '11.5px', fontWeight: '600', color: '#dc2626',
+                                      transition: 'background 0.12s'
+                                    }}
+                                    onMouseEnter={e => e.currentTarget.style.background = '#fef2f2'}
+                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                  >
+                                    <BrandingVectorIcon name="user-x" size={12} color="#dc2626" />
+                                    Desactivar
+                                  </button>
+                                )}
+                              </div>
                             )}
                           </div>
                         </td>

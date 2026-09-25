@@ -492,7 +492,7 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
       fontFamily: 'Inter, system-ui, sans-serif',
       paddingBottom: '30px'
     }}>
-      
+
       {/* Top Header Bar */}
       <header style={{
         background: isDark ? 'rgba(15, 23, 42, 0.95)' : 'rgba(255, 255, 255, 0.95)',
@@ -809,7 +809,7 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
                         Íconos con el diseño y colores del sistema. Selecciona uno o carga nuevos cuando lo requieras.
                       </div>
                     </div>
-                    
+
                     <button
                       type="button"
                       onClick={() => setShowAddIconModal(true)}
@@ -943,10 +943,10 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
                             justifyContent: 'center',
                             color: isSelected ? '#0fa4de' : (isDark ? '#cbd5e1' : '#475569')
                           }}>
-                            <BrandingVectorIcon 
-                              name={ic.value} 
-                              size={28} 
-                              color={isSelected ? '#0fa4de' : (isDark ? '#94a3b8' : '#475569')} 
+                            <BrandingVectorIcon
+                              name={ic.value}
+                              size={28}
+                              color={isSelected ? '#0fa4de' : (isDark ? '#94a3b8' : '#475569')}
                             />
                           </div>
 
@@ -1877,11 +1877,11 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
                         boxShadow: '0 10px 22px -4px rgba(15, 164, 222, 0.25)',
                         color: 'var(--primary, #0fa4de)'
                       }}>
-                        <BrandingVectorIcon 
-                          name={config.login.avatarIcon || 'building'} 
-                          size={40} 
-                          color="var(--primary, #0fa4de)" 
-                          strokeWidth={1.9} 
+                        <BrandingVectorIcon
+                          name={config.login.avatarIcon || 'building'}
+                          size={40}
+                          color="var(--primary, #0fa4de)"
+                          strokeWidth={1.9}
                         />
                       </div>
                     </div>

@@ -2682,75 +2682,96 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
               })}
             </div>
           ) : (
-            <section className="board-section" style={{ marginTop: '20px' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
-              <thead>
-                <tr>
-                  <th style={{ padding: '14px 12px' }}>ID / Remitente</th>
-                  <th style={{ padding: '14px 12px' }}>Asunto</th>
-                  <th style={{ padding: '14px 12px' }}>Estado</th>
-                  <th style={{ padding: '14px 12px' }}>Prioridad</th>
-                  <th style={{ padding: '14px 12px' }}>Última Actividad</th>
-                  <th style={{ padding: '14px 12px' }}>Acción</th>
-                </tr>
-              </thead>
-              <tbody>
-                {clientesFiltrados.length === 0 ? (
-                  <tr><td colSpan="6" style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>No hay tickets en este departamento.</td></tr>
-                ) : ticketsFiltradosFinal.length === 0 ? (
-                  <tr><td colSpan="6" style={{ padding: '24px', textAlign: 'center', color: 'var(--text-muted)' }}>No se encontraron tickets que coincidan con los filtros.</td></tr>
-                ) : (
-                  ticketsFiltradosFinal.map(cliente => (
-                    <tr key={cliente.id}>
-                      <td style={{ padding: '14px 12px' }}>
-                        <strong style={{ color: 'var(--text-main)', fontSize: '0.95rem' }}>#{cliente.id}</strong><br/>
-                        <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>{cliente.nombre}</span>
-                      </td>
-                      <td style={{ padding: '14px 12px', fontWeight: '700', color: 'var(--text-main)' }}>{cliente.empresa || 'Sin empresa'}</td>
-                      <td style={{ padding: '14px 12px' }}>
-                        {(() => {
-                          const estObj = estados.find(e => e.nombre === cliente.estado_embudo);
-                          const colorBase = estObj?.color || '#0fa4de';
-                          return (
-                            <span style={{ background: `${colorBase}1c`, color: colorBase, padding: '6px 14px', borderRadius: 'var(--radius-pill)', fontSize: '0.8rem', fontWeight: '700' }}>
-                              {cliente.estado_embudo}
-                            </span>
-                          );
-                        })()}
-                      </td>
-                      <td style={{ padding: '14px 12px' }}>
-                        <span className={`badge prioridad-${(cliente.prioridad || 'Normal').toLowerCase()}`}>
-                          {cliente.prioridad || 'Normal'}
-                        </span>
-                      </td>
-                      <td style={{ padding: '14px 12px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                        <span style={{ color: 'var(--text-muted)', fontWeight: 500 }}>
-                          {cliente.notas?.length > 0 ? new Date(cliente.notas[cliente.notas.length-1].fecha).toLocaleString() : new Date(cliente.creado_en).toLocaleString()}
-                        </span>
-                        <div style={{ marginTop: '4px', fontSize: '0.75rem', color: 'var(--primary)', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                            <BrandingVectorIcon name="message-square" size={11} color="var(--primary)" />
-                            <span>{cliente.notas ? cliente.notas.length : 0} Notas</span>
-                          </span>
-                          {((cliente.archivos && cliente.archivos.length > 0) || cliente.archivo_url) && (
-                            <span style={{ color: '#10b981', fontWeight: 'bold' }}>📎 {cliente.archivos ? cliente.archivos.length : 1} Adjuntos</span>
-                          )}
-                        </div>
-                      </td>
-                      <td style={{ padding: '14px 12px' }}>
-                        <button 
-                          onClick={() => setModalCliente(cliente)}
-                        >
-                          Abrir Ticket
-                        </button>
-                      </td>
+            <section className="board-section" style={{ marginTop: '16px', padding: '0', overflow: 'hidden' }}>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.82rem' }}>
+                  <thead>
+                    <tr>
+                      <th style={{ padding: '8px 12px', fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>ID / Remitente</th>
+                      <th style={{ padding: '8px 12px', fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Asunto</th>
+                      <th style={{ padding: '8px 12px', fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Estado</th>
+                      <th style={{ padding: '8px 12px', fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Prioridad</th>
+                      <th style={{ padding: '8px 12px', fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Última Actividad</th>
+                      <th style={{ padding: '8px 12px', fontSize: '0.74rem', textTransform: 'uppercase', letterSpacing: '0.04em', textAlign: 'center' }}>Acción</th>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </section>
-        )}
+                  </thead>
+                  <tbody>
+                    {clientesFiltrados.length === 0 ? (
+                      <tr><td colSpan="6" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>No hay tickets en este departamento.</td></tr>
+                    ) : ticketsFiltradosFinal.length === 0 ? (
+                      <tr><td colSpan="6" style={{ padding: '20px', textAlign: 'center', color: 'var(--text-muted)' }}>No se encontraron tickets que coincidan con los filtros.</td></tr>
+                    ) : (
+                      ticketsFiltradosFinal.map(cliente => (
+                        <tr key={cliente.id} style={{ borderBottom: '1px solid var(--border-color-subtle, #f1f5f9)', transition: 'background 0.15s ease' }}>
+                          <td style={{ padding: '6px 12px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                            <div style={{ color: 'var(--primary, #0fa4de)', fontWeight: '800', fontSize: '0.88rem', lineHeight: '1.2' }}>#{cliente.id}</div>
+                            <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)', fontWeight: '600', lineHeight: '1.2', maxWidth: '160px', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              {cliente.nombre || 'Sin remitente'}
+                            </div>
+                          </td>
+                          <td style={{ padding: '6px 12px', verticalAlign: 'middle' }}>
+                            <div style={{ fontWeight: '700', color: 'var(--text-main)', fontSize: '0.82rem', lineHeight: '1.25', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+                              {cliente.empresa || cliente.asunto || 'Sin asunto'}
+                            </div>
+                          </td>
+                          <td style={{ padding: '6px 12px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                            {(() => {
+                              const estObj = estados.find(e => e.nombre === cliente.estado_embudo);
+                              const colorBase = estObj?.color || '#0fa4de';
+                              return (
+                                <span style={{ background: `${colorBase}1c`, color: colorBase, padding: '3px 10px', borderRadius: 'var(--radius-pill, 999px)', fontSize: '0.74rem', fontWeight: '750', display: 'inline-block' }}>
+                                  {cliente.estado_embudo}
+                                </span>
+                              );
+                            })()}
+                          </td>
+                          <td style={{ padding: '6px 12px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                            <span className={`badge prioridad-${(cliente.prioridad || 'Normal').toLowerCase()}`} style={{ padding: '3px 9px', fontSize: '0.74rem', fontWeight: '700' }}>
+                              {cliente.prioridad || 'Normal'}
+                            </span>
+                          </td>
+                          <td style={{ padding: '6px 12px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                            <div style={{ color: 'var(--text-muted)', fontSize: '0.76rem', fontWeight: 500, lineHeight: '1.2' }}>
+                              {cliente.notas?.length > 0 ? new Date(cliente.notas[cliente.notas.length-1].fecha).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : new Date(cliente.creado_en).toLocaleString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </div>
+                            <div style={{ marginTop: '2px', fontSize: '0.72rem', color: 'var(--primary, #0fa4de)', display: 'flex', gap: '8px', alignItems: 'center', lineHeight: '1.2' }}>
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '3px', fontWeight: '600' }}>
+                                <BrandingVectorIcon name="message-square" size={10} color="var(--primary, #0fa4de)" />
+                                <span>{cliente.notas ? cliente.notas.length : 0} Notas</span>
+                              </span>
+                              {((cliente.archivos && cliente.archivos.length > 0) || cliente.archivo_url) && (
+                                <span style={{ color: '#10b981', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                  <BrandingVectorIcon name="layers" size={10} color="#10b981" />
+                                  <span>{cliente.archivos ? cliente.archivos.length : 1} Adjuntos</span>
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td style={{ padding: '6px 12px', verticalAlign: 'middle', textAlign: 'center', whiteSpace: 'nowrap' }}>
+                            <button 
+                              onClick={() => setModalCliente(cliente)}
+                              style={{
+                                padding: '4px 10px',
+                                fontSize: '0.75rem',
+                                borderRadius: '6px',
+                                fontWeight: '700',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              <BrandingVectorIcon name="eye" size={11} color="currentColor" />
+                              <span>Abrir Ticket</span>
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          )}
           </div>
         )}
       </main>
