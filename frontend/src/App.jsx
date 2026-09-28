@@ -128,7 +128,7 @@ function App() {
       // Si un usuario no autorizado intenta entrar a una ruta, lo redirigimos a donde le corresponde
       if (usuario.rol === 'admin_ecommerce') return <Navigate to="/admin/ecommerce" replace />;
       if (usuario.rol === 'admin' || usuario.rol === 'staff') return <Navigate to="/" replace />;
-      if (usuario.rol === 'cliente' || usuario.rol === 'manager') return <Navigate to="/mis-tickets" replace />;
+      if (usuario.rol === 'cliente' || usuario.rol === 'vendedor' || usuario.rol === 'pm' || usuario.rol === 'manager') return <Navigate to="/mis-tickets" replace />;
     }
     return children;
   };
@@ -258,7 +258,7 @@ function App() {
         <Route
           path="/mis-tickets"
           element={
-            <ProtectedRoute rolesPermitidos={['cliente', 'usuario', 'manager']}>
+            <ProtectedRoute rolesPermitidos={['cliente', 'vendedor', 'pm', 'usuario', 'manager']}>
               <PanelUsuario usuario={usuario} setUsuario={setUsuario} theme={theme} toggleTheme={toggleTheme} />
             </ProtectedRoute>
           }
