@@ -82,7 +82,7 @@ export default function ShopClientPortal() {
     can_view_prices: true,
     can_request_quotes: true,
     can_manage_team: false,
-    password: 'password123'
+    password: ''
   });
 
   const fileInputRef = useRef(null);
@@ -151,7 +151,7 @@ export default function ShopClientPortal() {
         can_view_prices: true,
         can_request_quotes: true,
         can_manage_team: false,
-        password: 'password123'
+        password: ''
       });
       fetchTeam();
     } catch (err) {
@@ -1877,6 +1877,8 @@ export default function ShopClientPortal() {
                 <input
                   type="text"
                   value={teamForm.password}
+                  placeholder="Ingrese una clave segura (mín. 6 caracteres)"
+                  required
                   onChange={(e) => setTeamForm({ ...teamForm, password: e.target.value })}
                   style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13px', outline: 'none', boxSizing: 'border-box', background: '#F8FAFC' }}
                 />

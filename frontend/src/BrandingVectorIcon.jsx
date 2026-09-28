@@ -1,4 +1,5 @@
 import React from 'react';
+import DOMPurify from 'dompurify';
 
 export const BUILT_IN_BRANDING_ICONS = [
   { id: 'building', name: 'Empresa / Sede', category: 'Corporativo' },
@@ -68,7 +69,7 @@ export default function BrandingVectorIcon({
           color: color,
           ...style
         }}
-        dangerouslySetInnerHTML={{ __html: name }}
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(name, { USE_PROFILES: { svg: true } }) }}
       />
     );
   }

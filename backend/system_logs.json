@@ -1,5 +1,503 @@
 [
   {
+    "id": 89,
+    "timestamp": "2026-09-28T20:26:05.907Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Fortinet Fortinet FortiGate 60F - Next Generation Firewall (SKU: FG-60F-BDL-950-12, Cat: security, USD $890.00).",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "192.168.89.12",
+    "detalles": {
+      "productId": 1,
+      "productName": "Fortinet FortiGate 60F - Next Generation Firewall",
+      "sku": "FG-60F-BDL-950-12",
+      "brand": "Fortinet",
+      "price": "890.00",
+      "category": "security",
+      "timestamp": "2026-09-28T20:26:05.907Z"
+    }
+  },
+  {
+    "id": 88,
+    "timestamp": "2026-09-28T20:25:42.246Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PEDIDO_ESTADO",
+    "descripcion": "Pedido #1056 actualizado a estado \"entregado\"",
+    "usuario": {
+      "nombre": "admin.ecommerce@dacas.com",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "user"
+    },
+    "ip": "192.168.89.12",
+    "detalles": {
+      "ordenId": "1056",
+      "nuevoEstado": "entregado"
+    }
+  },
+  {
+    "id": 87,
+    "timestamp": "2026-09-28T20:25:27.942Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PEDIDO_ESTADO",
+    "descripcion": "Pedido #1055 actualizado a estado \"en_camino\"",
+    "usuario": {
+      "nombre": "admin.ecommerce@dacas.com",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "user"
+    },
+    "ip": "192.168.89.12",
+    "detalles": {
+      "ordenId": "1055",
+      "nuevoEstado": "en_camino"
+    }
+  },
+  {
+    "id": 86,
+    "timestamp": "2026-09-28T20:25:09.759Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PEDIDO_ESTADO",
+    "descripcion": "Pedido #1056 actualizado a estado \"en_camino\"",
+    "usuario": {
+      "nombre": "admin.ecommerce@dacas.com",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "user"
+    },
+    "ip": "192.168.89.12",
+    "detalles": {
+      "ordenId": "1056",
+      "nuevoEstado": "en_camino"
+    }
+  },
+  {
+    "id": 85,
+    "timestamp": "2026-09-28T20:24:12.323Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PEDIDO_ESTADO",
+    "descripcion": "Pedido #1056 actualizado a estado \"procesando\"",
+    "usuario": {
+      "nombre": "admin.ecommerce@dacas.com",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "user"
+    },
+    "ip": "192.168.89.12",
+    "detalles": {
+      "ordenId": "1056",
+      "nuevoEstado": "procesando"
+    }
+  },
+  {
+    "id": 84,
+    "timestamp": "2026-09-28T20:24:09.650Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PEDIDO_ESTADO",
+    "descripcion": "Pedido #1056 actualizado a estado \"cancelled\"",
+    "usuario": {
+      "nombre": "admin.ecommerce@dacas.com",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "user"
+    },
+    "ip": "192.168.89.12",
+    "detalles": {
+      "ordenId": "1056",
+      "nuevoEstado": "cancelled"
+    }
+  },
+  {
+    "id": 83,
+    "timestamp": "2026-09-28T20:23:45.578Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PEDIDO_ESTADO",
+    "descripcion": "Pedido #1056 actualizado a estado \"en_camino\"",
+    "usuario": {
+      "nombre": "admin.ecommerce@dacas.com",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "user"
+    },
+    "ip": "192.168.89.12",
+    "detalles": {
+      "ordenId": "1056",
+      "nuevoEstado": "en_camino"
+    }
+  },
+  {
+    "id": 82,
+    "timestamp": "2026-09-28T20:22:42.188Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1056 registrado por \"Empresa Demo S.A.\" por USD $165.75.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "192.168.89.12",
+    "detalles": {
+      "orderId": 1056,
+      "total": "165.75",
+      "payment_method": "Cuenta Corriente B2B (30 días fecha factura)",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 81,
+    "timestamp": "2026-09-28T20:19:34.640Z",
+    "origen": "dashboard",
+    "tipo": "INFO",
+    "accion": "USUARIO_MODIFICADO",
+    "descripcion": "Usuario \"Admin E-commerce\" (admin.ecommerce@dacas.com) actualizado por jpascuzzi@dacas.com",
+    "usuario": {
+      "nombre": "jpascuzzi@dacas.com",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "usuarioId": 6,
+      "rol": "admin_ecommerce",
+      "activo": true
+    }
+  },
+  {
+    "id": 80,
+    "timestamp": "2026-09-28T20:18:59.459Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Admin E-commerce\" (admin.ecommerce@dacas.com) con rol \"admin_ecommerce\".",
+    "usuario": {
+      "nombre": "Admin E-commerce",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "admin_ecommerce",
+      "id": 6
+    },
+    "ip": "192.168.89.12",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "5ae85ba1dc6a6033337ee4fd06e1e48f9d42739b596fd079b0d2a87e518614ba"
+    }
+  },
+  {
+    "id": 79,
+    "timestamp": "2026-09-28T20:18:56.384Z",
+    "origen": "dashboard",
+    "tipo": "INFO",
+    "accion": "USUARIO_MODIFICADO",
+    "descripcion": "Usuario \"Admin E-commerce\" (admin.ecommerce@dacas.com) actualizado por jpascuzzi@dacas.com",
+    "usuario": {
+      "nombre": "jpascuzzi@dacas.com",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "usuarioId": 6,
+      "rol": "admin_ecommerce",
+      "activo": true
+    }
+  },
+  {
+    "id": 78,
+    "timestamp": "2026-09-28T20:18:42.067Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "e818738cdce552406d24e5e140293e8ef264ec46dd889b52241166d9f34a5399"
+    }
+  },
+  {
+    "id": 77,
+    "timestamp": "2026-09-28T20:18:31.319Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"admin.ecommerce@dacas.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "192.168.89.12",
+    "detalles": {
+      "emailIntentado": "admin.ecommerce@dacas.com"
+    }
+  },
+  {
+    "id": 76,
+    "timestamp": "2026-09-28T20:14:35.456Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"admin.ecommerce@dacas.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "192.168.89.12",
+    "detalles": {
+      "emailIntentado": "admin.ecommerce@dacas.com"
+    }
+  },
+  {
+    "id": 75,
+    "timestamp": "2026-09-28T20:14:09.356Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 4 producto(s) por total USD $3.554,80 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "192.168.89.12",
+    "detalles": {
+      "sessionId": "CART-1790626449356",
+      "itemsCount": 4,
+      "total": 3554.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80) | 1x MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router ($480.00) | 1x Aruba Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22 ($195.00) | 1x Vertiv Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA ($2150.00)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        },
+        {
+          "id": 2,
+          "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+          "brand": "MikroTik",
+          "sku": "CRS328-24P-4S",
+          "qty": 1,
+          "price": 480,
+          "subtotal": 480
+        },
+        {
+          "id": 3,
+          "name": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
+          "brand": "Aruba",
+          "sku": "R4W02A-AP22",
+          "qty": 1,
+          "price": 195,
+          "subtotal": 195
+        },
+        {
+          "id": 4,
+          "name": "Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA",
+          "brand": "Vertiv",
+          "sku": "GXT5-3000IRT2UXLE",
+          "qty": 1,
+          "price": 2150,
+          "subtotal": 2150
+        }
+      ],
+      "timestamp": "2026-09-28T20:14:09.356Z"
+    }
+  },
+  {
+    "id": 74,
+    "timestamp": "2026-09-28T20:13:30.438Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 4 producto(s) por total USD $3.554,80 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "192.168.89.12",
+    "detalles": {
+      "sessionId": "CART-1790626410438",
+      "itemsCount": 4,
+      "total": 3554.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80) | 1x MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router ($480.00) | 1x Aruba Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22 ($195.00) | 1x Vertiv Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA ($2150.00)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        },
+        {
+          "id": 2,
+          "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+          "brand": "MikroTik",
+          "sku": "CRS328-24P-4S",
+          "qty": 1,
+          "price": 480,
+          "subtotal": 480
+        },
+        {
+          "id": 3,
+          "name": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
+          "brand": "Aruba",
+          "sku": "R4W02A-AP22",
+          "qty": 1,
+          "price": 195,
+          "subtotal": 195
+        },
+        {
+          "id": 4,
+          "name": "Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA",
+          "brand": "Vertiv",
+          "sku": "GXT5-3000IRT2UXLE",
+          "qty": 1,
+          "price": 2150,
+          "subtotal": 2150
+        }
+      ],
+      "timestamp": "2026-09-28T20:13:30.438Z"
+    }
+  },
+  {
+    "id": 73,
+    "timestamp": "2026-09-28T20:13:21.712Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "c98473ada775bd23f81872ba0b34c79ed2295b5405e23d299111cce5f687be8b"
+    }
+  },
+  {
+    "id": 72,
+    "timestamp": "2026-09-28T20:13:10.122Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_MICROSOFT_SIN_TOKEN",
+    "descripcion": "Intento de acceso SSO no autorizado para \"admin@crm.com\" sin token criptográfico.",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {}
+  },
+  {
+    "id": 71,
+    "timestamp": "2026-09-28T20:07:17.578Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Aruba Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22 (SKU: R4W02A-AP22, Cat: networking, USD $195.00).",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "192.168.89.12",
+    "detalles": {
+      "productId": 3,
+      "productName": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
+      "sku": "R4W02A-AP22",
+      "brand": "Aruba",
+      "price": "195.00",
+      "category": "networking",
+      "timestamp": "2026-09-28T20:07:17.578Z"
+    }
+  },
+  {
+    "id": 70,
+    "timestamp": "2026-09-28T20:03:09.678Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Admin E-commerce\" (admin.ecommerce@dacas.com) con rol \"admin_ecommerce\".",
+    "usuario": {
+      "nombre": "Admin E-commerce",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "admin_ecommerce",
+      "id": 6
+    },
+    "ip": "192.168.89.12",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "670ef961af2f60ac5601a29e38dba645124b8108f031734dd48b089e249845a4"
+    }
+  },
+  {
+    "id": 69,
+    "timestamp": "2026-09-28T20:02:41.321Z",
+    "origen": "dashboard",
+    "tipo": "INFO",
+    "accion": "USUARIO_MODIFICADO",
+    "descripcion": "Usuario \"Admin E-commerce\" (admin.ecommerce@dacas.com) actualizado por jpascuzzi@dacas.com",
+    "usuario": {
+      "nombre": "jpascuzzi@dacas.com",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "usuarioId": 6,
+      "rol": "admin_ecommerce",
+      "activo": true
+    }
+  },
+  {
+    "id": 68,
+    "timestamp": "2026-09-28T19:52:39.102Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "2ff6d65b72641d82f6e9175e05f7c1a78c0ade598e04b323113f0ef764d0c3c7"
+    }
+  },
+  {
     "id": 67,
     "timestamp": "2026-09-28T19:48:30.723Z",
     "origen": "auth",

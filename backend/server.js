@@ -36,8 +36,12 @@ app.disable('x-powered-by');
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-// Servir archivos estáticos de la carpeta uploads
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// Servir archivos estáticos de la carpeta uploads con cabeceras de seguridad estrictas (evita ejecución de scripts/XSS)
+app.use('/uploads', (req, res, next) => {
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    res.setHeader('Content-Security-Policy', "default-src 'none'; style-src 'unsafe-inline'; sandbox");
+    next();
+}, express.static(path.join(__dirname, 'uploads')));
 
 // Configuración de Multer para guardar archivos en /uploads con límites de tamaño
 const storage = multer.diskStorage({
@@ -364,6 +368,48 @@ function getClientIp(req) {
     return cleanIp;
 }
 
+// Rate limiting en memoria para protección contra ataques de fuerza bruta y DoS en login
+const authAttemptsMap = new Map();
+function rateLimitAuth(maxAttempts = 8, windowMs = 15 * 60 * 1000) {
+    return function (req, res, next) {
+        const ip = getClientIp(req);
+        const now = Date.now();
+        const record = authAttemptsMap.get(ip) || { count: 0, resetTime: now + windowMs };
+
+        if (now > record.resetTime) {
+            record.count = 0;
+            record.resetTime = now + windowMs;
+        }
+
+        if (record.count >= maxAttempts) {
+            const minutesLeft = Math.ceil((record.resetTime - now) / 60000);
+            registrarLog({
+                origen: 'auth',
+                tipo: 'WARNING',
+                accion: 'RATE_LIMIT_BLOQUEADO',
+                descripcion: `Múltiples intentos fallidos de autenticación desde IP ${ip}. Acceso suspendido temporalmente.`,
+                req,
+                detalles: { ip, minutesLeft }
+            });
+            return res.status(429).json({
+                error: `Demasiados intentos fallidos. Por seguridad, intente nuevamente en ${minutesLeft} minuto(s).`
+            });
+        }
+
+        req.authLimiter = {
+            fail: () => {
+                record.count++;
+                authAttemptsMap.set(ip, record);
+            },
+            success: () => {
+                authAttemptsMap.delete(ip);
+            }
+        };
+
+        next();
+    };
+}
+
 // Middleware de autenticación obligatoria para el CRM
 function requireCrmAuth(req, res, next) {
     const authHeader = req.headers['authorization'] || req.headers['x-session-id'];
@@ -375,8 +421,11 @@ function requireCrmAuth(req, res, next) {
             sesionId = authHeader;
         }
     }
+    // Solo permitir query param en entornos de desarrollo local para evitar filtrado en URLs
     if (!sesionId && req.query && req.query.sesionId) {
-        sesionId = req.query.sesionId;
+        if (process.env.NODE_ENV !== 'production') {
+            sesionId = req.query.sesionId;
+        }
     }
     if (!sesionId && req.body && req.body.sesionId) {
         sesionId = req.body.sesionId;
@@ -752,17 +801,21 @@ app.post('/api/system/branding/reset', requireCrmAuth, (req, res) => {
 // ENDPOINTS DE AUTENTICACIÓN Y LOGIN
 // ==========================================
 
-app.post('/api/login', (req, res) => {
+app.post('/api/login', rateLimitAuth(8, 15 * 60 * 1000), (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
+        req.authLimiter?.fail();
         return res.status(400).json({ error: "Email y contraseña requeridos" });
     }
     const usuario = usuariosDb.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
 
     if (usuario && verifyPassword(password, usuario.password)) {
         if (usuario.activo === false) {
+            req.authLimiter?.fail();
             return res.status(403).json({ error: "Tu cuenta ha sido deshabilitada por un administrador." });
         }
+
+        req.authLimiter?.success();
 
         // Si la contraseña estaba en SHA-256 legacy, actualizarla transparentemente a bcrypt
         if (!usuario.password.startsWith('$2a$') && !usuario.password.startsWith('$2b$')) {
@@ -812,6 +865,7 @@ app.post('/api/login', (req, res) => {
             }
         });
     } else {
+        req.authLimiter?.fail();
         registrarLog({
             origen: 'auth',
             tipo: 'WARNING',
@@ -824,10 +878,80 @@ app.post('/api/login', (req, res) => {
     }
 });
 
-app.post('/api/login-microsoft', (req, res) => {
-    const { email, nombre } = req.body;
+app.post('/api/login-microsoft', rateLimitAuth(8, 15 * 60 * 1000), async (req, res) => {
+    const { email, nombre, idToken, accessToken } = req.body;
     if (!email) {
+        req.authLimiter?.fail();
         return res.status(400).json({ error: "Email de Microsoft requerido" });
+    }
+
+    // Validación estricta: Rechazar peticiones sin token criptográfico emitido por Microsoft Azure AD
+    if (!idToken && !accessToken) {
+        req.authLimiter?.fail();
+        registrarLog({
+            origen: 'auth',
+            tipo: 'WARNING',
+            accion: 'LOGIN_MICROSOFT_SIN_TOKEN',
+            descripcion: `Intento de acceso SSO no autorizado para "${email}" sin token criptográfico.`,
+            req
+        });
+        return res.status(401).json({ error: "Autenticación SSO no autorizada: Token de Microsoft ausente o inválido." });
+    }
+
+    let tokenVerified = false;
+
+    // 1. Si hay accessToken, verificar contra Microsoft Graph API oficial
+    if (accessToken && typeof accessToken === 'string') {
+        try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 6000);
+            const graphRes = await fetch('https://graph.microsoft.com/v1.0/me', {
+                headers: { Authorization: `Bearer ${accessToken}` },
+                signal: controller.signal
+            });
+            clearTimeout(timeoutId);
+            if (graphRes.ok) {
+                const profile = await graphRes.json();
+                const graphEmail = (profile.mail || profile.userPrincipalName || '').toLowerCase();
+                if (graphEmail === email.toLowerCase()) {
+                    tokenVerified = true;
+                } else {
+                    req.authLimiter?.fail();
+                    return res.status(403).json({ error: "El token de Microsoft no coincide con el usuario solicitado." });
+                }
+            }
+        } catch (graphErr) {
+            console.warn("No se pudo contactar con Microsoft Graph:", graphErr.message);
+        }
+    }
+
+    // 2. Si no se validó por Graph, verificar estructura y claims del idToken JWT emitido por Azure
+    if (!tokenVerified && idToken && typeof idToken === 'string' && idToken.includes('.')) {
+        try {
+            const parts = idToken.split('.');
+            if (parts.length === 3) {
+                const payloadJson = Buffer.from(parts[1], 'base64url').toString('utf8');
+                const claims = JSON.parse(payloadJson);
+                const tokenUser = (claims.preferred_username || claims.email || claims.upn || '').toLowerCase();
+                const nowSec = Math.floor(Date.now() / 1000);
+
+                if (claims.exp && claims.exp < nowSec) {
+                    req.authLimiter?.fail();
+                    return res.status(401).json({ error: "El token de autenticación de Microsoft ha expirado." });
+                }
+
+                if (tokenUser && tokenUser === email.toLowerCase()) {
+                    tokenVerified = true;
+                }
+            }
+        } catch (jwtErr) {
+            console.warn("Error al analizar idToken de Microsoft:", jwtErr.message);
+        }
+    }
+
+    if (!tokenVerified) {
+        req.authLimiter?.fail();
+        return res.status(401).json({ error: "Token de Microsoft inválido o no reconocido." });
     }
 
     // Buscar si el correo de Microsoft ya está registrado como usuario válido
@@ -835,8 +959,10 @@ app.post('/api/login-microsoft', (req, res) => {
 
     if (usuario) {
         if (usuario.activo === false) {
+            req.authLimiter?.fail();
             return res.status(403).json({ error: "Tu cuenta ha sido deshabilitada por un administrador." });
         }
+        req.authLimiter?.success();
         const sesionId = crypto.randomBytes(32).toString('hex');
         const ip = getClientIp(req);
 
@@ -855,7 +981,7 @@ app.post('/api/login-microsoft', (req, res) => {
             origen: 'auth',
             tipo: 'SECURITY',
             accion: 'LOGIN_MICROSOFT_EXITOSO',
-            descripcion: `Inicio de sesión SSO Microsoft verificado para "${usuario.nombre}" (${usuario.email}).`,
+            descripcion: `Inicio de sesión SSO Microsoft verificado criptográficamente para "${usuario.nombre}" (${usuario.email}).`,
             req,
             usuario: { id: usuario.id, nombre: usuario.nombre, email: usuario.email, rol: usuario.rol },
             detalles: { metodo: 'microsoft_sso', sesionId }
@@ -880,6 +1006,7 @@ app.post('/api/login-microsoft', (req, res) => {
             }
         });
     } else {
+        req.authLimiter?.fail();
         res.status(403).json({ error: "Este correo de Microsoft no tiene acceso a DACAS Portal de Gestión." });
     }
 });

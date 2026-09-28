@@ -4821,39 +4821,6 @@ function AuthModal({
                 <span>{loading ? 'Validando...' : 'Ingresar a mi Cuenta B2B'}</span>
                 <BrandingVectorIcon name="arrow-right" size={14} color="#ffffff" />
               </button>
-
-              {/* Demo Account Quick Filler */}
-              <div
-                onClick={() => {
-                  setAuthForm({ ...authForm, email: 'demo@dacas.com', password: 'password123' });
-                }}
-                style={{
-                  background: '#F0F9FF',
-                  border: '1px dashed #38BDF8',
-                  borderRadius: '12px',
-                  padding: '10px 14px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  transition: 'all 0.2s'
-                }}
-                title="Haga clic para autocompletar credenciales de prueba"
-              >
-                <div>
-                  <div style={{ fontSize: '11px', fontWeight: '800', color: '#0369A1', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <BrandingVectorIcon name="zap" size={12} color="#0369A1" />
-                    <span>Cuenta Demo B2B (1-Click)</span>
-                  </div>
-                  <div style={{ fontSize: '12px', color: '#0284C7', fontWeight: '600' }}>
-                    demo@dacas.com · password123
-                  </div>
-                </div>
-                <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#0FA4DE', background: '#FFFFFF', padding: '4px 10px', borderRadius: '8px', border: '1px solid #BAE6FD' }}>
-                  Autocompletar
-                </span>
-              </div>
-
               <div style={{ textAlign: 'center', marginTop: '10px', fontSize: '13px', color: '#64748B' }}>
                 ¿Aún no tiene cuenta habilitada?{' '}
                 <a

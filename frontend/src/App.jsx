@@ -332,17 +332,8 @@ function FloatingHelpButton({ usuario }) {
   const activeUser = usuario || shopUser;
   const cardRef = React.useRef(null);
 
-  // En las rutas de Shop, el botón flotante y asistente n8n es gestionado de forma nativa e integrada por ShopMacHelpHub
-  if (isShopRoute) {
-    return null;
-  }
-
-  // If user is not logged in, do not render the floating help button
-  if (!activeUser) {
-    return null;
-  }
-
   useEffect(() => {
+    if (!isOpen || !activeUser || isShopRoute) return;
     const apiHost = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
     fetch(`http://${apiHost}:3001/api/config-ayuda`)
       .then(res => res.json())
@@ -362,7 +353,7 @@ function FloatingHelpButton({ usuario }) {
       .catch(err => {
         console.warn('Usando configuración local por defecto para canales de ayuda:', err);
       });
-  }, [isOpen]);
+  }, [isOpen, activeUser, isShopRoute]);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -377,6 +368,16 @@ function FloatingHelpButton({ usuario }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
+
+  // En las rutas de Shop, el botón flotante y asistente n8n es gestionado de forma nativa e integrada por ShopMacHelpHub
+  if (isShopRoute) {
+    return null;
+  }
+
+  // If user is not logged in, do not render the floating help button
+  if (!activeUser) {
+    return null;
+  }
 
   // Choose the destination email based on the current section
   const currentDept = isShopRoute

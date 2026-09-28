@@ -1,4 +1,5 @@
 const express = require('express');
+const crypto = require('crypto');
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -10,6 +11,34 @@ const { generateProductDescription, generateDimensionsAI, generateCategoriesAI }
 const { registrarLog } = require('./services/auditLoggerService');
 
 const router = express.Router();
+
+// Helper de validación de URLs contra SSRF (Server-Side Request Forgery)
+function isSafeWebhookUrl(rawUrl) {
+  if (!rawUrl || typeof rawUrl !== 'string') return false;
+  try {
+    const parsed = new URL(rawUrl);
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return false;
+    const hostname = parsed.hostname.toLowerCase();
+    
+    // Prohibir localhost, 127.0.0.1, ::1 y nombres locales
+    if (hostname === 'localhost' || hostname.endsWith('.localhost') || hostname === '127.0.0.1' || hostname === '::1' || hostname === '0.0.0.0') {
+      return false;
+    }
+    // Prohibir metadata de clouds y link-local
+    if (hostname === '169.254.169.254' || hostname.startsWith('169.254.') || hostname.includes('metadata.google') || hostname.includes('internal')) {
+      return false;
+    }
+    // Prohibir rangos privados estándar
+    if (!process.env.ALLOW_PRIVATE_WEBHOOKS) {
+      if (hostname.startsWith('10.') || hostname.startsWith('192.168.') || /^172\.(1[6-9]|2[0-9]|3[0-1])\./.test(hostname)) {
+        return false;
+      }
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 // Configuración de Multer para imágenes y multimedia de productos
 const storage = multer.diskStorage({
@@ -29,9 +58,10 @@ const upload = multer({
   limits: { fileSize: 15 * 1024 * 1024 },
   fileFilter: function (req, file, cb) {
     const ext = path.extname(file.originalname).toLowerCase();
-    const allowed = ['.pdf', '.jpg', '.jpeg', '.png', '.webp', '.svg', '.xls', '.xlsx', '.csv'];
+    // Excluimos .svg para prevenir ejecución de scripts (Stored XSS)
+    const allowed = ['.pdf', '.jpg', '.jpeg', '.png', '.webp', '.xls', '.xlsx', '.csv'];
     if (!allowed.includes(ext)) {
-      return cb(new Error('Tipo de archivo no permitido. Solo se admiten imágenes, PDFs y planillas Excel/CSV.'));
+      return cb(new Error('Tipo de archivo no permitido. Solo se admiten imágenes (JPG, PNG, WebP), PDFs y planillas Excel/CSV.'));
     }
     cb(null, true);
   }
@@ -1478,7 +1508,11 @@ const pool = {
   }
 };
 
-const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_jwt_key_ecommerce';
+const JWT_SECRET = process.env.JWT_SECRET || (
+  process.env.NODE_ENV === 'production'
+    ? (() => { throw new Error('FATAL DE SEGURIDAD: JWT_SECRET debe estar definido en las variables de entorno (.env) en producción.'); })()
+    : 'sec_' + crypto.createHash('sha256').update(process.platform + __dirname + 'dacas_b2b_jwt_salt').digest('hex')
+);
 
 // Middleware to authenticate JWT or CRM Session (Mandatory)
 const authenticateToken = (req, res, next) => {
@@ -1638,10 +1672,8 @@ router.post('/auth/login', async (req, res) => {
     const user = result.rows[0];
     
     const isBcryptMatch = user && user.password_hash ? await bcrypt.compare(password, user.password_hash) : false;
-    const isDemoMatch = user && (user.email === 'demo@dacas.com' || user.email === 'demo@berta.com') && 
-      ['password123', 'demo', 'demo123', 'admin', '123456', 'dacas', 'admin123'].includes(password.trim());
     
-    if (user && (isBcryptMatch || isDemoMatch)) {
+    if (user && isBcryptMatch) {
       const userStatus = user.status || 'activo';
 
       if (userStatus === 'pendiente') {
@@ -1677,7 +1709,7 @@ router.post('/auth/login', async (req, res) => {
         } 
       });
     } else {
-      res.status(401).json({ error: 'Credenciales inválidas. Verifique su email y contraseña (Demo: demo@dacas.com / password123).' });
+      res.status(401).json({ error: 'Credenciales inválidas. Verifique su email y contraseña.' });
     }
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -2446,11 +2478,15 @@ router.post('/client/team', authenticateToken, async (req, res) => {
       can_view_prices = true,
       can_request_quotes = true,
       can_manage_team = false,
-      password = 'password123'
+      password
     } = req.body || {};
 
     if (!name || !email) {
       return res.status(400).json({ error: 'Nombre y Correo Electrónico son obligatorios.' });
+    }
+
+    if (!password || String(password).trim().length < 6) {
+      return res.status(400).json({ error: 'Debe ingresar una contraseña válida de al menos 6 caracteres.' });
     }
 
     const cleanEmail = String(email).trim().toLowerCase();
@@ -2465,7 +2501,7 @@ router.post('/client/team', authenticateToken, async (req, res) => {
     }
 
     const companyName = parentUser ? (parentUser.razon_social || parentUser.name) : (req.user.razon_social || 'Empresa B2B');
-    const passwordHash = await bcrypt.hash(password || 'password123', 10);
+    const passwordHash = await bcrypt.hash(String(password).trim(), 10);
 
     if (isPgConnected) {
       // Verificar si el email ya existe en company_users
@@ -2476,13 +2512,13 @@ router.post('/client/team', authenticateToken, async (req, res) => {
 
       const insertRes = await pool.query(`
         INSERT INTO ecommerce_company_users (
-          company_user_id, company_name, name, email, cargo, phone, password_hash, plain_password,
+          company_user_id, company_name, name, email, cargo, phone, password_hash,
           role, can_order, can_view_prices, can_request_quotes, can_manage_team, status
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, 'activo')
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'activo')
         RETURNING *
       `, [
         parentUserId, companyName, name, cleanEmail, cargo || 'Colaborador B2B', phone || '',
-        passwordHash, password, role, can_order, can_view_prices, can_request_quotes, can_manage_team
+        passwordHash, role, can_order, can_view_prices, can_request_quotes, can_manage_team
       ]);
 
       // También registrar o actualizar en ecommerce_users para acceso directo
@@ -2531,7 +2567,6 @@ router.post('/client/team', authenticateToken, async (req, res) => {
         cargo: cargo || 'Colaborador B2B',
         phone: phone || '',
         password_hash: passwordHash,
-        plain_password: password,
         role,
         can_order: Boolean(can_order),
         can_view_prices: Boolean(can_view_prices),
@@ -2624,11 +2659,12 @@ router.put('/client/team/:id', authenticateToken, async (req, res) => {
 
       if (password && String(password).trim() !== '') {
         const newHash = await bcrypt.hash(password, 10);
-        query += `, password_hash = '${newHash}', plain_password = '${password}' `;
+        values.push(newHash);
+        query += `, password_hash = $${values.length} `;
       }
 
-      query += ` WHERE id = $10 AND (company_user_id = $11 OR company_name = $12) RETURNING *`;
       values.push(memberId, parentUserId, req.user.razon_social || '');
+      query += ` WHERE id = $${values.length - 2} AND (company_user_id = $${values.length - 1} OR company_name = $${values.length}) RETURNING *`;
 
       const result = await pool.query(query, values);
       if (result.rows.length === 0) {
@@ -2659,7 +2695,6 @@ router.put('/client/team/:id', authenticateToken, async (req, res) => {
       if (status !== undefined) mem.status = status;
       if (password && String(password).trim() !== '') {
         mem.password_hash = await bcrypt.hash(password, 10);
-        mem.plain_password = password;
       }
 
       return res.json({
@@ -4433,11 +4468,17 @@ router.get('/settings/n8n-bot', async (req, res) => {
   }
 });
 
-router.put('/settings/n8n-bot', optionalAuthToken, async (req, res) => {
+router.put('/settings/n8n-bot', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const updated = req.body;
     if (!updated || typeof updated !== 'object') {
       return res.status(400).json({ error: 'Configuración de n8n Bot inválida' });
+    }
+
+    if (updated.webhookUrl && typeof updated.webhookUrl === 'string' && updated.webhookUrl.trim() !== '') {
+      if (!isSafeWebhookUrl(updated.webhookUrl)) {
+        return res.status(400).json({ error: 'URL de Webhook rechazada por seguridad (SSRF bloqueado). No se permiten direcciones IP locales, privadas ni internas.' });
+      }
     }
 
     inMem.n8nBotConfig = { ...(inMem.n8nBotConfig || DEFAULT_N8N_BOT_CONFIG), ...updated, lastUpdated: new Date().toISOString() };
@@ -4468,9 +4509,12 @@ router.put('/settings/n8n-bot', optionalAuthToken, async (req, res) => {
   }
 });
 
-router.post('/settings/n8n-bot/test', optionalAuthToken, async (req, res) => {
+router.post('/settings/n8n-bot/test', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { webhookUrl, authToken, authHeaderName } = req.body || inMem.n8nBotConfig;
+    if (webhookUrl && !isSafeWebhookUrl(webhookUrl)) {
+      return res.status(400).json({ error: 'URL de Webhook rechazada por política SSRF.' });
+    }
     const latency = Math.floor(Math.random() * 40) + 30;
 
     res.json({
@@ -4486,15 +4530,15 @@ router.post('/settings/n8n-bot/test', optionalAuthToken, async (req, res) => {
   }
 });
 
-router.get('/settings/n8n-bot/workflow-template', (req, res) => {
+router.get('/settings/n8n-bot/workflow-template', authenticateToken, requireAdmin, (req, res) => {
   res.json(inMem.n8nWorkflowTemplate || DEFAULT_N8N_WORKFLOW_TEMPLATE);
 });
 
-router.get('/settings/n8n-bot/logs', (req, res) => {
+router.get('/settings/n8n-bot/logs', authenticateToken, requireAdmin, (req, res) => {
   res.json((inMem.n8nBotLogs || DEFAULT_N8N_BOT_LOGS).slice(0, 50));
 });
 
-router.post('/settings/n8n-bot/reset', optionalAuthToken, async (req, res) => {
+router.post('/settings/n8n-bot/reset', authenticateToken, requireAdmin, async (req, res) => {
   try {
     inMem.n8nBotConfig = JSON.parse(JSON.stringify(DEFAULT_N8N_BOT_CONFIG));
     inMem.n8nBotLogs = JSON.parse(JSON.stringify(DEFAULT_N8N_BOT_LOGS));
@@ -4552,7 +4596,7 @@ router.post('/n8n-bot/chat', async (req, res) => {
     let aiResponseText = '';
     let toolUsed = 'internalKnowledge';
 
-    const isCustomWebhook = cfg.webhookUrl && !cfg.webhookUrl.includes('dacas.com/webhook/dacas-b2b-agent') && cfg.webhookUrl.startsWith('http');
+    const isCustomWebhook = cfg.webhookUrl && !cfg.webhookUrl.includes('dacas.com/webhook/dacas-b2b-agent') && isSafeWebhookUrl(cfg.webhookUrl);
 
     if (isCustomWebhook) {
       try {

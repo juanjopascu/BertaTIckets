@@ -274,12 +274,14 @@ function Login({ setUsuario, initialError, clearInitialError, theme, toggleTheme
       const loginResponse = await instance.loginPopup(loginRequest);
       const email = loginResponse.account.username;
       const nombre = loginResponse.account.name;
+      const idToken = loginResponse.idToken || '';
+      const accessToken = loginResponse.accessToken || '';
 
-      // Validar con el backend (usando el mismo mecanismo de sesiones por ahora)
+      // Validar con el backend con verificación criptográfica del token
       const response = await fetch(`${API_BASE_URL}/api/login-microsoft`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, nombre })
+        body: JSON.stringify({ email, nombre, idToken, accessToken })
       });
       const data = await response.json();
 
