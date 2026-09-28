@@ -150,13 +150,13 @@ function AdminEquipos({ embedded = false }) {
                 <div className="user-controls">
                   <button 
                     className="nav-btn" 
-                    style={{ background: 'var(--primary)', color: 'white', border: 'none' }}
+                    style={{ background: 'var(--primary)', color: 'white', border: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                     onClick={() => {
                       handleCancel();
                       setMostrarModal(true);
                     }}
                   >
-                    ➕ Añadir Nuevo Equipo
+                    <BrandingVectorIcon name="plus" size={14} /> Añadir Nuevo Equipo
                   </button>
                 </div>
               </div>
@@ -171,8 +171,13 @@ function AdminEquipos({ embedded = false }) {
           <div className="modal-overlay" onClick={handleCancel}>
             <div className="modal-container" style={{ maxWidth: '650px', height: 'auto', maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
-                <h2>{editingId ? '✏️ Editar Equipo' : '➕ Nuevo Equipo'}</h2>
-                <button onClick={handleCancel}>✕</button>
+                <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <BrandingVectorIcon name={editingId ? "edit" : "plus"} size={20} color="var(--primary)" />
+                  {editingId ? 'Editar Equipo' : 'Nuevo Equipo'}
+                </h2>
+                <button onClick={handleCancel} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <BrandingVectorIcon name="x" size={16} color="var(--text-muted)" />
+                </button>
               </div>
               <div style={{ padding: '32px' }}>
                 {error && <div className="error-alert" style={{ marginBottom: '20px', padding: '12px 16px', background: 'var(--danger-bg)', color: 'var(--danger)', borderRadius: '12px', fontWeight: 600 }}>{error}</div>}

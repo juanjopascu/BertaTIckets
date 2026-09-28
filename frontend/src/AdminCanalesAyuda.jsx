@@ -208,7 +208,8 @@ export default function AdminCanalesAyuda({ embedded = false }) {
           alignItems: 'center',
           gap: '8px'
         }}>
-          <span>⚠️ {error}</span>
+          <BrandingVectorIcon name="alert-triangle" size={16} color="#ef4444" />
+          <span>{error}</span>
         </div>
       )}
 

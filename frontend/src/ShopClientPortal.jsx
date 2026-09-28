@@ -64,6 +64,27 @@ export default function ShopClientPortal() {
     email_pagos: ''
   });
 
+  // 👥 Team / Company Users Management State
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [teamLoading, setTeamLoading] = useState(false);
+  const [teamModalOpen, setTeamModalOpen] = useState(false);
+  const [editMemberModalOpen, setEditMemberModalOpen] = useState(false);
+  const [editingMember, setEditingMember] = useState(null);
+  const [submittingMember, setSubmittingMember] = useState(false);
+  const [memberSearchTerm, setMemberSearchTerm] = useState('');
+  const [teamForm, setTeamForm] = useState({
+    name: '',
+    email: '',
+    cargo: 'Responsable de Compras B2B',
+    phone: '',
+    role: 'comprador',
+    can_order: true,
+    can_view_prices: true,
+    can_request_quotes: true,
+    can_manage_team: false,
+    password: 'password123'
+  });
+
   const fileInputRef = useRef(null);
 
   // Redirect if not logged in
@@ -73,11 +94,134 @@ export default function ShopClientPortal() {
       return;
     }
     fetchCustomerData();
+    fetchTeam();
   }, [token]);
 
   const showToast = (msg, type = 'success') => {
     setToastMessage({ msg, type });
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  const fetchTeam = async () => {
+    if (!token) return;
+    setTeamLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/client/team`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setTeamMembers(data.team || []);
+      }
+    } catch (err) {
+      console.error('Error cargando equipo de la empresa:', err);
+    } finally {
+      setTeamLoading(false);
+    }
+  };
+
+  const handleCreateTeamMember = async (e) => {
+    e?.preventDefault();
+    if (!teamForm.name.trim() || !teamForm.email.trim()) {
+      showToast('Por favor complete Nombre y Correo Electrónico.', 'error');
+      return;
+    }
+    setSubmittingMember(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/client/team`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(teamForm)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al agregar usuario al equipo');
+
+      showToast(data.message || '¡Usuario agregado exitosamente a la cuenta corporativa!');
+      setTeamModalOpen(false);
+      setTeamForm({
+        name: '',
+        email: '',
+        cargo: 'Responsable de Compras B2B',
+        phone: '',
+        role: 'comprador',
+        can_order: true,
+        can_view_prices: true,
+        can_request_quotes: true,
+        can_manage_team: false,
+        password: 'password123'
+      });
+      fetchTeam();
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      setSubmittingMember(false);
+    }
+  };
+
+  const handleUpdateTeamMember = async (e) => {
+    e?.preventDefault();
+    if (!editingMember) return;
+    setSubmittingMember(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/client/team/${editingMember.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(editingMember)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al actualizar usuario');
+
+      showToast(data.message || 'Usuario actualizado correctamente');
+      setEditMemberModalOpen(false);
+      setEditingMember(null);
+      fetchTeam();
+    } catch (err) {
+      showToast(err.message, 'error');
+    } finally {
+      setSubmittingMember(false);
+    }
+  };
+
+  const handleDeleteTeamMember = async (memberId, memberName) => {
+    if (!window.confirm(`¿Está seguro de desvincular a "${memberName}" del equipo de la empresa?`)) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/client/team/${memberId}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al desvincular usuario');
+      showToast(data.message || 'Usuario desvinculado de la empresa');
+      fetchTeam();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
+  };
+
+  const handleToggleMemberStatus = async (member) => {
+    const nextStatus = member.status === 'activo' ? 'inactivo' : 'activo';
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/client/team/${member.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: nextStatus })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al cambiar estado');
+      showToast(`Usuario ${member.name} ${nextStatus === 'activo' ? 'activado' : 'pausado'}`);
+      fetchTeam();
+    } catch (err) {
+      showToast(err.message, 'error');
+    }
   };
 
   const fetchCustomerData = async () => {
@@ -119,6 +263,9 @@ export default function ShopClientPortal() {
         const oData = await oRes.json();
         setOrders(Array.isArray(oData) ? oData : []);
       }
+
+      // 3. Team
+      fetchTeam();
     } catch (err) {
       console.error('Error cargando portal del cliente:', err);
     } finally {
@@ -243,15 +390,15 @@ export default function ShopClientPortal() {
   const getStatusBadge = (status) => {
     const s = (status || '').toLowerCase();
     if (s === 'entregado' || s === 'completed') {
-      return { label: '✓ Entregado', bg: '#DCFCE7', text: '#15803D', border: '#86EFAC', step: 4 };
+      return { label: 'Entregado', icon: 'check-circle', bg: '#DCFCE7', text: '#15803D', border: '#86EFAC', step: 4 };
     }
     if (s === 'en_camino' || s === 'shipped') {
-      return { label: '🚚 En Tránsito / Despacho', bg: '#E0F2FE', text: '#0369A1', border: '#7DD3FC', step: 3 };
+      return { label: 'En Tránsito / Despacho', icon: 'truck', bg: '#E0F2FE', text: '#0369A1', border: '#7DD3FC', step: 3 };
     }
     if (s === 'procesando' || s === 'paid') {
-      return { label: '⚙️ En Preparación / Logística', bg: '#FEF3C7', text: '#B45309', border: '#FDE68A', step: 2 };
+      return { label: 'En Preparación / Logística', icon: 'rotate-ccw', bg: '#FEF3C7', text: '#B45309', border: '#FDE68A', step: 2 };
     }
-    return { label: '⏳ Recibido / Pendiente', bg: '#F1F5F9', text: '#475569', border: '#CBD5E1', step: 1 };
+    return { label: 'Recibido / Pendiente', icon: 'clock', bg: '#F1F5F9', text: '#475569', border: '#CBD5E1', step: 1 };
   };
 
   return (
@@ -276,13 +423,14 @@ export default function ShopClientPortal() {
           gap: '10px',
           animation: 'slideDown 0.3s ease'
         }}>
-          <span>{toastMessage.type === 'error' ? '⚠️' : '✅'}</span>
+          <BrandingVectorIcon name={toastMessage.type === 'error' ? "alert-circle" : "check-circle"} size={16} color="#ffffff" />
           <span>{toastMessage.msg}</span>
         </div>
       )}
 
-      {/* ── Header ── */}
-      <header style={{ background: '#071524', borderBottom: '1px solid rgba(15, 164, 222, 0.25)', position: 'sticky', top: 0, zIndex: 100 }}>
+      {/* ── Header & Main Screen (Hidden on Print) ── */}
+      <div className="portal-screen-view">
+        <header style={{ background: '#071524', borderBottom: '1px solid rgba(15, 164, 222, 0.25)', position: 'sticky', top: 0, zIndex: 100 }}>
         <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', height: '68px', justifyContent: 'space-between' }}>
           
           {/* Brand */}
@@ -513,7 +661,7 @@ export default function ShopClientPortal() {
                   gap: '8px'
                 }}
               >
-                <span>📝</span>
+                <BrandingVectorIcon name="edit" size={14} color="#ffffff" />
                 <span>Solicitar Modificación de Datos</span>
               </button>
             </div>
@@ -594,6 +742,19 @@ export default function ShopClientPortal() {
             <BrandingVectorIcon name="tag" size={16} color={activeTab === 'discounts' ? '#ffffff' : '#64748B'} />
             <span>Mis Descuentos y Condiciones</span>
           </button>
+
+          <button
+            onClick={() => setActiveTab('team')}
+            className={`dacas-tab-pill${activeTab === 'team' ? ' active' : ''}`}
+            style={{
+              padding: '10px 20px',
+              fontSize: '13.5px',
+              fontWeight: '800'
+            }}
+          >
+            <BrandingVectorIcon name="users" size={16} color={activeTab === 'team' ? '#ffffff' : '#64748B'} />
+            <span>Equipo & Usuarios ({teamMembers.length})</span>
+          </button>
         </div>
 
         {/* ── TAB 1: MIS COMPRAS Y PEDIDOS ── */}
@@ -629,13 +790,17 @@ export default function ShopClientPortal() {
             </div>
 
             {loading ? (
-              <div style={{ textAlign: 'center', padding: '60px 0', color: '#64748B' }}>
-                <div style={{ fontSize: '32px', marginBottom: '8px' }}>🔄</div>
+              <div style={{ textAlign: 'center', padding: '60px 0', color: '#64748B', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div style={{ marginBottom: '8px' }}>
+                  <BrandingVectorIcon name="refresh-cw" size={32} color="#64748B" />
+                </div>
                 <p>Cargando tus compras...</p>
               </div>
             ) : filteredOrders.length === 0 ? (
-              <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '60px 20px', textAlign: 'center', border: '1px solid #E2E8F0' }}>
-                <div style={{ fontSize: '48px', marginBottom: '12px' }}>🛒</div>
+              <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '60px 20px', textAlign: 'center', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <div style={{ marginBottom: '12px' }}>
+                  <BrandingVectorIcon name="shopping-bag" size={48} color="#94A3B8" />
+                </div>
                 <h3 style={{ margin: '0 0 8px', color: '#071524', fontWeight: '800' }}>No tienes pedidos en esta categoría</h3>
                 <p style={{ color: '#64748B', maxWidth: '400px', margin: '0 auto 20px' }}>Explora el catálogo mayorista de DACAS para armar tu cotización o compra.</p>
                 <button
@@ -687,12 +852,14 @@ export default function ShopClientPortal() {
                           <span style={{ fontWeight: '900', fontSize: '16px', color: '#071524' }}>
                             PEDIDO #{order.id}
                           </span>
-                          <span style={{ fontSize: '13px', color: '#64748B' }}>
-                            📅 {orderDate}
+                          <span style={{ fontSize: '13px', color: '#64748B', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <BrandingVectorIcon name="clock" size={13} color="#64748B" />
+                            {orderDate}
                           </span>
                           {order.payment_method && (
-                            <span style={{ fontSize: '12px', background: '#F1F5F9', color: '#334155', padding: '3px 10px', borderRadius: '6px', fontWeight: '600' }}>
-                              💳 {order.payment_method}
+                            <span style={{ fontSize: '12px', background: '#F1F5F9', color: '#334155', padding: '3px 10px', borderRadius: '6px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                              <BrandingVectorIcon name="credit-card" size={12} color="#334155" />
+                              {order.payment_method}
                             </span>
                           )}
                         </div>
@@ -705,9 +872,13 @@ export default function ShopClientPortal() {
                           fontSize: '12px',
                           fontWeight: '800',
                           padding: '5px 14px',
-                          borderRadius: '999px'
+                          borderRadius: '999px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px'
                         }}>
-                          {badge.label}
+                          <BrandingVectorIcon name={badge.icon || 'clock'} size={12} color={badge.text} />
+                          <span>{badge.label}</span>
                         </div>
                       </div>
 
@@ -796,7 +967,7 @@ export default function ShopClientPortal() {
 
                         {order.tracking_number && (
                           <div style={{ marginTop: '14px', fontSize: '12px', color: '#0369A1', background: '#F0F9FF', padding: '6px 12px', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                            <span>🚚</span>
+                            <BrandingVectorIcon name="truck" size={13} color="#0369A1" />
                             <span>Guía de Seguimiento: <strong>{order.tracking_number}</strong></span>
                           </div>
                         )}
@@ -810,7 +981,9 @@ export default function ShopClientPortal() {
                               {item.image_url ? (
                                 <img src={item.image_url} alt={item.product_name} style={{ width: '56px', height: '56px', objectFit: 'cover', borderRadius: '10px', border: '1px solid #E2E8F0' }} />
                               ) : (
-                                <div style={{ width: '56px', height: '56px', borderRadius: '10px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>📦</div>
+                                <div style={{ width: '56px', height: '56px', borderRadius: '10px', background: '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '24px' }}>
+                                  <BrandingVectorIcon name="box" size={24} color="#94A3B8" />
+                                </div>
                               )}
                               <div style={{ flex: 1, minWidth: 0 }}>
                                 <div style={{ fontWeight: '800', fontSize: '14px', color: '#071524' }}>
@@ -850,8 +1023,9 @@ export default function ShopClientPortal() {
                       }}>
                         <div>
                           {parseFloat(order.discount_applied || 0) > 0 && (
-                            <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: '700', marginRight: '14px' }}>
-                              🏷️ Ahorro B2B: -${parseFloat(order.discount_applied).toFixed(2)} USD
+                            <span style={{ fontSize: '12px', color: '#16a34a', fontWeight: '700', marginRight: '14px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <BrandingVectorIcon name="tag" size={12} color="#16a34a" />
+                              Ahorro B2B: -${parseFloat(order.discount_applied).toFixed(2)} USD
                             </span>
                           )}
                           <span style={{ fontSize: '15px', fontWeight: '800', color: '#071524' }}>
@@ -877,7 +1051,7 @@ export default function ShopClientPortal() {
                               transition: 'all 0.15s'
                             }}
                           >
-                            <span>📄</span>
+                            <BrandingVectorIcon name="file-text" size={13} color="#071524" />
                             <span>Ver Proforma / Remito</span>
                           </button>
                         </div>
@@ -1031,9 +1205,13 @@ export default function ShopClientPortal() {
                           padding: '2px 8px',
                           borderRadius: '999px',
                           background: cr.status === 'aprobado' ? '#DCFCE7' : '#FEF3C7',
-                          color: cr.status === 'aprobado' ? '#15803D' : '#B45309'
+                          color: cr.status === 'aprobado' ? '#15803D' : '#B45309',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px'
                         }}>
-                          {cr.status === 'aprobado' ? '✓ Aprobado' : '⏳ En Revisión'}
+                          <BrandingVectorIcon name={cr.status === 'aprobado' ? "check" : "clock"} size={10} color="currentColor" />
+                          <span>{cr.status === 'aprobado' ? 'Aprobado' : 'En Revisión'}</span>
                         </span>
                       </div>
                       <p style={{ margin: '0 0 6px', fontSize: '12px', color: '#475569', lineHeight: '1.4' }}>{cr.details}</p>
@@ -1106,7 +1284,853 @@ export default function ShopClientPortal() {
           </div>
         )}
 
+        {/* ── TAB 4: EQUIPO & USUARIOS DE LA EMPRESA ── */}
+        {activeTab === 'team' && (
+          <div>
+            {/* Header del Tab de Equipo */}
+            <div style={{
+              background: '#FFFFFF',
+              borderRadius: '20px',
+              padding: '24px 28px',
+              border: '1px solid #E2E8F0',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
+              marginBottom: '24px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '16px'
+            }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
+                  <BrandingVectorIcon name="users" size={22} color="#0fa4de" />
+                  <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#071524' }}>
+                    Usuarios & Equipo de {profileData?.razon_social || clientUser?.razon_social || 'la Empresa'}
+                  </h3>
+                  <span style={{
+                    background: '#E0F2FE',
+                    color: '#0284c7',
+                    fontSize: '11px',
+                    fontWeight: '800',
+                    padding: '3px 10px',
+                    borderRadius: '999px'
+                  }}>
+                    {teamMembers.length} {teamMembers.length === 1 ? 'Usuario activo' : 'Usuarios activos'}
+                  </span>
+                </div>
+                <p style={{ margin: 0, fontSize: '13px', color: '#64748B', maxWidth: '750px', lineHeight: '1.5' }}>
+                  Agrega y autoriza a ingenieros de preventa, compradores y analistas financieros de tu empresa para operar en DACAS B2B con las tarifas, descuentos y condiciones mayoristas asignadas a tu cuenta.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                <button
+                  onClick={() => setTeamModalOpen(true)}
+                  style={{
+                    background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '12px 22px',
+                    fontSize: '13.5px',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 14px rgba(15, 164, 222, 0.4)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-1px)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+                >
+                  <BrandingVectorIcon name="user-plus" size={16} color="#FFFFFF" />
+                  <span>Agregar Usuario a la Empresa</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Barra de Búsqueda & Filtro */}
+            <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', alignItems: 'center' }}>
+              <div style={{ position: 'relative', flex: 1, maxWidth: '400px' }}>
+                <input
+                  type="text"
+                  placeholder="Buscar por nombre, cargo o email corporativo..."
+                  value={memberSearchTerm}
+                  onChange={(e) => setMemberSearchTerm(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 14px 10px 38px',
+                    borderRadius: '12px',
+                    border: '1.5px solid #CBD5E1',
+                    fontSize: '13px',
+                    outline: 'none',
+                    background: '#FFFFFF'
+                  }}
+                />
+                <span style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', display: 'flex', alignItems: 'center' }}>
+                  <BrandingVectorIcon name="search" size={15} color="#94A3B8" />
+                </span>
+              </div>
+            </div>
+
+            {/* Grid de Usuarios de la Empresa */}
+            {teamLoading ? (
+              <div style={{ textAlign: 'center', padding: '50px 20px', background: '#FFFFFF', borderRadius: '20px', border: '1px solid #E2E8F0' }}>
+                <div style={{ marginBottom: '10px' }}>
+                  <BrandingVectorIcon name="rotate-ccw" size={32} color="#0fa4de" />
+                </div>
+                <div style={{ fontWeight: '700', color: '#071524' }}>Cargando equipo corporativo...</div>
+              </div>
+            ) : teamMembers.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '50px 20px', background: '#FFFFFF', borderRadius: '20px', border: '1px solid #E2E8F0' }}>
+                <div style={{ marginBottom: '12px' }}>
+                  <BrandingVectorIcon name="users" size={48} color="#94A3B8" />
+                </div>
+                <h4 style={{ margin: '0 0 6px', fontSize: '1.1rem', fontWeight: '800', color: '#071524' }}>
+                  No tienes usuarios secundarios registrados aún
+                </h4>
+                <p style={{ margin: '0 0 20px', fontSize: '13px', color: '#64748B' }}>
+                  Puedes autorizar a miembros de tu equipo para emitir pedidos, cotizaciones y consultar stock oficial.
+                </p>
+                <button
+                  onClick={() => setTeamModalOpen(true)}
+                  style={{
+                    background: '#0fa4de',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '10px',
+                    padding: '10px 20px',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  <BrandingVectorIcon name="user-plus" size={15} color="#FFFFFF" />
+                  <span>Agregar Primer Colaborador</span>
+                </button>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '20px' }}>
+                {teamMembers
+                  .filter(m => {
+                    if (!memberSearchTerm) return true;
+                    const term = memberSearchTerm.toLowerCase();
+                    return (
+                      m.name?.toLowerCase().includes(term) ||
+                      m.email?.toLowerCase().includes(term) ||
+                      m.cargo?.toLowerCase().includes(term) ||
+                      m.role?.toLowerCase().includes(term)
+                    );
+                  })
+                  .map((member) => {
+                    const isPaused = member.status === 'inactivo';
+                    return (
+                      <div
+                        key={member.id}
+                        style={{
+                          background: '#FFFFFF',
+                          borderRadius: '20px',
+                          padding: '24px',
+                          border: isPaused ? '1px dashed #CBD5E1' : '1px solid #E2E8F0',
+                          boxShadow: '0 6px 24px rgba(7, 21, 36, 0.04)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          justifyContent: 'space-between',
+                          position: 'relative',
+                          opacity: isPaused ? 0.75 : 1,
+                          transition: 'all 0.2s'
+                        }}
+                      >
+                        {/* Header de la tarjeta */}
+                        <div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                              <div style={{
+                                width: '48px',
+                                height: '48px',
+                                borderRadius: '14px',
+                                overflow: 'hidden',
+                                background: 'linear-gradient(135deg, #071524 0%, #0fa4de 100%)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: '#FFFFFF',
+                                fontWeight: '900',
+                                fontSize: '18px',
+                                flexShrink: 0,
+                                boxShadow: '0 4px 12px rgba(15, 164, 222, 0.25)'
+                              }}>
+                                {member.avatar_url ? (
+                                  <img src={member.avatar_url} alt={member.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                ) : (
+                                  member.name.substring(0, 2).toUpperCase()
+                                )}
+                              </div>
+                              <div>
+                                <div style={{ fontWeight: '800', fontSize: '15px', color: '#071524', letterSpacing: '-0.01em' }}>
+                                  {member.name}
+                                </div>
+                                <div style={{ fontSize: '12px', fontWeight: '700', color: '#0284c7', display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                                  <BrandingVectorIcon name="briefcase" size={13} color="#0284c7" />
+                                  <span>{member.cargo || 'Colaborador B2B'}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            <span style={{
+                              fontSize: '11px',
+                              fontWeight: '800',
+                              padding: '3px 10px',
+                              borderRadius: '999px',
+                              background: isPaused ? '#F1F5F9' : '#DCFCE7',
+                              color: isPaused ? '#64748B' : '#16A34A',
+                              border: `1px solid ${isPaused ? '#E2E8F0' : '#86EFAC'}`,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '5px'
+                            }}>
+                              <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: isPaused ? '#94A3B8' : '#22C55E' }}></span>
+                              <span>{isPaused ? 'En Pausa' : 'Activo'}</span>
+                            </span>
+                          </div>
+
+                          {/* Info de Contacto Directo */}
+                          <div style={{ background: '#F8FAFC', borderRadius: '12px', padding: '12px 14px', marginBottom: '16px', border: '1px solid #F1F5F9', fontSize: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#334155' }}>
+                              <BrandingVectorIcon name="mail" size={14} color="#64748B" />
+                              <strong style={{ color: '#071524' }}>{member.email}</strong>
+                            </div>
+                            {member.phone && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#334155' }}>
+                                <BrandingVectorIcon name="phone" size={14} color="#64748B" />
+                                <span>{member.phone}</span>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Permisos Operativos B2B */}
+                          <div style={{ marginBottom: '18px' }}>
+                            <div style={{ fontSize: '10.5px', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', marginBottom: '8px', letterSpacing: '0.04em' }}>
+                              Permisos en la plataforma:
+                            </div>
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                              <span style={{
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                padding: '4px 9px',
+                                borderRadius: '6px',
+                                background: member.can_order ? '#EFF6FF' : '#F1F5F9',
+                                color: member.can_order ? '#1D4ED8' : '#94A3B8',
+                                border: `1px solid ${member.can_order ? '#BFDBFE' : '#E2E8F0'}`,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px'
+                              }}>
+                                <BrandingVectorIcon name="shopping-cart" size={12} color={member.can_order ? '#1D4ED8' : '#94A3B8'} />
+                                <span>{member.can_order ? 'Emite Compras' : 'Sin Compras'}</span>
+                              </span>
+
+                              <span style={{
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                padding: '4px 9px',
+                                borderRadius: '6px',
+                                background: member.can_view_prices ? '#ECFDF5' : '#F1F5F9',
+                                color: member.can_view_prices ? '#047857' : '#94A3B8',
+                                border: `1px solid ${member.can_view_prices ? '#A7F3D0' : '#E2E8F0'}`,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px'
+                              }}>
+                                <BrandingVectorIcon name="tag" size={12} color={member.can_view_prices ? '#047857' : '#94A3B8'} />
+                                <span>{member.can_view_prices ? 'Ve Precios B2B' : 'Sin Precios'}</span>
+                              </span>
+
+                              <span style={{
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                padding: '4px 9px',
+                                borderRadius: '6px',
+                                background: member.can_request_quotes ? '#F5F3FF' : '#F1F5F9',
+                                color: member.can_request_quotes ? '#6D28D9' : '#94A3B8',
+                                border: `1px solid ${member.can_request_quotes ? '#DDD6FE' : '#E2E8F0'}`,
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '5px'
+                              }}>
+                                <BrandingVectorIcon name="file-text" size={12} color={member.can_request_quotes ? '#6D28D9' : '#94A3B8'} />
+                                <span>{member.can_request_quotes ? 'Cotizaciones' : 'Sin Cotizar'}</span>
+                              </span>
+
+                              {member.can_manage_team && (
+                                <span style={{
+                                  fontSize: '11px',
+                                  fontWeight: '800',
+                                  padding: '4px 9px',
+                                  borderRadius: '6px',
+                                  background: '#FEF3C7',
+                                  color: '#B45309',
+                                  border: '1px solid #FDE68A',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '5px'
+                                }}>
+                                  <BrandingVectorIcon name="shield" size={12} color="#B45309" />
+                                  <span>Admin Cuenta</span>
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Footer & Acciones */}
+                        <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '8px' }}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingMember(JSON.parse(JSON.stringify(member)));
+                              setEditMemberModalOpen(true);
+                            }}
+                            style={{
+                              background: '#F1F5F9',
+                              color: '#334155',
+                              border: '1px solid #CBD5E1',
+                              borderRadius: '8px',
+                              padding: '7px 14px',
+                              fontSize: '12px',
+                              fontWeight: '700',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px'
+                            }}
+                          >
+                            <BrandingVectorIcon name="edit" size={13} color="#334155" />
+                            <span>Editar</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleToggleMemberStatus(member)}
+                            style={{
+                              background: isPaused ? '#ECFDF5' : '#FFFBEB',
+                              color: isPaused ? '#047857' : '#B45309',
+                              border: `1px solid ${isPaused ? '#A7F3D0' : '#FDE68A'}`,
+                              borderRadius: '8px',
+                              padding: '7px 14px',
+                              fontSize: '12px',
+                              fontWeight: '700',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px'
+                            }}
+                          >
+                            <BrandingVectorIcon name={isPaused ? "play" : "pause"} size={13} color={isPaused ? "#047857" : "#B45309"} />
+                            <span>{isPaused ? 'Reactivar' : 'Pausar'}</span>
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteTeamMember(member.id, member.name)}
+                            style={{
+                              background: 'transparent',
+                              color: '#EF4444',
+                              border: 'none',
+                              padding: '6px 10px',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                            title="Desvincular usuario de la empresa"
+                          >
+                            <BrandingVectorIcon name="trash" size={15} color="#EF4444" />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+              </div>
+            )}
+
+            {/* Banner Informativo sobre Gestión de Cuentas B2B */}
+            <div style={{
+              marginTop: '32px',
+              background: 'linear-gradient(135deg, #071524 0%, #0d233a 100%)',
+              borderRadius: '20px',
+              padding: '24px 28px',
+              color: '#FFFFFF',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              flexWrap: 'wrap',
+              gap: '20px',
+              border: '1px solid rgba(15, 164, 222, 0.25)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+                <div style={{
+                  width: '46px',
+                  height: '46px',
+                  borderRadius: '12px',
+                  background: 'rgba(15, 164, 222, 0.2)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  color: '#38bdf8'
+                }}>
+                  <BrandingVectorIcon name="shield" size={24} color="#38bdf8" />
+                </div>
+                <div>
+                  <h4 style={{ margin: '0 0 4px', fontSize: '14.5px', fontWeight: '800', color: '#FFFFFF' }}>
+                    Control de Acceso y Precios Corporativos Mayoristas
+                  </h4>
+                  <p style={{ margin: 0, fontSize: '12.5px', color: '#94A3B8', maxWidth: '750px', lineHeight: '1.4' }}>
+                    Todos los miembros registrados en tu cuenta ingresan con su propio correo corporativo y comparten la misma cartera de descuentos, límites de crédito y condiciones asignadas a <strong>{profileData?.razon_social || clientUser?.razon_social || 'tu Empresa'}</strong>.
+                  </p>
+                </div>
+              </div>
+
+              <button
+                onClick={() => setTeamModalOpen(true)}
+                style={{
+                  background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                  color: '#FFFFFF',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '10px 18px',
+                  fontSize: '12.5px',
+                  fontWeight: '800',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                <BrandingVectorIcon name="user-plus" size={14} color="#FFFFFF" />
+                <span>Invitar Otro Colaborador</span>
+              </button>
+            </div>
+          </div>
+        )}
+
       </div>
+
+      {/* ── MODAL: AGREGAR USUARIO AL EQUIPO ── */}
+      {teamModalOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(7, 21, 36, 0.75)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: '#FFFFFF',
+            borderRadius: '24px',
+            maxWidth: '580px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            padding: '32px',
+            boxShadow: '0 24px 60px rgba(7, 21, 36, 0.35)',
+            border: '1px solid #E2E8F0',
+            animation: 'scaleUp 0.2s ease'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <BrandingVectorIcon name="user-plus" size={24} color="#0fa4de" />
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: '900', color: '#071524' }}>
+                    Agregar Usuario a la Cuenta B2B
+                  </h3>
+                  <p style={{ margin: '3px 0 0', fontSize: '12.5px', color: '#64748B' }}>
+                    Empresa: <strong>{profileData?.razon_social || clientUser?.razon_social || 'Empresa B2B'}</strong>
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setTeamModalOpen(false)}
+                style={{ background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <BrandingVectorIcon name="x" size={14} color="#64748B" />
+              </button>
+            </div>
+
+            {/* Presets rápidos de cargo */}
+            <div style={{ marginBottom: '18px' }}>
+              <div style={{ fontSize: '11px', fontWeight: '800', color: '#94A3B8', textTransform: 'uppercase', marginBottom: '8px' }}>
+                Presets Rápidos de Rol:
+              </div>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                {[
+                  { label: 'Compras & Abastecimiento', icon: 'shopping-cart', cargo: 'Responsable de Compras B2B', role: 'comprador', can_order: true, can_view_prices: true, can_request_quotes: true, can_manage_team: false },
+                  { label: 'Finanzas & Tesorería', icon: 'credit-card', cargo: 'Analista de Finanzas / Pagos', role: 'finanzas', can_order: false, can_view_prices: true, can_request_quotes: true, can_manage_team: false },
+                  { label: 'Ingeniero Preventa / IT', icon: 'cpu', cargo: 'Líder Técnico & Preventa IT', role: 'tecnico', can_order: true, can_view_prices: true, can_request_quotes: true, can_manage_team: false },
+                  { label: 'Administrador B2B', icon: 'shield', cargo: 'Director / Administrador de Cuenta', role: 'admin', can_order: true, can_view_prices: true, can_request_quotes: true, can_manage_team: true }
+                ].map((p, idx) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setTeamForm(prev => ({
+                      ...prev,
+                      cargo: p.cargo,
+                      role: p.role,
+                      can_order: p.can_order,
+                      can_view_prices: p.can_view_prices,
+                      can_request_quotes: p.can_request_quotes,
+                      can_manage_team: p.can_manage_team
+                    }))}
+                    style={{
+                      background: teamForm.cargo === p.cargo ? '#E0F2FE' : '#F8FAFC',
+                      color: teamForm.cargo === p.cargo ? '#0369A1' : '#475569',
+                      border: `1.5px solid ${teamForm.cargo === p.cargo ? '#38BDF8' : '#E2E8F0'}`,
+                      borderRadius: '999px',
+                      padding: '6px 12px',
+                      fontSize: '11.5px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px'
+                    }}
+                  >
+                    <BrandingVectorIcon name={p.icon} size={12} color="currentColor" />
+                    <span>{p.label}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <form onSubmit={handleCreateTeamMember} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '800', color: '#475569', marginBottom: '5px', textTransform: 'uppercase' }}>
+                    Nombre y Apellido *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="Ej: Laura Gómez"
+                    value={teamForm.name}
+                    onChange={(e) => setTeamForm({ ...teamForm, name: e.target.value })}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '800', color: '#475569', marginBottom: '5px', textTransform: 'uppercase' }}>
+                    Correo Corporativo *
+                  </label>
+                  <input
+                    type="email"
+                    required
+                    placeholder="usuario@tuempresa.com"
+                    value={teamForm.email}
+                    onChange={(e) => setTeamForm({ ...teamForm, email: e.target.value })}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '800', color: '#475569', marginBottom: '5px', textTransform: 'uppercase' }}>
+                    Cargo / Puesto en la Empresa
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="Ej: Gerente de Compras"
+                    value={teamForm.cargo}
+                    onChange={(e) => setTeamForm({ ...teamForm, cargo: e.target.value })}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '800', color: '#475569', marginBottom: '5px', textTransform: 'uppercase' }}>
+                    Teléfono Directo / WhatsApp
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="+54 11 4000-1234"
+                    value={teamForm.phone}
+                    onChange={(e) => setTeamForm({ ...teamForm, phone: e.target.value })}
+                    style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '800', color: '#475569', marginBottom: '5px', textTransform: 'uppercase' }}>
+                  Contraseña Inicial de Acceso
+                </label>
+                <input
+                  type="text"
+                  value={teamForm.password}
+                  onChange={(e) => setTeamForm({ ...teamForm, password: e.target.value })}
+                  style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13px', outline: 'none', boxSizing: 'border-box', background: '#F8FAFC' }}
+                />
+                <div style={{ fontSize: '11px', color: '#64748B', marginTop: '3px' }}>
+                  El usuario podrá usar esta contraseña para ingresar inmediatamente desde la tienda.
+                </div>
+              </div>
+
+              {/* Permisos Operativos */}
+              <div style={{ background: '#F8FAFC', borderRadius: '12px', padding: '14px 16px', border: '1px solid #E2E8F0', marginTop: '6px' }}>
+                <div style={{ fontSize: '11.5px', fontWeight: '800', color: '#071524', marginBottom: '10px', textTransform: 'uppercase' }}>
+                  Permisos Operativos para este Usuario:
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', fontWeight: '700', color: '#334155', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={teamForm.can_order}
+                      onChange={(e) => setTeamForm({ ...teamForm, can_order: e.target.checked })}
+                    />
+                    <span>Puede emitir órdenes de compra y completar el Checkout B2B</span>
+                  </label>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', fontWeight: '700', color: '#334155', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={teamForm.can_view_prices}
+                      onChange={(e) => setTeamForm({ ...teamForm, can_view_prices: e.target.checked })}
+                    />
+                    <span>Puede ver listas de precios netas y descuentos mayoristas en el catálogo</span>
+                  </label>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', fontWeight: '700', color: '#334155', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={teamForm.can_request_quotes}
+                      onChange={(e) => setTeamForm({ ...teamForm, can_request_quotes: e.target.checked })}
+                    />
+                    <span>Puede solicitar cotizaciones oficiales y descargar notas proforma</span>
+                  </label>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', fontWeight: '700', color: '#334155', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={teamForm.can_manage_team}
+                      onChange={(e) => setTeamForm({ ...teamForm, can_manage_team: e.target.checked })}
+                    />
+                    <span>Puede administrar y agregar otros miembros del equipo</span>
+                  </label>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => setTeamModalOpen(false)}
+                  style={{ background: '#F1F5F9', color: '#475569', border: '1px solid #CBD5E1', borderRadius: '10px', padding: '10px 18px', fontSize: '13px', fontWeight: '700', cursor: 'pointer' }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingMember}
+                  style={{
+                    background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '10px',
+                    padding: '10px 22px',
+                    fontSize: '13px',
+                    fontWeight: '800',
+                    cursor: submittingMember ? 'not-allowed' : 'pointer',
+                    boxShadow: '0 4px 14px rgba(15, 164, 222, 0.4)'
+                  }}
+                >
+                  {submittingMember ? 'Guardando...' : 'Confirmar y Dar de Alta'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: EDITAR USUARIO DEL EQUIPO ── */}
+      {editMemberModalOpen && editingMember && (
+        <div style={{
+          position: 'fixed',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(7, 21, 36, 0.75)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: '#FFFFFF',
+            borderRadius: '24px',
+            maxWidth: '540px',
+            width: '100%',
+            maxHeight: '90vh',
+            overflowY: 'auto',
+            padding: '30px',
+            boxShadow: '0 24px 60px rgba(7, 21, 36, 0.35)',
+            border: '1px solid #E2E8F0'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <BrandingVectorIcon name="edit" size={22} color="#0fa4de" />
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#071524' }}>
+                    Modificar Usuario del Equipo
+                  </h3>
+                  <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#64748B' }}>
+                    {editingMember.email}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => { setEditMemberModalOpen(false); setEditingMember(null); }}
+                style={{ background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '32px', height: '32px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                <BrandingVectorIcon name="x" size={14} color="#64748B" />
+              </button>
+            </div>
+
+            <form onSubmit={handleUpdateTeamMember} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '800', color: '#475569', marginBottom: '5px', textTransform: 'uppercase' }}>
+                  Nombre Completo
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editingMember.name}
+                  onChange={(e) => setEditingMember({ ...editingMember, name: e.target.value })}
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '800', color: '#475569', marginBottom: '5px', textTransform: 'uppercase' }}>
+                    Cargo / Puesto
+                  </label>
+                  <input
+                    type="text"
+                    value={editingMember.cargo || ''}
+                    onChange={(e) => setEditingMember({ ...editingMember, cargo: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '800', color: '#475569', marginBottom: '5px', textTransform: 'uppercase' }}>
+                    Teléfono Directo
+                  </label>
+                  <input
+                    type="text"
+                    value={editingMember.phone || ''}
+                    onChange={(e) => setEditingMember({ ...editingMember, phone: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '800', color: '#475569', marginBottom: '5px', textTransform: 'uppercase' }}>
+                  Restablecer Contraseña (Opcional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="Dejar en blanco para mantener la actual"
+                  value={editingMember.password || ''}
+                  onChange={(e) => setEditingMember({ ...editingMember, password: e.target.value })}
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13px', outline: 'none', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              {/* Permisos */}
+              <div style={{ background: '#F8FAFC', borderRadius: '12px', padding: '14px 16px', border: '1px solid #E2E8F0' }}>
+                <div style={{ fontSize: '11.5px', fontWeight: '800', color: '#071524', marginBottom: '10px', textTransform: 'uppercase' }}>
+                  Permisos Habilitados:
+                </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', fontWeight: '700', color: '#334155', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={editingMember.can_order}
+                      onChange={(e) => setEditingMember({ ...editingMember, can_order: e.target.checked })}
+                    />
+                    <span>Puede emitir compras</span>
+                  </label>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', fontWeight: '700', color: '#334155', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={editingMember.can_view_prices}
+                      onChange={(e) => setEditingMember({ ...editingMember, can_view_prices: e.target.checked })}
+                    />
+                    <span>Puede ver listas de precios</span>
+                  </label>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', fontWeight: '700', color: '#334155', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={editingMember.can_request_quotes}
+                      onChange={(e) => setEditingMember({ ...editingMember, can_request_quotes: e.target.checked })}
+                    />
+                    <span>Puede solicitar cotizaciones</span>
+                  </label>
+
+                  <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', fontWeight: '700', color: '#334155', cursor: 'pointer' }}>
+                    <input
+                      type="checkbox"
+                      checked={editingMember.can_manage_team}
+                      onChange={(e) => setEditingMember({ ...editingMember, can_manage_team: e.target.checked })}
+                    />
+                    <span>Administrador de Cuenta</span>
+                  </label>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end', marginTop: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => { setEditMemberModalOpen(false); setEditingMember(null); }}
+                  style={{ background: '#F1F5F9', color: '#475569', border: '1px solid #CBD5E1', borderRadius: '10px', padding: '10px 18px', fontSize: '13px', fontWeight: '700', cursor: 'pointer' }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={submittingMember}
+                  style={{
+                    background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '10px',
+                    padding: '10px 22px',
+                    fontSize: '13px',
+                    fontWeight: '800',
+                    cursor: submittingMember ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {submittingMember ? 'Guardando...' : 'Guardar Cambios'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* ── MODAL: SOLICITAR MODIFICACIÓN DE DATOS ── */}
       {changeModalOpen && (
@@ -1131,14 +2155,17 @@ export default function ShopClientPortal() {
             animation: 'scaleUp 0.2s ease'
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#071524' }}>
-                📝 Solicitar Modificación de Datos
-              </h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <BrandingVectorIcon name="file-text" size={20} color="#0fa4de" />
+                <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#071524' }}>
+                  Solicitar Modificación de Datos
+                </h3>
+              </div>
               <button
                 onClick={() => setChangeModalOpen(false)}
-                style={{ background: 'none', border: 'none', fontSize: '20px', color: '#94A3B8', cursor: 'pointer' }}
+                style={{ background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '30px', height: '30px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
               >
-                ✕
+                <BrandingVectorIcon name="x" size={14} color="#64748B" />
               </button>
             </div>
 
@@ -1243,9 +2270,9 @@ export default function ShopClientPortal() {
               </h3>
               <button
                 onClick={() => setEditProfileOpen(false)}
-                style={{ background: 'none', border: 'none', fontSize: '20px', color: '#94A3B8', cursor: 'pointer' }}
+                style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
-                ✕
+                <BrandingVectorIcon name="x" size={18} color="#94A3B8" />
               </button>
             </div>
 
@@ -1336,6 +2363,7 @@ export default function ShopClientPortal() {
           </div>
         </div>
       )}
+      </div> {/* Fin portal-screen-view */}
 
       {/* ── MODAL: PROFORMA / VOUCHER DE PEDIDO ── */}
       {/* ── Voucher / Factura Proforma Modal ── */}
@@ -1431,8 +2459,8 @@ export default function ShopClientPortal() {
             <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px', marginBottom: '24px', alignItems: 'start' }}>
               {/* Bank Details for Wire Transfer */}
               <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '12px', padding: '14px', fontSize: '11.5px', color: '#0369A1' }}>
-                <div style={{ fontWeight: '800', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                  <span>🏦</span>
+                <div style={{ fontWeight: '800', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <BrandingVectorIcon name="building-2" size={14} color="#0369A1" />
                   <span>Datos Bancarios para Transferencia / Liquidación:</span>
                 </div>
                 <div>Banco: <strong>Banco Santander / BBVA</strong></div>
@@ -1476,7 +2504,8 @@ export default function ShopClientPortal() {
                   boxShadow: '0 4px 14px rgba(15, 164, 222, 0.35)'
                 }}
               >
-                🖨️ Imprimir / Guardar como PDF
+                <BrandingVectorIcon name="printer" size={16} color="#fff" />
+                <span>Imprimir / Guardar como PDF</span>
               </button>
               <button
                 type="button"

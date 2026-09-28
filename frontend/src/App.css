@@ -833,7 +833,7 @@ span.prioridad-baja {
   display: flex;
   justify-content: center;
   align-items: center;
-  zIndex: 1000;
+  z-index: 9999 !important;
   padding: 24px;
   box-sizing: border-box;
   animation: fadeIn 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
@@ -2444,33 +2444,40 @@ button:not(.btn-submit):not(.logout-btn):not(.btn-delete) {
 }
 
 /* ==========================================
-   HOJA DE ESTILOS DE IMPRESIÓN (EXPORTAR A PDF)
+   HOJA DE ESTILOS DE IMPRESIÓN (EXPORTAR A PDF / FACTURAS)
    ========================================== */
 @media print {
-  /* Ocultar elementos globales de navegación, botones y barras */
-  header,
-  nav,
-  aside,
-  .shop-header,
-  .no-print,
-  .no-print *,
-  .floating-help-btn-container,
-  .btn-print-pdf {
-    display: none !important;
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm 12mm 15mm;
   }
 
-  body {
+  html, body {
     background: #FFFFFF !important;
+    background-color: #FFFFFF !important;
     color: #000000 !important;
     margin: 0 !important;
     padding: 0 !important;
+    width: 100% !important;
+    min-height: auto !important;
+    height: auto !important;
+    overflow: visible !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* Si hay un modal o proforma activa, ocultar el resto del body */
-  body:has(.modal-overlay) > *:not(.modal-overlay),
-  body:has(.proforma-overlay) > *:not(.proforma-overlay) {
+  /* Ocultar elementos globales de navegación, botones y barras */
+  header,
+  nav,
+  aside,
+  footer,
+  .shop-header,
+  .no-print,
+  .no-print *,
+  .floating-help-btn-container,
+  .btn-print-pdf,
+  .portal-screen-view,
+  .portal-screen-only {
     display: none !important;
   }
 
@@ -2478,9 +2485,16 @@ button:not(.btn-submit):not(.logout-btn):not(.btn-delete) {
   .modal-overlay,
   .proforma-overlay {
     position: static !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
     width: 100% !important;
     height: auto !important;
-    background: #FFFFFF !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    background: transparent !important;
+    background-color: transparent !important;
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
     padding: 0 !important;
@@ -2488,27 +2502,30 @@ button:not(.btn-submit):not(.logout-btn):not(.btn-delete) {
     display: block !important;
     z-index: auto !important;
     box-shadow: none !important;
+    overflow: visible !important;
   }
 
-  /* El contenedor del modal y proforma se adapta al 100% */
+  /* El contenedor del modal y proforma se adapta al 100% del papel */
   .modal-container,
   .ecommerce-proforma-voucher,
   .printable-proforma,
   .proforma-container {
+    position: static !important;
     border: none !important;
     box-shadow: none !important;
     width: 100% !important;
     max-width: 100% !important;
     height: auto !important;
-    min-height: auto !important;
+    min-height: 0 !important;
     max-height: none !important;
     overflow: visible !important;
     display: block !important;
     margin: 0 !important;
-    padding: 10px 0 !important;
+    padding: 0 !important;
     background: #FFFFFF !important;
-    color: #000000 !important;
+    color: #071524 !important;
     animation: none !important;
+    transform: none !important;
   }
 
   /* Asegurar visibilidad total de tablas y contenidos */

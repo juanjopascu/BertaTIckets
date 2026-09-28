@@ -327,10 +327,20 @@ function FloatingHelpButton({ usuario }) {
     };
   }, []);
 
-  const isShopRoute = typeof window !== 'undefined' && window.location.pathname.startsWith('/shop');
+  const location = useLocation();
+  const isShopRoute = location.pathname.startsWith('/shop');
   const activeUser = usuario || shopUser;
-
   const cardRef = React.useRef(null);
+
+  // En las rutas de Shop, el botón flotante y asistente n8n es gestionado de forma nativa e integrada por ShopMacHelpHub
+  if (isShopRoute) {
+    return null;
+  }
+
+  // If user is not logged in, do not render the floating help button
+  if (!activeUser) {
+    return null;
+  }
 
   useEffect(() => {
     const apiHost = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
@@ -367,11 +377,6 @@ function FloatingHelpButton({ usuario }) {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [isOpen]);
-
-  // If user is not logged in, do not render the floating help button
-  if (!activeUser) {
-    return null;
-  }
 
   // Choose the destination email based on the current section
   const currentDept = isShopRoute

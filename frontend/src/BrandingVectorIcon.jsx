@@ -76,28 +76,37 @@ export default function BrandingVectorIcon({
   // Mapeo de Emojis legados a nombres de vector para retrocompatibilidad
   const emojiMap = {
     '🏢': 'building',
+    '🏬': 'building',
+    '🏨': 'hotel',
     '🔐': 'lock',
     '🔒': 'lock',
     '🛡️': 'shield',
     '🛡': 'shield',
+    '👑': 'award',
+    '👔': 'briefcase',
+    '💼': 'briefcase',
     '🤝': 'handshake',
     '⚡': 'zap',
-    '🌐': 'network',
+    '🌐': 'globe',
+    '🌍': 'globe',
     '🚀': 'rocket',
-    '💼': 'briefcase',
     '💻': 'laptop',
-    '📞': 'headphones',
+    '📞': 'phone',
     '🎟️': 'ticket',
+    '🎫': 'ticket',
     '⭐': 'star',
     '🛒': 'shopping-cart',
+    '🛍️': 'shopping-bag',
+    '🛍': 'shopping-bag',
     '🚚': 'truck',
     '🚛': 'truck',
     '💳': 'credit-card',
     '🎉': 'award',
     '🏦': 'bank',
-    '💸': 'credit-card',
+    '💸': 'dollar',
     '📑': 'file-text',
     '📝': 'file-text',
+    '📜': 'file-text',
     '🔍': 'search',
     '📦': 'box',
     '📍': 'map-pin',
@@ -105,15 +114,56 @@ export default function BrandingVectorIcon({
     '📤': 'upload',
     '➕': 'plus',
     '✏️': 'edit',
+    '✍️': 'edit',
     '🗑️': 'trash',
     '🗑': 'trash',
     '👥': 'users',
     '👤': 'user',
     '✉️': 'mail',
     '✉': 'mail',
-    '🌐': 'globe',
     '⚙️': 'settings',
-    '🏷️': 'tag'
+    '🏷️': 'tag',
+    '🤖': 'bot',
+    '🎧': 'headphones',
+    '✨': 'sparkles',
+    '🖨️': 'printer',
+    '📷': 'camera',
+    '🖼️': 'image',
+    '🔗': 'link',
+    '📋': 'file-text',
+    '📊': 'zap',
+    '📈': 'zap',
+    '💲': 'dollar',
+    '💵': 'dollar',
+    '📅': 'calendar',
+    '⏳': 'clock',
+    '🕒': 'clock',
+    '⏰': 'clock',
+    '✅': 'check-circle',
+    '✓': 'check',
+    '⚠️': 'alert-triangle',
+    '🚨': 'alert-circle',
+    '🚫': 'alert-circle',
+    '📢': 'megaphone',
+    '🔵': 'layers',
+    '🟣': 'shield',
+    '✈️': 'plane',
+    '✈': 'plane',
+    '📎': 'paperclip',
+    '💡': 'lightbulb',
+    '👁️': 'eye',
+    '👁': 'eye',
+    '🔄': 'rotate-ccw',
+    '🟡': 'clock',
+    '🟢': 'check-circle',
+    '🔴': 'alert-circle',
+    '🌙': 'moon',
+    '☀️': 'sun',
+    '✕': 'x',
+    '✖': 'x',
+    '➤': 'send',
+    '➔': 'arrow-right',
+    '→': 'arrow-right'
   };
 
   const cleanName = emojiMap[name] || name;
@@ -388,6 +438,32 @@ export default function BrandingVectorIcon({
           <polyline points="22 4 12 14.01 9 11.01" />
         </svg>
       );
+    case 'alert-circle':
+    case 'alert':
+      return (
+        <svg {...svgProps}>
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" x2="12" y1="8" y2="12" />
+          <line x1="12" x2="12.01" y1="16" y2="16" />
+        </svg>
+      );
+    case 'alert-triangle':
+    case 'warning':
+      return (
+        <svg {...svgProps}>
+          <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+          <line x1="12" x2="12" y1="9" y2="13" />
+          <line x1="12" x2="12.01" y1="17" y2="17" />
+        </svg>
+      );
+    case 'clock':
+    case 'time':
+      return (
+        <svg {...svgProps}>
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+      );
     case 'bank':
     case 'landmark':
       return (
@@ -566,10 +642,158 @@ export default function BrandingVectorIcon({
           <path d="m19.07 4.93-1.41 1.41" />
         </svg>
       );
+    case 'phone':
+    case 'telephone':
+      return (
+        <svg {...svgProps}>
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+        </svg>
+      );
+    case 'user-plus':
+      return (
+        <svg {...svgProps}>
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <line x1="19" x2="19" y1="8" y2="14" />
+          <line x1="22" x2="16" y1="11" y2="11" />
+        </svg>
+      );
+    case 'pause':
+      return (
+        <svg {...svgProps}>
+          <rect x="6" y="4" width="4" height="16" rx="1" />
+          <rect x="14" y="4" width="4" height="16" rx="1" />
+        </svg>
+      );
+    case 'play':
+      return (
+        <svg {...svgProps}>
+          <polygon points="5 3 19 12 5 21 5 3" />
+        </svg>
+      );
     case 'moon':
       return (
         <svg {...svgProps}>
           <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />
+        </svg>
+      );
+    case 'bot':
+    case 'robot':
+    case 'ai':
+      return (
+        <svg {...svgProps}>
+          <path d="M12 8V4H8" />
+          <rect width="16" height="12" x="4" y="8" rx="2" />
+          <path d="M2 14h2" />
+          <path d="M20 14h2" />
+          <path d="M15 13v2" />
+          <path d="M9 13v2" />
+        </svg>
+      );
+    case 'sparkles':
+      return (
+        <svg {...svgProps}>
+          <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z" />
+        </svg>
+      );
+    case 'printer':
+      return (
+        <svg {...svgProps}>
+          <polyline points="6 9 6 2 18 2 18 9" />
+          <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+          <rect width="12" height="8" x="6" y="14" />
+        </svg>
+      );
+    case 'camera':
+      return (
+        <svg {...svgProps}>
+          <path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z" />
+          <circle cx="12" cy="13" r="3" />
+        </svg>
+      );
+    case 'image':
+      return (
+        <svg {...svgProps}>
+          <rect width="18" height="18" x="3" y="3" rx="2" ry="2" />
+          <circle cx="9" cy="9" r="2" />
+          <path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21" />
+        </svg>
+      );
+    case 'link':
+      return (
+        <svg {...svgProps}>
+          <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+          <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+        </svg>
+      );
+    case 'send':
+      return (
+        <svg {...svgProps}>
+          <line x1="22" y1="2" x2="11" y2="13" />
+          <polygon points="22 2 15 22 11 13 2 9 22 2" />
+        </svg>
+      );
+    case 'plane':
+    case 'flight':
+    case 'travel':
+      return (
+        <svg {...svgProps}>
+          <path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z" />
+        </svg>
+      );
+    case 'hotel':
+      return (
+        <svg {...svgProps}>
+          <path d="M18 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2Z" />
+          <path d="m9 16 .348-.24c1.465-1.013 3.84-1.013 5.304 0L15 16" />
+          <path d="M8 7h.01" />
+          <path d="M16 7h.01" />
+          <path d="M12 7h.01" />
+          <path d="M12 11h.01" />
+          <path d="M16 11h.01" />
+          <path d="M8 11h.01" />
+          <path d="M10 22v-4h4v4" />
+        </svg>
+      );
+    case 'paperclip':
+    case 'attachment':
+      return (
+        <svg {...svgProps}>
+          <path d="m21.44 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 18 8.84l-8.59 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48" />
+        </svg>
+      );
+    case 'lightbulb':
+    case 'idea':
+      return (
+        <svg {...svgProps}>
+          <path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5" />
+          <path d="M9 18h6" />
+          <path d="M10 22h4" />
+        </svg>
+      );
+    case 'calendar':
+      return (
+        <svg {...svgProps}>
+          <path d="M8 2v4" />
+          <path d="M16 2v4" />
+          <rect width="18" height="18" x="3" y="4" rx="2" />
+          <path d="M3 10h18" />
+        </svg>
+      );
+    case 'message-square':
+    case 'message':
+    case 'chat':
+    case 'comment':
+      return (
+        <svg {...svgProps}>
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+        </svg>
+      );
+    case 'arrow-right':
+      return (
+        <svg {...svgProps}>
+          <line x1="5" y1="12" x2="19" y2="12" />
+          <polyline points="12 5 19 12 12 19" />
         </svg>
       );
     default:

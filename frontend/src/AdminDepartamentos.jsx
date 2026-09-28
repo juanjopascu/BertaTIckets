@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BrandingVectorIcon from './BrandingVectorIcon';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 
@@ -228,16 +229,16 @@ function AdminDepartamentos({ embedded = false }) {
                             <button
                               type="button"
                               onClick={() => handleSaveEdit(d.id)}
-                              style={{ background: '#10b981', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
+                              style={{ background: '#10b981', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                             >
-                              💾 Guardar
+                              <BrandingVectorIcon name="save" size={13} color="#ffffff" /> Guardar
                             </button>
                             <button
                               type="button"
                               onClick={handleCancelEdit}
-                              style={{ background: '#6b7280', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
+                              style={{ background: '#6b7280', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                             >
-                              ✕ Cancelar
+                              <BrandingVectorIcon name="x" size={13} color="#ffffff" /> Cancelar
                             </button>
                           </div>
                         ) : (
@@ -245,13 +246,13 @@ function AdminDepartamentos({ embedded = false }) {
                             <button
                               type="button"
                               onClick={() => handleEditClick(d)}
-                              style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
+                              style={{ background: '#eff6ff', color: '#1d4ed8', border: '1px solid #bfdbfe', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                             >
-                              ✏️ Editar
+                              <BrandingVectorIcon name="edit" size={13} color="#1d4ed8" /> Editar
                             </button>
                             {d.id !== 1 && (
-                              <button className="btn-delete" onClick={() => handleDelete(d.id)} style={{ padding: '6px 12px', borderRadius: '8px' }}>
-                                Eliminar
+                              <button className="btn-delete" onClick={() => handleDelete(d.id)} style={{ padding: '6px 12px', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                <BrandingVectorIcon name="trash" size={13} color="currentColor" /> Eliminar
                               </button>
                             )}
                           </div>

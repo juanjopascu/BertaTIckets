@@ -1,0 +1,1510 @@
+[
+  {
+    "id": 67,
+    "timestamp": "2026-09-28T19:48:30.723Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "b0554744fcaf15473b4d66cf207f4fa85b006b1a52fd6e4db78bffad0da7b945"
+    }
+  },
+  {
+    "id": 66,
+    "timestamp": "2026-09-28T19:41:42.409Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "c09cd0ed16536f1d612de9d180a26186943fc5abcca3faaeb6b0f3b1e880613c"
+    }
+  },
+  {
+    "id": 65,
+    "timestamp": "2026-09-28T19:41:18.768Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "672c1109b28b31f20ff6817e8309cb6f5844c57be74390e0d7972d165a126e77"
+    }
+  },
+  {
+    "id": 64,
+    "timestamp": "2026-09-28T19:40:36.417Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "cb16fca9ccc6dafce81c237b5cb89756cc26a3f6d94f310b6e93e0eb4f984b3b"
+    }
+  },
+  {
+    "id": 63,
+    "timestamp": "2026-09-28T19:40:09.079Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "6fb03709bd2ce009d2c5157541086ad62c7534a7a94e5516e5c6cfe0cfe39ddd"
+    }
+  },
+  {
+    "id": 62,
+    "timestamp": "2026-09-28T19:39:17.030Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "669b286526d91b296872aa8c99f545a93c922cac738c1de3289834b4ec5d646e"
+    }
+  },
+  {
+    "id": 61,
+    "timestamp": "2026-09-28T19:35:05.097Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "85ec812297bcf9c781ccf3d97feb424acbfffb5370c9a13196742364bd1ead1e"
+    }
+  },
+  {
+    "id": 60,
+    "timestamp": "2026-09-28T19:32:32.679Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Admin E-commerce\" (admin.ecommerce@dacas.com) con rol \"admin_ecommerce\".",
+    "usuario": {
+      "nombre": "Admin E-commerce",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "admin_ecommerce",
+      "id": 6
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "eee2a13fe4749125c41cf66eb18c8c21e669717561c06768fdf5b074ab141fed"
+    }
+  },
+  {
+    "id": 59,
+    "timestamp": "2026-09-28T19:32:21.947Z",
+    "origen": "dashboard",
+    "tipo": "INFO",
+    "accion": "USUARIO_MODIFICADO",
+    "descripcion": "Usuario \"Admin E-commerce\" (admin.ecommerce@dacas.com) actualizado por jpascuzzi@dacas.com",
+    "usuario": {
+      "nombre": "jpascuzzi@dacas.com",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "usuarioId": 6,
+      "rol": "admin_ecommerce",
+      "activo": true
+    }
+  },
+  {
+    "id": 58,
+    "timestamp": "2026-09-28T19:29:26.966Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "f52c6469270877bd2d57c79912d672dbc21f353ed61a43a0569b09800dff9c47"
+    }
+  },
+  {
+    "id": 57,
+    "timestamp": "2026-09-28T19:28:58.251Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "8c82f6e4b5cc15fadfdbed2d0f30f69a32525967464bf3cd08a9766f15aadd59"
+    }
+  },
+  {
+    "id": 56,
+    "timestamp": "2026-09-28T19:27:03.939Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "c21c6d754022127c772859f6203abbf7d1f5d386bfac61da33ccd5293741d98d"
+    }
+  },
+  {
+    "id": 55,
+    "timestamp": "2026-09-28T19:24:54.248Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "465d18aa3d70fcca24c5a76c14c84fda1da4d430aa30f443551625fc87302519"
+    }
+  },
+  {
+    "id": 54,
+    "timestamp": "2026-09-28T19:23:39.975Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "ef76cfc7beac626b2a94b7fba6aa8518abf560ba8f5b4297d7705db6bc48970c"
+    }
+  },
+  {
+    "id": 53,
+    "timestamp": "2026-09-28T19:22:27.233Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "43c2b3c975ec143a86e6c12b59a0215fce3210880abbed1d199548cb40669bd1"
+    }
+  },
+  {
+    "id": 52,
+    "timestamp": "2026-09-28T19:20:15.830Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "32e6275a000c9bc887be18a36492b7bd9533ef55050e20888a288ac2146056c7"
+    }
+  },
+  {
+    "id": 51,
+    "timestamp": "2026-09-28T19:19:54.897Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "a4ecd953a4bddab9be8484716acc9cabcc4f1e946603abd057468b05cc42fb32"
+    }
+  },
+  {
+    "id": 50,
+    "timestamp": "2026-09-28T19:19:24.775Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "c441fff78ae088295d1c4ebe788efba59973fda44f3c52cdd231fe6a96d3da67"
+    }
+  },
+  {
+    "id": 49,
+    "timestamp": "2026-09-28T19:19:22.210Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $278,80 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790623162209",
+      "itemsCount": 1,
+      "total": 278.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Licencia Anual FortiGuard Enterprise Protection Bundle ($278.80)",
+      "items": [
+        {
+          "id": 6,
+          "name": "Licencia Anual FortiGuard Enterprise Protection Bundle",
+          "brand": "Fortinet",
+          "sku": "LIC-FG-ENT-1Y",
+          "qty": 1,
+          "price": 278.8,
+          "subtotal": 278.8
+        }
+      ],
+      "timestamp": "2026-09-28T19:19:22.210Z"
+    }
+  },
+  {
+    "id": 48,
+    "timestamp": "2026-09-28T19:14:03.766Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "1a027b1b0b31f59a040e26f8d1ed1ede9129f8a78d91c34d537e2bcbc67e3716"
+    }
+  },
+  {
+    "id": 47,
+    "timestamp": "2026-09-28T19:13:24.170Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "3745304f4279c811f72d0e0876533079cd45aaa25c38e723a4d36696c9782cf3"
+    }
+  },
+  {
+    "id": 46,
+    "timestamp": "2026-09-28T19:12:50.701Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "b8e0318d751569d1c60f84832db35d34a49e2998a454d641cb2ac7d9414848da"
+    }
+  },
+  {
+    "id": 45,
+    "timestamp": "2026-09-28T19:06:32.201Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"admin@crm.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {
+      "emailIntentado": "admin@crm.com"
+    }
+  },
+  {
+    "id": 44,
+    "timestamp": "2026-09-28T19:05:25.728Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "8396d886966dade5946405e1d61dffd7d77384714a6517b346fb6596b7528336"
+    }
+  },
+  {
+    "id": 43,
+    "timestamp": "2026-09-28T19:05:01.951Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"admin@dacas.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {
+      "emailIntentado": "admin@dacas.com"
+    }
+  },
+  {
+    "id": 42,
+    "timestamp": "2026-09-28T19:02:54.822Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "a5a3bd3026a3f55b3cf7cf7c10e5f1ef336ad2a2a4f01f5c2d44c922e38cd872"
+    }
+  },
+  {
+    "id": 41,
+    "timestamp": "2026-09-28T18:58:32.247Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "954a66e3a1d7656592beaca2b33435a57a2ae4dc036da4e3c4ae5a6eb7b0a951"
+    }
+  },
+  {
+    "id": 40,
+    "timestamp": "2026-09-28T18:55:27.212Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "f76546423bc56a8e6fa04aa43325569bf14e075793cf36d86b35c913d2de8626"
+    }
+  },
+  {
+    "id": 39,
+    "timestamp": "2026-09-28T18:54:49.454Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "1747e22fb66a19e6a8b5bc8c1cbb8688fbd1398360aa0a8fc923c3d19536b5ad"
+    }
+  },
+  {
+    "id": 38,
+    "timestamp": "2026-09-28T18:51:42.876Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "6c1b7a905108e5658a5e2301547d04041bbff87a57f5c0941daf8cc3f55d4547"
+    }
+  },
+  {
+    "id": 37,
+    "timestamp": "2026-09-28T18:51:27.613Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "4c37d839fdf30d78a7b7dc34e3a1e4711eb540a1643bf58b6f42d2add487dec2"
+    }
+  },
+  {
+    "id": 36,
+    "timestamp": "2026-09-28T18:50:39.241Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $278,80 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790621439241",
+      "itemsCount": 1,
+      "total": 278.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Licencia Anual FortiGuard Enterprise Protection Bundle ($278.80)",
+      "items": [
+        {
+          "id": 6,
+          "name": "Licencia Anual FortiGuard Enterprise Protection Bundle",
+          "brand": "Fortinet",
+          "sku": "LIC-FG-ENT-1Y",
+          "qty": 1,
+          "price": 278.8,
+          "subtotal": 278.8
+        }
+      ],
+      "timestamp": "2026-09-28T18:50:39.241Z"
+    }
+  },
+  {
+    "id": 35,
+    "timestamp": "2026-09-28T18:50:36.646Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "b24cf7ab4988e943b2a0a865c402d1b6b8ef042b202dbb3cbf5e7bf35992ef63"
+    }
+  },
+  {
+    "id": 34,
+    "timestamp": "2026-09-28T18:42:07.282Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Aruba Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22 (SKU: R4W02A-AP22, Cat: networking, USD $195.00).",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 3,
+      "productName": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
+      "sku": "R4W02A-AP22",
+      "brand": "Aruba",
+      "price": "195.00",
+      "category": "networking",
+      "timestamp": "2026-09-28T18:42:07.282Z"
+    }
+  },
+  {
+    "id": 33,
+    "timestamp": "2026-09-28T18:40:36.411Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $278,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790620836410",
+      "itemsCount": 1,
+      "total": 278.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Licencia Anual FortiGuard Enterprise Protection Bundle ($278.80)",
+      "items": [
+        {
+          "id": 6,
+          "name": "Licencia Anual FortiGuard Enterprise Protection Bundle",
+          "brand": "Fortinet",
+          "sku": "LIC-FG-ENT-1Y",
+          "qty": 1,
+          "price": 278.8,
+          "subtotal": 278.8
+        }
+      ],
+      "timestamp": "2026-09-28T18:40:36.411Z"
+    }
+  },
+  {
+    "id": 32,
+    "timestamp": "2026-09-28T17:58:28.059Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "9f47d26842d0285ed0a60a448957597d4a6b3a069e88bff167a13378615bbd97"
+    }
+  },
+  {
+    "id": 31,
+    "timestamp": "2026-09-28T17:57:13.792Z",
+    "origen": "ecommerce",
+    "tipo": "CREAR",
+    "accion": "ECOMMERCE_USUARIO_EMPRESA_CREADO",
+    "descripcion": "Nuevo usuario corporativo agregado a \"Empresa Demo S.A.\": Mariano Fernández (mfernandez@empresademo.com.ar) con rol Ingeniero de Ciberseguridad.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "user",
+      "name": "Usuario Demo",
+      "razon_social": "Empresa Demo S.A.",
+      "iat": 1790618233,
+      "exp": 1790704633
+    },
+    "ip": "::1",
+    "detalles": {
+      "parentUserId": 1,
+      "memberEmail": "mfernandez@empresademo.com.ar",
+      "role": "tecnico"
+    }
+  },
+  {
+    "id": 30,
+    "timestamp": "2026-09-28T17:34:14.901Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $278,80 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790616854900",
+      "itemsCount": 1,
+      "total": 278.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Licencia Anual FortiGuard Enterprise Protection Bundle ($278.80)",
+      "items": [
+        {
+          "id": 6,
+          "name": "Licencia Anual FortiGuard Enterprise Protection Bundle",
+          "brand": "Fortinet",
+          "sku": "LIC-FG-ENT-1Y",
+          "qty": 1,
+          "price": 278.8,
+          "subtotal": 278.8
+        }
+      ],
+      "timestamp": "2026-09-28T17:34:14.900Z"
+    }
+  },
+  {
+    "id": 29,
+    "timestamp": "2026-09-28T17:28:04.632Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $278,80 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790616484632",
+      "itemsCount": 1,
+      "total": 278.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Licencia Anual FortiGuard Enterprise Protection Bundle ($278.80)",
+      "items": [
+        {
+          "id": 6,
+          "name": "Licencia Anual FortiGuard Enterprise Protection Bundle",
+          "brand": "Fortinet",
+          "sku": "LIC-FG-ENT-1Y",
+          "qty": 1,
+          "price": 278.8,
+          "subtotal": 278.8
+        }
+      ],
+      "timestamp": "2026-09-28T17:28:04.632Z"
+    }
+  },
+  {
+    "id": 28,
+    "timestamp": "2026-09-28T17:27:02.312Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $278,80 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790616422311",
+      "itemsCount": 1,
+      "total": 278.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Licencia Anual FortiGuard Enterprise Protection Bundle ($278.80)",
+      "items": [
+        {
+          "id": 6,
+          "name": "Licencia Anual FortiGuard Enterprise Protection Bundle",
+          "brand": "Fortinet",
+          "sku": "LIC-FG-ENT-1Y",
+          "qty": 1,
+          "price": 278.8,
+          "subtotal": 278.8
+        }
+      ],
+      "timestamp": "2026-09-28T17:27:02.311Z"
+    }
+  },
+  {
+    "id": 27,
+    "timestamp": "2026-09-28T17:26:46.251Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 26,
+    "timestamp": "2026-09-28T17:26:12.221Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $278,80 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790616372221",
+      "itemsCount": 1,
+      "total": 278.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Licencia Anual FortiGuard Enterprise Protection Bundle ($278.80)",
+      "items": [
+        {
+          "id": 6,
+          "name": "Licencia Anual FortiGuard Enterprise Protection Bundle",
+          "brand": "Fortinet",
+          "sku": "LIC-FG-ENT-1Y",
+          "qty": 1,
+          "price": 278.8,
+          "subtotal": 278.8
+        }
+      ],
+      "timestamp": "2026-09-28T17:26:12.221Z"
+    }
+  },
+  {
+    "id": 25,
+    "timestamp": "2026-09-28T17:25:21.037Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 24,
+    "timestamp": "2026-09-28T17:23:44.216Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $278,80 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790616224216",
+      "itemsCount": 1,
+      "total": 278.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Licencia Anual FortiGuard Enterprise Protection Bundle ($278.80)",
+      "items": [
+        {
+          "id": 6,
+          "name": "Licencia Anual FortiGuard Enterprise Protection Bundle",
+          "brand": "Fortinet",
+          "sku": "LIC-FG-ENT-1Y",
+          "qty": 1,
+          "price": 278.8,
+          "subtotal": 278.8
+        }
+      ],
+      "timestamp": "2026-09-28T17:23:44.216Z"
+    }
+  },
+  {
+    "id": 23,
+    "timestamp": "2026-09-28T17:23:28.039Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $278,80 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790616208039",
+      "itemsCount": 1,
+      "total": 278.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Licencia Anual FortiGuard Enterprise Protection Bundle ($278.80)",
+      "items": [
+        {
+          "id": 6,
+          "name": "Licencia Anual FortiGuard Enterprise Protection Bundle",
+          "brand": "Fortinet",
+          "sku": "LIC-FG-ENT-1Y",
+          "qty": 1,
+          "price": 278.8,
+          "subtotal": 278.8
+        }
+      ],
+      "timestamp": "2026-09-28T17:23:28.039Z"
+    }
+  },
+  {
+    "id": 22,
+    "timestamp": "2026-09-28T17:23:11.228Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 21,
+    "timestamp": "2026-09-28T17:13:44.413Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "bb8838176ea4e2736a801303a7a854a1e7bfff8634c6e34cad532067171ce75b"
+    }
+  },
+  {
+    "id": 20,
+    "timestamp": "2026-09-28T16:42:24.328Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $278,80 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790613744327",
+      "itemsCount": 1,
+      "total": 278.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Licencia Anual FortiGuard Enterprise Protection Bundle ($278.80)",
+      "items": [
+        {
+          "id": 6,
+          "name": "Licencia Anual FortiGuard Enterprise Protection Bundle",
+          "brand": "Fortinet",
+          "sku": "LIC-FG-ENT-1Y",
+          "qty": 1,
+          "price": 278.8,
+          "subtotal": 278.8
+        }
+      ],
+      "timestamp": "2026-09-28T16:42:24.327Z"
+    }
+  },
+  {
+    "id": 19,
+    "timestamp": "2026-09-28T15:39:27.994Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $278,80 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790609967994",
+      "itemsCount": 1,
+      "total": 278.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Licencia Anual FortiGuard Enterprise Protection Bundle ($278.80)",
+      "items": [
+        {
+          "id": 6,
+          "name": "Licencia Anual FortiGuard Enterprise Protection Bundle",
+          "brand": "Fortinet",
+          "sku": "LIC-FG-ENT-1Y",
+          "qty": 1,
+          "price": 278.8,
+          "subtotal": 278.8
+        }
+      ],
+      "timestamp": "2026-09-28T15:39:27.994Z"
+    }
+  },
+  {
+    "id": 18,
+    "timestamp": "2026-09-28T15:35:19.058Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "249811bf89149f7956ddb5f965edfd712534f0fd6a45f279fd36198d9a06bb25"
+    }
+  },
+  {
+    "id": 17,
+    "timestamp": "2026-09-28T15:32:21.807Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $278,80 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790609541807",
+      "itemsCount": 1,
+      "total": 278.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Licencia Anual FortiGuard Enterprise Protection Bundle ($278.80)",
+      "items": [
+        {
+          "id": 6,
+          "name": "Licencia Anual FortiGuard Enterprise Protection Bundle",
+          "brand": "Fortinet",
+          "sku": "LIC-FG-ENT-1Y",
+          "qty": 1,
+          "price": 278.8,
+          "subtotal": 278.8
+        }
+      ],
+      "timestamp": "2026-09-28T15:32:21.807Z"
+    }
+  },
+  {
+    "id": 16,
+    "timestamp": "2026-09-28T15:16:50.671Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Aruba Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22 (SKU: R4W02A-AP22, Cat: networking, USD $195.00).",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 3,
+      "productName": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
+      "sku": "R4W02A-AP22",
+      "brand": "Aruba",
+      "price": "195.00",
+      "category": "networking",
+      "timestamp": "2026-09-28T15:16:50.671Z"
+    }
+  },
+  {
+    "id": 15,
+    "timestamp": "2026-09-28T14:06:07.728Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "a00844b285e1cce3d4024472a8a3c1bff83969bffb624ea02ec7bd20f4aa7843"
+    }
+  },
+  {
+    "id": 14,
+    "timestamp": "2026-09-28T13:32:37.254Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $278,80 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790602357254",
+      "itemsCount": 1,
+      "total": 278.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Licencia Anual FortiGuard Enterprise Protection Bundle ($278.80)",
+      "items": [
+        {
+          "id": 6,
+          "name": "Licencia Anual FortiGuard Enterprise Protection Bundle",
+          "brand": "Fortinet",
+          "sku": "LIC-FG-ENT-1Y",
+          "qty": 1,
+          "price": 278.8,
+          "subtotal": 278.8
+        }
+      ],
+      "timestamp": "2026-09-28T13:32:37.254Z"
+    }
+  },
+  {
+    "id": 13,
+    "timestamp": "2026-09-28T13:28:58.373Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "8550acbb66440a37f93126173b26c44aa45a263c53e9bb855555f6eb019cc08e"
+    }
+  },
+  {
+    "id": 12,
+    "timestamp": "2026-09-28T13:14:10.000Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 2 productos por total USD $2,630.00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Telecom Global SA",
+      "email": "compras@telecomglobal.com",
+      "rol": "cliente",
+      "id": 3
+    },
+    "ip": "200.58.112.4",
+    "detalles": {
+      "sessionId": "CART-B2B-9841",
+      "itemsCount": 2,
+      "total": 2630,
+      "moneda": "USD",
+      "trigger": "checkout_abandonment",
+      "itemsSummary": "2x Fortinet Firewall Next-Gen Enterprise FortiGate 60F ($765.00) | 1x Vertiv Sistema UPS Online Liebert GXT5 3kVA ($1,100.00)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Firewall Next-Gen Enterprise FortiGate 60F",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL",
+          "qty": 2,
+          "price": 765,
+          "subtotal": 1530
+        },
+        {
+          "id": 4,
+          "name": "Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA",
+          "brand": "Vertiv",
+          "sku": "GXT5-3000IRT2UXLE",
+          "qty": 1,
+          "price": 1100,
+          "subtotal": 1100
+        }
+      ]
+    }
+  },
+  {
+    "id": 11,
+    "timestamp": "2026-09-28T13:10:45.000Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Fortinet Firewall Next-Gen Enterprise FortiGate 60F (SKU: FG-60F-BDL, Cat: security, USD $765.00).",
+    "usuario": {
+      "nombre": "Telecom Global SA",
+      "email": "compras@telecomglobal.com",
+      "rol": "cliente",
+      "id": 3
+    },
+    "ip": "200.58.112.4",
+    "detalles": {
+      "productId": 1,
+      "productName": "Firewall Next-Gen Enterprise FortiGate 60F",
+      "sku": "FG-60F-BDL",
+      "brand": "Fortinet",
+      "price": 765,
+      "category": "security"
+    }
+  },
+  {
+    "id": 10,
+    "timestamp": "2026-09-28T13:08:20.000Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 3 productos por total USD $1,347.00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Banco Sur Corporativo",
+      "email": "it-procurement@bancosur.com.ar",
+      "rol": "cliente"
+    },
+    "ip": "190.220.45.19",
+    "detalles": {
+      "sessionId": "CART-B2B-8420",
+      "itemsCount": 3,
+      "total": 1347,
+      "moneda": "USD",
+      "trigger": "session_timeout",
+      "itemsSummary": "3x MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ ($449.00)",
+      "items": [
+        {
+          "id": 2,
+          "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+          "brand": "MikroTik",
+          "sku": "CRS328-24P-4S",
+          "qty": 3,
+          "price": 449,
+          "subtotal": 1347
+        }
+      ]
+    }
+  },
+  {
+    "id": 9,
+    "timestamp": "2026-09-28T13:05:12.000Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: AudioCodes Teléfono IP Ejecutivo AudioCodes 450HD con Microsoft Teams (SKU: AC-450HD-TEAMS, Cat: comunicaciones_unificadas, USD $295.00).",
+    "usuario": {
+      "nombre": "Redes & Conectividad SRL",
+      "email": "soporte@redesyconectividad.com",
+      "rol": "cliente"
+    },
+    "ip": "186.136.21.90",
+    "detalles": {
+      "productId": 5,
+      "productName": "Teléfono IP Ejecutivo AudioCodes 450HD con Microsoft Teams",
+      "sku": "AC-450HD-TEAMS",
+      "brand": "AudioCodes",
+      "price": 295,
+      "category": "comunicaciones_unificadas"
+    }
+  },
+  {
+    "id": 8,
+    "timestamp": "2026-09-28T13:02:21.746Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "0291e1992ff347989dd0bb1e9d7565c743490fcafaa70fce4e48298dec46624f"
+    }
+  },
+  {
+    "id": 7,
+    "timestamp": "2026-09-28T12:56:37.180Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "b92cab0dfa8b7ee867ea2e507faba5691ab2d677fb8b2367c736172ffe0464ea"
+    }
+  },
+  {
+    "id": 4,
+    "timestamp": "2026-09-28T11:40:49.814Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "COTIZACION_PROFORMA_GENERADA",
+    "descripcion": "Cliente Corporativo generó Proforma mayorista #DAC-77312 por USD $12,450.00.",
+    "usuario": {
+      "nombre": "Telecom Global SA",
+      "email": "compras@telecomglobal.com",
+      "rol": "cliente"
+    },
+    "ip": "200.58.112.4",
+    "detalles": {
+      "ordenId": "DAC-77312",
+      "monto": 12450,
+      "moneda": "USD",
+      "metodo": "transferencia_bancaria"
+    }
+  },
+  {
+    "id": 2,
+    "timestamp": "2026-09-28T10:30:49.814Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "CATALOGO_SINCRONIZADO",
+    "descripcion": "Catálogo de hardware sincronizado con 18 marcas oficiales (Cisco, Fortinet, Poly, etc.).",
+    "usuario": {
+      "nombre": "Admin E-commerce",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "admin_ecommerce"
+    },
+    "ip": "190.220.14.88",
+    "detalles": {
+      "totalProductos": 42,
+      "categorias": [
+        "networking",
+        "infraestructura",
+        "comunicaciones_unificadas",
+        "security"
+      ]
+    }
+  },
+  {
+    "id": 3,
+    "timestamp": "2026-09-28T11:05:49.814Z",
+    "origen": "dashboard",
+    "tipo": "INFO",
+    "accion": "SLA_CONFIGURADO",
+    "descripcion": "SLA de departamentos verificado: Soporte Técnico (4h), Ventas (12h), Operaciones (24h).",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin"
+    },
+    "ip": "181.47.88.12",
+    "detalles": {
+      "sla_general": "33%",
+      "cumplimiento": "OK"
+    }
+  },
+  {
+    "id": 5,
+    "timestamp": "2026-09-28T12:15:49.814Z",
+    "origen": "tickets",
+    "tipo": "INFO",
+    "accion": "TICKET_ESTADO_ACTUALIZADO",
+    "descripcion": "Ticket #3 \"Falla enlace de fibra óptica\" movido al estado \"En Proceso\".",
+    "usuario": {
+      "nombre": "Staff Soporte",
+      "email": "staff@crm.com",
+      "rol": "staff"
+    },
+    "ip": "181.47.88.12",
+    "detalles": {
+      "ticketId": 3,
+      "anterior": "Prospecto",
+      "nuevo": "En Proceso"
+    }
+  },
+  {
+    "id": 1,
+    "timestamp": "2026-09-28T09:55:49.814Z",
+    "origen": "sistema",
+    "tipo": "INFO",
+    "accion": "SISTEMA_INICIALIZADO",
+    "descripcion": "Servidor DACAS Enterprise Core & Motor E-Commerce inicializado con éxito.",
+    "usuario": {
+      "nombre": "Sistema DACAS",
+      "email": "system@dacas.com",
+      "rol": "system"
+    },
+    "ip": "127.0.0.1",
+    "detalles": {
+      "version": "2.5.0",
+      "node": "v26.9.0",
+      "env": "production"
+    }
+  }
+]

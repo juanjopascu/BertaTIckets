@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { CategoryIcon } from './Shop';
+import BrandingVectorIcon from './BrandingVectorIcon';
 
 const OFFICIAL_CATEGORIES = [
   { key: 'networking', label: 'Networking', icon: 'networking', desc: 'Switches, Routers, Wi-Fi 6, Access Points, Gateways' },
@@ -173,7 +174,7 @@ export default function AdminProductFormTiendanube({
       return;
     }
     setIsGeneratingAi(true);
-    setAiToast('✨ Generando descripción persuasiva con IA...');
+    setAiToast('Generando descripción persuasiva con IA...');
 
     try {
       const res = await fetch(`${apiBaseUrl}/api/ecommerce/ai/generate-description`, {
@@ -185,7 +186,7 @@ export default function AdminProductFormTiendanube({
       if (data.success && data.description) {
         setDescriptionHtml(data.description);
         if (editorRef.current) editorRef.current.innerHTML = data.description;
-        setAiToast('✅ ¡Descripción creada con éxito!');
+        setAiToast('¡Descripción creada con éxito!');
         setTimeout(() => setAiToast(null), 3500);
       } else {
         throw new Error(data.error || 'Error al generar texto');
@@ -203,7 +204,7 @@ export default function AdminProductFormTiendanube({
       `;
       setDescriptionHtml(fallbackHtml);
       if (editorRef.current) editorRef.current.innerHTML = fallbackHtml;
-      setAiToast('✅ Descripción generada con éxito');
+      setAiToast('Descripción generada con éxito');
       setTimeout(() => setAiToast(null), 3000);
     } finally {
       setIsGeneratingAi(false);
@@ -217,7 +218,7 @@ export default function AdminProductFormTiendanube({
       return;
     }
     setIsGeneratingDimensions(true);
-    setAiToast('✨ Estimando peso y dimensiones con IA...');
+    setAiToast('Estimando peso y dimensiones con IA...');
 
     try {
       const res = await fetch(`${apiBaseUrl}/api/ecommerce/ai/generate-dimensions`, {
@@ -231,7 +232,7 @@ export default function AdminProductFormTiendanube({
         if (data.depth) setDepth(data.depth);
         if (data.width) setWidth(data.width);
         if (data.height) setHeight(data.height);
-        setAiToast('✅ Dimensiones y peso completados con IA');
+        setAiToast('Dimensiones y peso completados con IA');
         setTimeout(() => setAiToast(null), 3000);
       }
     } catch (e) {
@@ -248,7 +249,7 @@ export default function AdminProductFormTiendanube({
       return;
     }
     setIsGeneratingCategories(true);
-    setAiToast('✨ Analizando sección con IA...');
+    setAiToast('Analizando sección con IA...');
 
     try {
       const res = await fetch(`${apiBaseUrl}/api/ecommerce/ai/generate-categories`, {
@@ -273,7 +274,7 @@ export default function AdminProductFormTiendanube({
             setCategories(['networking']);
           }
         }
-        setAiToast('✅ Sección oficial asignada con IA');
+        setAiToast('Sección oficial asignada con IA');
         setTimeout(() => setAiToast(null), 3000);
       }
     } catch (e) {
@@ -568,7 +569,8 @@ export default function AdminProductFormTiendanube({
             alignItems: 'center',
             gap: '8px'
           }}>
-            {aiToast}
+            <BrandingVectorIcon name="sparkles" size={16} color="#1d4ed8" />
+            <span>{aiToast}</span>
           </div>
         )}
 
@@ -614,8 +616,8 @@ export default function AdminProductFormTiendanube({
                   gap: '5px'
                 }}
               >
-                <span>✨</span>
-                {isGeneratingAi ? 'Generando...' : 'Generar con IA'}
+                <BrandingVectorIcon name="sparkles" size={12} color="#6d28d9" />
+                <span>{isGeneratingAi ? 'Generando...' : 'Generar con IA'}</span>
               </button>
             </div>
 
@@ -669,8 +671,12 @@ export default function AdminProductFormTiendanube({
 
               <div style={{ width: '1px', height: '18px', background: '#e5e7eb', margin: '0 4px' }} />
 
-              <button type="button" title="Link" onClick={handleInsertLink} style={{ background: 'transparent', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', color: '#4b5563' }}>🔗</button>
-              <button type="button" title="Imagen" onClick={handleInsertImageInText} style={{ background: 'transparent', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', color: '#4b5563' }}>🖼️</button>
+              <button type="button" title="Link" onClick={handleInsertLink} style={{ background: 'transparent', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', color: '#4b5563', display: 'flex', alignItems: 'center' }}>
+                <BrandingVectorIcon name="link" size={13} color="#4b5563" />
+              </button>
+              <button type="button" title="Imagen" onClick={handleInsertImageInText} style={{ background: 'transparent', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', color: '#4b5563', display: 'flex', alignItems: 'center' }}>
+                <BrandingVectorIcon name="image" size={13} color="#4b5563" />
+              </button>
               <button type="button" title="Tabla" onClick={handleInsertTable} style={{ background: 'transparent', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer', color: '#4b5563' }}>▦</button>
             </div>
 
@@ -782,12 +788,12 @@ export default function AdminProductFormTiendanube({
                   )}
                   <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, background: 'rgba(0,0,0,0.65)', display: 'flex', justifyContent: 'space-between', padding: '3px 5px' }}>
                     {index !== 0 && (
-                      <button type="button" onClick={(e) => { e.stopPropagation(); handleSetPrimaryImage(index); }} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.68rem', cursor: 'pointer', padding: 0 }}>
-                        ⭐ Portada
+                      <button type="button" onClick={(e) => { e.stopPropagation(); handleSetPrimaryImage(index); }} style={{ background: 'transparent', border: 'none', color: '#fff', fontSize: '0.68rem', cursor: 'pointer', padding: 0, display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                        <BrandingVectorIcon name="star" size={10} color="#fff" /> Portada
                       </button>
                     )}
-                    <button type="button" onClick={(e) => { e.stopPropagation(); handleRemoveImage(index); }} style={{ background: 'transparent', border: 'none', color: '#f87171', fontSize: '0.7rem', cursor: 'pointer', padding: 0, marginLeft: 'auto' }}>
-                      🗑️
+                    <button type="button" onClick={(e) => { e.stopPropagation(); handleRemoveImage(index); }} style={{ background: 'transparent', border: 'none', color: '#f87171', cursor: 'pointer', padding: 0, marginLeft: 'auto', display: 'flex', alignItems: 'center' }}>
+                      <BrandingVectorIcon name="trash" size={12} color="#f87171" />
                     </button>
                   </div>
                 </div>
@@ -811,8 +817,14 @@ export default function AdminProductFormTiendanube({
           </div>
 
           <div style={{ fontSize: '0.78rem', color: '#6b7280', lineHeight: '1.6', borderTop: '1px solid #f3f4f6', paddingTop: '12px', marginBottom: '14px' }}>
-            <div>🖼️ <strong>Tamaño mínimo recomendado:</strong> 1280px / Formatos recomendados: WEBP, PNG, JPEG o GIF</div>
-            <div>⏱️ <strong>Tamaño máximo:</strong> 200MB / Formatos recomendados: .avi, .mpg, .mov, .mp4, .webm</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <BrandingVectorIcon name="image" size={13} color="#6b7280" />
+              <span><strong>Tamaño mínimo recomendado:</strong> 1280px / Formatos recomendados: WEBP, PNG, JPEG o GIF</span>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+              <BrandingVectorIcon name="clock" size={13} color="#6b7280" />
+              <span><strong>Tamaño máximo:</strong> 200MB / Formatos recomendados: .avi, .mpg, .mov, .mp4, .webm</span>
+            </div>
           </div>
 
           {/* External video link accordion */}
@@ -1104,8 +1116,8 @@ export default function AdminProductFormTiendanube({
                 gap: '4px'
               }}
             >
-              <span>✨</span>
-              {isGeneratingDimensions ? 'Calculando...' : 'Generar con IA'}
+              <BrandingVectorIcon name="sparkles" size={12} color="#6d28d9" />
+              <span>{isGeneratingDimensions ? 'Calculando...' : 'Generar con IA'}</span>
             </button>
           </div>
 
@@ -1264,11 +1276,11 @@ export default function AdminProductFormTiendanube({
                 cursor: isGeneratingCategories ? 'not-allowed' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px'
+                gap: '5px'
               }}
             >
-              <span>✨</span>
-              {isGeneratingCategories ? 'Determinando...' : 'Sugerir con IA'}
+              <BrandingVectorIcon name="sparkles" size={12} color="#6d28d9" />
+              <span>{isGeneratingCategories ? 'Determinando...' : 'Sugerir con IA'}</span>
             </button>
           </div>
 
@@ -1309,9 +1321,12 @@ export default function AdminProductFormTiendanube({
                     fontSize: '12px',
                     fontWeight: 'bold',
                     flexShrink: 0,
-                    marginTop: '2px'
+                    marginTop: '2px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}>
-                    {isSelected && '✓'}
+                    {isSelected && <BrandingVectorIcon name="check" size={13} color="#fff" />}
                   </div>
                   <div>
                     <div style={{ fontWeight: '700', fontSize: '0.92rem', color: isSelected ? '#0369a1' : '#111827', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1419,9 +1434,9 @@ export default function AdminProductFormTiendanube({
               <button
                 type="button"
                 onClick={() => setShowVariantModal(false)}
-                style={{ background: '#f3f4f6', color: '#4b5563', border: 'none', borderRadius: '8px', padding: '8px 10px', fontSize: '0.85rem', cursor: 'pointer' }}
+                style={{ background: '#f3f4f6', color: '#4b5563', border: 'none', borderRadius: '8px', padding: '8px 10px', fontSize: '0.85rem', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
-                ✕
+                <BrandingVectorIcon name="x" size={13} color="#4b5563" />
               </button>
             </div>
           )}

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BrandingVectorIcon from './BrandingVectorIcon';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 
@@ -216,13 +217,13 @@ function AdminOrganizaciones({ embedded = false }) {
                 <div className="user-controls">
                   <button 
                     className="nav-btn" 
-                    style={{ background: 'var(--primary)', color: 'white', border: 'none' }}
+                    style={{ background: 'var(--primary)', color: 'white', border: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                     onClick={() => {
                       handleResetForm();
                       setMostrarModal(true);
                     }}
                   >
-                    ➕ Añadir Nueva Organización
+                    <BrandingVectorIcon name="plus" size={14} color="#ffffff" /> Añadir Nueva Organización
                   </button>
                 </div>
               </div>
@@ -243,8 +244,13 @@ function AdminOrganizaciones({ embedded = false }) {
           <div className="modal-overlay" onClick={handleResetForm}>
             <div className="modal-container" style={{ maxWidth: '650px', height: 'auto', maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
-                <h2>{editingId ? '✏️ Editar Organización' : '➕ Nueva Organización'}</h2>
-                <button onClick={handleResetForm}>✕</button>
+                <h2 style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                  <BrandingVectorIcon name={editingId ? 'edit' : 'plus'} size={18} color="currentColor" />
+                  {editingId ? 'Editar Organización' : 'Nueva Organización'}
+                </h2>
+                <button onClick={handleResetForm} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <BrandingVectorIcon name="x" size={16} color="currentColor" />
+                </button>
               </div>
               <div style={{ padding: '32px' }}>
                 {error && <div className="error-alert" style={{ marginBottom: '20px', padding: '12px 16px', background: 'var(--danger-bg)', color: 'var(--danger)', borderRadius: '12px', fontWeight: 600 }}>{error}</div>}
@@ -359,15 +365,18 @@ function AdminOrganizaciones({ embedded = false }) {
 
         {/* TABLA DE ORGANIZACIONES */}
         <section className="board-section">
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
             <h2 style={{ margin: 0 }}>Organizaciones Activas ({organizaciones.length})</h2>
-            <input 
-              type="text" 
-              placeholder="🔍 Buscar organización..." 
-              value={filterText}
-              onChange={(e) => setFilterText(e.target.value)}
-              style={{ padding: '10px 16px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.08)', fontSize: '0.85rem', width: '220px', outline: 'none' }}
-            />
+            <div style={{ position: 'relative' }}>
+              <BrandingVectorIcon name="search" size={14} color="#8e8e93" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+              <input 
+                type="text" 
+                placeholder="Buscar organización..." 
+                value={filterText}
+                onChange={(e) => setFilterText(e.target.value)}
+                style={{ padding: '10px 16px 10px 34px', borderRadius: '12px', border: '1px solid rgba(0,0,0,0.08)', fontSize: '0.85rem', width: '220px', outline: 'none' }}
+              />
+            </div>
           </div>
 
           <div className="users-table">
@@ -395,7 +404,10 @@ function AdminOrganizaciones({ embedded = false }) {
                     .map(org => (
                       <tr key={org.id}>
                         <td>
-                          <div style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-main)' }}>🏢 {org.nombre}</div>
+                          <div style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-main)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                            <BrandingVectorIcon name="building" size={15} color="var(--primary)" />
+                            <span>{org.nombre}</span>
+                          </div>
                         </td>
                         <td>
                           <span style={{ background: 'rgba(67, 97, 238, 0.08)', color: 'var(--primary)', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '700' }}>
@@ -408,10 +420,10 @@ function AdminOrganizaciones({ embedded = false }) {
                               {org.managers.map(email => (
                                 <span 
                                   key={email} 
-                                  style={{ background: 'var(--primary-light)', color: 'var(--purple-brand)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '500' }}
+                                  style={{ background: 'var(--primary-light)', color: 'var(--purple-brand)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '500', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                                   title={email}
                                 >
-                                  💼 {getUserName(email)}
+                                  <BrandingVectorIcon name="briefcase" size={11} color="var(--purple-brand)" /> {getUserName(email)}
                                 </span>
                               ))}
                             </div>
@@ -425,10 +437,10 @@ function AdminOrganizaciones({ embedded = false }) {
                               {org.clientes.map(email => (
                                 <span 
                                   key={email} 
-                                  style={{ background: '#eff6ff', color: '#1e40af', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '500' }}
+                                  style={{ background: '#eff6ff', color: '#1e40af', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '500', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                                   title={email}
                                 >
-                                  👤 {getUserName(email)}
+                                  <BrandingVectorIcon name="user" size={11} color="#1e40af" /> {getUserName(email)}
                                 </span>
                               ))}
                             </div>
@@ -437,31 +449,35 @@ function AdminOrganizaciones({ embedded = false }) {
                           )}
                         </td>
                         <td>
-                          <span style={{ background: org.departamentoId ? '#f0fdf4' : '#f8fafc', color: org.departamentoId ? '#15803d' : '#64748b', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600', border: org.departamentoId ? '1px solid #bbf7d0' : '1px solid #e2e8f0' }}>
-                            🏢 {getDepartamentoNombre(org.departamentoId)}
+                          <span style={{ background: org.departamentoId ? '#f0fdf4' : '#f8fafc', color: org.departamentoId ? '#15803d' : '#64748b', padding: '4px 12px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600', border: org.departamentoId ? '1px solid #bbf7d0' : '1px solid #e2e8f0', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <BrandingVectorIcon name="building" size={12} color="currentColor" /> {getDepartamentoNombre(org.departamentoId)}
                           </span>
                         </td>
                         <td>
-                          <div style={{ display: 'flex', gap: '5px' }}>
+                          <div style={{ display: 'flex', gap: '6px' }}>
                             <button 
                               onClick={() => handleEdit(org)}
                               style={{ 
-                                background: '#3b82f6', 
-                                color: 'white', 
-                                border: 'none', 
-                                padding: '4px 8px', 
-                                borderRadius: '4px', 
-                                cursor: 'pointer' 
+                                background: '#eff6ff', 
+                                color: '#1d4ed8', 
+                                border: '1px solid #bfdbfe', 
+                                padding: '4px 10px', 
+                                borderRadius: '8px', 
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                fontWeight: 600
                               }}
                             >
-                              Editar
+                              <BrandingVectorIcon name="edit" size={12} color="#1d4ed8" /> Editar
                             </button>
                             <button 
                               onClick={() => handleDelete(org.id)}
                               className="btn-delete"
-                              style={{ padding: '4px 8px', borderRadius: '4px' }}
+                              style={{ padding: '4px 10px', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                             >
-                              Eliminar
+                              <BrandingVectorIcon name="trash" size={12} color="currentColor" /> Eliminar
                             </button>
                           </div>
                         </td>

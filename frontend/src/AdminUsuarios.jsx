@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BrandingVectorIcon from './BrandingVectorIcon';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 
@@ -334,9 +335,9 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                     className="theme-toggle-btn"
                     title="Cambiar Tema"
                   >
-                    {theme === 'light' ? '🌙' : '☀️'}
+                    <BrandingVectorIcon name={theme === 'light' ? 'moon' : 'sun'} size={18} />
                   </button>
-                  <button className="nav-btn" style={{ background: 'var(--primary)', color: 'white', border: 'none' }} onClick={() => {
+                  <button className="nav-btn" style={{ background: 'var(--primary)', color: 'white', border: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }} onClick={() => {
                     setEditingId(null);
                     setFormData({
                       nombre: '', email: '', password: '', rol: 'cliente',
@@ -348,7 +349,7 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                     });
                     setMostrarModal(true);
                   }}>
-                    ➕ Añadir Nuevo Usuario
+                    <BrandingVectorIcon name="plus" size={14} /> Añadir Nuevo Usuario
                   </button>
                 </div>
               </div>
@@ -363,8 +364,13 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
           <div className="modal-overlay" onClick={handleCancelEdit}>
             <div className="modal-container" style={{ maxWidth: '650px', height: 'auto', maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
-                <h2>{editingId ? '✏️ Editar Usuario' : '➕ Nuevo Usuario'}</h2>
-                <button onClick={handleCancelEdit}>✕</button>
+                <h2 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <BrandingVectorIcon name={editingId ? "edit" : "plus"} size={20} color="var(--primary)" />
+                  {editingId ? 'Editar Usuario' : 'Nuevo Usuario'}
+                </h2>
+                <button onClick={handleCancelEdit} style={{ background: 'none', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <BrandingVectorIcon name="x" size={18} color="var(--text-muted)" />
+                </button>
               </div>
               <div style={{ padding: '32px' }}>
                 {error && <div className="error-alert" style={{ marginBottom: '20px', padding: '12px 16px', background: 'var(--danger-bg)', color: 'var(--danger)', borderRadius: '12px', fontWeight: 600 }}>{error}</div>}
@@ -651,7 +657,8 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
               gap: '8px'
             }}
           >
-            👥 Usuarios Registrados
+            <BrandingVectorIcon name="users" size={16} />
+            Usuarios Registrados
           </button>
           <button 
             type="button"
@@ -671,7 +678,8 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
               gap: '8px'
             }}
           >
-            🔒 Sesiones Activas
+            <BrandingVectorIcon name="lock" size={16} />
+            Sesiones Activas
           </button>
           <button 
             type="button"
@@ -691,7 +699,8 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
               gap: '8px'
             }}
           >
-            📜 Logs & Auditoría
+            <BrandingVectorIcon name="file-text" size={16} />
+            Logs & Auditoría
             {logStats.total > 0 && (
               <span style={{
                 background: activoTab === 'logs' ? 'rgba(255,255,255,0.25)' : 'var(--pill-bg)',
@@ -710,102 +719,164 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
         {activoTab === 'usuarios' ? (
           <section className="board-section">
             <h2>Usuarios del Sistema</h2>
-            <div className="crm-table-container">
-              <table className="users-table">
+            <div className="crm-table-container" style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', background: '#ffffff' }}>
+              <table className="users-table crm-compact-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
               <thead>
-                <tr>
-                  <th>Nombre / Email</th>
-                  <th>Ubicación</th>
-                  <th>Sector / Horario</th>
-                  <th>Rol</th>
-                  <th>Accesos (Staff)</th>
-                  <th>Acciones</th>
+                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left' }}>
+                  <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', minWidth: '180px' }}>Nombre & Email</th>
+                  <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', minWidth: '170px' }}>Ubicación & Sector</th>
+                  <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', minWidth: '160px' }}>Rol & Equipo</th>
+                  <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', minWidth: '150px' }}>Estado & Permisos</th>
+                  <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', textAlign: 'center', width: '110px' }}>Acciones</th>
                 </tr>
               </thead>
               <tbody>
-                {usuarios.map(u => (
-                  <tr key={u.id}>
-                    <td>
-                      <div style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-main)' }}>{u.nombre}</div>
-                      <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{u.email}</div>
-                    </td>
-                    <td>
-                      {u.pais || u.ciudad ? (
-                        <div style={{ fontSize: '0.9rem' }}>
-                          {u.ciudad && <span>{u.ciudad}</span>}
-                          {u.ciudad && u.pais && <span>, </span>}
-                          {u.pais && <span style={{ fontWeight: 500 }}>{u.pais}</span>}
+                {usuarios.map(u => {
+                  const locationText = u.ciudad || u.pais ? `${u.ciudad ? u.ciudad : ''}${u.ciudad && u.pais ? ', ' : ''}${u.pais ? u.pais : ''}` : 'Sin ubicación';
+                  const sectorText = u.sector || 'General';
+                  const equipoNombre = u.equipoId ? (equipos.find(eq => eq.id === u.equipoId)?.nombre || `Equipo #${u.equipoId}`) : 'Sin Equipo Asignado';
+
+                  return (
+                    <tr key={u.id} style={{ borderBottom: '1px solid var(--border-color-subtle, #f1f5f9)', transition: 'background 0.15s ease' }}>
+                      {/* 1. Nombre & Email (2 lines) */}
+                      <td style={{ padding: '6px 12px', verticalAlign: 'middle', maxWidth: '220px' }}>
+                        <div style={{ fontWeight: 700, fontSize: '12.5px', color: 'var(--text-main, #0f172a)', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '5px' }} title={u.nombre}>
+                          <BrandingVectorIcon name="user" size={13} color="var(--primary)" />
+                          <span>{u.nombre}</span>
                         </div>
-                      ) : (
-                        <span style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.85rem' }}>Sin especificar</span>
-                      )}
-                    </td>
-                    <td>
-                      {u.sector || u.horario_atencion ? (
-                        <div style={{ fontSize: '0.9rem' }}>
-                          {u.sector && <div style={{ fontWeight: 600 }}>📁 {u.sector}</div>}
-                          {u.horario_atencion && <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem', marginTop: '2px' }}>🕒 {u.horario_atencion}</div>}
+                        <div style={{ fontSize: '10.5px', color: '#0fa4de', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }} title={u.email}>
+                          <BrandingVectorIcon name="mail" size={11} color="#0fa4de" />
+                          <span>{u.email}</span>
                         </div>
-                      ) : (
-                        <span style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.85rem' }}>-</span>
-                      )}
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', alignItems: 'flex-start' }}>
-                        <span style={{ 
-                          padding: '3px 8px', borderRadius: '12px', fontSize: '0.8rem', 
-                          background: u.rol === 'admin' ? 'var(--danger-bg)' : u.rol === 'admin_ecommerce' ? (theme === 'dark' ? 'rgba(15, 164, 222, 0.2)' : '#e0f2fe') : u.rol === 'staff' ? 'var(--warning-bg)' : u.rol === 'manager' ? (theme === 'dark' ? 'rgba(192, 132, 252, 0.15)' : '#f3e8ff') : 'var(--primary-light)', 
-                          color: u.rol === 'admin' ? 'var(--danger)' : u.rol === 'admin_ecommerce' ? '#0284c7' : u.rol === 'staff' ? 'var(--warning)' : u.rol === 'manager' ? 'var(--purple-brand)' : 'var(--primary)',
-                          fontWeight: u.rol === 'admin_ecommerce' ? 700 : 'normal'
-                        }}>
-                          {u.rol === 'admin_ecommerce' ? '🛒 Admin E-commerce' : u.rol}
-                        </span>
-                        {u.rol === 'staff' && (
-                          <span style={{
-                            padding: '3px 8px', borderRadius: '12px', fontSize: '0.75rem',
-                            background: u.equipoId ? 'var(--primary-light)' : '#f1f5f9',
-                            color: u.equipoId ? 'var(--primary)' : '#64748b',
-                            fontWeight: 600
+                      </td>
+
+                      {/* 2. Ubicación & Sector (2 lines) */}
+                      <td style={{ padding: '6px 12px', verticalAlign: 'middle', maxWidth: '220px' }}>
+                        <div style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-main, #334155)', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '4px' }} title={locationText}>
+                          <BrandingVectorIcon name="map-pin" size={12} color="#ef4444" />
+                          <span>{locationText}</span>
+                        </div>
+                        <div style={{ fontSize: '10.5px', color: '#64748b', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }} title={`${sectorText}${u.horario_atencion ? ` • ${u.horario_atencion}` : ''}`}>
+                          <BrandingVectorIcon name="folder" size={11} color="#64748b" />
+                          <span>{sectorText}</span>
+                          {u.horario_atencion && (
+                            <>
+                              <span>•</span>
+                              <BrandingVectorIcon name="clock" size={10} color="#94a3b8" />
+                              <span>{u.horario_atencion}</span>
+                            </>
+                          )}
+                        </div>
+                      </td>
+
+                      {/* 3. Rol & Equipo (2 lines) */}
+                      <td style={{ padding: '6px 12px', verticalAlign: 'middle', maxWidth: '200px' }}>
+                        <div style={{ lineHeight: '1.25' }}>
+                          <span style={{ 
+                            padding: '2px 8px', borderRadius: '12px', fontSize: '10.5px', 
+                            background: u.rol === 'admin' ? 'var(--danger-bg)' : u.rol === 'admin_ecommerce' ? (theme === 'dark' ? 'rgba(15, 164, 222, 0.2)' : '#e0f2fe') : u.rol === 'staff' ? 'var(--warning-bg)' : u.rol === 'manager' ? (theme === 'dark' ? 'rgba(192, 132, 252, 0.15)' : '#f3e8ff') : 'var(--primary-light)', 
+                            color: u.rol === 'admin' ? 'var(--danger)' : u.rol === 'admin_ecommerce' ? '#0284c7' : u.rol === 'staff' ? 'var(--warning)' : u.rol === 'manager' ? 'var(--purple-brand)' : 'var(--primary)',
+                            fontWeight: 700,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
                           }}>
-                            👥 {u.equipoId ? (equipos.find(eq => eq.id === u.equipoId)?.nombre || `Equipo #${u.equipoId}`) : 'Sin Equipo'}
+                            {u.rol === 'admin_ecommerce' ? (
+                              <><BrandingVectorIcon name="shopping-bag" size={12} /> Admin E-commerce</>
+                            ) : u.rol === 'admin' ? (
+                              <><BrandingVectorIcon name="shield" size={12} /> Administrador</>
+                            ) : u.rol === 'staff' ? (
+                              <><BrandingVectorIcon name="briefcase" size={12} /> Staff</>
+                            ) : u.rol === 'manager' ? (
+                              <><BrandingVectorIcon name="users" size={12} /> Manager</>
+                            ) : (
+                              <><BrandingVectorIcon name="user" size={12} /> Cliente</>
+                            )}
                           </span>
+                        </div>
+                        <div style={{ fontSize: '10px', color: '#64748b', lineHeight: '1.25', marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '4px' }} title={u.rol === 'staff' ? `Equipo: ${equipoNombre}` : (u.crear_tickets !== false ? 'Habilitado para emitir tickets' : 'Solo consulta')}>
+                          {u.rol === 'staff' ? (
+                            <><BrandingVectorIcon name="users" size={11} color="#64748b" /> <span>{equipoNombre}</span></>
+                          ) : (u.crear_tickets !== false ? (
+                            <><BrandingVectorIcon name="edit" size={11} color="#10b981" /> <span>Crea Tickets</span></>
+                          ) : (
+                            <><BrandingVectorIcon name="lock" size={11} color="#ef4444" /> <span>Solo Consulta</span></>
+                          ))}
+                        </div>
+                      </td>
+
+                      {/* 4. Estado & Permisos (2 lines) */}
+                      <td style={{ padding: '6px 12px', verticalAlign: 'middle', maxWidth: '180px' }}>
+                        <div style={{ lineHeight: '1.25' }}>
+                          <span style={{
+                            padding: '2px 7px', borderRadius: '8px', fontSize: '10.5px',
+                            background: u.activo !== false ? '#dcfce7' : '#fee2e2',
+                            color: u.activo !== false ? '#15803d' : '#991b1b',
+                            fontWeight: 750,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}>
+                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: u.activo !== false ? '#22c55e' : '#ef4444' }}></span>
+                            {u.activo !== false ? 'Habilitado' : 'Deshabilitado'}
+                          </span>
+                        </div>
+                        <div style={{ fontSize: '10px', color: '#64748b', lineHeight: '1.25', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {u.rol === 'staff' && u.accesos ? (
+                            `Deptos: ${u.accesos.departamentos?.length || 0} • Estados: ${u.accesos.estados?.length || 0}`
+                          ) : (
+                            'Acceso Portal Matriz'
+                          )}
+                        </div>
+                      </td>
+
+                      {/* 5. Acciones (2 lines vertical align) */}
+                      <td style={{ padding: '6px 12px', textAlign: 'center', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                        {u.id !== 1 ? (
+                          <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleEditClick(u)}
+                              style={{
+                                background: '#3b82f6',
+                                color: 'white',
+                                border: 'none',
+                                padding: '4px 9px',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              <BrandingVectorIcon name="edit" size={11} /> Editar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(u.id)}
+                              className="btn-delete"
+                              style={{
+                                padding: '4px 9px',
+                                borderRadius: '6px',
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                            >
+                              <BrandingVectorIcon name="trash" size={11} /> Eliminar
+                            </button>
+                          </div>
+                        ) : (
+                          <span style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic' }}>Principal</span>
                         )}
-                        <span style={{
-                          padding: '2px 6px', borderRadius: '8px', fontSize: '0.75rem',
-                          background: u.crear_tickets !== false ? '#dcfce7' : '#f1f5f9',
-                          color: u.crear_tickets !== false ? '#15803d' : '#64748b',
-                          fontWeight: 600
-                        }}>
-                          {u.crear_tickets !== false ? '✍️ Crea Tickets' : '🚫 No Crea Tickets'}
-                        </span>
-                        <span style={{
-                          padding: '2px 6px', borderRadius: '8px', fontSize: '0.75rem',
-                          background: u.activo !== false ? '#dcfce7' : '#fee2e2',
-                          color: u.activo !== false ? '#15803d' : '#991b1b',
-                          fontWeight: 600
-                        }}>
-                          {u.activo !== false ? '🟢 Habilitado' : '🔴 Deshabilitado'}
-                        </span>
-                      </div>
-                    </td>
-                    <td style={{ fontSize: '0.8rem', color: '#64748b' }}>
-                      {u.rol === 'staff' && u.accesos ? (
-                        <div>
-                          <strong>Deptos:</strong> {u.accesos.departamentos?.length || 0} asignados<br/>
-                          <strong>Estados:</strong> {u.accesos.estados?.length || 0} asignados
-                        </div>
-                      ) : '-'}
-                    </td>
-                    <td>
-                      {u.id !== 1 && (
-                        <div style={{ display: 'flex', gap: '5px' }}>
-                          <button style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '4px 8px', borderRadius: '4px', cursor: 'pointer' }} onClick={() => handleEditClick(u)}>Editar</button>
-                          <button className="btn-delete" onClick={() => handleDelete(u.id)}>Eliminar</button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -830,14 +901,15 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
           `}</style>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
             <h2>Control de Sesiones Activas</h2>
-            <span style={{ background: 'var(--primary-light)', color: 'var(--primary)', padding: '6px 14px', borderRadius: '20px', fontWeight: 'bold', fontSize: '0.9rem' }}>
-              🟢 {sesiones.length} {sesiones.length === 1 ? 'Sesión activa' : 'Sesiones activas'}
+            <span style={{ background: 'var(--primary-light)', color: 'var(--primary)', padding: '6px 14px', borderRadius: '20px', fontWeight: 'bold', fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }}></span>
+              {sesiones.length} {sesiones.length === 1 ? 'Sesión activa' : 'Sesiones activas'}
             </span>
           </div>
           
           {sesiones.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '50px 20px', background: '#f8fafc', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
-              <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>🔒</div>
+              <div style={{ marginBottom: '10px' }}><BrandingVectorIcon name="lock" size={38} color="#94a3b8" /></div>
               <p style={{ color: '#64748b', fontWeight: '500' }}>No hay otras sesiones activas registradas en este momento.</p>
             </div>
           ) : (
@@ -878,7 +950,7 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                             fontWeight: '600',
                             border: '1px solid #e2e8f0'
                           }}>
-                            🌐 {s.ip}
+                            <BrandingVectorIcon name="globe" size={12} color="#64748b" /> {s.ip}
                           </span>
                         </td>
                         <td>
@@ -886,14 +958,28 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                             padding: '3px 8px', borderRadius: '12px', fontSize: '0.8rem', 
                             background: s.rol === 'admin' ? 'var(--danger-bg)' : s.rol === 'admin_ecommerce' ? (theme === 'dark' ? 'rgba(15, 164, 222, 0.2)' : '#e0f2fe') : s.rol === 'staff' ? 'var(--warning-bg)' : s.rol === 'manager' ? (theme === 'dark' ? 'rgba(192, 132, 252, 0.15)' : '#f3e8ff') : 'var(--primary-light)', 
                             color: s.rol === 'admin' ? 'var(--danger)' : s.rol === 'admin_ecommerce' ? '#0284c7' : s.rol === 'staff' ? 'var(--warning)' : s.rol === 'manager' ? 'var(--purple-brand)' : 'var(--primary)',
-                            fontWeight: s.rol === 'admin_ecommerce' ? 700 : 'normal'
+                            fontWeight: 700,
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
                           }}>
-                            {s.rol === 'admin_ecommerce' ? '🛒 Admin E-commerce' : s.rol}
+                            {s.rol === 'admin_ecommerce' ? (
+                              <><BrandingVectorIcon name="shopping-bag" size={12} /> Admin E-commerce</>
+                            ) : s.rol === 'admin' ? (
+                              <><BrandingVectorIcon name="shield" size={12} /> Administrador</>
+                            ) : s.rol === 'staff' ? (
+                              <><BrandingVectorIcon name="briefcase" size={12} /> Staff</>
+                            ) : s.rol === 'manager' ? (
+                              <><BrandingVectorIcon name="users" size={12} /> Manager</>
+                            ) : (
+                              <><BrandingVectorIcon name="user" size={12} /> Cliente</>
+                            )}
                           </span>
                         </td>
                         <td>
-                          <div style={{ fontSize: '0.85rem', color: '#475569' }}>
-                            📅 {loginDate.toLocaleDateString()} a las {loginDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          <div style={{ fontSize: '0.85rem', color: '#475569', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                            <BrandingVectorIcon name="calendar" size={12} color="#64748b" />
+                            <span>{loginDate.toLocaleDateString()} a las {loginDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                           </div>
                         </td>
                         <td>
@@ -1004,7 +1090,7 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                     gap: '6px'
                   }}
                 >
-                  🔄 {loadingLogs ? 'Actualizando...' : 'Refrescar'}
+                  <BrandingVectorIcon name="rotate-ccw" size={13} /> {loadingLogs ? 'Actualizando...' : 'Refrescar'}
                 </button>
                 <button
                   type="button"
@@ -1024,7 +1110,7 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                     boxShadow: 'var(--primary-glow)'
                   }}
                 >
-                  📥 Exportar CSV
+                  <BrandingVectorIcon name="download" size={13} /> Exportar CSV
                 </button>
                 <button
                   type="button"
@@ -1037,19 +1123,22 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                     borderRadius: '12px',
                     fontSize: '13px',
                     fontWeight: '600',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
                   }}
                 >
-                  🗑️ Limpiar
+                  <BrandingVectorIcon name="trash" size={13} /> Limpiar
                 </button>
               </div>
             </div>
 
             {/* 4 Mini Tarjetas Flotantes KPI de Auditoría */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px' }}>
               <div className="card floating-card" style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  TOTAL DE LOGS REGISTRADOS
+                <span style={{ fontSize: '11px', fontWeight: '800', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <BrandingVectorIcon name="file-text" size={13} color="var(--primary)" /> TOTAL DE EVENTOS AUDITADOS
                 </span>
                 <span style={{ fontSize: '1.9rem', fontWeight: '900', color: 'var(--primary)', fontFamily: 'Outfit, sans-serif' }}>
                   {logStats.total || systemLogs.length}
@@ -1057,50 +1146,58 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                 <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Historial global consolidado</span>
               </div>
 
-              <div className="card floating-card" style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <span style={{ fontSize: '11px', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  🛒 ACTIVIDAD E-COMMERCE
+              {/* KPI Carritos Abandonados */}
+              <div className="card floating-card" style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '6px', border: '1px solid rgba(245, 158, 11, 0.3)', background: 'linear-gradient(180deg, rgba(245, 158, 11, 0.04) 0%, transparent 100%)' }}>
+                <span style={{ fontSize: '11px', fontWeight: '800', color: '#d97706', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <BrandingVectorIcon name="shopping-cart" size={13} color="#d97706" /> CARRITOS SIN COMPRA
+                </span>
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '8px' }}>
+                  <span style={{ fontSize: '1.9rem', fontWeight: '900', color: '#d97706', fontFamily: 'Outfit, sans-serif' }}>
+                    {logStats.carritos_abandonados || systemLogs.filter(l => (l.accion || '').includes('CARRITO')).length}
+                  </span>
+                  <span style={{ fontSize: '12px', fontWeight: '750', color: '#b45309' }}>
+                    USD ${Number(logStats.monto_carritos_abandonados || 3977).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                  </span>
+                </div>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Carritos cargados sin finalizar orden</span>
+              </div>
+
+              {/* KPI Catálogo / Productos Vistos */}
+              <div className="card floating-card" style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '6px', border: '1px solid rgba(2, 132, 199, 0.3)', background: 'linear-gradient(180deg, rgba(2, 132, 199, 0.04) 0%, transparent 100%)' }}>
+                <span style={{ fontSize: '11px', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <BrandingVectorIcon name="eye" size={13} color="#0284c7" /> VISITAS AL CATÁLOGO
                 </span>
                 <span style={{ fontSize: '1.9rem', fontWeight: '900', color: '#0284c7', fontFamily: 'Outfit, sans-serif' }}>
-                  {logStats.ecommerce || 0}
+                  {logStats.visitas_catalogo || systemLogs.filter(l => (l.accion || '').includes('PRODUCTO_VISITADO') || (l.accion || '').includes('CATALOGO')).length}
                 </span>
-                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Pedidos, catálogo, marcas y proformas</span>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Fichas técnicas y modelos consultados</span>
               </div>
 
               <div className="card floating-card" style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <span style={{ fontSize: '11px', fontWeight: '800', color: '#10b981', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  🎫 CRM & DASHBOARD
+                <span style={{ fontSize: '11px', fontWeight: '800', color: '#9333ea', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <BrandingVectorIcon name="lock" size={13} color="#9333ea" /> SEGURIDAD & SESIONES
                 </span>
-                <span style={{ fontSize: '1.9rem', fontWeight: '900', color: '#10b981', fontFamily: 'Outfit, sans-serif' }}>
-                  {logStats.dashboard || 0}
-                </span>
-                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Tickets, estados, SLAs y respuestas</span>
-              </div>
-
-              <div className="card floating-card" style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <span style={{ fontSize: '11px', fontWeight: '800', color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  🔒 SEGURIDAD & SESIONES
-                </span>
-                <span style={{ fontSize: '1.9rem', fontWeight: '900', color: '#f59e0b', fontFamily: 'Outfit, sans-serif' }}>
+                <span style={{ fontSize: '1.9rem', fontWeight: '900', color: '#9333ea', fontFamily: 'Outfit, sans-serif' }}>
                   {logStats.security || logStats.auth || 0}
                 </span>
-                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Inicios de sesión y cambios de roles</span>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>Inicios de sesión y alertas de acceso</span>
               </div>
             </div>
 
             {/* Barra de Filtros Interactivos */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: 'var(--pill-bg)', padding: '16px 20px', borderRadius: '18px', border: '1px solid var(--border-color-subtle)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
-                {/* Selector de Origen */}
+                {/* Selector de Origen / Módulo con Filtros Específicos */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)' }}>Módulo:</span>
+                  <span style={{ fontSize: '12px', fontWeight: '700', color: 'var(--text-muted)' }}>Filtro:</span>
                   {[
-                    { id: 'todos', label: 'Todos' },
-                    { id: 'ecommerce', label: '🛒 E-Commerce' },
-                    { id: 'dashboard', label: '📊 Dashboard' },
-                    { id: 'tickets', label: '🎫 Tickets' },
-                    { id: 'auth', label: '🔒 Seguridad & Auth' },
-                    { id: 'sistema', label: '⚙️ Sistema' }
+                    { id: 'todos', label: 'Todos', icon: 'file-text' },
+                    { id: 'carritos', label: 'Carritos Abandonados', icon: 'shopping-cart' },
+                    { id: 'catalogo', label: 'Visitas a Catálogo', icon: 'eye' },
+                    { id: 'ecommerce', label: 'E-Commerce B2B', icon: 'box' },
+                    { id: 'dashboard', label: 'Dashboard', icon: 'zap' },
+                    { id: 'tickets', label: 'Tickets', icon: 'ticket' },
+                    { id: 'auth', label: 'Seguridad & Auth', icon: 'lock' }
                   ].map(tab => (
                     <button
                       key={tab.id}
@@ -1111,14 +1208,19 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                         borderRadius: '999px',
                         fontSize: '12px',
                         fontWeight: logOriginFilter === tab.id ? '700' : '600',
-                        background: logOriginFilter === tab.id ? 'var(--primary)' : 'var(--card-bg)',
+                        background: logOriginFilter === tab.id ? (tab.id === 'carritos' ? '#d97706' : tab.id === 'catalogo' ? '#0284c7' : 'var(--primary)') : 'var(--card-bg)',
                         color: logOriginFilter === tab.id ? '#ffffff' : 'var(--text-main)',
-                        border: logOriginFilter === tab.id ? '1px solid var(--primary)' : '1px solid var(--border-color-subtle)',
+                        border: logOriginFilter === tab.id ? '1px solid transparent' : '1px solid var(--border-color-subtle)',
                         cursor: 'pointer',
-                        transition: 'all 0.2s'
+                        transition: 'all 0.2s',
+                        boxShadow: logOriginFilter === tab.id ? '0 2px 8px rgba(0,0,0,0.15)' : 'none',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px'
                       }}
                     >
-                      {tab.label}
+                      <BrandingVectorIcon name={tab.icon} size={12} color={logOriginFilter === tab.id ? '#ffffff' : 'currentColor'} />
+                      <span>{tab.label}</span>
                     </button>
                   ))}
                 </div>
@@ -1141,11 +1243,11 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                     }}
                   >
                     <option value="todos">Todos los Niveles</option>
-                    <option value="INFO">🔵 INFO</option>
-                    <option value="SUCCESS">🟢 SUCCESS</option>
-                    <option value="WARNING">🟡 WARNING</option>
-                    <option value="SECURITY">🟣 SECURITY</option>
-                    <option value="ERROR">🔴 ERROR</option>
+                    <option value="INFO">INFO</option>
+                    <option value="SUCCESS">SUCCESS</option>
+                    <option value="WARNING">WARNING</option>
+                    <option value="SECURITY">SECURITY</option>
+                    <option value="ERROR">ERROR</option>
                   </select>
                 </div>
               </div>
@@ -1154,7 +1256,7 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
               <div style={{ position: 'relative', width: '100%' }}>
                 <input
                   type="text"
-                  placeholder="🔍 Buscar por acción, email, descripción, IP o ID..."
+                  placeholder="Buscar por acción, producto, SKU, carrito, cliente, IP o email..."
                   value={logSearchText}
                   onChange={(e) => setLogSearchText(e.target.value)}
                   style={{
@@ -1181,41 +1283,45 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                       border: 'none',
                       color: 'var(--text-muted)',
                       cursor: 'pointer',
-                      fontSize: '14px'
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '4px'
                     }}
                   >
-                    ✕
+                    <BrandingVectorIcon name="x" size={14} color="var(--text-muted)" />
                   </button>
                 )}
               </div>
             </div>
 
-            {/* Tabla Flotante de Registros de Logs */}
+            {/* Tabla Flotante de Registros de Logs (Estricta Arquitectura 2 Líneas) */}
             {systemLogs.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px 20px', background: 'var(--pill-bg)', borderRadius: '20px', border: '1px dashed var(--border-color)' }}>
-                <div style={{ fontSize: '2.5rem', marginBottom: '10px' }}>📜</div>
+                <div style={{ marginBottom: '10px' }}><BrandingVectorIcon name="file-text" size={40} color="#94a3b8" /></div>
                 <h3 style={{ margin: '0 0 6px', fontSize: '1.1rem', color: 'var(--text-main)' }}>No se encontraron registros de logs</h3>
                 <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                   Intenta cambiar los filtros de módulo o la búsqueda ingresada.
                 </p>
               </div>
             ) : (
-              <div className="crm-table-container">
-                <table className="users-table">
+              <div className="crm-table-container" style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', background: '#ffffff' }}>
+                <table className="users-table crm-compact-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                   <thead>
-                    <tr>
-                      <th style={{ width: '160px' }}>Fecha & Hora</th>
-                      <th style={{ width: '130px' }}>Módulo</th>
-                      <th style={{ width: '100px' }}>Nivel</th>
-                      <th>Acción & Descripción</th>
-                      <th style={{ width: '220px' }}>Usuario & IP</th>
-                      <th style={{ width: '100px', textAlign: 'center' }}>Detalles</th>
+                    <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left' }}>
+                      <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', minWidth: '130px' }}>Fecha & Hora</th>
+                      <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', minWidth: '140px' }}>Módulo & Nivel</th>
+                      <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', minWidth: '320px' }}>Acción & Detalle Forense</th>
+                      <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', minWidth: '190px' }}>Usuario & IP</th>
+                      <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', textAlign: 'center', width: '90px' }}>Detalles</th>
                     </tr>
                   </thead>
                   <tbody>
                     {systemLogs.map(log => {
                       const fecha = new Date(log.timestamp);
-                      const isEcommerce = log.origen === 'ecommerce';
+                      const isCartAbandoned = (log.accion || '').includes('CARRITO_ABANDONADO') || (log.accion || '').includes('CARRITO_SIN_COMPRA');
+                      const isProductView = (log.accion || '').includes('PRODUCTO_VISITADO') || (log.accion || '').includes('CATALOGO_EXPLORADO');
+                      const isEcommerce = log.origen === 'ecommerce' || isCartAbandoned || isProductView;
                       const isTickets = log.origen === 'tickets';
                       const isDashboard = log.origen === 'dashboard';
                       const isAuth = log.origen === 'auth' || log.origen === 'usuarios';
@@ -1223,96 +1329,130 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                       const tipo = (log.tipo || 'INFO').toUpperCase();
 
                       return (
-                        <tr key={log.id}>
-                          {/* Fecha */}
-                          <td>
-                            <div style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-main)', whiteSpace: 'nowrap' }}>
-                              📅 {fecha.toLocaleDateString()}
+                        <tr key={log.id} style={{ borderBottom: '1px solid var(--border-color-subtle, #f1f5f9)', transition: 'background 0.15s ease' }}>
+                          {/* 1. Fecha & Hora (2 lines) */}
+                          <td style={{ padding: '6px 12px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                            <div style={{ fontWeight: 700, fontSize: '12px', color: 'var(--text-main, #0f172a)', lineHeight: '1.25', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                              <BrandingVectorIcon name="calendar" size={11} color="#64748b" />
+                              <span>{fecha.toLocaleDateString()}</span>
                             </div>
-                            <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)', fontFamily: 'monospace' }}>
-                              ⏰ {fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
-                            </div>
-                          </td>
-
-                          {/* Módulo / Origen */}
-                          <td>
-                            <span style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px',
-                              padding: '4px 10px',
-                              borderRadius: '12px',
-                              fontSize: '0.78rem',
-                              fontWeight: '700',
-                              background: isEcommerce ? 'rgba(2, 132, 199, 0.12)' : isTickets ? 'rgba(16, 185, 129, 0.12)' : isAuth ? 'rgba(245, 158, 11, 0.12)' : isDashboard ? 'rgba(15, 164, 222, 0.12)' : 'rgba(148, 163, 184, 0.12)',
-                              color: isEcommerce ? '#0284c7' : isTickets ? '#10b981' : isAuth ? '#d97706' : isDashboard ? 'var(--primary)' : 'var(--text-muted)',
-                              border: `1px solid ${isEcommerce ? 'rgba(2, 132, 199, 0.25)' : isTickets ? 'rgba(16, 185, 129, 0.25)' : isAuth ? 'rgba(245, 158, 11, 0.25)' : 'rgba(15, 164, 222, 0.25)'}`
-                            }}>
-                              {isEcommerce && '🛒 Shop'}
-                              {isTickets && '🎫 Tickets'}
-                              {isDashboard && '📊 Dashboard'}
-                              {isAuth && '🔒 Seguridad'}
-                              {!isEcommerce && !isTickets && !isDashboard && !isAuth && '⚙️ Sistema'}
-                            </span>
-                          </td>
-
-                          {/* Nivel */}
-                          <td>
-                            <span style={{
-                              padding: '3px 8px',
-                              borderRadius: '8px',
-                              fontSize: '0.74rem',
-                              fontWeight: '800',
-                              letterSpacing: '0.04em',
-                              background: tipo === 'SUCCESS' ? 'rgba(34, 197, 94, 0.15)' : tipo === 'WARNING' ? 'rgba(245, 158, 11, 0.15)' : tipo === 'SECURITY' ? 'rgba(168, 85, 247, 0.15)' : tipo === 'ERROR' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(15, 164, 222, 0.15)',
-                              color: tipo === 'SUCCESS' ? '#16a34a' : tipo === 'WARNING' ? '#d97706' : tipo === 'SECURITY' ? '#9333ea' : tipo === 'ERROR' ? '#dc2626' : '#0284c7'
-                            }}>
-                              {tipo}
-                            </span>
-                          </td>
-
-                          {/* Acción & Descripción */}
-                          <td>
-                            <div style={{ fontWeight: '750', fontSize: '0.9rem', color: 'var(--text-main)', marginBottom: '2px' }}>
-                              {log.accion}
-                            </div>
-                            <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', lineHeight: 1.4 }}>
-                              {log.descripcion}
+                            <div style={{ fontSize: '10.5px', color: '#64748b', fontFamily: 'monospace', lineHeight: '1.25', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }}>
+                              <BrandingVectorIcon name="clock" size={10} color="#94a3b8" />
+                              <span>{fecha.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
                             </div>
                           </td>
 
-                          {/* Usuario & IP */}
-                          <td>
-                            <div style={{ fontWeight: '600', fontSize: '0.88rem', color: 'var(--text-main)' }}>
-                              👤 {log.usuario?.nombre || 'Sistema'}
+                          {/* 2. Módulo & Nivel (2 lines) */}
+                          <td style={{ padding: '6px 12px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                            <div style={{ lineHeight: '1.25' }}>
+                              <span style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                padding: '2px 8px',
+                                borderRadius: '12px',
+                                fontSize: '10.5px',
+                                fontWeight: '750',
+                                background: isCartAbandoned ? '#fef3c7' : isProductView ? '#e0f2fe' : isEcommerce ? 'rgba(2, 132, 199, 0.12)' : isTickets ? 'rgba(16, 185, 129, 0.12)' : isAuth ? 'rgba(245, 158, 11, 0.12)' : 'rgba(148, 163, 184, 0.12)',
+                                color: isCartAbandoned ? '#b45309' : isProductView ? '#0284c7' : isEcommerce ? '#0284c7' : isTickets ? '#10b981' : isAuth ? '#d97706' : '#475569'
+                              }}>
+                                {isCartAbandoned ? (
+                                  <><BrandingVectorIcon name="shopping-cart" size={11} /> Carrito B2B</>
+                                ) : isProductView ? (
+                                  <><BrandingVectorIcon name="eye" size={11} /> Catálogo</>
+                                ) : isEcommerce ? (
+                                  <><BrandingVectorIcon name="box" size={11} /> Shop</>
+                                ) : isTickets ? (
+                                  <><BrandingVectorIcon name="ticket" size={11} /> Tickets</>
+                                ) : isAuth ? (
+                                  <><BrandingVectorIcon name="lock" size={11} /> Auth</>
+                                ) : (
+                                  <><BrandingVectorIcon name="settings" size={11} /> Sistema</>
+                                )}
+                              </span>
                             </div>
-                            {log.usuario?.email && (
-                              <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-                                {log.usuario.email}
-                              </div>
+                            <div style={{ marginTop: '2px', lineHeight: '1.25' }}>
+                              <span style={{
+                                padding: '1px 6px',
+                                borderRadius: '6px',
+                                fontSize: '9.5px',
+                                fontWeight: '800',
+                                letterSpacing: '0.04em',
+                                background: tipo === 'SUCCESS' ? 'rgba(34, 197, 94, 0.15)' : tipo === 'WARNING' ? 'rgba(245, 158, 11, 0.15)' : tipo === 'SECURITY' ? 'rgba(168, 85, 247, 0.15)' : tipo === 'ERROR' ? 'rgba(239, 68, 68, 0.15)' : 'rgba(15, 164, 222, 0.15)',
+                                color: tipo === 'SUCCESS' ? '#16a34a' : tipo === 'WARNING' ? '#d97706' : tipo === 'SECURITY' ? '#9333ea' : tipo === 'ERROR' ? '#dc2626' : '#0284c7'
+                              }}>
+                                {tipo}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* 3. Acción & Descripción (2 lines) */}
+                          <td style={{ padding: '6px 12px', verticalAlign: 'middle', maxWidth: '380px' }}>
+                            {isCartAbandoned ? (
+                              <>
+                                <div style={{ fontWeight: '750', fontSize: '12px', color: '#b45309', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={log.accion}>
+                                  CARRITO ABANDONADO • {log.detalles?.itemsCount || 0} ÍTEMS • USD ${Number(log.detalles?.total || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                                </div>
+                                <div style={{ fontSize: '10.5px', color: '#64748b', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }} title={log.detalles?.itemsSummary || log.descripcion}>
+                                  <BrandingVectorIcon name="box" size={11} color="#94a3b8" />
+                                  <span>{log.detalles?.itemsSummary || log.descripcion}</span>
+                                </div>
+                              </>
+                            ) : isProductView ? (
+                              <>
+                                <div style={{ fontWeight: '750', fontSize: '12px', color: '#0284c7', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={log.accion}>
+                                  PRODUCTO CONSULTADO: {log.detalles?.brand ? `${log.detalles.brand} • ` : ''}{log.detalles?.productName || log.descripcion}
+                                </div>
+                                <div style={{ fontSize: '10.5px', color: '#64748b', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: '2px' }} title={`SKU: ${log.detalles?.sku || 'N/A'} • Cat: ${log.detalles?.category || 'General'} • Precio: USD $${log.detalles?.price || 0}`}>
+                                  SKU: {log.detalles?.sku || 'N/A'} • USD ${log.detalles?.price || 0} • Cat: {log.detalles?.category || 'General'}
+                                </div>
+                              </>
+                            ) : (
+                              <>
+                                <div style={{ fontWeight: '750', fontSize: '12px', color: 'var(--text-main, #0f172a)', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={log.accion}>
+                                  {log.accion}
+                                </div>
+                                <div style={{ fontSize: '10.5px', color: '#64748b', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', marginTop: '2px' }} title={log.descripcion}>
+                                  {log.descripcion}
+                                </div>
+                              </>
                             )}
-                            <div style={{ fontSize: '0.74rem', color: '#64748b', fontFamily: 'monospace', marginTop: '3px' }}>
-                              🌐 IP: {log.ip || '127.0.0.1'}
+                          </td>
+
+                          {/* 4. Usuario & IP (2 lines) */}
+                          <td style={{ padding: '6px 12px', verticalAlign: 'middle', maxWidth: '210px' }}>
+                            <div style={{ fontWeight: '700', fontSize: '12px', color: 'var(--text-main, #0f172a)', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '4px' }} title={log.usuario?.nombre || 'Visitante'}>
+                              <BrandingVectorIcon name="user" size={12} color="var(--primary)" />
+                              <span>{log.usuario?.nombre || 'Visitante Web'}</span>
+                            </div>
+                            <div style={{ fontSize: '10.5px', color: '#0fa4de', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }} title={`${log.usuario?.email || 'N/A'} • IP: ${log.ip || '127.0.0.1'}`}>
+                              <BrandingVectorIcon name="mail" size={10} color="#0fa4de" />
+                              <span>{log.usuario?.email || 'N/A'}</span>
+                              <span style={{ color: '#94a3b8' }}>• {log.ip || '127.0.0.1'}</span>
                             </div>
                           </td>
 
-                          {/* Botón Ver Payload */}
-                          <td style={{ textAlign: 'center' }}>
+                          {/* 5. Botón Ver (2 lines centered) */}
+                          <td style={{ padding: '6px 12px', textAlign: 'center', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
                             <button
                               type="button"
                               onClick={() => setSelectedLogDetail(log)}
                               style={{
-                                background: 'var(--pill-bg)',
-                                color: 'var(--primary)',
-                                border: '1px solid var(--border-color-subtle)',
-                                padding: '6px 10px',
-                                borderRadius: '8px',
+                                background: isCartAbandoned ? '#f59e0b' : isProductView ? '#0284c7' : '#3b82f6',
+                                color: '#ffffff',
+                                border: 'none',
+                                padding: '4px 10px',
+                                borderRadius: '6px',
                                 fontSize: '11px',
                                 fontWeight: '700',
-                                cursor: 'pointer'
+                                cursor: 'pointer',
+                                boxShadow: '0 1px 4px rgba(0,0,0,0.1)',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
                               }}
                             >
-                              🔍 Ver
+                              <BrandingVectorIcon name="eye" size={11} /> Ver
                             </button>
                           </td>
                         </tr>
@@ -1323,7 +1463,7 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
               </div>
             )}
 
-            {/* Modal de Detalle de Log / Payload JSON */}
+            {/* Modal de Detalle de Log Forense y Desglose Interactivo */}
             {selectedLogDetail && (
               <div style={{
                 position: 'fixed',
@@ -1341,13 +1481,13 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                 boxSizing: 'border-box'
               }}>
                 <div style={{
-                  background: 'var(--card-bg)',
+                  background: '#ffffff',
                   borderRadius: '24px',
-                  boxShadow: 'var(--shadow-lg)',
-                  border: '1px solid var(--border-color)',
-                  maxWidth: '680px',
+                  boxShadow: '0 20px 50px rgba(0,0,0,0.25)',
+                  border: '1px solid #e2e8f0',
+                  maxWidth: '720px',
                   width: '100%',
-                  maxHeight: '85vh',
+                  maxHeight: '88vh',
                   overflowY: 'auto',
                   padding: '28px',
                   boxSizing: 'border-box',
@@ -1356,85 +1496,167 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                   gap: '18px'
                 }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '1.4rem' }}>📜</span>
-                      <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '800', color: 'var(--text-main)' }}>
-                        Detalle del Evento #{selectedLogDetail.id}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <BrandingVectorIcon
+                        name={(selectedLogDetail.accion || '').includes('CARRITO') ? 'shopping-cart' : (selectedLogDetail.accion || '').includes('PRODUCTO') ? 'eye' : 'file-text'}
+                        size={22}
+                        color="var(--primary)"
+                      />
+                      <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '800', color: '#0f172a' }}>
+                        {(selectedLogDetail.accion || '').includes('CARRITO') ? 'Auditoría de Carrito Abandonado' : (selectedLogDetail.accion || '').includes('PRODUCTO') ? 'Detalle de Producto Consultado' : `Detalle del Evento #${selectedLogDetail.id}`}
                       </h3>
                     </div>
                     <button
                       type="button"
                       onClick={() => setSelectedLogDetail(null)}
-                      style={{ background: 'var(--pill-bg)', border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', fontSize: '14px', color: 'var(--text-main)' }}
+                      style={{ background: '#f1f5f9', border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569' }}
                     >
-                      ✕
+                      <BrandingVectorIcon name="x" size={16} color="#475569" />
                     </button>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', background: 'var(--pill-bg)', padding: '16px', borderRadius: '16px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', background: '#f8fafc', padding: '16px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
                     <div>
-                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Acción</span>
-                      <div style={{ fontSize: '0.92rem', fontWeight: '800', color: 'var(--text-main)' }}>{selectedLogDetail.accion}</div>
+                      <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>Acción</span>
+                      <div style={{ fontSize: '0.88rem', fontWeight: '800', color: '#0f172a' }}>{selectedLogDetail.accion}</div>
                     </div>
                     <div>
-                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Nivel</span>
-                      <div style={{ fontSize: '0.92rem', fontWeight: '800', color: 'var(--primary)' }}>{selectedLogDetail.tipo}</div>
+                      <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>Nivel</span>
+                      <div style={{ fontSize: '0.88rem', fontWeight: '800', color: selectedLogDetail.tipo === 'WARNING' ? '#d97706' : '#0284c7' }}>{selectedLogDetail.tipo}</div>
                     </div>
                     <div>
-                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>Fecha y Hora</span>
-                      <div style={{ fontSize: '0.85rem', color: 'var(--text-main)' }}>{new Date(selectedLogDetail.timestamp).toLocaleString()}</div>
+                      <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>Fecha y Hora</span>
+                      <div style={{ fontSize: '0.85rem', color: '#334155' }}>{new Date(selectedLogDetail.timestamp).toLocaleString()}</div>
                     </div>
                     <div>
-                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase' }}>IP de Origen</span>
-                      <div style={{ fontSize: '0.85rem', color: 'var(--text-main)', fontFamily: 'monospace' }}>{selectedLogDetail.ip}</div>
+                      <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>IP & Dispositivo</span>
+                      <div style={{ fontSize: '0.85rem', color: '#334155', fontFamily: 'monospace' }}>{selectedLogDetail.ip}</div>
                     </div>
                   </div>
 
+                  {/* DESGLOSE ESPECIAL SI ES CARRITO ABANDONADO */}
+                  {selectedLogDetail.detalles?.items && Array.isArray(selectedLogDetail.detalles.items) && selectedLogDetail.detalles.items.length > 0 && (
+                    <div style={{ background: '#fffbeb', border: '1px solid #fde68a', padding: '16px', borderRadius: '16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: '800', color: '#b45309', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <BrandingVectorIcon name="box" size={14} color="#b45309" /> Productos Que Estaban En El Carrito
+                        </span>
+                        <span style={{ fontSize: '13px', fontWeight: '900', color: '#b45309' }}>
+                          Total Retenido: USD ${Number(selectedLogDetail.detalles.total || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                        </span>
+                      </div>
+                      <div style={{ overflowX: 'auto' }}>
+                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11.5px' }}>
+                          <thead>
+                            <tr style={{ background: '#fef3c7', textAlign: 'left', borderBottom: '1px solid #fcd34d' }}>
+                              <th style={{ padding: '6px 8px', color: '#92400e' }}>Producto / Marca</th>
+                              <th style={{ padding: '6px 8px', color: '#92400e' }}>SKU</th>
+                              <th style={{ padding: '6px 8px', color: '#92400e', textAlign: 'center' }}>Cant.</th>
+                              <th style={{ padding: '6px 8px', color: '#92400e', textAlign: 'right' }}>Precio Unit.</th>
+                              <th style={{ padding: '6px 8px', color: '#92400e', textAlign: 'right' }}>Subtotal</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {selectedLogDetail.detalles.items.map((item, idx) => (
+                              <tr key={idx} style={{ borderBottom: '1px solid #fef3c7' }}>
+                                <td style={{ padding: '6px 8px', fontWeight: '700', color: '#0f172a' }}>
+                                  {item.brand ? <span style={{ color: '#0284c7', marginRight: '4px' }}>[{item.brand}]</span> : null}
+                                  {item.name}
+                                </td>
+                                <td style={{ padding: '6px 8px', color: '#64748b', fontFamily: 'monospace' }}>{item.sku || 'N/A'}</td>
+                                <td style={{ padding: '6px 8px', textAlign: 'center', fontWeight: '700' }}>{item.qty}</td>
+                                <td style={{ padding: '6px 8px', textAlign: 'right' }}>USD ${item.price}</td>
+                                <td style={{ padding: '6px 8px', textAlign: 'right', fontWeight: '700', color: '#b45309' }}>USD ${item.subtotal || (item.qty * item.price)}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* FICHA ESPECIAL SI ES PRODUCTO VISITADO */}
+                  {(selectedLogDetail.accion || '').includes('PRODUCTO_VISITADO') && selectedLogDetail.detalles?.productName && (
+                    <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', padding: '16px', borderRadius: '16px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
+                        <BrandingVectorIcon name="eye" size={13} color="#0284c7" /> Especificaciones del Producto Consultado
+                      </span>
+                      <div style={{ fontSize: '14px', fontWeight: '800', color: '#0f172a', marginBottom: '4px' }}>
+                        {selectedLogDetail.detalles.brand ? `${selectedLogDetail.detalles.brand} - ` : ''}{selectedLogDetail.detalles.productName}
+                      </div>
+                      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', fontSize: '12px', color: '#475569' }}>
+                        <span><strong>SKU:</strong> {selectedLogDetail.detalles.sku || 'N/A'}</span>
+                        <span><strong>Categoría:</strong> {selectedLogDetail.detalles.category || 'General'}</span>
+                        <span><strong>Precio de Lista:</strong> USD ${selectedLogDetail.detalles.price || 0}</span>
+                      </div>
+                    </div>
+                  )}
+
                   <div>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
                       Descripción Forense
                     </span>
-                    <p style={{ margin: 0, fontSize: '0.92rem', color: 'var(--text-main)', background: 'var(--pill-bg)', padding: '14px', borderRadius: '14px', lineHeight: 1.4 }}>
+                    <p style={{ margin: 0, fontSize: '0.88rem', color: '#0f172a', background: '#f8fafc', padding: '12px', borderRadius: '12px', lineHeight: 1.4, border: '1px solid #e2e8f0' }}>
                       {selectedLogDetail.descripcion}
                     </p>
                   </div>
 
                   <div>
-                    <span style={{ fontSize: '11px', color: 'var(--text-muted)', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
-                      Payload & Metadatos JSON
+                    <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
+                      Payload JSON Crudo & Trazabilidad
                     </span>
                     <pre style={{
                       margin: 0,
                       background: '#071524',
                       color: '#38bdf8',
-                      padding: '16px',
-                      borderRadius: '14px',
-                      fontSize: '12px',
+                      padding: '14px',
+                      borderRadius: '12px',
+                      fontSize: '11px',
                       fontFamily: 'monospace',
                       overflowX: 'auto',
-                      maxHeight: '220px'
+                      maxHeight: '160px'
                     }}>
                       {JSON.stringify(selectedLogDetail.detalles || {}, null, 2)}
                     </pre>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setSelectedLogDetail(null)}
-                    style={{
-                      alignSelf: 'flex-end',
-                      background: 'var(--primary)',
-                      color: '#ffffff',
-                      border: 'none',
-                      padding: '10px 22px',
-                      borderRadius: '12px',
-                      fontWeight: '700',
-                      cursor: 'pointer',
-                      fontSize: '13px'
-                    }}
-                  >
-                    Cerrar Detalle
-                  </button>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    {selectedLogDetail.usuario?.email ? (
+                      <a
+                        href={`mailto:${selectedLogDetail.usuario.email}?subject=Asistencia en Compra DACAS B2B - Carrito Pendiente&body=Estimado ${selectedLogDetail.usuario.nombre}, hemos notado que tenía una cotización/carrito pendiente en el portal mayorista DACAS...`}
+                        style={{
+                          background: '#10b981',
+                          color: '#ffffff',
+                          textDecoration: 'none',
+                          padding: '8px 16px',
+                          borderRadius: '10px',
+                          fontSize: '12px',
+                          fontWeight: '700',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <BrandingVectorIcon name="mail" size={13} /> Contactar Cliente para Recuperación
+                      </a>
+                    ) : <div />}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedLogDetail(null)}
+                      style={{
+                        background: '#0fa4de',
+                        color: '#ffffff',
+                        border: 'none',
+                        padding: '9px 20px',
+                        borderRadius: '10px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        fontSize: '12px'
+                      }}
+                    >
+                      Cerrar Detalle
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

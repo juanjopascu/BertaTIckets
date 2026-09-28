@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BrandingVectorIcon from './BrandingVectorIcon';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 
@@ -281,13 +282,13 @@ function AdminTemplates({ embedded = false }) {
                 <div className="user-controls">
                   <button 
                     className="nav-btn" 
-                    style={{ background: 'var(--primary)', color: 'white', border: 'none' }}
+                    style={{ background: 'var(--primary)', color: 'white', border: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                     onClick={() => {
                       handleResetForm();
                       setMostrarModal(true);
                     }}
                   >
-                    ➕ Añadir Nueva Plantilla
+                    <BrandingVectorIcon name="plus" size={14} color="#ffffff" /> Añadir Nueva Plantilla
                   </button>
                 </div>
               </div>
@@ -308,8 +309,13 @@ function AdminTemplates({ embedded = false }) {
           <div className="modal-overlay" onClick={handleResetForm}>
             <div className="modal-container" style={{ maxWidth: '650px', height: 'auto', maxHeight: '90vh', overflowY: 'auto' }} onClick={(e) => e.stopPropagation()}>
               <div className="modal-header">
-                <h2>{editingId ? '✏️ Editar Plantilla' : '➕ Nueva Plantilla'}</h2>
-                <button onClick={handleResetForm}>✕</button>
+                <h2 style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                  <BrandingVectorIcon name={editingId ? 'edit' : 'plus'} size={18} color="currentColor" />
+                  {editingId ? 'Editar Plantilla' : 'Nueva Plantilla'}
+                </h2>
+                <button onClick={handleResetForm} style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <BrandingVectorIcon name="x" size={16} color="currentColor" />
+                </button>
               </div>
               <div style={{ padding: '32px' }}>
                 {error && <div className="error-alert" style={{ marginBottom: '20px', padding: '12px 16px', background: 'var(--danger-bg)', color: 'var(--danger)', borderRadius: '12px', fontWeight: 600 }}>{error}</div>}
@@ -341,7 +347,9 @@ function AdminTemplates({ embedded = false }) {
 
                   {/* ASOCIACIÓN DE LA PLANTILLA: Equipo de Soporte o Acción */}
                   <div style={{ background: '#f8fafc', padding: '18px', borderRadius: '16px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    <h3 style={{ margin: 0, fontSize: '0.95rem', color: '#1e293b', fontWeight: 700 }}>🛠️ Asociación del Ticket</h3>
+                    <h3 style={{ margin: 0, fontSize: '0.95rem', color: '#1e293b', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <BrandingVectorIcon name="settings" size={15} color="#1e293b" /> Asociación del Ticket
+                    </h3>
                     
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
                       <div className="form-group" style={{ margin: 0, flex: '1 1 240px' }}>
@@ -352,8 +360,8 @@ function AdminTemplates({ embedded = false }) {
                           className="status-select"
                           style={{ width: '100%' }}
                         >
-                          <option value="equipo">👥 Equipo de Soporte</option>
-                          <option value="accion">⚡ Acción Específica</option>
+                          <option value="equipo">Equipo de Soporte</option>
+                          <option value="accion">Acción Específica</option>
                         </select>
                       </div>
 
@@ -407,7 +415,9 @@ function AdminTemplates({ embedded = false }) {
 
                   {/* DESTINATARIO DE LA PLANTILLA: Persona o Grupo de Clientes (Organización) */}
                   <div style={{ background: '#f8fafc', padding: '18px', borderRadius: '16px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    <h3 style={{ margin: 0, fontSize: '0.95rem', color: '#1e293b', fontWeight: 700 }}>👤 Destinatarios de la Plantilla</h3>
+                    <h3 style={{ margin: 0, fontSize: '0.95rem', color: '#1e293b', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <BrandingVectorIcon name="users" size={15} color="#1e293b" /> Destinatarios de la Plantilla
+                    </h3>
                     
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px' }}>
                       <div className="form-group" style={{ margin: 0, flex: '1 1 240px' }}>
@@ -418,9 +428,9 @@ function AdminTemplates({ embedded = false }) {
                           className="status-select"
                           style={{ width: '100%' }}
                         >
-                          <option value="todos">🌍 Todos los Clientes (Global)</option>
-                          <option value="persona">👤 Persona Específica</option>
-                          <option value="organizacion">🏢 Grupo de Clientes (Organización)</option>
+                          <option value="todos">Todos los Clientes (Global)</option>
+                          <option value="persona">Persona Específica</option>
+                          <option value="organizacion">Grupo de Clientes (Organización)</option>
                         </select>
                       </div>
 
@@ -436,7 +446,7 @@ function AdminTemplates({ embedded = false }) {
                           >
                             <option value="">-- Seleccione un usuario --</option>
                             {usuarios.map(u => (
-                              <option key={u.id} value={u.email}>👤 {u.nombre} ({u.email}) - Rol: {u.rol}</option>
+                              <option key={u.id} value={u.email}>{u.nombre} ({u.email}) - Rol: {u.rol}</option>
                             ))}
                           </select>
                         </div>
@@ -454,7 +464,7 @@ function AdminTemplates({ embedded = false }) {
                           >
                             <option value="">-- Seleccione una organización --</option>
                             {organizaciones.map(org => (
-                              <option key={org.id} value={org.id}>🏢 {org.nombre}</option>
+                              <option key={org.id} value={org.id}>{org.nombre}</option>
                             ))}
                           </select>
                         </div>
@@ -464,7 +474,9 @@ function AdminTemplates({ embedded = false }) {
 
                   {/* SECCIÓN DE CAMPOS DINÁMICOS */}
                   <div style={{ background: '#f8fafc', padding: '18px', borderRadius: '16px', border: '1px solid #e2e8f0', display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                    <h3 style={{ margin: 0, fontSize: '0.95rem', color: '#1e293b', fontWeight: 700 }}>📋 Diseñar Campos del Formulario</h3>
+                    <h3 style={{ margin: 0, fontSize: '0.95rem', color: '#1e293b', fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <BrandingVectorIcon name="file-text" size={15} color="#1e293b" /> Diseñar Campos del Formulario
+                    </h3>
                     
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px' }}>
                       <div className="form-group" style={{ margin: 0, flex: '1 1 200px' }}>
@@ -522,9 +534,9 @@ function AdminTemplates({ embedded = false }) {
                       type="button" 
                       onClick={handleAddField}
                       className="nav-btn"
-                      style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '10px', padding: '10px', fontWeight: '600', fontSize: '0.85rem', cursor: 'pointer' }}
+                      style={{ background: 'var(--primary)', color: 'white', border: 'none', borderRadius: '10px', padding: '10px', fontWeight: '600', fontSize: '0.85rem', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}
                     >
-                      ➕ Insertar Campo
+                      <BrandingVectorIcon name="plus" size={14} color="#ffffff" /> Insertar Campo
                     </button>
                   </div>
 
@@ -549,10 +561,10 @@ function AdminTemplates({ embedded = false }) {
                             <button 
                               type="button" 
                               onClick={() => handleRemoveField(c.id)}
-                              style={{ border: 'none', background: 'transparent', color: '#e63946', cursor: 'pointer', fontSize: '1rem', padding: '4px' }}
+                              style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', padding: '4px', display: 'inline-flex', alignItems: 'center' }}
                               title="Eliminar campo"
                             >
-                              🗑️
+                              <BrandingVectorIcon name="trash" size={14} color="#ef4444" />
                             </button>
                           </div>
                         ))}
@@ -605,7 +617,10 @@ function AdminTemplates({ embedded = false }) {
                   templates.map(tpl => (
                     <tr key={tpl.id}>
                       <td>
-                        <div style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-main)' }}>📋 {tpl.nombre}</div>
+                        <div style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-main)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                          <BrandingVectorIcon name="file-text" size={15} color="var(--primary)" />
+                          <span>{tpl.nombre}</span>
+                        </div>
                         {tpl.descripcion && <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '2px' }}>{tpl.descripcion}</div>}
                       </td>
                       <td>
@@ -615,27 +630,27 @@ function AdminTemplates({ embedded = false }) {
                       </td>
                       <td>
                         {tpl.asociacionTipo === 'accion' ? (
-                          <span style={{ background: '#fef3c7', color: '#b45309', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600' }}>
-                            ⚡ Acción: {tpl.accion || 'Soporte'}
+                          <span style={{ background: '#fef3c7', color: '#b45309', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <BrandingVectorIcon name="zap" size={12} color="#b45309" /> Acción: {tpl.accion || 'Soporte'}
                           </span>
                         ) : (
-                          <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600' }}>
-                            👥 Equipo: {equipos.find(eq => eq.id === tpl.equipoId)?.nombre || `Equipo #${tpl.equipoId}`}
+                          <span style={{ background: '#e0f2fe', color: '#0369a1', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <BrandingVectorIcon name="users" size={12} color="#0369a1" /> Equipo: {equipos.find(eq => eq.id === tpl.equipoId)?.nombre || `Equipo #${tpl.equipoId}`}
                           </span>
                         )}
                       </td>
                       <td>
                         {tpl.destinatarioTipo === 'persona' ? (
-                          <span style={{ background: '#dcfce7', color: '#15803d', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600' }} title={tpl.destinatarioEmail}>
-                            👤 Persona: {getUserName(tpl.destinatarioEmail)}
+                          <span style={{ background: '#dcfce7', color: '#15803d', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px' }} title={tpl.destinatarioEmail}>
+                            <BrandingVectorIcon name="user" size={12} color="#15803d" /> Persona: {getUserName(tpl.destinatarioEmail)}
                           </span>
                         ) : tpl.destinatarioTipo === 'organizacion' ? (
-                          <span style={{ background: 'var(--primary-light)', color: 'var(--purple-brand)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600' }}>
-                            🏢 Org: {organizaciones.find(o => o.id === tpl.organizacionId)?.nombre || `Org #${tpl.organizacionId}`}
+                          <span style={{ background: 'var(--primary-light)', color: 'var(--purple-brand)', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <BrandingVectorIcon name="building" size={12} color="var(--purple-brand)" /> Org: {organizaciones.find(o => o.id === tpl.organizacionId)?.nombre || `Org #${tpl.organizacionId}`}
                           </span>
                         ) : (
-                          <span style={{ background: '#f1f5f9', color: '#475569', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600' }}>
-                            🌍 Global (Todos)
+                          <span style={{ background: '#f1f5f9', color: '#475569', padding: '4px 10px', borderRadius: '20px', fontSize: '0.8rem', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <BrandingVectorIcon name="globe" size={12} color="#475569" /> Global (Todos)
                           </span>
                         )}
                       </td>
@@ -657,26 +672,30 @@ function AdminTemplates({ embedded = false }) {
                         )}
                       </td>
                       <td>
-                        <div style={{ display: 'flex', gap: '5px' }}>
+                        <div style={{ display: 'flex', gap: '6px' }}>
                           <button 
                             onClick={() => handleEdit(tpl)}
                             style={{ 
-                              background: '#3b82f6', 
-                              color: 'white', 
-                              border: 'none', 
-                              padding: '4px 8px', 
-                              borderRadius: '4px', 
-                              cursor: 'pointer' 
+                              background: '#eff6ff', 
+                              color: '#1d4ed8', 
+                              border: '1px solid #bfdbfe', 
+                              padding: '4px 10px', 
+                              borderRadius: '8px', 
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px',
+                              fontWeight: 600
                             }}
                           >
-                            Editar
+                            <BrandingVectorIcon name="edit" size={12} color="#1d4ed8" /> Editar
                           </button>
                           <button 
                             onClick={() => handleDelete(tpl.id)}
                             className="btn-delete"
-                            style={{ padding: '4px 8px', borderRadius: '4px' }}
+                            style={{ padding: '4px 10px', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                           >
-                            Eliminar
+                            <BrandingVectorIcon name="trash" size={12} color="currentColor" /> Eliminar
                           </button>
                         </div>
                       </td>

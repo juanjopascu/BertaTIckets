@@ -343,11 +343,14 @@ function Login({ setUsuario, initialError, clearInitialError, theme, toggleTheme
             position: 'absolute',
             top: '20px',
             right: '20px',
-            zIndex: 100
+            zIndex: 100,
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center'
           }}
           title="Cambiar Tema"
         >
-          {theme === 'light' ? '🌙' : '☀️'}
+          <BrandingVectorIcon name={theme === 'light' ? 'moon' : 'sun'} size={18} />
         </button>
       )}
 
@@ -475,11 +478,15 @@ function Login({ setUsuario, initialError, clearInitialError, theme, toggleTheme
                 fontSize: '13px',
                 fontWeight: '700',
                 cursor: 'pointer',
-                textDecoration: 'underline',
-                padding: '4px'
+                textDecoration: 'none',
+                padding: '4px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
               }}
             >
-              {loginCfg.shopLinkText || '🛍️ Ir a la Tienda DACAS Shop'}
+              <BrandingVectorIcon name="shopping-bag" size={14} color={btnGradStart} />
+              <span>{loginCfg.shopLinkText || 'Ir a la Tienda DACAS Shop'}</span>
             </button>
           </div>
         )}

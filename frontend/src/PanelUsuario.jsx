@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TicketModal from './TicketModal';
+import BrandingVectorIcon from './BrandingVectorIcon';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 
@@ -532,16 +533,24 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div className="user-controls">
                 <span style={{ color: 'var(--text-muted)' }}>Hola, <strong style={{ color: 'var(--text-main)' }}>{usuario.nombre}</strong></span>
-                <button className="nav-btn" onClick={() => setMostrarFormulario(!mostrarFormulario)}>
-                  {mostrarFormulario ? 'Ver Mis Tickets' : '➕ Nuevo Ticket'}
+                <button className="nav-btn" onClick={() => setMostrarFormulario(!mostrarFormulario)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  {mostrarFormulario ? (
+                    'Ver Mis Tickets'
+                  ) : (
+                    <>
+                      <BrandingVectorIcon name="plus" size={15} color="#fff" />
+                      <span>Nuevo Ticket</span>
+                    </>
+                  )}
                 </button>
                 <button 
                   type="button" 
                   onClick={toggleTheme} 
                   className="theme-toggle-btn"
                   title="Cambiar Tema"
+                  style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                 >
-                  {theme === 'light' ? '🌙' : '☀️'}
+                  <BrandingVectorIcon name={theme === 'light' ? 'moon' : 'sun'} size={16} />
                 </button>
                 <button className="logout-btn" onClick={handleLogout}>Cerrar Sesión</button>
               </div>
@@ -565,8 +574,9 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
             gap: '12px'
           }}>
             <div>
-              <h4 style={{ margin: 0, color: 'var(--purple-brand)', fontSize: '1.05rem', fontWeight: '700', fontFamily: 'Outfit, sans-serif' }}>
-                🏢 Panel de Control de Manager
+              <h4 style={{ margin: 0, color: 'var(--purple-brand)', fontSize: '1.05rem', fontWeight: '700', fontFamily: 'Outfit, sans-serif', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <BrandingVectorIcon name="building-2" size={18} color="var(--purple-brand)" />
+                <span>Panel de Control de Manager</span>
               </h4>
               <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#515154' }}>
                 Organización: <strong>{organizaciones.map(o => o.nombre).join(', ')}</strong> | Supervisando: <strong>{clientesOrganizacion.length}</strong> clientes.
@@ -594,7 +604,9 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
             
             {(!configTickets.habilitarNuevoTicketProcesos && !configTickets.habilitarReintegroGastos && !configTickets.habilitarReservaViajes) ? (
               <div style={{ textAlign: 'center', padding: '40px 20px', background: 'rgba(239, 68, 68, 0.04)', border: '1px dashed rgba(239, 68, 68, 0.2)', borderRadius: '24px', margin: '20px 0' }}>
-                <div style={{ fontSize: '3rem', marginBottom: '15px' }}>⚠️</div>
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '15px' }}>
+                  <BrandingVectorIcon name="alert-triangle" size={48} color="#ef4444" />
+                </div>
                 <h4 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '700', color: '#ef4444' }}>Creación de Tickets Deshabilitada</h4>
                 <p style={{ margin: '8px 0 0 0', fontSize: '0.85rem', color: '#6e6e73', lineHeight: '1.5' }}>
                   El administrador ha deshabilitado temporalmente la creación de nuevos tickets de todo tipo. Por favor, ponte en contacto con soporte si consideras que esto es un error.
@@ -656,10 +668,15 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
                       color: ticketCategoria === 'expenses' ? 'white' : (theme === 'dark' ? 'rgba(255, 255, 255, 0.7)' : '#1c1c1e'),
                       fontWeight: '600',
                       cursor: 'pointer',
-                      transition: 'all 0.25s ease'
+                      transition: 'all 0.25s ease',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px'
                     }}
                   >
-                    💸 Expenses
+                    <BrandingVectorIcon name="receipt" size={16} color={ticketCategoria === 'expenses' ? '#fff' : 'var(--purple-brand)'} />
+                    <span>Expenses</span>
                   </button>
                 </div>
               )}
@@ -871,10 +888,10 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
-                            gap: '6px'
+                            gap: '8px'
                           }}
                         >
-                          <span style={{ fontSize: '1.5rem' }}>💵</span>
+                          <BrandingVectorIcon name="receipt" size={24} color="var(--purple-brand)" />
                           Crear un Reintegro
                         </button>
                         <button
@@ -893,10 +910,10 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
                             display: 'flex',
                             flexDirection: 'column',
                             alignItems: 'center',
-                            gap: '6px'
+                            gap: '8px'
                           }}
                         >
-                          <span style={{ fontSize: '1.5rem' }}>✈️</span>
+                          <BrandingVectorIcon name="plane" size={24} color="var(--purple-brand)" />
                           Reservar Viajes
                         </button>
                       </div>
@@ -905,7 +922,10 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
 
                   {tipoExpense === 'reintegro' && (
                     <div style={{ background: 'rgba(107, 33, 168, 0.02)', padding: '20px', borderRadius: '18px', border: '1px solid rgba(107, 33, 168, 0.1)', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-                      <h4 style={{ margin: '0 0 10px 0', color: 'var(--purple-brand)', fontFamily: 'Outfit, sans-serif' }}>💵 Formulario de Reintegro de Gastos</h4>
+                      <h4 style={{ margin: '0 0 10px 0', color: 'var(--purple-brand)', fontFamily: 'Outfit, sans-serif', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <BrandingVectorIcon name="receipt" size={18} color="var(--purple-brand)" />
+                        <span>Formulario de Reintegro de Gastos</span>
+                      </h4>
                       
                       <div className="form-group">
                         <label>Asunto *</label>
@@ -930,7 +950,8 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
                         lineHeight: '1.4'
                       }}>
                         <div style={{ fontWeight: '700', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span>💡</span> Aclaración sobre el Asunto:
+                          <BrandingVectorIcon name="info" size={15} color="var(--purple-brand)" />
+                          <span>Aclaración sobre el Asunto:</span>
                         </div>
                         <div style={{ marginLeft: '20px' }}>
                           Por favor completar el asunto siguiendo este formato:
@@ -1009,7 +1030,10 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
 
                   {tipoExpense === 'viaje' && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                      <h4 style={{ margin: '0 0 5px 0', color: 'var(--purple-brand)', fontFamily: 'Outfit, sans-serif' }}>✈️ Solicitud de Reserva de Viajes</h4>
+                      <h4 style={{ margin: '0 0 5px 0', color: 'var(--purple-brand)', fontFamily: 'Outfit, sans-serif', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <BrandingVectorIcon name="plane" size={18} color="var(--purple-brand)" />
+                        <span>Solicitud de Reserva de Viajes</span>
+                      </h4>
                       
                       <div className="form-group">
                         <label>Asunto *</label>
@@ -1034,7 +1058,8 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
                         lineHeight: '1.4'
                       }}>
                         <div style={{ fontWeight: '700', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span>💡</span> Aclaración sobre el Asunto:
+                          <BrandingVectorIcon name="info" size={15} color="var(--purple-brand)" />
+                          <span>Aclaración sobre el Asunto:</span>
                         </div>
                         <div style={{ marginLeft: '20px' }}>
                           Por favor completar el asunto siguiendo este formato:
@@ -1091,7 +1116,10 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
                       {/* 1. Datos Personales */}
                       <div>
                         <div className="acc-header" onClick={() => setOpenAccordion(openAccordion === 'personales' ? '' : 'personales')}>
-                          <span>👤 1. Datos Personales</span>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                            <BrandingVectorIcon name="user" size={16} color="var(--purple-brand)" />
+                            <span>1. Datos Personales</span>
+                          </span>
                           <span>{openAccordion === 'personales' ? '▲' : '▼'}</span>
                         </div>
                         {openAccordion === 'personales' && (
@@ -1162,7 +1190,10 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
                       {/* 2. Teléfono Completo */}
                       <div>
                         <div className="acc-header" onClick={() => setOpenAccordion(openAccordion === 'telefono' ? '' : 'telefono')}>
-                          <span>📞 2. Teléfono Completo</span>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                            <BrandingVectorIcon name="phone" size={16} color="var(--purple-brand)" />
+                            <span>2. Teléfono Completo</span>
+                          </span>
                           <span>{openAccordion === 'telefono' ? '▲' : '▼'}</span>
                         </div>
                         {openAccordion === 'telefono' && (
@@ -1184,7 +1215,10 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
                       {/* 3. Datos del Viaje */}
                       <div>
                         <div className="acc-header" onClick={() => setOpenAccordion(openAccordion === 'viaje' ? '' : 'viaje')}>
-                          <span>✈️ 3. Datos del Viaje</span>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                            <BrandingVectorIcon name="plane" size={16} color="var(--purple-brand)" />
+                            <span>3. Datos del Viaje</span>
+                          </span>
                           <span>{openAccordion === 'viaje' ? '▲' : '▼'}</span>
                         </div>
                         {openAccordion === 'viaje' && (
@@ -1365,9 +1399,12 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
                                         >
                                           <span>{brand}</span>
                                           {isSelected ? (
-                                            <span style={{ color: 'var(--purple-brand)', fontWeight: 'bold' }}>✓</span>
+                                            <BrandingVectorIcon name="check" size={15} color="var(--purple-brand)" />
                                           ) : (
-                                            <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>+ Agregar</span>
+                                            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '2px', color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                                              <BrandingVectorIcon name="plus" size={12} color="var(--text-muted)" />
+                                              <span>Agregar</span>
+                                            </span>
                                           )}
                                         </div>
                                       );
@@ -1458,7 +1495,10 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
                       {/* 4. Datos de Emergencia */}
                       <div>
                         <div className="acc-header" onClick={() => setOpenAccordion(openAccordion === 'emergencia' ? '' : 'emergencia')}>
-                          <span>🚨 4. Datos de Emergencia</span>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                            <BrandingVectorIcon name="alert-circle" size={16} color="var(--purple-brand)" />
+                            <span>4. Datos de Emergencia</span>
+                          </span>
                           <span>{openAccordion === 'emergencia' ? '▲' : '▼'}</span>
                         </div>
                         {openAccordion === 'emergencia' && (
@@ -1484,7 +1524,10 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
                       {/* 5. Solicita Hotel */}
                       <div>
                         <div className="acc-header" onClick={() => setOpenAccordion(openAccordion === 'hotel' ? '' : 'hotel')}>
-                          <span>🏨 5. Solicita Hotel</span>
+                          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+                            <BrandingVectorIcon name="building-2" size={16} color="var(--purple-brand)" />
+                            <span>5. Solicita Hotel</span>
+                          </span>
                           <span>{openAccordion === 'hotel' ? '▲' : '▼'}</span>
                         </div>
                         {openAccordion === 'hotel' && (
@@ -1549,8 +1592,10 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
                         <strong>Archivos seleccionados ({archivos.length}):</strong>
                         <ul style={{ paddingLeft: '20px', marginTop: '4px', marginBottom: '0' }}>
                           {archivos.map((file, idx) => (
-                            <li key={idx}>
-                              📎 {file.name} <span style={{ color: '#8e8e93' }}>({(file.size / (1024 * 1024)).toFixed(2)} MB)</span>
+                            <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '3px' }}>
+                              <BrandingVectorIcon name="paperclip" size={14} color="#8e8e93" />
+                              <span>{file.name}</span>
+                              <span style={{ color: '#8e8e93' }}>({(file.size / (1024 * 1024)).toFixed(2)} MB)</span>
                             </li>
                           ))}
                         </ul>
@@ -1710,7 +1755,9 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
               <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', width: '100%', justifyContent: 'space-between' }}>
                 {/* Buscador */}
                 <div style={{ position: 'relative', width: '100%', maxWidth: '300px' }}>
-                  <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#8e8e93', fontSize: '1rem' }}>🔍</span>
+                  <span style={{ position: 'absolute', left: '14px', top: '50%', transform: 'translateY(-50%)', color: '#8e8e93', display: 'flex', alignItems: 'center' }}>
+                    <BrandingVectorIcon name="search" size={16} color="#8e8e93" />
+                  </span>
                   <input 
                     type="text" 
                     placeholder="Buscar por ID, asunto, estado..." 
@@ -1790,10 +1837,14 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
                       fontWeight: '600',
                       cursor: 'pointer',
                       boxShadow: '0 4px 10px rgba(15, 118, 110, 0.15)',
-                      transition: 'all 0.2s ease'
+                      transition: 'all 0.2s ease',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px'
                     }}
                   >
-                    {viewMode === 'list' ? '🗂️ Ver Tablero' : '📋 Ver Lista'}
+                    <BrandingVectorIcon name={viewMode === 'list' ? 'layout-grid' : 'list'} size={15} color="#fff" />
+                    <span>{viewMode === 'list' ? 'Ver Tablero' : 'Ver Lista'}</span>
                   </button>
                 </div>
               </div>
@@ -1824,17 +1875,22 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
                               </div>
                               <h4 className="card-title">{ticket.nombre}</h4>
                               {usuario.rol === 'manager' && (
-                                <div style={{ fontSize: '0.75rem', color: 'var(--purple-brand)', display: 'flex', alignItems: 'center', gap: '4px', marginBottom: '6px', fontWeight: '600' }}>
-                                  <span>👤 Cliente:</span>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--purple-brand)', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px', fontWeight: '600' }}>
+                                  <BrandingVectorIcon name="user" size={13} color="var(--purple-brand)" />
+                                  <span>Cliente:</span>
                                   <span style={{ fontStyle: 'italic' }}>{ticket.email}</span>
                                 </div>
                               )}
                               <p className="card-subject">{ticket.empresa || 'Sin asunto'}</p>
                               <div className="card-footer">
-                                <span className="card-assignee" title={ticket.asignado_a || 'Sin asignar'}>
-                                  👤 {ticket.asignado_a || 'Sin asignar'}
+                                <span className="card-assignee" title={ticket.asignado_a || 'Sin asignar'} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                  <BrandingVectorIcon name="user" size={12} color="#8e8e93" />
+                                  <span>{ticket.asignado_a || 'Sin asignar'}</span>
                                 </span>
-                                <span className="card-activity">💬 {ticket.notas ? ticket.notas.length : 0}</span>
+                                <span className="card-activity" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                  <BrandingVectorIcon name="message-square" size={12} color="var(--primary)" />
+                                  <span>{ticket.notas ? ticket.notas.length : 0}</span>
+                                </span>
                               </div>
                             </div>
                           ))
@@ -1869,7 +1925,10 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
                           <td style={{ padding: '15px' }}>#{t.id}</td>
                           {usuario.rol === 'manager' && (
                             <td style={{ padding: '15px', color: 'var(--purple-brand)', fontWeight: '600', fontSize: '0.85rem' }}>
-                              👤 {t.email}
+                              <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                <BrandingVectorIcon name="user" size={14} color="var(--purple-brand)" />
+                                <span>{t.email}</span>
+                              </span>
                             </td>
                           )}
                           <td style={{ padding: '15px', fontWeight: 'bold' }}>{t.nombre}</td>

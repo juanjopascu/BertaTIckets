@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BrandingVectorIcon from './BrandingVectorIcon';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 
@@ -142,7 +143,9 @@ function AdminEstados({ embedded = false }) {
               <label>Límite SLA (Horas)</label>
               <input type="number" min="1" value={slaHoras} onChange={(e) => setSlaHoras(e.target.value)} required />
             </div>
-            <button type="submit" className="btn-submit">Crear Estado</button>
+            <button type="submit" className="btn-submit" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <BrandingVectorIcon name="plus" size={14} /> Crear Estado
+            </button>
           </form>
         </section>
 
@@ -229,16 +232,16 @@ function AdminEstados({ embedded = false }) {
                           <button 
                             type="button" 
                             onClick={() => handleSaveEdit(e.id)} 
-                            style={{ background: '#10b981', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
+                            style={{ background: '#10b981', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                           >
-                            💾 Guardar
+                            <BrandingVectorIcon name="save" size={13} /> Guardar
                           </button>
                           <button 
                             type="button" 
                             onClick={handleCancelEdit} 
-                            style={{ background: '#6b7280', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
+                            style={{ background: '#6b7280', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                           >
-                            ✕ Cancelar
+                            <BrandingVectorIcon name="x" size={13} /> Cancelar
                           </button>
                         </div>
                       ) : (
@@ -246,13 +249,13 @@ function AdminEstados({ embedded = false }) {
                           <button 
                             type="button" 
                             onClick={() => handleEditClick(e)} 
-                            style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600 }}
+                            style={{ background: '#3b82f6', color: 'white', border: 'none', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                           >
-                            ✏️ Editar
+                            <BrandingVectorIcon name="edit" size={13} /> Editar
                           </button>
                           {!isProspecto && (
-                            <button className="btn-delete" onClick={() => handleDelete(e.id)} style={{ padding: '6px 12px', borderRadius: '8px' }}>
-                              Eliminar
+                            <button className="btn-delete" onClick={() => handleDelete(e.id)} style={{ padding: '6px 12px', borderRadius: '8px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <BrandingVectorIcon name="trash" size={13} /> Eliminar
                             </button>
                           )}
                         </div>

@@ -112,12 +112,14 @@ function AdminConfigTickets({ embedded = false }) {
             
             {mensaje && (
               <div style={{ background: '#eafaf1', color: '#2e7d32', padding: '12px 20px', borderRadius: '12px', marginBottom: '20px', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #c8e6c9', animation: 'fadeIn 0.3s ease' }}>
-                {mensaje}
+                <BrandingVectorIcon name="check-circle" size={16} color="#2e7d32" />
+                <span>{mensaje}</span>
               </div>
             )}
             {error && (
-              <div style={{ background: '#ffebee', color: '#c62828', padding: '12px 20px', borderRadius: '12px', marginBottom: '20px', fontWeight: '500', border: '1px solid #ffcdd2', animation: 'fadeIn 0.3s ease' }}>
-                ❌ {error}
+              <div style={{ background: '#ffebee', color: '#c62828', padding: '12px 20px', borderRadius: '12px', marginBottom: '20px', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #ffcdd2', animation: 'fadeIn 0.3s ease' }}>
+                <BrandingVectorIcon name="alert-circle" size={16} color="#c62828" />
+                <span>{error}</span>
               </div>
             )}
 
@@ -125,7 +127,9 @@ function AdminConfigTickets({ embedded = false }) {
               {/* Feature 1: Nuevo Ticket Procesos */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px', borderRadius: '16px', background: 'rgba(0,0,0,0.01)', border: '1px solid rgba(0,0,0,0.03)', transition: 'all 0.3s ease' }}>
                 <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                  <div style={{ fontSize: '2rem' }}>🎫</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '12px', background: 'var(--primary-light)' }}>
+                    <BrandingVectorIcon name="ticket" size={24} color="var(--primary)" />
+                  </div>
                   <div>
                     <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '600', color: '#1c1c1e' }}>Nuevo Ticket Procesos</h3>
                     <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#86868b' }}>Formulario para solicitudes de soporte tradicionales y procesos operativos generales.</p>
@@ -164,7 +168,9 @@ function AdminConfigTickets({ embedded = false }) {
               {/* Feature 2: Reintegro de Gastos */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px', borderRadius: '16px', background: 'rgba(0,0,0,0.01)', border: '1px solid rgba(0,0,0,0.03)', transition: 'all 0.3s ease' }}>
                 <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                  <div style={{ fontSize: '2rem' }}>💸</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(107, 33, 168, 0.1)' }}>
+                    <BrandingVectorIcon name="dollar" size={24} color="#6b21a8" />
+                  </div>
                   <div>
                     <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '600', color: '#1c1c1e' }}>Reintegro de Gastos</h3>
                     <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#86868b' }}>Formulario estructurado de expenses para rembolsos y rendiciones de gastos.</p>
@@ -203,7 +209,9 @@ function AdminConfigTickets({ embedded = false }) {
               {/* Feature 3: Reserva de Viajes */}
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px', borderRadius: '16px', background: 'rgba(0,0,0,0.01)', border: '1px solid rgba(0,0,0,0.03)', transition: 'all 0.3s ease' }}>
                 <div style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                  <div style={{ fontSize: '2rem' }}>✈️</div>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '48px', height: '48px', borderRadius: '12px', background: 'rgba(147, 51, 234, 0.1)' }}>
+                    <BrandingVectorIcon name="plane" size={24} color="#9333ea" />
+                  </div>
                   <div>
                     <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '600', color: '#1c1c1e' }}>Reserva de Viajes</h3>
                     <p style={{ margin: '4px 0 0 0', fontSize: '0.85rem', color: '#86868b' }}>Formulario estructurado premium con 5 secciones para reservas de viajes y aéreos.</p>
@@ -255,10 +263,14 @@ function AdminConfigTickets({ embedded = false }) {
                   cursor: saving ? 'not-allowed' : 'pointer',
                   boxShadow: '0 4px 15px rgba(15, 118, 110, 0.3)',
                   transition: 'all 0.25s ease',
-                  opacity: saving ? 0.7 : 1
+                  opacity: saving ? 0.7 : 1,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px'
                 }}
               >
-                {saving ? 'Guardando...' : '💾 Guardar Configuración'}
+                <BrandingVectorIcon name="save" size={16} />
+                <span>{saving ? 'Guardando...' : 'Guardar Configuración'}</span>
               </button>
             </div>
           </section>

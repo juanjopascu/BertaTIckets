@@ -558,7 +558,7 @@ export default function ShopCheckout() {
       </header>
 
       {/* ── Interactive Onboarding Stepper Bar ── */}
-      <div style={{ background: '#FFFFFF', borderBottom: '1px solid #E2E8F0', padding: '16px 24px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
+      <div className="no-print" style={{ background: '#FFFFFF', borderBottom: '1px solid #E2E8F0', padding: '16px 24px', boxShadow: '0 2px 8px rgba(0,0,0,0.02)' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', overflowX: 'auto', gap: '12px', paddingBottom: '4px' }}>
           {stepsList.map((s, idx) => {
             const isCompleted = currentStepIdx > idx;
@@ -619,7 +619,7 @@ export default function ShopCheckout() {
         {/* Error Alert */}
         {error && (
           <div style={{ background: '#FEF2F2', border: '1px solid #F87171', color: '#991B1B', padding: '14px 18px', borderRadius: '12px', fontSize: '14px', fontWeight: '600', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-            <span>⚠️</span>
+            <BrandingVectorIcon name="alert-circle" size={16} color="#991B1B" />
             <span>{error}</span>
           </div>
         )}
@@ -672,7 +672,7 @@ export default function ShopCheckout() {
                     </div>
                     <div style={{ fontSize: '11px', color: '#94A3B8', marginTop: '2px' }}>{st.desc}</div>
                     <div style={{ marginTop: '8px', fontSize: '10px', fontWeight: '800', textTransform: 'uppercase', color: st.status === 'done' ? '#059669' : st.status === 'current' ? '#0284C7' : '#94A3B8' }}>
-                      {st.status === 'done' ? '✓ Completado' : st.status === 'current' ? '● En Proceso' : 'Pendiente'}
+                      {st.status === 'done' ? 'Completado' : st.status === 'current' ? 'En Proceso' : 'Pendiente'}
                     </div>
                   </div>
                 ))}
@@ -730,7 +730,10 @@ export default function ShopCheckout() {
               {/* Financial Breakdown & Bank Wire Info */}
               <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '20px', marginTop: '16px', alignItems: 'start' }}>
                 <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '12px', padding: '14px', fontSize: '11.5px', color: '#0369A1' }}>
-                  <div style={{ fontWeight: '800', marginBottom: '6px' }}>🏦 Cuentas Bancarias DACAS S.A. para Transferencias:</div>
+                  <div style={{ fontWeight: '800', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <BrandingVectorIcon name="bank" size={14} color="#0369A1" />
+                    <span>Cuentas Bancarias DACAS S.A. para Transferencias:</span>
+                  </div>
                   <div>Banco: <strong>Banco Santander / BBVA</strong></div>
                   <div>CBU: <strong>0720123920000001234567</strong> | Alias: <strong>DACAS.PAGOS.B2B</strong></div>
                   <div>SWIFT: <strong>BAPROARBAXXX</strong> | CUIT: <strong>30-68942158-9</strong></div>
@@ -766,7 +769,8 @@ export default function ShopCheckout() {
                   boxShadow: '0 4px 14px rgba(15, 164, 222, 0.35)',
                 }}
               >
-                🖨️ Imprimir / Guardar como PDF
+                <BrandingVectorIcon name="printer" size={16} color="#ffffff" />
+                <span>Imprimir / Guardar como PDF</span>
               </button>
 
               <button
@@ -912,10 +916,10 @@ export default function ShopCheckout() {
                             {/* Delete */}
                             <button
                               onClick={() => removeFromCart(item.id)}
-                              style={{ background: 'none', border: 'none', color: '#94A3B8', fontSize: '18px', cursor: 'pointer', padding: '6px', borderRadius: '6px' }}
+                              style={{ background: 'none', border: 'none', color: '#94A3B8', cursor: 'pointer', padding: '6px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                               title="Quitar"
                             >
-                              ✕
+                              <BrandingVectorIcon name="trash-2" size={16} color="#94A3B8" />
                             </button>
                           </div>
                         ))}
@@ -1099,8 +1103,9 @@ export default function ShopCheckout() {
                     const activeShipping = (checkoutMethods?.shipping || []).filter(m => m.enabled !== false);
                     if (activeShipping.length === 0) {
                       return (
-                        <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B', padding: '16px', borderRadius: '12px', marginBottom: '20px', fontSize: '13px', fontWeight: '600' }}>
-                          ⚠️ No hay métodos de envío habilitados actualmente por la administración.
+                        <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B', padding: '16px', borderRadius: '12px', marginBottom: '20px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <BrandingVectorIcon name="alert-triangle" size={16} color="#991B1B" />
+                          <span>No hay métodos de envío habilitados actualmente por la administración.</span>
                         </div>
                       );
                     }
@@ -1289,7 +1294,10 @@ export default function ShopCheckout() {
                         <div>
                           <div style={{ fontWeight: '800', fontSize: '14px', color: '#071524' }}>Centro de Distribución Central DACAS (Buenos Aires HUB)</div>
                           <div style={{ fontSize: '13px', color: '#64748B', marginTop: '2px' }}>Av. Ing. Huergo 1435, Puerto Madero, CABA. Lunes a Viernes de 9 a 18 hs.</div>
-                          <div style={{ fontSize: '12px', color: '#10B981', fontWeight: '700', marginTop: '6px' }}>✓ Sin costo de flete · Mercadería reservada lista para retiro con DNI/Autorización.</div>
+                          <div style={{ fontSize: '12px', color: '#10B981', fontWeight: '700', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <BrandingVectorIcon name="check" size={13} color="#10B981" />
+                            <span>Sin costo de flete · Mercadería reservada lista para retiro con DNI/Autorización.</span>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1342,8 +1350,9 @@ export default function ShopCheckout() {
                     const activePayments = (checkoutMethods?.payment || []).filter(m => m.enabled !== false);
                     if (activePayments.length === 0) {
                       return (
-                        <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B', padding: '16px', borderRadius: '12px', marginBottom: '20px', fontSize: '13px', fontWeight: '600' }}>
-                          ⚠️ No hay medios de pago habilitados actualmente por la administración.
+                        <div style={{ background: '#FEF2F2', border: '1px solid #FCA5A5', color: '#991B1B', padding: '16px', borderRadius: '12px', marginBottom: '20px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <BrandingVectorIcon name="alert-triangle" size={16} color="#991B1B" />
+                          <span>No hay medios de pago habilitados actualmente por la administración.</span>
                         </div>
                       );
                     }
@@ -1403,8 +1412,9 @@ export default function ShopCheckout() {
                                     </select>
                                   </div>
                                   {m.instrucciones && (
-                                    <div style={{ fontSize: '11px', color: '#0284C7', marginTop: '4px' }}>
-                                      ℹ️ {m.instrucciones}
+                                    <div style={{ fontSize: '11px', color: '#0284C7', marginTop: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                      <BrandingVectorIcon name="info" size={13} color="#0284C7" />
+                                      <span>{m.instrucciones}</span>
                                     </div>
                                   )}
                                 </div>
@@ -1422,7 +1432,7 @@ export default function ShopCheckout() {
                                 }}>
                                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', paddingBottom: '8px', borderBottom: '1px solid #E0F2FE' }}>
                                     <div style={{ fontWeight: '800', fontSize: '13px', color: '#0369A1', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                      <span>🏦</span>
+                                      <BrandingVectorIcon name="building-2" size={14} color="#0369A1" />
                                       <span>Cuentas Bancarias Habilitadas para Liquidación</span>
                                     </div>
                                     <span style={{ fontSize: '11px', fontWeight: '800', background: '#E0F2FE', color: '#0369A1', padding: '2px 8px', borderRadius: '8px' }}>
@@ -1476,7 +1486,8 @@ export default function ShopCheckout() {
                                           transition: 'all 0.2s'
                                         }}
                                       >
-                                        {copiedKey === 'cbu' ? '✓ Copiado' : '📋 Copiar'}
+                                        <BrandingVectorIcon name={copiedKey === 'cbu' ? "check" : "file-text"} size={11} color="#ffffff" />
+                                        <span>{copiedKey === 'cbu' ? 'Copiado' : 'Copiar'}</span>
                                       </button>
                                     </div>
 
@@ -1509,7 +1520,8 @@ export default function ShopCheckout() {
                                           transition: 'all 0.2s'
                                         }}
                                       >
-                                        {copiedKey === 'alias' ? '✓ Copiado' : '📋 Copiar'}
+                                        <BrandingVectorIcon name={copiedKey === 'alias' ? "check" : "file-text"} size={11} color="#ffffff" />
+                                        <span>{copiedKey === 'alias' ? 'Copiado' : 'Copiar'}</span>
                                       </button>
                                     </div>
                                   </div>
@@ -1517,8 +1529,9 @@ export default function ShopCheckout() {
                                   {/* SWIFT Box */}
                                   {m.swift && (
                                     <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '10px', padding: '8px 12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                                      <div style={{ fontSize: '11px', color: '#166534' }}>
-                                        🌐 <strong>Código SWIFT (Transferencias Internacionales):</strong> <code style={{ fontWeight: '800', background: '#DCFCE7', padding: '2px 6px', borderRadius: '4px' }}>{m.swift}</code>
+                                      <div style={{ fontSize: '11px', color: '#166534', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                                        <BrandingVectorIcon name="globe" size={12} color="#166534" />
+                                        <span><strong>Código SWIFT (Transferencias Internacionales):</strong> <code style={{ fontWeight: '800', background: '#DCFCE7', padding: '2px 6px', borderRadius: '4px' }}>{m.swift}</code></span>
                                       </div>
                                       <button
                                         type="button"
@@ -1534,18 +1547,23 @@ export default function ShopCheckout() {
                                           padding: '4px 8px',
                                           fontSize: '10px',
                                           fontWeight: '800',
-                                          cursor: 'pointer'
+                                          cursor: 'pointer',
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          gap: '4px'
                                         }}
                                       >
-                                        {copiedKey === 'swift' ? '✓ Copiado' : '📋 Copiar SWIFT'}
+                                        <BrandingVectorIcon name={copiedKey === 'swift' ? "check" : "file-text"} size={10} color="#ffffff" />
+                                        <span>{copiedKey === 'swift' ? 'Copiado' : 'Copiar SWIFT'}</span>
                                       </button>
                                     </div>
                                   )}
 
                                   {/* Instrucciones de envío de comprobante */}
                                   {m.instrucciones && (
-                                    <div style={{ fontSize: '11px', color: '#475569', background: '#F1F5F9', padding: '8px 12px', borderRadius: '8px', lineHeight: '1.4' }}>
-                                      📝 <strong>Nota:</strong> {m.instrucciones}
+                                    <div style={{ fontSize: '11px', color: '#475569', background: '#F1F5F9', padding: '8px 12px', borderRadius: '8px', lineHeight: '1.4', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                      <BrandingVectorIcon name="file-text" size={12} color="#475569" />
+                                      <span><strong>Nota:</strong> {m.instrucciones}</span>
                                     </div>
                                   )}
                                 </div>
@@ -1562,7 +1580,7 @@ export default function ShopCheckout() {
                                   boxShadow: '0 2px 10px rgba(15, 164, 222, 0.08)'
                                 }}>
                                   <div style={{ fontWeight: '800', fontSize: '13px', color: '#0369A1', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                    <span>📑</span>
+                                    <BrandingVectorIcon name="file-text" size={14} color="#0369A1" />
                                     <span>Datos para Emisión de E-Cheq</span>
                                   </div>
                                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px', fontSize: '12px', marginBottom: '8px' }}>
@@ -1572,7 +1590,7 @@ export default function ShopCheckout() {
                                   </div>
                                   {m.instrucciones && (
                                     <div style={{ fontSize: '11px', color: '#475569', background: '#F1F5F9', padding: '8px 12px', borderRadius: '8px' }}>
-                                      ℹ️ {m.instrucciones}
+                                      {m.instrucciones}
                                     </div>
                                   )}
                                 </div>
@@ -1580,8 +1598,9 @@ export default function ShopCheckout() {
 
                               {/* ── TARJETA STRIPE DETAILS ── */}
                               {isSel && m.id === 'tarjeta' && (
-                                <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid #BAE6FD', fontSize: '12px', color: '#0369A1' }}>
-                                  🔒 <strong>{m.gateway || 'Stripe SSL 256-bit'}:</strong> {m.instrucciones || 'Transacción encriptada y protegida bajo normativa PCI-DSS.'}
+                                <div style={{ marginTop: '14px', paddingTop: '12px', borderTop: '1px solid #BAE6FD', fontSize: '12px', color: '#0369A1', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <BrandingVectorIcon name="lock" size={13} color="#0369A1" />
+                                  <span><strong>{m.gateway || 'Stripe SSL 256-bit'}:</strong> {m.instrucciones || 'Transacción encriptada y protegida bajo normativa PCI-DSS.'}</span>
                                 </div>
                               )}
                             </div>
@@ -1714,7 +1733,7 @@ export default function ShopCheckout() {
                   ) : (
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#DCFCE7', padding: '8px 12px', borderRadius: '8px', border: '1px solid #86EFAC' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span style={{ fontSize: '13px' }}>🎟️</span>
+                        <BrandingVectorIcon name="tag" size={13} color="#166534" />
                         <div>
                           <div style={{ fontSize: '12px', fontWeight: '900', color: '#166534' }}>{appliedCoupon.code}</div>
                           <div style={{ fontSize: '10.5px', color: '#15803D' }}>{appliedCoupon.discount_display}</div>
@@ -1723,22 +1742,24 @@ export default function ShopCheckout() {
                       <button
                         type="button"
                         onClick={handleRemoveCoupon}
-                        style={{ background: 'none', border: 'none', color: '#DC2626', fontWeight: '800', fontSize: '14px', cursor: 'pointer', padding: '2px 4px' }}
+                        style={{ background: 'none', border: 'none', color: '#DC2626', fontWeight: '800', cursor: 'pointer', padding: '2px 4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                         title="Quitar cupón"
                       >
-                        ✕
+                        <BrandingVectorIcon name="x" size={13} color="#DC2626" />
                       </button>
                     </div>
                   )}
 
                   {couponError && (
-                    <div style={{ color: '#DC2626', fontSize: '11px', fontWeight: '700', marginTop: '6px' }}>
-                      ⚠️ {couponError}
+                    <div style={{ color: '#DC2626', fontSize: '11px', fontWeight: '700', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <BrandingVectorIcon name="alert-circle" size={12} color="#DC2626" />
+                      <span>{couponError}</span>
                     </div>
                   )}
                   {couponSuccess && !couponError && (
-                    <div style={{ color: '#166534', fontSize: '11px', fontWeight: '700', marginTop: '6px' }}>
-                      ✅ {couponSuccess}
+                    <div style={{ color: '#166534', fontSize: '11px', fontWeight: '700', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <BrandingVectorIcon name="check-circle" size={12} color="#166534" />
+                      <span>{couponSuccess}</span>
                     </div>
                   )}
                 </div>
@@ -1782,10 +1803,13 @@ export default function ShopCheckout() {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(7, 21, 36, 0.75)', backdropFilter: 'blur(6px)', zIndex: 1000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '20px' }}>
           <div style={{ background: '#FFFFFF', borderRadius: '24px', padding: '36px', maxWidth: '440px', width: '100%', boxShadow: '0 20px 60px rgba(0,0,0,0.25)', border: '1px solid #E2E8F0' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <div style={{ fontWeight: '900', fontSize: '1.25rem', color: '#071524' }}>
-                🔑 Iniciar Sesión B2B
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '900', fontSize: '1.25rem', color: '#071524' }}>
+                <BrandingVectorIcon name="key" size={20} color="#0fa4de" />
+                <span>Iniciar Sesión B2B</span>
               </div>
-              <button onClick={() => setShowLoginModal(false)} style={{ background: 'none', border: 'none', fontSize: '20px', color: '#94A3B8', cursor: 'pointer' }}>✕</button>
+              <button onClick={() => setShowLoginModal(false)} style={{ background: '#F1F5F9', border: 'none', borderRadius: '50%', width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+                <BrandingVectorIcon name="x" size={14} color="#64748B" />
+              </button>
             </div>
 
             <p style={{ fontSize: '13px', color: '#64748B', marginBottom: '20px' }}>

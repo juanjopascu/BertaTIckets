@@ -5,19 +5,21 @@ const SYSTEM_LOGS_FILE_PATH = path.join(__dirname, '..', 'system_logs.json');
 let systemLogsDb = [];
 let nextSystemLogId = 1;
 
-// Cargar logs persistidos desde disco
-try {
-    if (fs.existsSync(SYSTEM_LOGS_FILE_PATH)) {
-        const rawLogs = fs.readFileSync(SYSTEM_LOGS_FILE_PATH, 'utf8');
-        const parsed = JSON.parse(rawLogs);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-            systemLogsDb = parsed;
-            nextSystemLogId = Math.max(...systemLogsDb.map(l => l.id || 0)) + 1;
+function loadSystemLogs() {
+    try {
+        if (fs.existsSync(SYSTEM_LOGS_FILE_PATH)) {
+            const rawLogs = fs.readFileSync(SYSTEM_LOGS_FILE_PATH, 'utf8');
+            const parsed = JSON.parse(rawLogs);
+            if (Array.isArray(parsed) && parsed.length > 0) {
+                systemLogsDb = parsed;
+                nextSystemLogId = Math.max(...systemLogsDb.map(l => l.id || 0)) + 1;
+            }
         }
+    } catch (err) {
+        console.error('Error cargando system_logs.json:', err);
     }
-} catch (err) {
-    console.error('Error cargando system_logs.json:', err);
 }
+loadSystemLogs();
 
 // Inicializar con historial representativo si está vacío
 if (systemLogsDb.length === 0) {
@@ -152,11 +154,18 @@ function registrarLog({ origen = 'sistema', tipo = 'INFO', accion, descripcion, 
 }
 
 function obtenerLogs({ origen, tipo, search, limit = 150, page = 1 } = {}) {
+    loadSystemLogs();
     let filtrados = [...systemLogsDb];
 
     if (origen && origen !== 'todos' && origen !== 'all') {
         const oLower = origen.toLowerCase();
-        filtrados = filtrados.filter(l => (l.origen || '').toLowerCase() === oLower);
+        if (oLower === 'carritos' || oLower === 'carritos_abandonados' || oLower === 'abandonados') {
+            filtrados = filtrados.filter(l => (l.accion || '').toUpperCase().includes('CARRITO'));
+        } else if (oLower === 'catalogo' || oLower === 'visitas_catalogo' || oLower === 'productos') {
+            filtrados = filtrados.filter(l => (l.accion || '').toUpperCase().includes('PRODUCTO_VISITADO') || (l.accion || '').toUpperCase().includes('CATALOGO'));
+        } else {
+            filtrados = filtrados.filter(l => (l.origen || '').toLowerCase() === oLower);
+        }
     }
 
     if (tipo && tipo !== 'todos' && tipo !== 'all') {
@@ -172,7 +181,10 @@ function obtenerLogs({ origen, tipo, search, limit = 150, page = 1 } = {}) {
             const userNom = (l.usuario?.nombre || '').toLowerCase();
             const userEmail = (l.usuario?.email || '').toLowerCase();
             const ip = (l.ip || '').toLowerCase();
-            return acc.includes(q) || desc.includes(q) || userNom.includes(q) || userEmail.includes(q) || ip.includes(q);
+            const sku = (l.detalles?.sku || '').toLowerCase();
+            const prodName = (l.detalles?.productName || '').toLowerCase();
+            const itemsStr = JSON.stringify(l.detalles?.items || '').toLowerCase();
+            return acc.includes(q) || desc.includes(q) || userNom.includes(q) || userEmail.includes(q) || ip.includes(q) || sku.includes(q) || prodName.includes(q) || itemsStr.includes(q);
         });
     }
 
@@ -192,8 +204,18 @@ function obtenerLogs({ origen, tipo, search, limit = 150, page = 1 } = {}) {
 }
 
 function obtenerEstadisticasLogs() {
+    loadSystemLogs();
     const total = systemLogsDb.length;
     const ecommerce = systemLogsDb.filter(l => l.origen === 'ecommerce').length;
+    
+    // Carritos abandonados / sin compra
+    const carritosLogs = systemLogsDb.filter(l => (l.accion || '').toUpperCase().includes('CARRITO_ABANDONADO') || (l.accion || '').toUpperCase().includes('CARRITO_SIN_COMPRA'));
+    const carritos_abandonados = carritosLogs.length;
+    const monto_carritos_abandonados = carritosLogs.reduce((sum, l) => sum + (parseFloat(l.detalles?.total || l.detalles?.monto) || 0), 0);
+
+    // Visitas al catálogo y fichas de producto
+    const visitas_catalogo = systemLogsDb.filter(l => (l.accion || '').toUpperCase().includes('PRODUCTO_VISITADO') || (l.accion || '').toUpperCase().includes('CATALOGO_EXPLORADO')).length;
+
     const dashboard = systemLogsDb.filter(l => l.origen === 'dashboard' || l.origen === 'tickets').length;
     const auth = systemLogsDb.filter(l => l.origen === 'auth' || l.origen === 'usuarios').length;
     const security = systemLogsDb.filter(l => l.tipo === 'SECURITY').length;
@@ -202,6 +224,9 @@ function obtenerEstadisticasLogs() {
     return {
         total,
         ecommerce,
+        carritos_abandonados,
+        monto_carritos_abandonados,
+        visitas_catalogo,
         dashboard,
         auth,
         security,

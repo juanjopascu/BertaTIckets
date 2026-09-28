@@ -822,7 +822,11 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
           gap: '10px',
           boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
         }}>
-          <span>{branding.announcement.type === 'danger' ? '🚨' : branding.announcement.type === 'warning' ? '⚠️' : branding.announcement.type === 'success' ? '✅' : '📢'}</span>
+          <BrandingVectorIcon 
+            name={branding.announcement.type === 'danger' ? 'alert-circle' : branding.announcement.type === 'warning' ? 'alert-triangle' : branding.announcement.type === 'success' ? 'check-circle' : 'megaphone'} 
+            size={18} 
+            color="#ffffff" 
+          />
           <span>{branding.announcement.text}</span>
         </div>
       )}
@@ -1097,7 +1101,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                           }}
                         >
                           <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span>🔵</span> Todos los estados
+                            <BrandingVectorIcon name="layers" size={13} color="currentColor" /> Todos los estados
                           </span>
                           <span style={{ fontSize: '0.75rem', fontWeight: '700', opacity: 0.8 }}>
                             {totalTickets}
@@ -1136,7 +1140,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                               }}
                             >
                               <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <span>🏷️</span> {est.nombre}
+                                <BrandingVectorIcon name="tag" size={13} color="currentColor" /> {est.nombre}
                               </span>
                               <span style={{ fontSize: '0.75rem', fontWeight: '700', opacity: 0.8 }}>
                                 {stateCount}
@@ -1511,10 +1515,14 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                             color: ticketCategoria === 'expenses' ? 'white' : (theme === 'dark' ? 'rgba(255, 255, 255, 0.7)' : '#1c1c1e'),
                             fontWeight: '600',
                             cursor: 'pointer',
-                            transition: 'all 0.25s ease'
+                            transition: 'all 0.25s ease',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px'
                           }}
                         >
-                          💸 Expenses
+                          <BrandingVectorIcon name="dollar" size={16} color="currentColor" /> Expenses
                         </button>
                       </div>
                     )}
@@ -1688,10 +1696,10 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                                   display: 'flex',
                                   flexDirection: 'column',
                                   alignItems: 'center',
-                                  gap: '4px'
+                                  gap: '6px'
                                 }}
                               >
-                                <span style={{ fontSize: '1.25rem' }}>💵</span>
+                                <BrandingVectorIcon name="dollar" size={20} color="currentColor" />
                                 Crear un Reintegro
                               </button>
                               <button
@@ -1710,10 +1718,10 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                                   display: 'flex',
                                   flexDirection: 'column',
                                   alignItems: 'center',
-                                  gap: '4px'
+                                  gap: '6px'
                                 }}
                               >
-                                <span style={{ fontSize: '1.25rem' }}>✈️</span>
+                                <BrandingVectorIcon name="plane" size={20} color="currentColor" />
                                 Reservar Viajes
                               </button>
                             </div>
@@ -1722,7 +1730,9 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
 
                         {tipoExpense === 'reintegro' && configTickets.habilitarReintegroGastos && (
                           <div style={{ background: theme === 'dark' ? 'rgba(192, 132, 252, 0.05)' : 'rgba(107, 33, 168, 0.02)', padding: '15px', borderRadius: '14px', border: theme === 'dark' ? '1px solid rgba(192, 132, 252, 0.2)' : '1px solid rgba(107, 33, 168, 0.1)', display: 'flex', flexDirection: 'column', gap: '10px', textAlign: 'left' }}>
-                            <h4 style={{ margin: '0 0 5px 0', color: 'var(--purple-brand)', fontFamily: 'Outfit, sans-serif', fontSize: '0.95rem' }}>💵 Formulario de Reintegro de Gastos</h4>
+                            <h4 style={{ margin: '0 0 5px 0', color: 'var(--purple-brand)', fontFamily: 'Outfit, sans-serif', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <BrandingVectorIcon name="dollar" size={16} color="var(--purple-brand)" /> Formulario de Reintegro de Gastos
+                            </h4>
                             
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                               <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Asunto *</label>
@@ -1747,8 +1757,8 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                               color: theme === 'dark' ? '#f8fafc' : '#475569',
                               lineHeight: '1.4'
                             }}>
-                              <div style={{ fontWeight: '700', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <span>💡</span> Aclaración sobre el Asunto:
+                              <div style={{ fontWeight: '700', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <BrandingVectorIcon name="lightbulb" size={14} color="var(--purple-brand)" /> Aclaración sobre el Asunto:
                               </div>
                               <div style={{ marginLeft: '15px' }}>
                                 Por favor completar el asunto siguiendo este formato:
@@ -1827,7 +1837,9 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
 
                         {tipoExpense === 'viaje' && configTickets.habilitarReservaViajes && (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', textAlign: 'left' }}>
-                            <h4 style={{ margin: '0 0 2px 0', color: 'var(--purple-brand)', fontFamily: 'Outfit, sans-serif', fontSize: '0.95rem' }}>✈️ Solicitud de Reserva de Viajes</h4>
+                            <h4 style={{ margin: '0 0 2px 0', color: 'var(--purple-brand)', fontFamily: 'Outfit, sans-serif', fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <BrandingVectorIcon name="plane" size={16} color="var(--purple-brand)" /> Solicitud de Reserva de Viajes
+                            </h4>
                             
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
                               <label style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>Asunto *</label>
@@ -1852,8 +1864,8 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                               color: theme === 'dark' ? '#f8fafc' : '#475569',
                               lineHeight: '1.4'
                             }}>
-                              <div style={{ fontWeight: '700', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <span>💡</span> Aclaración sobre el Asunto:
+                              <div style={{ fontWeight: '700', marginBottom: '2px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <BrandingVectorIcon name="lightbulb" size={14} color="var(--purple-brand)" /> Aclaración sobre el Asunto:
                               </div>
                               <div style={{ marginLeft: '15px' }}>
                                 Por favor completar el asunto siguiendo este formato:
@@ -1875,7 +1887,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                                 padding: 10px 14px;
                                 display: flex;
                                 justify-content: space-between;
-                                align-items: center;
+                                alignItems: center;
                                 cursor: pointer;
                                 font-weight: 700;
                                 color: var(--purple-brand);
@@ -1927,7 +1939,9 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                             {/* 1. Datos Personales */}
                             <div>
                               <div className="acc-header" onClick={() => setOpenAccordion(openAccordion === 'personales' ? '' : 'personales')}>
-                                <span>👤 1. Datos Personales</span>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                  <BrandingVectorIcon name="user" size={14} color="currentColor" /> 1. Datos Personales
+                                </span>
                                 <span>{openAccordion === 'personales' ? '▲' : '▼'}</span>
                               </div>
                               {openAccordion === 'personales' && (
@@ -1998,7 +2012,9 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                             {/* 2. Teléfono Completo */}
                             <div>
                               <div className="acc-header" onClick={() => setOpenAccordion(openAccordion === 'telefono' ? '' : 'telefono')}>
-                                <span>📞 2. Teléfono Completo</span>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                  <BrandingVectorIcon name="phone" size={14} color="currentColor" /> 2. Teléfono Completo
+                                </span>
                                 <span>{openAccordion === 'telefono' ? '▲' : '▼'}</span>
                               </div>
                               {openAccordion === 'telefono' && (
@@ -2020,7 +2036,9 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                             {/* 3. Datos del Viaje */}
                             <div>
                               <div className="acc-header" onClick={() => setOpenAccordion(openAccordion === 'viaje' ? '' : 'viaje')}>
-                                <span>✈️ 3. Datos del Viaje</span>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                  <BrandingVectorIcon name="plane" size={14} color="currentColor" /> 3. Datos del Viaje
+                                </span>
                                 <span>{openAccordion === 'viaje' ? '▲' : '▼'}</span>
                               </div>
                               {openAccordion === 'viaje' && (
@@ -2202,9 +2220,11 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                                               >
                                                 <span>{brand}</span>
                                                 {isSelected ? (
-                                                  <span style={{ color: 'var(--purple-brand)', fontWeight: 'bold' }}>✓</span>
+                                                  <BrandingVectorIcon name="check" size={13} color="var(--purple-brand)" strokeWidth={2.5} />
                                                 ) : (
-                                                  <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>+ Agregar</span>
+                                                  <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                                    <BrandingVectorIcon name="plus" size={11} color="currentColor" /> Agregar
+                                                  </span>
                                                 )}
                                               </div>
                                             );
@@ -2295,7 +2315,9 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                             {/* 4. Datos de Emergencia */}
                             <div>
                               <div className="acc-header" onClick={() => setOpenAccordion(openAccordion === 'emergencia' ? '' : 'emergencia')}>
-                                <span>🚨 4. Datos de Emergencia</span>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                  <BrandingVectorIcon name="alert-circle" size={14} color="currentColor" /> 4. Datos de Emergencia
+                                </span>
                                 <span>{openAccordion === 'emergencia' ? '▲' : '▼'}</span>
                               </div>
                               {openAccordion === 'emergencia' && (
@@ -2321,7 +2343,9 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                             {/* 5. Solicita Hotel */}
                             <div>
                               <div className="acc-header" onClick={() => setOpenAccordion(openAccordion === 'hotel' ? '' : 'hotel')}>
-                                <span>🏨 5. Solicita Hotel</span>
+                                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                                  <BrandingVectorIcon name="hotel" size={14} color="currentColor" /> 5. Solicita Hotel
+                                </span>
                                 <span>{openAccordion === 'hotel' ? '▲' : '▼'}</span>
                               </div>
                               {openAccordion === 'hotel' && (
@@ -2385,8 +2409,10 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                               <strong>Archivos seleccionados ({archivos.length}):</strong>
                               <ul style={{ paddingLeft: '16px', margin: '4px 0 0 0' }}>
                                 {archivos.map((file, idx) => (
-                                  <li key={idx}>
-                                    📎 {file.name} <span style={{ color: '#8e8e93' }}>({(file.size / (1024 * 1024)).toFixed(2)} MB)</span>
+                                  <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: '5px', marginTop: '3px' }}>
+                                    <BrandingVectorIcon name="paperclip" size={13} color="#64748b" />
+                                    <span>{file.name}</span>
+                                    <span style={{ color: '#8e8e93' }}>({(file.size / (1024 * 1024)).toFixed(2)} MB)</span>
                                   </li>
                                 ))}
                               </ul>
@@ -2663,8 +2689,9 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                               </span>
                               <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                                 {((ticket.archivos && ticket.archivos.length > 0) || ticket.archivo_url) && (
-                                  <span className="card-activity" style={{ background: 'rgba(52, 199, 89, 0.08)', color: '#34c759' }} title={`${ticket.archivos ? ticket.archivos.length : 1} adjunto(s)`}>
-                                    📎 {ticket.archivos ? ticket.archivos.length : 1}
+                                  <span className="card-activity" style={{ background: 'rgba(52, 199, 89, 0.08)', color: '#34c759', display: 'inline-flex', alignItems: 'center', gap: '4px' }} title={`${ticket.archivos ? ticket.archivos.length : 1} adjunto(s)`}>
+                                    <BrandingVectorIcon name="paperclip" size={11} color="#34c759" />
+                                    <span>{ticket.archivos ? ticket.archivos.length : 1}</span>
                                   </span>
                                 )}
                                 <span className="card-activity" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>

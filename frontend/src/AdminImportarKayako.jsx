@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BrandingVectorIcon from './BrandingVectorIcon';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 
@@ -240,7 +241,9 @@ function AdminImportarKayako({ embedded = false }) {
       {successData ? (
         /* PANTALLA DE ÉXITO */
         <section className="form-section" style={{ textAlign: 'center', padding: '50px 30px', animation: 'fadeIn 0.5s ease-out' }}>
-          <div style={{ fontSize: '5rem', marginBottom: '20px' }}>🎉</div>
+          <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
+            <BrandingVectorIcon name="check-circle" size={64} color="var(--success)" />
+          </div>
           <h2 style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: '2.2rem', color: 'var(--success)' }}>
             ¡Importación Finalizada con Éxito!
           </h2>
@@ -257,19 +260,27 @@ function AdminImportarKayako({ embedded = false }) {
           }}>
             <div style={{ background: 'var(--bg-color)', padding: '20px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', flex: '1 1 140px' }}>
               <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--primary)' }}>{successData.departamentos}</div>
-              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '5px' }}>🏢 Departamentos</div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                <BrandingVectorIcon name="building" size={14} color="var(--primary)" /> Departamentos
+              </div>
             </div>
             <div style={{ background: 'var(--bg-color)', padding: '20px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', flex: '1 1 140px' }}>
               <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--primary)' }}>{successData.agentes}</div>
-              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '5px' }}>👤 Agentes</div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                <BrandingVectorIcon name="user" size={14} color="var(--primary)" /> Agentes
+              </div>
             </div>
             <div style={{ background: 'var(--bg-color)', padding: '20px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', flex: '1 1 140px' }}>
               <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--primary)' }}>{successData.tickets}</div>
-              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '5px' }}>📋 Tickets</div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                <BrandingVectorIcon name="ticket" size={14} color="var(--primary)" /> Tickets
+              </div>
             </div>
             <div style={{ background: 'var(--bg-color)', padding: '20px', borderRadius: 'var(--radius-lg)', border: '1px solid var(--border-color)', flex: '1 1 140px' }}>
               <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--primary)' }}>{successData.notas}</div>
-              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '5px' }}>💬 Mensajes/Notas</div>
+              <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', marginTop: '5px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                <BrandingVectorIcon name="message-square" size={14} color="var(--primary)" /> Mensajes/Notas
+              </div>
             </div>
           </div>
 
@@ -332,10 +343,13 @@ function AdminImportarKayako({ embedded = false }) {
                 transition: 'var(--transition-bezier)',
                 background: activeTab === 'db' ? 'var(--card-bg)' : 'transparent',
                 color: activeTab === 'db' ? 'var(--primary)' : 'var(--text-muted)',
-                boxShadow: activeTab === 'db' ? 'var(--shadow-md)' : 'none'
+                boxShadow: activeTab === 'db' ? 'var(--shadow-md)' : 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px'
               }}
             >
-              🏢 Base de Datos MySQL Directa
+              <BrandingVectorIcon name="database" size={16} /> Base de Datos MySQL Directa
             </button>
             <button
               onClick={() => { setActiveTab('sql'); setError(null); }}
@@ -349,10 +363,13 @@ function AdminImportarKayako({ embedded = false }) {
                 transition: 'var(--transition-bezier)',
                 background: activeTab === 'sql' ? 'var(--card-bg)' : 'transparent',
                 color: activeTab === 'sql' ? 'var(--primary)' : 'var(--text-muted)',
-                boxShadow: activeTab === 'sql' ? 'var(--shadow-md)' : 'none'
+                boxShadow: activeTab === 'sql' ? 'var(--shadow-md)' : 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px'
               }}
             >
-              📄 Cargar Archivo de Respaldo SQL
+              <BrandingVectorIcon name="file-text" size={16} /> Cargar Archivo de Respaldo SQL
             </button>
           </div>
 
@@ -364,9 +381,13 @@ function AdminImportarKayako({ embedded = false }) {
               borderRadius: 'var(--radius-md)',
               fontWeight: 600,
               border: '1px solid rgba(211, 47, 47, 0.1)',
-              animation: 'shake 0.3s ease'
+              animation: 'shake 0.3s ease',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
             }}>
-              ⚠️ {error}
+              <BrandingVectorIcon name="alert-triangle" size={18} color="var(--danger)" />
+              <span>{error}</span>
             </div>
           )}
 
@@ -413,8 +434,9 @@ function AdminImportarKayako({ embedded = false }) {
                     </div>
                   </div>
 
-                  <button type="submit" className="btn-submit" disabled={loading} style={{ marginTop: '10px' }}>
-                    {loading ? '⏳ Probando conexión...' : '🔍 Conectar y Analizar Base de Datos'}
+                  <button type="submit" className="btn-submit" disabled={loading} style={{ marginTop: '10px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                    <BrandingVectorIcon name={loading ? "clock" : "search"} size={16} />
+                    <span>{loading ? 'Probando conexión...' : 'Conectar y Analizar Base de Datos'}</span>
                   </button>
                 </form>
               </section>
@@ -428,36 +450,50 @@ function AdminImportarKayako({ embedded = false }) {
                   flex: '0 0 350px',
                   minWidth: '300px'
                 }}>
-                  <h3 style={{ fontSize: '1.2rem', marginBottom: '15px' }}>Conexión Exitosa ✅</h3>
+                  <h3 style={{ fontSize: '1.2rem', marginBottom: '15px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>Conexión Exitosa</span>
+                    <BrandingVectorIcon name="check-circle" size={18} color="#16a34a" />
+                  </h3>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '20px' }}>
                     Se ha establecido conexión con la base de datos de Kayako. Hemos detectado los siguientes registros listos para importar:
                   </p>
 
                   <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 25px 0', display: 'flex', flexDirection: 'column', gap: '12px' }}>
-                    <li style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', fontWeight: 600 }}>
-                      <span>🏢 Departamentos:</span>
+                    <li style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', fontWeight: 600, alignItems: 'center' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <BrandingVectorIcon name="building" size={14} color="var(--primary)" /> Departamentos:
+                      </span>
                       <span style={{ color: 'var(--primary)' }}>{detectedStats.departamentos}</span>
                     </li>
-                    <li style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', fontWeight: 600 }}>
-                      <span>👤 Agentes (Staff):</span>
+                    <li style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', fontWeight: 600, alignItems: 'center' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <BrandingVectorIcon name="user" size={14} color="var(--primary)" /> Agentes (Staff):
+                      </span>
                       <span style={{ color: 'var(--primary)' }}>{detectedStats.agentes}</span>
                     </li>
-                    <li style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', fontWeight: 600 }}>
-                      <span>🏷️ Estados de Ticket:</span>
+                    <li style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', fontWeight: 600, alignItems: 'center' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <BrandingVectorIcon name="tag" size={14} color="var(--primary)" /> Estados de Ticket:
+                      </span>
                       <span style={{ color: 'var(--primary)' }}>{detectedStats.estados}</span>
                     </li>
-                    <li style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', fontWeight: 600 }}>
-                      <span>📋 Tickets:</span>
+                    <li style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', fontWeight: 600, alignItems: 'center' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <BrandingVectorIcon name="ticket" size={14} color="var(--primary)" /> Tickets:
+                      </span>
                       <span style={{ color: 'var(--primary)' }}>{detectedStats.tickets}</span>
                     </li>
-                    <li style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', fontWeight: 600 }}>
-                      <span>💬 Mensajes/Conversas:</span>
+                    <li style={{ display: 'flex', justifyContent: 'space-between', paddingBottom: '8px', borderBottom: '1px solid var(--border-color)', fontWeight: 600, alignItems: 'center' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <BrandingVectorIcon name="message-square" size={14} color="var(--primary)" /> Mensajes/Conversas:
+                      </span>
                       <span style={{ color: 'var(--primary)' }}>{detectedStats.notas}</span>
                     </li>
                   </ul>
 
-                  <button className="btn-submit" onClick={handleImportFromDb} style={{ background: 'var(--success)', boxShadow: '0 4px 14px rgba(46, 125, 50, 0.3)' }}>
-                    ⚡ Iniciar Importación Ahora
+                  <button className="btn-submit" onClick={handleImportFromDb} style={{ background: 'var(--success)', boxShadow: '0 4px 14px rgba(46, 125, 50, 0.3)', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                    <BrandingVectorIcon name="zap" size={16} color="#ffffff" />
+                    <span>Iniciar Importación Ahora</span>
                   </button>
                 </section>
               )}
@@ -491,7 +527,9 @@ function AdminImportarKayako({ embedded = false }) {
                     gap: '12px'
                   }}
                 >
-                  <div style={{ fontSize: '3rem' }}>📄</div>
+                  <div style={{ marginBottom: '4px' }}>
+                    <BrandingVectorIcon name="upload-cloud" size={48} color="var(--primary)" />
+                  </div>
                   <h4 style={{ margin: 0, fontSize: '1.1rem', fontWeight: 700 }}>
                     Arrastra y suelta tu archivo SQL aquí
                   </h4>
@@ -521,7 +559,7 @@ function AdminImportarKayako({ embedded = false }) {
                     border: '1px solid rgba(58, 123, 246, 0.1)',
                     gap: '15px'
                   }}>
-                    <span style={{ fontSize: '1.5rem' }}>📄</span>
+                    <BrandingVectorIcon name="file-text" size={24} color="var(--primary)" />
                     <div style={{ flex: 1, textAlign: 'left' }}>
                       <div style={{ fontWeight: 700, fontSize: '0.95rem' }}>{selectedFile.name}</div>
                       <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
@@ -535,18 +573,21 @@ function AdminImportarKayako({ embedded = false }) {
                         background: 'transparent',
                         border: 'none',
                         color: 'var(--danger)',
-                        fontSize: '1.2rem',
-                        fontWeight: 700,
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        padding: '4px'
                       }}
                     >
-                      ✕
+                      <BrandingVectorIcon name="x" size={16} color="var(--danger)" />
                     </button>
                   </div>
                 )}
 
-                <button type="submit" className="btn-submit" disabled={!selectedFile || loading}>
-                  {loading ? '⏳ Analizando y Cargando SQL...' : '⚡ Procesar e Importar Archivo SQL'}
+                <button type="submit" className="btn-submit" disabled={!selectedFile || loading} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                  <BrandingVectorIcon name={loading ? "clock" : "database"} size={18} color="#FFFFFF" />
+                  <span>{loading ? 'Analizando y Cargando SQL...' : 'Procesar e Importar Archivo SQL'}</span>
                 </button>
               </form>
             </section>

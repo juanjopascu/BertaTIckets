@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -242,6 +242,8 @@ function AdminEcommerce({ embedded = false }) {
   const [users, setUsers] = useState([]);
   const [rules, setRules] = useState([]);
   const [error, setError] = useState(null);
+  const bannerFileInputRef = useRef(null);
+  const [uploadingBanner, setUploadingBanner] = useState(false);
 
   // Product Filters
   const [productSearch, setProductSearch] = useState('');
@@ -407,6 +409,94 @@ function AdminEcommerce({ embedded = false }) {
   const [checkoutSaveSuccess, setCheckoutSaveSuccess] = useState(false);
   const [checkoutSubTab, setCheckoutSubTab] = useState('shipping'); // 'shipping' | 'payment'
 
+  // ── Apli ERP & API Integration State ──
+  const [apliConfig, setApliConfig] = useState({
+    enabled: true,
+    endpointUrl: 'https://api.apli.com.ar/v2',
+    apiKey: 'apli_live_dk928374910284719283',
+    clientId: 'DACAS-ARG-001',
+    clientSecret: 'sk_live_998124018274019283401928',
+    environment: 'production',
+    syncProducts: true,
+    syncStock: true,
+    syncOrders: true,
+    syncCustomers: true,
+    syncPrices: true,
+    syncInterval: 'realtime',
+    webhookUrl: '/api/ecommerce/settings/apli/webhook',
+    webhookSecret: 'whsec_apli_dacas_99214710',
+    autoApproveVerifiedCustomers: true,
+    lastSync: new Date().toISOString(),
+    connectionStatus: 'connected',
+    lastLatencyMs: 38
+  });
+  const [apliLogs, setApliLogs] = useState([]);
+  const [isSavingApli, setIsSavingApli] = useState(false);
+  const [apliSaveSuccess, setApliSaveSuccess] = useState(false);
+  const [apliTesting, setApliTesting] = useState(false);
+  const [apliTestResult, setApliTestResult] = useState(null);
+  const [apliSyncing, setApliSyncing] = useState(false);
+  const [apliSyncResult, setApliSyncResult] = useState(null);
+  const [showApliApiKey, setShowApliApiKey] = useState(false);
+  const [showApliSecret, setShowApliSecret] = useState(false);
+  const [apliSubTab, setApliSubTab] = useState('config'); // 'config' | 'sync' | 'webhooks' | 'logs'
+
+  // ── N8N AI Agent Bot State ──
+  const [n8nConfig, setN8nConfig] = useState({
+    enabled: true,
+    botName: 'DACAS AI Copilot B2B',
+    botSubtitle: 'Asistente de Preventa, Stock & Cotizaciones B2B',
+    avatarIcon: '🤖',
+    primaryColor: '#0fa4de',
+    webhookUrl: 'https://n8n.dacas.com/webhook/dacas-b2b-agent',
+    authHeaderName: 'X-N8N-API-KEY',
+    authToken: 'n8n_sec_dacas_ai_agent_99812401',
+    timeoutMs: 15000,
+    fallbackToInternalAI: true,
+    systemPrompt: `Eres el Asistente Inteligente y Agente de Preventa B2B de DACAS Mayorista. Tu función es ayudar a integradores, resellers y empresas a encontrar hardware, licencias y soluciones de Ciberseguridad (Fortinet), Networking (Aruba), Infraestructura & Energía (Vertiv, APC) y Comunicaciones Unificadas (Poly). Respondes con precios de referencia en USD mayorista, disponibilidad de stock y guías para cotización formal.`,
+    welcomeMessage: '👋 ¡Hola! Soy el Copilot de IA de DACAS B2B conectado a agentes de n8n. ¿En qué puedo ayudarte hoy? Puedo verificar stock en tiempo real, cotizar productos o asesorarte sobre soluciones técnicas.',
+    suggestedQuestions: [
+      '🔍 ¿Qué stock tienen de FortiGate-60F?',
+      '⚡ Recomiéndame switches Aruba de 24 puertos',
+      '📑 ¿Cómo registrar mi empresa como integrador B2B?',
+      '💳 ¿Cuáles son los métodos de pago y despacho?'
+    ],
+    enabledTools: {
+      searchProducts: true,
+      checkStock: true,
+      calculateQuote: true,
+      recommendSolutions: true,
+      checkOrderStatus: true,
+      createSupportTicket: true
+    },
+    aiModel: 'gpt-4o',
+    temperature: 0.3,
+    maxTokens: 1000,
+    status: 'active',
+    conversationsCount: 142,
+    resolutionRate: '94%'
+  });
+  const [n8nLogs, setN8nLogs] = useState([]);
+  const [n8nWorkflow, setN8nWorkflow] = useState(null);
+  const [n8nSubTab, setN8nSubTab] = useState('config'); // 'config' | 'playground' | 'workflow' | 'logs'
+  const [isSavingN8n, setIsSavingN8n] = useState(false);
+  const [n8nSaveSuccess, setN8nSaveSuccess] = useState(false);
+  const [n8nTesting, setN8nTesting] = useState(false);
+  const [n8nTestResult, setN8nTestResult] = useState(null);
+  const [showN8nToken, setShowN8nToken] = useState(false);
+
+  // Playground Chat State
+  const [playgroundMessages, setPlaygroundMessages] = useState([
+    {
+      id: 'p_welcome',
+      sender: 'bot',
+      text: '👋 ¡Hola! Soy el entorno de pruebas del Agente n8n. Puedes consultarme sobre productos, stock en tiempo real o cualquier regla comercial para probar mis respuestas.',
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }
+  ]);
+  const [playgroundInput, setPlaygroundInput] = useState('');
+  const [isPlaygroundTyping, setIsPlaygroundTyping] = useState(false);
+
   useEffect(() => {
     fetchProducts();
     fetchOrders();
@@ -415,7 +505,288 @@ function AdminEcommerce({ embedded = false }) {
     fetchRules();
     fetchVisualSettings();
     fetchCheckoutMethods();
+    fetchApliSettings();
+    fetchApliLogs();
+    fetchN8nSettings();
+    fetchN8nLogs();
+    fetchN8nWorkflow();
   }, []);
+
+  const fetchN8nSettings = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/n8n-bot`);
+      if (res.ok) {
+        const data = await res.json();
+        setN8nConfig(data);
+      }
+    } catch (err) {
+      console.error('Error fetching n8n bot settings:', err);
+    }
+  };
+
+  const fetchN8nLogs = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/n8n-bot/logs`);
+      if (res.ok) {
+        const data = await res.json();
+        setN8nLogs(data);
+      }
+    } catch (err) {
+      console.error('Error fetching n8n bot logs:', err);
+    }
+  };
+
+  const fetchN8nWorkflow = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/n8n-bot/workflow-template`);
+      if (res.ok) {
+        const data = await res.json();
+        setN8nWorkflow(data);
+      }
+    } catch (err) {
+      console.error('Error fetching n8n workflow:', err);
+    }
+  };
+
+  const handleSaveN8nSettings = async () => {
+    setIsSavingN8n(true);
+    setN8nSaveSuccess(false);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/n8n-bot`, {
+        method: 'PUT',
+        headers: getAuthHeader(),
+        body: JSON.stringify(n8nConfig)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al guardar configuración del Bot n8n');
+      if (data.config) setN8nConfig(data.config);
+      setN8nSaveSuccess(true);
+      fetchN8nLogs();
+      setTimeout(() => setN8nSaveSuccess(false), 4000);
+    } catch (err) {
+      alert('Error al guardar configuración del Bot n8n: ' + err.message);
+    } finally {
+      setIsSavingN8n(false);
+    }
+  };
+
+  const handleTestN8nConnection = async () => {
+    setN8nTesting(true);
+    setN8nTestResult(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/n8n-bot/test`, {
+        method: 'POST',
+        headers: getAuthHeader(),
+        body: JSON.stringify(n8nConfig)
+      });
+      const data = await res.json();
+      setN8nTestResult(data);
+      setTimeout(() => setN8nTestResult(null), 8000);
+    } catch (err) {
+      setN8nTestResult({ success: false, message: 'Error de conexión con n8n: ' + err.message });
+    } finally {
+      setN8nTesting(false);
+    }
+  };
+
+  const handlePlaygroundSend = async (customText = null) => {
+    const textToSend = customText || playgroundInput;
+    if (!textToSend.trim() || isPlaygroundTyping) return;
+
+    const userMsg = {
+      id: `usr_${Date.now()}`,
+      sender: 'user',
+      text: textToSend,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    setPlaygroundMessages(prev => [...prev, userMsg]);
+    if (!customText) setPlaygroundInput('');
+    setIsPlaygroundTyping(true);
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/n8n-bot/chat`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: textToSend,
+          sessionId: 'admin_playground',
+          userContext: { name: 'Administrador DACAS', role: 'admin' }
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setPlaygroundMessages(prev => [
+          ...prev,
+          {
+            id: `bot_${Date.now()}`,
+            sender: 'bot',
+            text: data.response,
+            recommendedProducts: data.recommendedProducts || [],
+            toolUsed: data.toolUsed,
+            latencyMs: data.latencyMs,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          }
+        ]);
+        fetchN8nLogs();
+      } else {
+        throw new Error(data.error || 'Error al procesar');
+      }
+    } catch (err) {
+      setPlaygroundMessages(prev => [
+        ...prev,
+        {
+          id: `bot_err_${Date.now()}`,
+          sender: 'bot',
+          text: '⚠️ Error al comunicarse con el agente n8n: ' + err.message,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]);
+    } finally {
+      setIsPlaygroundTyping(false);
+    }
+  };
+
+  const handleResetN8nSettings = async () => {
+    if (!window.confirm('¿Deseas restablecer los parámetros del Bot n8n a los valores oficiales?')) return;
+    setIsSavingN8n(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/n8n-bot/reset`, {
+        method: 'POST',
+        headers: getAuthHeader()
+      });
+      const data = await res.json();
+      if (res.ok && data.config) {
+        setN8nConfig(data.config);
+        fetchN8nLogs();
+        setN8nSaveSuccess(true);
+        setTimeout(() => setN8nSaveSuccess(false), 3000);
+      }
+    } catch (err) {
+      alert('Error al restablecer Bot n8n: ' + err.message);
+    } finally {
+      setIsSavingN8n(false);
+    }
+  };
+
+  const fetchApliSettings = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/apli`);
+      if (res.ok) {
+        const data = await res.json();
+        setApliConfig(data);
+      }
+    } catch (err) {
+      console.error('Error fetching Apli settings:', err);
+    }
+  };
+
+  const fetchApliLogs = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/apli/logs`);
+      if (res.ok) {
+        const data = await res.json();
+        setApliLogs(data);
+      }
+    } catch (err) {
+      console.error('Error fetching Apli logs:', err);
+    }
+  };
+
+  const handleSaveApliSettings = async () => {
+    setIsSavingApli(true);
+    setApliSaveSuccess(false);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/apli`, {
+        method: 'PUT',
+        headers: getAuthHeader(),
+        body: JSON.stringify(apliConfig)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al guardar configuración de Apli');
+      if (data.config) setApliConfig(data.config);
+      setApliSaveSuccess(true);
+      fetchApliLogs();
+      setTimeout(() => setApliSaveSuccess(false), 4000);
+    } catch (err) {
+      alert('Error al guardar configuración de Apli: ' + err.message);
+    } finally {
+      setIsSavingApli(false);
+    }
+  };
+
+  const handleTestApliConnection = async () => {
+    setApliTesting(true);
+    setApliTestResult(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/apli/test`, {
+        method: 'POST',
+        headers: getAuthHeader(),
+        body: JSON.stringify(apliConfig)
+      });
+      const data = await res.json();
+      setApliTestResult(data);
+      if (data.connected) {
+        setApliConfig(prev => ({ ...prev, connectionStatus: 'connected', lastLatencyMs: data.latencyMs, lastSync: data.timestamp }));
+      }
+      fetchApliLogs();
+      setTimeout(() => setApliTestResult(null), 8000);
+    } catch (err) {
+      setApliTestResult({ success: false, message: 'Error de red al conectar con Apli: ' + err.message });
+    } finally {
+      setApliTesting(false);
+    }
+  };
+
+  const handleSyncApliNow = async (syncType = 'all') => {
+    setApliSyncing(true);
+    setApliSyncResult(null);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/apli/sync`, {
+        method: 'POST',
+        headers: getAuthHeader(),
+        body: JSON.stringify({ syncType })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setApliSyncResult(data);
+        setApliConfig(prev => ({ ...prev, lastSync: data.lastSync, connectionStatus: 'connected' }));
+        fetchApliLogs();
+        fetchProducts();
+        fetchOrders();
+        setTimeout(() => setApliSyncResult(null), 6000);
+      } else {
+        throw new Error(data.error || 'Error al sincronizar');
+      }
+    } catch (err) {
+      setApliSyncResult({ success: false, message: 'Error en sincronización: ' + err.message });
+    } finally {
+      setApliSyncing(false);
+    }
+  };
+
+  const handleResetApli = async () => {
+    if (!window.confirm('¿Deseas restablecer los parámetros de Apli por defecto?')) return;
+    setIsSavingApli(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/apli/reset`, {
+        method: 'POST',
+        headers: getAuthHeader()
+      });
+      const data = await res.json();
+      if (res.ok && data.config) {
+        setApliConfig(data.config);
+        fetchApliLogs();
+        setApliSaveSuccess(true);
+        setTimeout(() => setApliSaveSuccess(false), 3000);
+      }
+    } catch (err) {
+      alert('Error al restablecer Apli: ' + err.message);
+    } finally {
+      setIsSavingApli(false);
+    }
+  };
 
   const fetchCheckoutMethods = async () => {
     try {
@@ -608,6 +979,52 @@ function AdminEcommerce({ embedded = false }) {
     metrics[metricIdx] = { ...metrics[metricIdx], [field]: value };
     slides[slideIdx] = { ...slides[slideIdx], metrics };
     setVisualConfig({ ...visualConfig, heroSlides: slides });
+  };
+  const handleBannerFileUpload = async (e, slideIdx) => {
+    const file = e.target?.files?.[0];
+    if (!file) return;
+
+    if (file.size > 15 * 1024 * 1024) {
+      alert('El archivo supera el tamaño máximo permitido de 15 MB.');
+      return;
+    }
+
+    try {
+      setUploadingBanner(true);
+      // 1. Lectura inmediata en Base64 para vista previa local sin latencia
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64Url = event.target.result;
+        handleUpdateSlideField(slideIdx, 'imageUrl', base64Url);
+
+        // 2. Intentar subir al servidor para persistencia de archivo
+        try {
+          const formData = new FormData();
+          formData.append('image', file);
+          const token = localStorage.getItem('token') || localStorage.getItem('crm_token');
+          const res = await fetch(`${API_BASE_URL}/api/system/branding/upload`, {
+            method: 'POST',
+            headers: {
+              ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+            },
+            body: formData
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.url) {
+              handleUpdateSlideField(slideIdx, 'imageUrl', `${API_BASE_URL}${data.url}`);
+            }
+          }
+        } catch (_) {}
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error('Error al cargar archivo de banner:', err);
+      alert('Error al leer el archivo de la PC.');
+    } finally {
+      setUploadingBanner(false);
+      if (e.target) e.target.value = '';
+    }
   };
 
   // ── Brand Management Handlers ──
@@ -1862,6 +2279,49 @@ function AdminEcommerce({ embedded = false }) {
               <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2z" />
             </svg>
             <span>Personalización Shop</span>
+          </button>
+          <button className={`tab-btn${activeTab === 'apli' ? ' active' : ''}`} onClick={() => setActiveTab('apli')}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="2" width="20" height="8" rx="2" />
+              <rect x="2" y="14" width="20" height="8" rx="2" />
+              <line x1="6" y1="6" x2="6.01" y2="6" />
+              <line x1="6" y1="18" x2="6.01" y2="18" />
+            </svg>
+            <span>Conexión Apli</span>
+            <span style={{
+              background: apliConfig?.enabled ? (activeTab === 'apli' ? '#FFFFFF' : '#10B981') : '#64748B',
+              color: apliConfig?.enabled ? (activeTab === 'apli' ? '#047857' : '#FFFFFF') : '#FFFFFF',
+              fontSize: '10px',
+              fontWeight: '800',
+              padding: '1.5px 6px',
+              borderRadius: '999px',
+              marginLeft: '4px',
+              transition: 'all 0.2s'
+            }}>
+              {apliConfig?.enabled ? 'Activo' : 'Off'}
+            </span>
+          </button>
+          <button className={`tab-btn${activeTab === 'n8n_bot' ? ' active' : ''}`} onClick={() => setActiveTab('n8n_bot')}>
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="11" width="18" height="10" rx="2" />
+              <circle cx="12" cy="5" r="2" />
+              <path d="M12 7v4" />
+              <line x1="8" y1="16" x2="8.01" y2="16" />
+              <line x1="16" y1="16" x2="16.01" y2="16" />
+            </svg>
+            <span>Bot n8n B2B</span>
+            <span style={{
+              background: n8nConfig?.enabled ? (activeTab === 'n8n_bot' ? '#FFFFFF' : '#0fa4de') : '#64748B',
+              color: n8nConfig?.enabled ? (activeTab === 'n8n_bot' ? '#0284c7' : '#FFFFFF') : '#FFFFFF',
+              fontSize: '10px',
+              fontWeight: '800',
+              padding: '1.5px 6px',
+              borderRadius: '999px',
+              marginLeft: '4px',
+              transition: 'all 0.2s'
+            }}>
+              {n8nConfig?.enabled ? 'IA' : 'Off'}
+            </span>
           </button>
         </div>
 
@@ -3324,19 +3784,18 @@ function AdminEcommerce({ embedded = false }) {
               </div>
             )}
 
-            {/* TABLA DE USUARIOS / CLIENTES - COMPACT 2 LINES */}
-            <div className="crm-table-container" style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)' }}>
+            {/* TABLA DE USUARIOS / CLIENTES - STRICT 2 LINES */}
+            <div className="crm-table-container" style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', background: '#ffffff' }}>
               <table className="users-table crm-compact-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
               <thead>
                 <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left' }}>
-                  <th style={{ padding: '7px 10px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750' }}>ID</th>
-                  <th style={{ padding: '7px 10px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750' }}>Empresa / Razón Social</th>
-                  <th style={{ padding: '7px 10px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750' }}>Usuario & Acceso LogIn</th>
-                  <th style={{ padding: '7px 10px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750' }}>Cargo / Rol</th>
-                  <th style={{ padding: '7px 10px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750' }}>Teléfono</th>
-                  <th style={{ padding: '7px 10px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750' }}>País / CUIT</th>
-                  <th style={{ padding: '7px 10px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750' }}>Estado</th>
-                  <th style={{ padding: '7px 10px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', textAlign: 'center' }}>Acciones</th>
+                  <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', whiteSpace: 'nowrap', width: '80px' }}>ID</th>
+                  <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', minWidth: '180px' }}>Empresa / Razón Social</th>
+                  <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', minWidth: '180px' }}>Usuario & Acceso Login</th>
+                  <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', minWidth: '150px' }}>Cargo & Contacto</th>
+                  <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', minWidth: '150px' }}>País & CUIT / NIT</th>
+                  <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', width: '130px' }}>Estado</th>
+                  <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', textAlign: 'center', width: '100px' }}>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -3368,12 +3827,18 @@ function AdminEcommerce({ embedded = false }) {
                     
                     return (
                       <tr key={u.id} style={{ borderBottom: '1px solid var(--border-color-subtle, #f1f5f9)', background: isPending ? 'rgba(245, 158, 11, 0.04)' : 'transparent', transition: 'background 0.15s ease' }}>
-                        <td style={{ padding: '6px 10px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
-                          <strong style={{ color: 'var(--primary, #0fa4de)', fontSize: '0.8rem', fontWeight: '800' }}>#{u.id}</strong>
+                        {/* 1. ID (2 lines) */}
+                        <td style={{ padding: '6px 12px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                          <div style={{ color: 'var(--primary, #0fa4de)', fontSize: '12.5px', fontWeight: '800', lineHeight: '1.25' }}>#{u.id}</div>
+                          <div style={{ fontSize: '10px', color: '#94a3b8', lineHeight: '1.25' }}>B2B</div>
                         </td>
-                        <td style={{ padding: '6px 10px', verticalAlign: 'middle' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'wrap', lineHeight: 1.25 }}>
-                            <strong style={{ color: 'var(--text-main)', fontSize: '0.82rem' }}>{u.razon_social || u.name}</strong>
+
+                        {/* 2. Empresa / Razón Social (2 lines) */}
+                        <td style={{ padding: '6px 12px', verticalAlign: 'middle', maxWidth: '240px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: '1.25' }}>
+                            <strong style={{ color: 'var(--text-main, #0f172a)', fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={u.razon_social || u.name}>
+                              {u.razon_social || u.name}
+                            </strong>
                             {sameCompanyCount > 1 && (
                               <span 
                                 title={`Esta empresa cuenta con ${sameCompanyCount} usuarios con acceso al Shop`}
@@ -3387,7 +3852,8 @@ function AdminEcommerce({ embedded = false }) {
                                   fontWeight: '700',
                                   display: 'inline-flex',
                                   alignItems: 'center',
-                                  gap: '2px'
+                                  gap: '2px',
+                                  flexShrink: 0
                                 }}
                               >
                                 <BrandingVectorIcon name="users" size={9} color="#0284c7" />
@@ -3395,98 +3861,114 @@ function AdminEcommerce({ embedded = false }) {
                               </span>
                             )}
                           </div>
-                          {u.tipo_cliente && (
-                            <div style={{ fontSize: '0.72rem', color: '#64748b', marginTop: '1px', display: 'flex', alignItems: 'center', gap: '3px', lineHeight: 1.2 }}>
-                              <BrandingVectorIcon name="briefcase" size={10} color="#64748b" />
-                              <span>{u.tipo_cliente}</span>
-                            </div>
-                          )}
+                          <div style={{ fontSize: '10.5px', color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: '1.25' }} title={u.tipo_cliente || 'Integrador IT / Mayorista'}>
+                            <span style={{ marginRight: '4px' }}>🏢</span>
+                            <span>{u.tipo_cliente || 'Integrador IT / Mayorista'}</span>
+                          </div>
                         </td>
-                        <td style={{ padding: '6px 10px', verticalAlign: 'middle' }}>
-                          <div style={{ fontWeight: '650', color: 'var(--text-main)', fontSize: '0.8rem', lineHeight: 1.25 }}>{u.name}</div>
-                          <div style={{ fontSize: '0.72rem', color: '#0fa4de', marginTop: '1px', display: 'flex', alignItems: 'center', gap: '3px', lineHeight: 1.2 }}>
-                            <BrandingVectorIcon name="mail" size={10} color="#0fa4de" />
+
+                        {/* 3. Usuario & Acceso Login (2 lines) */}
+                        <td style={{ padding: '6px 12px', verticalAlign: 'middle', maxWidth: '220px' }}>
+                          <div style={{ fontWeight: '700', color: 'var(--text-main, #0f172a)', fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: '1.25' }} title={u.name}>
+                            {u.name}
+                          </div>
+                          <div style={{ fontSize: '10.5px', color: '#0fa4de', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: '1.25' }} title={u.email}>
+                            <span style={{ marginRight: '4px' }}>✉</span>
                             <span>{u.email}</span>
                           </div>
                         </td>
-                        <td style={{ padding: '6px 10px', verticalAlign: 'middle' }}>
-                          <span style={{
-                            background: 'rgba(0,0,0,0.03)',
-                            color: 'var(--text-main)',
-                            padding: '2px 6px',
-                            borderRadius: '5px',
-                            fontSize: '0.72rem',
-                            fontWeight: '600',
-                            display: 'inline-block',
-                            border: '1px solid var(--border-color)',
-                            whiteSpace: 'nowrap'
-                          }}>
-                            {u.cargo || 'Encargado de Compras'}
-                          </span>
-                        </td>
-                        <td style={{ padding: '6px 10px', fontSize: '0.76rem', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                          {u.phone || '—'}
-                        </td>
-                        <td style={{ padding: '6px 10px', verticalAlign: 'middle' }}>
-                          <div style={{ fontSize: '0.78rem', fontWeight: '600', color: 'var(--text-main)', lineHeight: 1.25 }}>
-                            {u.country_name || countries.find(c => c.id === u.country_id)?.name || '—'}
+
+                        {/* 4. Cargo & Contacto (2 lines) */}
+                        <td style={{ padding: '6px 12px', verticalAlign: 'middle', maxWidth: '190px' }}>
+                          <div style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: '1.25' }} title={u.cargo || 'Encargado de Compras'}>
+                            <span style={{
+                              background: 'rgba(0,0,0,0.04)',
+                              color: 'var(--text-main, #334155)',
+                              padding: '1px 6px',
+                              borderRadius: '4px',
+                              fontSize: '10.5px',
+                              fontWeight: '600',
+                              border: '1px solid var(--border-color, #e2e8f0)',
+                              display: 'inline-block'
+                            }}>
+                              {u.cargo || 'Encargado de Compras'}
+                            </span>
                           </div>
-                          <div style={{ fontSize: '0.7rem', color: '#64748b', fontWeight: '600', lineHeight: 1.2 }}>
-                            {u.numero_nit || 'Sin CUIT'}
+                          <div style={{ fontSize: '10.5px', color: '#64748b', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: '1.25', marginTop: '2px' }} title={u.phone || 'Sin Teléfono'}>
+                            {u.phone ? `📞 ${u.phone}` : '—'}
                           </div>
                         </td>
-                        <td style={{ padding: '6px 10px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                          {isPending ? (
-                            <span style={{
-                              background: '#fef3c7',
-                              color: '#d97706',
-                              border: '1px solid #fde68a',
-                              padding: '2px 7px',
-                              borderRadius: '999px',
-                              fontSize: '0.7rem',
-                              fontWeight: '750',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}>
-                              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#d97706' }}></span>
-                              Solicitud Shop
-                            </span>
-                          ) : isInactive ? (
-                            <span style={{
-                              background: '#fee2e2',
-                              color: '#dc2626',
-                              border: '1px solid #fecaca',
-                              padding: '2px 7px',
-                              borderRadius: '999px',
-                              fontSize: '0.7rem',
-                              fontWeight: '750',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}>
-                              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#dc2626' }}></span>
-                              Inactivo
-                            </span>
-                          ) : (
-                            <span style={{
-                              background: '#dcfce7',
-                              color: '#16a34a',
-                              border: '1px solid #bbf7d0',
-                              padding: '2px 7px',
-                              borderRadius: '999px',
-                              fontSize: '0.7rem',
-                              fontWeight: '750',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}>
-                              <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#16a34a' }}></span>
-                              Activo
-                            </span>
-                          )}
+
+                        {/* 5. País & CUIT / NIT (2 lines) */}
+                        <td style={{ padding: '6px 12px', verticalAlign: 'middle', maxWidth: '180px' }}>
+                          <div style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-main, #334155)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: '1.25' }} title={u.country_name || countries.find(c => c.id === u.country_id)?.name || 'Argentina'}>
+                            📍 {u.country_name || countries.find(c => c.id === u.country_id)?.name || 'Argentina'}
+                          </div>
+                          <div style={{ fontSize: '10px', color: '#64748b', fontFamily: 'monospace', fontWeight: '700', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', lineHeight: '1.25' }} title={u.numero_nit || 'Sin CUIT'}>
+                            {u.numero_nit ? `CUIT: ${u.numero_nit}` : 'Sin CUIT'}
+                          </div>
                         </td>
-                        <td style={{ padding: '6px 10px', verticalAlign: 'middle', textAlign: 'center' }}>
+
+                        {/* 6. Estado (2 lines) */}
+                        <td style={{ padding: '6px 12px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
+                          <div>
+                            {isPending ? (
+                              <span style={{
+                                background: '#fef3c7',
+                                color: '#d97706',
+                                border: '1px solid #fde68a',
+                                padding: '2px 7px',
+                                borderRadius: '999px',
+                                fontSize: '10.5px',
+                                fontWeight: '750',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}>
+                                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#d97706' }}></span>
+                                Solicitud Shop
+                              </span>
+                            ) : isInactive ? (
+                              <span style={{
+                                background: '#fee2e2',
+                                color: '#dc2626',
+                                border: '1px solid #fecaca',
+                                padding: '2px 7px',
+                                borderRadius: '999px',
+                                fontSize: '10.5px',
+                                fontWeight: '750',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}>
+                                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#dc2626' }}></span>
+                                Inactivo
+                              </span>
+                            ) : (
+                              <span style={{
+                                background: '#dcfce7',
+                                color: '#16a34a',
+                                border: '1px solid #bbf7d0',
+                                padding: '2px 7px',
+                                borderRadius: '999px',
+                                fontSize: '10.5px',
+                                fontWeight: '750',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}>
+                                <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#16a34a' }}></span>
+                                Activo
+                              </span>
+                            )}
+                          </div>
+                          <div style={{ fontSize: '9.5px', color: '#94a3b8', marginTop: '2px', lineHeight: '1' }}>
+                            Portal Mayorista
+                          </div>
+                        </td>
+
+                        {/* 7. Acciones (2 lines vertical align) */}
+                        <td style={{ padding: '6px 12px', verticalAlign: 'middle', textAlign: 'center', whiteSpace: 'nowrap' }}>
                           {/* Dropdown de Acciones */}
                           <div style={{ position: 'relative', display: 'inline-block' }}>
                             <button
@@ -3502,7 +3984,7 @@ function AdminEcommerce({ embedded = false }) {
                               }}
                               style={{
                                 display: 'inline-flex', alignItems: 'center', gap: '5px',
-                                padding: '3px 10px', borderRadius: '7px', cursor: 'pointer',
+                                padding: '3px 9px', borderRadius: '7px', cursor: 'pointer',
                                 fontSize: '11px', fontWeight: '700',
                                 background: isPending ? '#fef3c7' : '#F1F5F9',
                                 color: isPending ? '#d97706' : '#334155',
@@ -3801,66 +4283,100 @@ function AdminEcommerce({ embedded = false }) {
                 <table className="users-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
                   <thead>
                     <tr style={{ background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', textAlign: 'left' }}>
-                      <th style={{ padding: '8px 10px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>N° Orden</th>
-                      <th style={{ padding: '8px 10px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Fecha</th>
-                      <th style={{ padding: '8px 10px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Cliente & Empresa</th>
-                      <th style={{ padding: '8px 10px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>País & Despacho</th>
-                      <th style={{ padding: '8px 10px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Condición / PO</th>
-                      <th style={{ padding: '8px 10px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Total USD</th>
-                      <th style={{ padding: '8px 10px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em' }}>Estado</th>
-                      <th style={{ padding: '8px 10px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', textAlign: 'center' }}>Acciones</th>
+                      <th style={{ padding: '8px 12px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap', width: '120px' }}>N° Orden / Fecha</th>
+                      <th style={{ padding: '8px 12px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', minWidth: '180px' }}>Cliente & Empresa</th>
+                      <th style={{ padding: '8px 12px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', minWidth: '180px' }}>Destino & Logística</th>
+                      <th style={{ padding: '8px 12px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', minWidth: '160px' }}>Pago / PO</th>
+                      <th style={{ padding: '8px 12px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', whiteSpace: 'nowrap', width: '130px' }}>Total USD</th>
+                      <th style={{ padding: '8px 12px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', width: '140px' }}>Estado</th>
+                      <th style={{ padding: '8px 12px', fontWeight: '750', color: '#475569', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', textAlign: 'center', width: '80px' }}>Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
                     {filteredOrders.map(ord => (
                       <tr key={ord.id} style={{ borderBottom: '1px solid #F1F5F9', transition: 'background 0.15s' }}>
-                        <td style={{ padding: '7px 10px', whiteSpace: 'nowrap' }}>
-                          <span style={{ fontWeight: '800', color: '#0FA4DE', fontSize: '12px' }}>#{ord.id}</span>
-                        </td>
-                        <td style={{ padding: '7px 10px', color: '#64748B', whiteSpace: 'nowrap', fontSize: '11px' }}>
-                          {ord.created_at ? new Date(ord.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—'}
-                        </td>
-                        <td style={{ padding: '7px 10px' }}>
-                          <div style={{ fontWeight: '700', color: '#0F172A', fontSize: '12px', lineHeight: 1.25 }}>{ord.user_company || ord.user_name || 'Cliente B2B'}</div>
-                          <div style={{ fontSize: '10.5px', color: '#64748B' }}>{ord.user_email}</div>
-                          {ord.user_cuit && <div style={{ fontSize: '10px', color: '#94A3B8' }}>CUIT: {ord.user_cuit}</div>}
-                        </td>
-                        <td style={{ padding: '7px 10px' }}>
-                          <div style={{ fontWeight: '600', color: '#334155', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '11.5px' }}>
-                            <BrandingVectorIcon name="map-pin" size={12} color="#0FA4DE" />
-                            <span>{ord.country_name || 'Argentina'}</span>
+                        {/* 1. N° Orden & Fecha (2 lines) */}
+                        <td style={{ padding: '6px 12px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                          <div style={{ fontWeight: '800', color: '#0FA4DE', fontSize: '12.5px', lineHeight: '1.25' }}>#{ord.id}</div>
+                          <div style={{ color: '#64748B', fontSize: '10.5px', lineHeight: '1.25' }}>
+                            {ord.created_at ? new Date(ord.created_at).toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: '2-digit', hour: '2-digit', minute: '2-digit' }) : '—'}
                           </div>
-                          <div style={{ fontSize: '10.5px', color: '#64748B' }}>{ord.shipping_method || 'Envío a Domicilio'}</div>
-                          {ord.tracking_number && (
-                            <span style={{ fontSize: '9.5px', background: '#F1F5F9', color: '#0369A1', padding: '1px 5px', borderRadius: '4px', fontWeight: '700', fontFamily: 'monospace', display: 'inline-block', marginTop: '2px' }}>
-                              {ord.tracking_number}
-                            </span>
-                          )}
                         </td>
-                        <td style={{ padding: '7px 10px' }}>
-                          <div style={{ fontSize: '11.5px', color: '#334155', lineHeight: 1.25 }}>{ord.payment_method || 'Cuenta Corriente'}</div>
-                          {ord.po_number && <div style={{ fontSize: '10.5px', color: '#0FA4DE', fontWeight: '700' }}>{ord.po_number}</div>}
+
+                        {/* 2. Cliente & Empresa (2 lines) */}
+                        <td style={{ padding: '6px 12px', verticalAlign: 'middle', maxWidth: '240px' }}>
+                          <div
+                            style={{ fontWeight: '700', color: '#0F172A', fontSize: '12px', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                            title={ord.user_company || ord.user_name || 'Cliente B2B'}
+                          >
+                            {ord.user_company || ord.user_name || 'Cliente B2B'}
+                          </div>
+                          <div
+                            style={{ fontSize: '10.5px', color: '#64748B', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                            title={`${ord.user_email || ''} ${ord.user_cuit ? `• CUIT: ${ord.user_cuit}` : ''}`}
+                          >
+                            {ord.user_email} {ord.user_cuit ? `• CUIT: ${ord.user_cuit}` : ''}
+                          </div>
                         </td>
-                        <td style={{ padding: '7px 10px', whiteSpace: 'nowrap' }}>
-                          <div style={{ fontWeight: '800', color: '#071524', fontSize: '12.5px' }}>
+
+                        {/* 3. Destino & Logística (2 lines) */}
+                        <td style={{ padding: '6px 12px', verticalAlign: 'middle', maxWidth: '240px' }}>
+                          <div
+                            style={{ fontWeight: '600', color: '#334155', fontSize: '11.5px', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                            title={`${ord.country_name || 'Argentina'} • ${ord.shipping_method || 'Envío a Domicilio'}`}
+                          >
+                            <span>📍 {ord.country_name || 'Argentina'}</span>
+                            <span style={{ color: '#94A3B8', margin: '0 4px' }}>•</span>
+                            <span style={{ color: '#64748B', fontSize: '10.5px' }}>{ord.shipping_method || 'Envío a Domicilio'}</span>
+                          </div>
+                          <div
+                            style={{ fontSize: '10px', color: '#0369A1', fontFamily: 'monospace', fontWeight: '700', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                            title={ord.tracking_number ? `Guía / Tracking: ${ord.tracking_number}` : 'Sin N° de Guía'}
+                          >
+                            {ord.tracking_number ? `Guía: ${ord.tracking_number}` : 'Despacho interno'}
+                          </div>
+                        </td>
+
+                        {/* 4. Condición / PO (2 lines) */}
+                        <td style={{ padding: '6px 12px', verticalAlign: 'middle', maxWidth: '200px' }}>
+                          <div
+                            style={{ fontSize: '11.5px', color: '#334155', fontWeight: '600', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                            title={ord.payment_method || 'Cuenta Corriente'}
+                          >
+                            {ord.payment_method || 'Cuenta Corriente'}
+                          </div>
+                          <div
+                            style={{ fontSize: '10.5px', color: ord.po_number ? '#0FA4DE' : '#94A3B8', fontWeight: ord.po_number ? '700' : '400', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}
+                            title={ord.po_number ? `Orden de Compra: ${ord.po_number}` : 'Venta Directa'}
+                          >
+                            {ord.po_number ? `OC: ${ord.po_number}` : 'Venta Directa'}
+                          </div>
+                        </td>
+
+                        {/* 5. Total USD & Descuento (2 lines) */}
+                        <td style={{ padding: '6px 12px', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                          <div style={{ fontWeight: '800', color: '#071524', fontSize: '12.5px', lineHeight: '1.25' }}>
                             ${parseFloat(ord.total || 0).toLocaleString('es-AR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
                           </div>
-                          {parseFloat(ord.discount_applied || 0) > 0 && (
-                            <div style={{ fontSize: '10px', color: '#16A34A', fontWeight: '600' }}>
-                              Desc: -${parseFloat(ord.discount_applied).toFixed(2)}
-                            </div>
-                          )}
+                          <div style={{ fontSize: '10px', color: parseFloat(ord.discount_applied || 0) > 0 ? '#16A34A' : '#94A3B8', fontWeight: '600', lineHeight: '1.25' }}>
+                            {parseFloat(ord.discount_applied || 0) > 0 ? `Desc: -$${parseFloat(ord.discount_applied).toFixed(2)}` : 'Precio regular'}
+                          </div>
                         </td>
-                        <td style={{ padding: '7px 10px' }}>
+
+                        {/* 6. Estado (2 lines) */}
+                        <td style={{ padding: '6px 12px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
                           <select
                             value={ord.status || 'procesando'}
                             onChange={(e) => handleUpdateOrderStatus(ord.id, e.target.value)}
                             style={{
-                              padding: '3px 6px',
+                              padding: '2px 6px',
                               borderRadius: '6px',
                               fontSize: '11px',
                               fontWeight: '700',
                               cursor: 'pointer',
+                              display: 'block',
+                              width: '100%',
+                              boxSizing: 'border-box',
                               ...statusStyle(ord.status)
                             }}
                           >
@@ -3870,8 +4386,13 @@ function AdminEcommerce({ embedded = false }) {
                             <option value="paid">Pagado</option>
                             <option value="cancelled">Cancelado</option>
                           </select>
+                          <div style={{ fontSize: '9.5px', color: '#94A3B8', marginTop: '2px', lineHeight: '1' }}>
+                            Operaciones CRM
+                          </div>
                         </td>
-                        <td style={{ padding: '7px 10px', textAlign: 'center', whiteSpace: 'nowrap' }}>
+
+                        {/* 7. Acciones (2 lines vertical align) */}
+                        <td style={{ padding: '6px 12px', textAlign: 'center', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
                           <button
                             onClick={() => { setSelectedOrder(ord); setShowOrderModal(true); }}
                             style={{
@@ -3880,7 +4401,7 @@ function AdminEcommerce({ embedded = false }) {
                               border: 'none',
                               padding: '4px 10px',
                               borderRadius: '6px',
-                              fontSize: '11.5px',
+                              fontSize: '11px',
                               fontWeight: '700',
                               cursor: 'pointer',
                               display: 'inline-flex',
@@ -3889,7 +4410,7 @@ function AdminEcommerce({ embedded = false }) {
                               boxShadow: '0 2px 4px rgba(15, 164, 222, 0.2)'
                             }}
                           >
-                            <BrandingVectorIcon name="eye" size={12} color="#ffffff" />
+                            <BrandingVectorIcon name="eye" size={11} color="#ffffff" />
                             <span>Ver</span>
                           </button>
                         </td>
@@ -5417,6 +5938,88 @@ function AdminEcommerce({ embedded = false }) {
                       );
                     })()}
 
+                    {/* 📐 Ficha de Especificaciones Técnicas para el Diseñador Gráfico */}
+                    <div style={{
+                      background: 'linear-gradient(135deg, #071524 0%, #0f2742 100%)',
+                      borderRadius: '16px',
+                      padding: '20px 24px',
+                      color: '#FFFFFF',
+                      marginBottom: '20px',
+                      border: '1px solid rgba(15, 164, 222, 0.35)',
+                      boxShadow: '0 8px 24px rgba(7, 21, 36, 0.15)'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '1.3rem' }}>📐</span>
+                          <div>
+                            <h4 style={{ margin: 0, fontSize: '14.5px', fontWeight: '800', color: '#FFFFFF' }}>
+                              Especificaciones Técnicas para el Diseñador Gráfico (Banners del Carousel)
+                            </h4>
+                            <span style={{ fontSize: '11px', color: '#94A3B8' }}>
+                              Parámetros oficiales para crear banners de máxima fidelidad y carga instantánea.
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const specText = `ESPECIFICACIONES TÉCNICAS DE BANNERS - DACAS B2B SHOP\n` +
+                              `===================================================\n` +
+                              `• Dimensiones Recomendadas: 1920 x 500 px (Relación ~16:4.2 / 3.84:1)\n` +
+                              `• Resolución Mínima: 1440 x 420 px\n` +
+                              `• Formatos Soportados: WebP (Recomendado), PNG 24-bit, JPG/JPEG (Calidad 90%)\n` +
+                              `• Peso Máximo por Archivo: <= 400 KB (Máximo 500 KB)\n` +
+                              `• Zona Segura (Safe Zone): 1400 x 420 px central (evitar texto/logos en los primeros 120px laterales por las flechas del carrusel)\n` +
+                              `• Espacio de Color: sRGB (72 a 150 DPI)\n` +
+                              `• Estilo & Paleta DACAS: Fondo oscuro (#071524 a #0f2742), Cian (#0fa4de), Acentos de Marca Oficiales.`;
+                            navigator.clipboard.writeText(specText);
+                            alert('📋 ¡Especificaciones técnicas copiadas al portapapeles para enviar al diseñador!');
+                          }}
+                          style={{
+                            background: '#0fa4de',
+                            color: '#FFFFFF',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '7px 14px',
+                            fontSize: '11.5px',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          📋 Copiar Ficha para el Diseñador
+                        </button>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '12px', fontSize: '11.5px' }}>
+                        <div style={{ background: 'rgba(15, 39, 66, 0.65)', padding: '10px 14px', borderRadius: '10px', border: '1px solid rgba(15, 164, 222, 0.2)' }}>
+                          <span style={{ color: '#38bdf8', fontWeight: '800', display: 'block', marginBottom: '2px' }}>📏 DIMENSIONES</span>
+                          <span style={{ fontWeight: '700', color: '#FFFFFF' }}>1920 x 500 px</span>
+                          <div style={{ color: '#94A3B8', fontSize: '10.5px' }}>Aspect ratio ~3.84:1</div>
+                        </div>
+
+                        <div style={{ background: 'rgba(15, 39, 66, 0.65)', padding: '10px 14px', borderRadius: '10px', border: '1px solid rgba(15, 164, 222, 0.2)' }}>
+                          <span style={{ color: '#10b981', fontWeight: '800', display: 'block', marginBottom: '2px' }}>📁 FORMATOS</span>
+                          <span style={{ fontWeight: '700', color: '#FFFFFF' }}>WebP, PNG, JPG</span>
+                          <div style={{ color: '#94A3B8', fontSize: '10.5px' }}>WebP preferido</div>
+                        </div>
+
+                        <div style={{ background: 'rgba(15, 39, 66, 0.65)', padding: '10px 14px', borderRadius: '10px', border: '1px solid rgba(15, 164, 222, 0.2)' }}>
+                          <span style={{ color: '#f59e0b', fontWeight: '800', display: 'block', marginBottom: '2px' }}>⚖️ PESO MÁXIMO</span>
+                          <span style={{ fontWeight: '700', color: '#FFFFFF' }}>&lt; 400 KB - 500 KB</span>
+                          <div style={{ color: '#94A3B8', fontSize: '10.5px' }}>Optimizado web</div>
+                        </div>
+
+                        <div style={{ background: 'rgba(15, 39, 66, 0.65)', padding: '10px 14px', borderRadius: '10px', border: '1px solid rgba(15, 164, 222, 0.2)' }}>
+                          <span style={{ color: '#c084fc', fontWeight: '800', display: 'block', marginBottom: '2px' }}>🛡️ SAFE ZONE</span>
+                          <span style={{ fontWeight: '700', color: '#FFFFFF' }}>1400 x 420 px</span>
+                          <div style={{ color: '#94A3B8', fontSize: '10.5px' }}>Margen lateral 120px</div>
+                        </div>
+                      </div>
+                    </div>
+
                     {/* Slides Grid Selector & Slide Form */}
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
                       
@@ -5517,9 +6120,162 @@ function AdminEcommerce({ embedded = false }) {
                         const cur = visualConfig.heroSlides[editingSlideIdx];
                         return (
                           <div style={{ background: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
-                            <h4 style={{ margin: '0 0 16px', fontSize: '14px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <span>✏️</span> Editando Slide #{editingSlideIdx + 1}: {cur.titleLine1}
-                            </h4>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+                              <h4 style={{ margin: 0, fontSize: '14px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <span>✏️</span> Editando Slide #{editingSlideIdx + 1}: {cur.titleLine1 || 'Banner Personalizado'}
+                              </h4>
+                              <span style={{ fontSize: '11px', background: '#E0F2FE', color: '#0369A1', padding: '3px 8px', borderRadius: '6px', fontWeight: '750' }}>
+                                1920 x 500 px
+                              </span>
+                            </div>
+
+                            {/* Selector de Modo de Banner */}
+                            <div style={{ marginBottom: '18px', background: '#F8FAFC', padding: '12px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+                              <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', color: '#0F172A', marginBottom: '8px' }}>
+                                🎨 Tipo de Presentación del Banner
+                              </label>
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
+                                {[
+                                  { id: 'metrics', label: '📊 Título + Métricas', desc: 'Tipográfico con 3 KPIs' },
+                                  { id: 'custom_image', label: '🖼️ Banner Gráfico Completo', desc: 'Diseño 100% en Imagen' },
+                                  { id: 'animated_stats', label: '⚡ Animado Core DACAS', desc: 'Contadores automáticos' }
+                                ].map(t => (
+                                  <button
+                                    key={t.id}
+                                    type="button"
+                                    onClick={() => handleUpdateSlideField(editingSlideIdx, 'type', t.id)}
+                                    style={{
+                                      padding: '8px 10px',
+                                      borderRadius: '8px',
+                                      textAlign: 'left',
+                                      background: (cur.type || 'metrics') === t.id ? '#0284c7' : '#FFFFFF',
+                                      color: (cur.type || 'metrics') === t.id ? '#FFFFFF' : '#334155',
+                                      border: `1.5px solid ${(cur.type || 'metrics') === t.id ? '#0284c7' : '#CBD5E1'}`,
+                                      cursor: 'pointer',
+                                      fontSize: '11.5px',
+                                      fontWeight: '700'
+                                    }}
+                                  >
+                                    <div>{t.label}</div>
+                                    <div style={{ fontSize: '10px', opacity: 0.85, fontWeight: '500' }}>{t.desc}</div>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Imagen de Banner (Carga desde PC / URL) */}
+                            <div style={{ marginBottom: '16px', background: '#F0F9FF', padding: '16px', borderRadius: '14px', border: '1.5px solid #BAE6FD' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                <label style={{ fontSize: '12.5px', fontWeight: '800', color: '#0369A1' }}>
+                                  🖼️ Imagen del Banner (Cargar desde la PC o URL)
+                                </label>
+                                <span style={{ fontSize: '11px', color: '#0284c7', fontWeight: '700' }}>
+                                  Recomendado: 1920x500 px
+                                </span>
+                              </div>
+
+                              {/* Input de archivo nativo oculto */}
+                              <input
+                                type="file"
+                                ref={bannerFileInputRef}
+                                accept="image/webp,image/png,image/jpeg,image/jpg"
+                                style={{ display: 'none' }}
+                                onChange={(e) => handleBannerFileUpload(e, editingSlideIdx)}
+                              />
+
+                              {/* Botones de acción: Cargar desde PC o Pegar URL */}
+                              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '10px' }}>
+                                <button
+                                  type="button"
+                                  onClick={() => bannerFileInputRef.current && bannerFileInputRef.current.click()}
+                                  disabled={uploadingBanner}
+                                  style={{
+                                    background: '#0fa4de',
+                                    color: '#FFFFFF',
+                                    border: 'none',
+                                    padding: '9px 18px',
+                                    borderRadius: '10px',
+                                    fontSize: '12.5px',
+                                    fontWeight: '800',
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    boxShadow: '0 2px 8px rgba(15, 164, 222, 0.3)'
+                                  }}
+                                >
+                                  <span>📁</span> {uploadingBanner ? 'Cargando archivo...' : 'Cargar Foto desde la PC'}
+                                </button>
+
+                                <span style={{ fontSize: '11px', color: '#64748B', fontWeight: '600' }}>o ingresa una URL:</span>
+
+                                <input
+                                  type="text"
+                                  value={cur.imageUrl || ''}
+                                  onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'imageUrl', e.target.value)}
+                                  placeholder="https://servidor.com/banner-1920x500.webp"
+                                  style={{ flex: 1, minWidth: '200px', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF' }}
+                                />
+
+                                {cur.imageUrl && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleUpdateSlideField(editingSlideIdx, 'imageUrl', '')}
+                                    style={{ background: '#FEE2E2', border: '1px solid #FECACA', color: '#DC2626', padding: '8px 12px', borderRadius: '8px', fontSize: '11.5px', fontWeight: '700', cursor: 'pointer' }}
+                                  >
+                                    🗑️ Quitar
+                                  </button>
+                                )}
+                              </div>
+
+                              {/* Zona Drag and Drop / Preview */}
+                              {!cur.imageUrl ? (
+                                <div
+                                  onClick={() => bannerFileInputRef.current && bannerFileInputRef.current.click()}
+                                  style={{
+                                    border: '2px dashed #93C5FD',
+                                    borderRadius: '12px',
+                                    padding: '24px 16px',
+                                    textAlign: 'center',
+                                    cursor: 'pointer',
+                                    background: 'rgba(255, 255, 255, 0.7)',
+                                    transition: 'all 0.2s'
+                                  }}
+                                  onMouseEnter={(e) => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.borderColor = '#0284c7'; }}
+                                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.7)'; e.currentTarget.style.borderColor = '#93C5FD'; }}
+                                >
+                                  <div style={{ fontSize: '1.8rem', marginBottom: '4px' }}>☁️</div>
+                                  <div style={{ fontWeight: '750', fontSize: '12.5px', color: '#0369A1' }}>
+                                    Haz click aquí o arrastra tu banner para subirlo desde la PC
+                                  </div>
+                                  <div style={{ fontSize: '11px', color: '#64748B', marginTop: '2px' }}>
+                                    Formatos: WebP, PNG, JPG • Máximo 15 MB
+                                  </div>
+                                </div>
+                              ) : (
+                                <div style={{ marginTop: '8px', borderRadius: '10px', overflow: 'hidden', border: '1px solid #CBD5E1', position: 'relative', background: '#071524' }}>
+                                  <img 
+                                    src={cur.imageUrl} 
+                                    alt="Banner Preview" 
+                                    style={{ width: '100%', maxHeight: '160px', objectFit: 'cover', display: 'block' }} 
+                                  />
+                                  <div style={{
+                                    position: 'absolute',
+                                    bottom: '8px',
+                                    left: '8px',
+                                    background: 'rgba(7, 21, 36, 0.85)',
+                                    color: '#38bdf8',
+                                    padding: '3px 8px',
+                                    borderRadius: '6px',
+                                    fontSize: '10.5px',
+                                    fontWeight: '700',
+                                    backdropFilter: 'blur(4px)'
+                                  }}>
+                                    ✓ Banner Cargado Correctamente
+                                  </div>
+                                </div>
+                              )}
+                            </div>
 
                             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '14px' }}>
                               <div>
@@ -6298,6 +7054,38 @@ function AdminEcommerce({ embedded = false }) {
                     </h3>
 
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '18px' }}>
+                      <div style={{ gridColumn: '1 / -1', background: '#F8FAFC', padding: '16px', borderRadius: '12px', border: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div>
+                          <div style={{ fontWeight: '800', fontSize: '13.5px', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '1.2rem' }}>💬</span> Botón Flotante de WhatsApp en el Shop
+                          </div>
+                          <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
+                            Muestra el widget flotante interactivo de atención al cliente en tiempo real en la esquina inferior del Shop.
+                          </div>
+                        </div>
+                        <label style={{ position: 'relative', display: 'inline-block', width: '48px', height: '26px', cursor: 'pointer' }}>
+                          <input
+                            type="checkbox"
+                            checked={visualConfig.general?.whatsappEnabled !== false}
+                            onChange={(e) => setVisualConfig({
+                              ...visualConfig,
+                              general: { ...(visualConfig.general || {}), whatsappEnabled: e.target.checked }
+                            })}
+                            style={{ opacity: 0, width: 0, height: 0 }}
+                          />
+                          <span style={{
+                            position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
+                            backgroundColor: visualConfig.general?.whatsappEnabled !== false ? '#25D366' : '#CBD5E1',
+                            transition: '0.3s', borderRadius: '34px'
+                          }}>
+                            <span style={{
+                              position: 'absolute', content: '""', height: '20px', width: '20px', left: visualConfig.general?.whatsappEnabled !== false ? '24px' : '3px', bottom: '3px',
+                              backgroundColor: 'white', transition: '0.3s', borderRadius: '50%'
+                            }} />
+                          </span>
+                        </label>
+                      </div>
+
                       <div>
                         <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
                           WhatsApp Corporativo (con código de país)
@@ -6313,7 +7101,7 @@ function AdminEcommerce({ embedded = false }) {
                           placeholder="+5491141103300"
                         />
                         <p style={{ margin: '4px 0 0', fontSize: '11.5px', color: '#64748B' }}>
-                          Permite a los integradores enviar sus carritos de cotización directo a WhatsApp.
+                          Permite a los integradores contactar directo o enviar su cotización a WhatsApp.
                         </p>
                       </div>
 
@@ -6332,6 +7120,22 @@ function AdminEcommerce({ embedded = false }) {
                           placeholder="ventas@dacas.com"
                         />
                       </div>
+
+                      <div style={{ gridColumn: '1 / -1' }}>
+                        <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                          Mensaje Inicial Predeterminado al Abrir WhatsApp
+                        </label>
+                        <input
+                          type="text"
+                          value={visualConfig.general?.whatsappMessage || ''}
+                          onChange={(e) => setVisualConfig({
+                            ...visualConfig,
+                            general: { ...(visualConfig.general || {}), whatsappMessage: e.target.value }
+                          })}
+                          style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13.5px', background: '#FFFFFF' }}
+                          placeholder="¡Hola DACAS! Me contacto desde el Shop B2B para solicitar asesoramiento comercial y cotizaciones."
+                        />
+                      </div>
                     </div>
                   </div>
                 )}
@@ -6340,6 +7144,1598 @@ function AdminEcommerce({ embedded = false }) {
             ) : (
               <div style={{ padding: '40px', textAlign: 'center', color: '#64748B' }}>
                 Cargando configuración visual del Shop...
+              </div>
+            )}
+
+          </section>
+        )}
+
+        {/* ═══════════════ APLI INTEGRATION & CONNECTION MODULE ═══════════════ */}
+        {activeTab === 'apli' && (
+          <section className="board-section" style={{ width: '100%', boxSizing: 'border-box' }}>
+            {/* Header Banner & Status Bar */}
+            <div style={{
+              background: 'linear-gradient(135deg, #071524 0%, #0c233d 50%, #034870 100%)',
+              color: '#FFFFFF',
+              borderRadius: '20px',
+              padding: '24px 28px',
+              marginBottom: '24px',
+              boxShadow: '0 8px 30px rgba(7, 21, 36, 0.25)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '20px'
+            }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                  <div style={{
+                    width: '42px',
+                    height: '42px',
+                    borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '1.4rem',
+                    boxShadow: '0 4px 14px rgba(15, 164, 222, 0.4)'
+                  }}>
+                    🔌
+                  </div>
+                  <div>
+                    <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '900', letterSpacing: '-0.02em', color: '#FFFFFF' }}>
+                      Módulo de Conexión & Integración Apli
+                    </h2>
+                    <p style={{ margin: '2px 0 0', fontSize: '13px', color: '#94A3B8' }}>
+                      Sincronización en tiempo real de catálogo, stock, listas de precios y pedidos B2B con Apli ERP & Cloud.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Status Badges */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginTop: '12px' }}>
+                  <span style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '5px 12px',
+                    borderRadius: '999px',
+                    fontSize: '12px',
+                    fontWeight: '800',
+                    background: apliConfig.enabled && apliConfig.connectionStatus === 'connected' ? 'rgba(34, 197, 94, 0.18)' : 'rgba(239, 68, 68, 0.18)',
+                    color: apliConfig.enabled && apliConfig.connectionStatus === 'connected' ? '#4ADE80' : '#F87171',
+                    border: `1px solid ${apliConfig.enabled && apliConfig.connectionStatus === 'connected' ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)'}`
+                  }}>
+                    <span style={{
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      background: apliConfig.enabled && apliConfig.connectionStatus === 'connected' ? '#22C55E' : '#EF4444'
+                    }}></span>
+                    {apliConfig.enabled && apliConfig.connectionStatus === 'connected' ? 'Conectado & Operativo' : 'Desconectado'}
+                  </span>
+
+                  <span style={{ fontSize: '12px', color: '#CBD5E1', background: 'rgba(255, 255, 255, 0.1)', padding: '5px 12px', borderRadius: '8px' }}>
+                    ⚡ Latencia API: <strong style={{ color: '#38BDF8' }}>{apliConfig.lastLatencyMs || 35} ms</strong>
+                  </span>
+
+                  <span style={{ fontSize: '12px', color: '#CBD5E1', background: 'rgba(255, 255, 255, 0.1)', padding: '5px 12px', borderRadius: '8px' }}>
+                    🌐 Entorno: <strong style={{ color: '#FFFFFF', textTransform: 'uppercase' }}>{apliConfig.environment || 'produccion'}</strong>
+                  </span>
+
+                  <span style={{ fontSize: '12px', color: '#CBD5E1', background: 'rgba(255, 255, 255, 0.1)', padding: '5px 12px', borderRadius: '8px' }}>
+                    ⏱️ Última Sincronización: <strong style={{ color: '#FFFFFF' }}>{apliConfig.lastSync ? new Date(apliConfig.lastSync).toLocaleTimeString() : 'Reciente'}</strong>
+                  </span>
+                </div>
+              </div>
+
+              {/* Quick Actions Header */}
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={handleTestApliConnection}
+                  disabled={apliTesting}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.12)',
+                    color: '#FFFFFF',
+                    border: '1px solid rgba(255, 255, 255, 0.25)',
+                    borderRadius: '12px',
+                    padding: '10px 16px',
+                    fontSize: '13px',
+                    fontWeight: '800',
+                    cursor: apliTesting ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    backdropFilter: 'blur(6px)',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <span>⚡</span> {apliTesting ? 'Probando...' : 'Probar Conexión'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleSyncApliNow('all')}
+                  disabled={apliSyncing}
+                  style={{
+                    background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '10px 18px',
+                    fontSize: '13px',
+                    fontWeight: '800',
+                    cursor: apliSyncing ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 4px 14px rgba(15, 164, 222, 0.4)',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <span>🔄</span> {apliSyncing ? 'Sincronizando...' : 'Sincronizar Ahora'}
+                </button>
+              </div>
+            </div>
+
+            {/* Test Connection / Sync Result Alerts */}
+            {apliTestResult && (
+              <div style={{
+                background: apliTestResult.success ? '#ECFDF5' : '#FEF2F2',
+                color: apliTestResult.success ? '#065F46' : '#991B1B',
+                border: `1.5px solid ${apliTestResult.success ? '#A7F3D0' : '#FECACA'}`,
+                padding: '12px 18px',
+                borderRadius: '12px',
+                marginBottom: '18px',
+                fontSize: '13px',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+              }}>
+                <span>{apliTestResult.success ? '✅' : '❌'}</span>
+                <span>{apliTestResult.message}</span>
+              </div>
+            )}
+
+            {apliSyncResult && (
+              <div style={{
+                background: apliSyncResult.success ? '#EFF6FF' : '#FEF2F2',
+                color: apliSyncResult.success ? '#1E40AF' : '#991B1B',
+                border: `1.5px solid ${apliSyncResult.success ? '#BFDBFE' : '#FECACA'}`,
+                padding: '12px 18px',
+                borderRadius: '12px',
+                marginBottom: '18px',
+                fontSize: '13px',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+              }}>
+                <span>{apliSyncResult.success ? '🚀' : '❌'}</span>
+                <span>{apliSyncResult.message}</span>
+              </div>
+            )}
+
+            {apliSaveSuccess && (
+              <div style={{
+                background: '#ECFDF5',
+                color: '#065F46',
+                border: '1.5px solid #A7F3D0',
+                padding: '12px 18px',
+                borderRadius: '12px',
+                marginBottom: '18px',
+                fontSize: '13px',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+              }}>
+                <span>✓</span>
+                <span>¡Configuración del módulo Apli guardada exitosamente!</span>
+              </div>
+            )}
+
+            {/* Sub-Tabs Nav for Apli */}
+            <div style={{
+              display: 'flex',
+              gap: '10px',
+              borderBottom: '2px solid #E2E8F0',
+              paddingBottom: '12px',
+              marginBottom: '24px',
+              flexWrap: 'wrap'
+            }}>
+              {[
+                { id: 'config', label: '⚙️ Parámetros & Credenciales', desc: 'API Keys y Endpoints' },
+                { id: 'sync', label: '🔄 Sincronización Automática', desc: 'Catálogo, Stock y Pedidos' },
+                { id: 'webhooks', label: '🔗 Webhooks de Apli', desc: 'Notificaciones en Tiempo Real' },
+                { id: 'logs', label: '📊 Logs & Auditoría', desc: `${apliLogs.length} Eventos Registrados` }
+              ].map(st => (
+                <button
+                  key={st.id}
+                  type="button"
+                  onClick={() => setApliSubTab(st.id)}
+                  style={{
+                    background: apliSubTab === st.id ? '#0fa4de' : '#FFFFFF',
+                    color: apliSubTab === st.id ? '#FFFFFF' : '#475569',
+                    border: `1.5px solid ${apliSubTab === st.id ? '#0fa4de' : '#CBD5E1'}`,
+                    padding: '10px 16px',
+                    borderRadius: '12px',
+                    fontWeight: '800',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    gap: '2px',
+                    boxShadow: apliSubTab === st.id ? '0 4px 12px rgba(15, 164, 222, 0.25)' : 'none',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <span>{st.label}</span>
+                  <span style={{ fontSize: '10.5px', opacity: apliSubTab === st.id ? 0.9 : 0.65, fontWeight: '600' }}>
+                    {st.desc}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* ── SUBTAB 1: PARÁMETROS & CREDENCIALES ── */}
+            {apliSubTab === 'config' && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
+                {/* General Connection Card */}
+                <div style={{ background: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px' }}>
+                    <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span>🔐</span> Credenciales de Acceso Apli API
+                    </h3>
+                    <span style={{ fontSize: '11px', background: '#E0F2FE', color: '#0369A1', padding: '3px 8px', borderRadius: '6px', fontWeight: '750' }}>
+                      REST v2
+                    </span>
+                  </div>
+
+                  {/* Switch Enable Integration */}
+                  <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontWeight: '800', fontSize: '13px', color: '#0F172A' }}>Habilitar Conexión Apli ERP</div>
+                      <div style={{ fontSize: '11.5px', color: '#64748B' }}>Activa la integración del Shop con la API de Apli.</div>
+                    </div>
+                    <label style={{ position: 'relative', display: 'inline-block', width: '48px', height: '26px', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={apliConfig.enabled}
+                        onChange={(e) => setApliConfig({ ...apliConfig, enabled: e.target.checked })}
+                        style={{ opacity: 0, width: 0, height: 0 }}
+                      />
+                      <span style={{
+                        position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
+                        backgroundColor: apliConfig.enabled ? '#0fa4de' : '#CBD5E1',
+                        transition: '0.3s', borderRadius: '34px'
+                      }}>
+                        <span style={{
+                          position: 'absolute', content: '""', height: '20px', width: '20px', left: apliConfig.enabled ? '24px' : '3px', bottom: '3px',
+                          backgroundColor: 'white', transition: '0.3s', borderRadius: '50%'
+                        }} />
+                      </span>
+                    </label>
+                  </div>
+
+                  {/* Environment Selector */}
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                      Entorno de Ejecución
+                    </label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+                      {[
+                        { id: 'production', label: '🚀 Producción (Live)', desc: 'Servidores oficiales' },
+                        { id: 'sandbox', label: '🧪 Sandbox (Pruebas)', desc: 'Ambiente de test' }
+                      ].map(env => (
+                        <button
+                          key={env.id}
+                          type="button"
+                          onClick={() => setApliConfig({ ...apliConfig, environment: env.id })}
+                          style={{
+                            padding: '10px',
+                            borderRadius: '10px',
+                            border: `1.5px solid ${apliConfig.environment === env.id ? '#0284c7' : '#E2E8F0'}`,
+                            background: apliConfig.environment === env.id ? '#F0F9FF' : '#FFFFFF',
+                            color: apliConfig.environment === env.id ? '#0369A1' : '#475569',
+                            fontWeight: '700',
+                            fontSize: '12px',
+                            textAlign: 'left',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <div>{env.label}</div>
+                          <div style={{ fontSize: '10.5px', color: '#64748B', fontWeight: '500' }}>{env.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* API Endpoint URL */}
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '750', color: '#334155', marginBottom: '6px' }}>
+                      Apli API Base Endpoint URL
+                    </label>
+                    <input
+                      type="url"
+                      value={apliConfig.endpointUrl || ''}
+                      onChange={(e) => setApliConfig({ ...apliConfig, endpointUrl: e.target.value })}
+                      placeholder="https://api.apli.com.ar/v2"
+                      style={{ width: '100%', boxSizing: 'border-box', height: '42px', padding: '10px 14px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13px', outline: 'none' }}
+                    />
+                  </div>
+
+                  {/* Client / Tenant ID */}
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '750', color: '#334155', marginBottom: '6px' }}>
+                      ID de Cliente / Tenant DACAS en Apli
+                    </label>
+                    <input
+                      type="text"
+                      value={apliConfig.clientId || ''}
+                      onChange={(e) => setApliConfig({ ...apliConfig, clientId: e.target.value })}
+                      placeholder="DACAS-ARG-001"
+                      style={{ width: '100%', boxSizing: 'border-box', height: '42px', padding: '10px 14px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13px', outline: 'none' }}
+                    />
+                  </div>
+
+                  {/* API Key */}
+                  <div style={{ marginBottom: '16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '22px', marginBottom: '6px' }}>
+                      <label style={{ fontSize: '12px', fontWeight: '750', color: '#334155' }}>
+                        API Key / Bearer Token
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setShowApliApiKey(!showApliApiKey)}
+                        style={{
+                          background: '#F1F5F9',
+                          border: '1px solid #CBD5E1',
+                          borderRadius: '6px',
+                          color: '#0fa4de',
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          padding: '2px 8px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <span>{showApliApiKey ? '🙈' : '👁️'}</span>
+                        <span>{showApliApiKey ? 'Ocultar' : 'Mostrar'}</span>
+                      </button>
+                    </div>
+                    <input
+                      type={showApliApiKey ? 'text' : 'password'}
+                      value={apliConfig.apiKey || ''}
+                      onChange={(e) => setApliConfig({ ...apliConfig, apiKey: e.target.value })}
+                      placeholder="apli_live_..."
+                      style={{ width: '100%', boxSizing: 'border-box', height: '42px', padding: '10px 14px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13px', fontFamily: showApliApiKey ? 'monospace' : 'inherit', outline: 'none' }}
+                    />
+                  </div>
+
+                  {/* Client Secret */}
+                  <div style={{ marginBottom: '16px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '22px', marginBottom: '6px' }}>
+                      <label style={{ fontSize: '12px', fontWeight: '750', color: '#334155' }}>
+                        Client Secret
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setShowApliSecret(!showApliSecret)}
+                        style={{
+                          background: '#F1F5F9',
+                          border: '1px solid #CBD5E1',
+                          borderRadius: '6px',
+                          color: '#0fa4de',
+                          fontSize: '11px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          padding: '2px 8px',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <span>{showApliSecret ? '🙈' : '👁️'}</span>
+                        <span>{showApliSecret ? 'Ocultar' : 'Mostrar'}</span>
+                      </button>
+                    </div>
+                    <input
+                      type={showApliSecret ? 'text' : 'password'}
+                      value={apliConfig.clientSecret || ''}
+                      onChange={(e) => setApliConfig({ ...apliConfig, clientSecret: e.target.value })}
+                      placeholder="sk_live_..."
+                      style={{ width: '100%', boxSizing: 'border-box', height: '42px', padding: '10px 14px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13px', fontFamily: showApliSecret ? 'monospace' : 'inherit', outline: 'none' }}
+                    />
+                  </div>
+                </div>
+
+                {/* Integration Details & Security Card */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div style={{ background: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+                    <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span>🛡️</span> Seguridad y Cifrado de Transacciones
+                    </h3>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', background: '#F8FAFC', padding: '12px', borderRadius: '10px' }}>
+                        <span style={{ fontSize: '1.2rem' }}>🔒</span>
+                        <div>
+                          <div style={{ fontWeight: '750', fontSize: '12.5px', color: '#0F172A' }}>Encriptación TLS 1.3 / SSL 256-bit</div>
+                          <div style={{ fontSize: '11.5px', color: '#64748B' }}>Toda la comunicación con Apli viaja con encriptación de grado bancario.</div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', background: '#F8FAFC', padding: '12px', borderRadius: '10px' }}>
+                        <span style={{ fontSize: '1.2rem' }}>🔑</span>
+                        <div>
+                          <div style={{ fontWeight: '750', fontSize: '12.5px', color: '#0F172A' }}>Firma HMAC-SHA256 en Webhooks</div>
+                          <div style={{ fontSize: '11.5px', color: '#64748B' }}>Validación criptográfica de origen en cada notificación entrante.</div>
+                        </div>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', background: '#F8FAFC', padding: '12px', borderRadius: '10px' }}>
+                        <span style={{ fontSize: '1.2rem' }}>⚡</span>
+                        <div>
+                          <div style={{ fontWeight: '750', fontSize: '12.5px', color: '#0F172A' }}>Reintentos Exponenciales Automáticos</div>
+                          <div style={{ fontSize: '11.5px', color: '#64748B' }}>Si Apli no responde, el sistema reintenta con backoff automático de 5 intentos.</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Save Buttons Card */}
+                  <div style={{ background: '#F0FDF4', padding: '20px', borderRadius: '16px', border: '1.5px solid #BBF7D0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                    <div>
+                      <div style={{ fontWeight: '800', fontSize: '13.5px', color: '#166534' }}>Guardar Cambios de Conexión</div>
+                      <div style={{ fontSize: '11.5px', color: '#15803D' }}>Los cambios se aplicarán de inmediato a todo el sistema.</div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button
+                        type="button"
+                        onClick={handleResetApli}
+                        style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#475569', padding: '9px 16px', borderRadius: '10px', fontSize: '12.5px', fontWeight: '700', cursor: 'pointer' }}
+                      >
+                        Restablecer
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSaveApliSettings}
+                        disabled={isSavingApli}
+                        style={{
+                          background: 'linear-gradient(135deg, #16A34A 0%, #15803D 100%)',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          padding: '10px 20px',
+                          borderRadius: '10px',
+                          fontSize: '13px',
+                          fontWeight: '800',
+                          cursor: isSavingApli ? 'not-allowed' : 'pointer',
+                          boxShadow: '0 4px 12px rgba(22, 163, 74, 0.35)'
+                        }}
+                      >
+                        {isSavingApli ? 'Guardando...' : '💾 Guardar Configuración'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── SUBTAB 2: SINCRONIZACIÓN AUTOMÁTICA ── */}
+            {apliSubTab === 'sync' && (
+              <div style={{ background: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span>🔄</span> Matriz de Sincronización Bidireccional
+                    </h3>
+                    <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748B' }}>
+                      Selecciona qué módulos se actualizarán de forma automatizada entre DACAS Shop y Apli ERP.
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleSyncApliNow('stock')}
+                      disabled={apliSyncing}
+                      style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', padding: '7px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '750', cursor: 'pointer', color: '#334155' }}
+                    >
+                      📦 Sincronizar Solo Stock
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleSyncApliNow('orders')}
+                      disabled={apliSyncing}
+                      style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', padding: '7px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '750', cursor: 'pointer', color: '#334155' }}
+                    >
+                      🛒 Conciliar Pedidos
+                    </button>
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+                  {[
+                    { key: 'syncProducts', title: 'Catálogo de Productos & Precios', desc: 'Sincroniza SKUs, títulos, descripciones, marcas y listas mayoristas en USD.', icon: '🏷️' },
+                    { key: 'syncStock', title: 'Inventario & Stock en Tiempo Real', desc: 'Actualiza cantidades disponibles de forma automática al registrar ventas o ingresos.', icon: '📦' },
+                    { key: 'syncOrders', title: 'Despacho & Facturación de Pedidos', desc: 'Envía órdenes B2B aprobadas directo a Apli para emisión de factura fiscal y remito.', icon: '🧾' },
+                    { key: 'syncCustomers', title: 'Clientes & Límites de Crédito', desc: 'Valida cuentas corrientes, CUITs verificados y líneas de crédito de integradores.', icon: '🏢' }
+                  ].map(item => (
+                    <div
+                      key={item.key}
+                      style={{
+                        padding: '16px',
+                        borderRadius: '14px',
+                        border: `1.5px solid ${apliConfig[item.key] ? '#0284c7' : '#E2E8F0'}`,
+                        background: apliConfig[item.key] ? '#F0F9FF' : '#F8FAFC',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        gap: '12px'
+                      }}
+                    >
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        <span style={{ fontSize: '1.4rem' }}>{item.icon}</span>
+                        <div>
+                          <div style={{ fontWeight: '800', fontSize: '13px', color: apliConfig[item.key] ? '#0369A1' : '#1E293B' }}>
+                            {item.title}
+                          </div>
+                          <div style={{ fontSize: '11.5px', color: '#64748B', marginTop: '2px', lineHeight: '1.4' }}>
+                            {item.desc}
+                          </div>
+                        </div>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={Boolean(apliConfig[item.key])}
+                        onChange={(e) => setApliConfig({ ...apliConfig, [item.key]: e.target.checked })}
+                        style={{ width: '18px', height: '18px', cursor: 'pointer', accentColor: '#0284c7', marginTop: '2px' }}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                {/* Sync Frequency */}
+                <div style={{ background: '#F8FAFC', padding: '18px', borderRadius: '12px', border: '1px solid #E2E8F0', marginBottom: '20px' }}>
+                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '800', color: '#0F172A', marginBottom: '8px' }}>
+                    ⏱️ Frecuencia de Sincronización Automática
+                  </label>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
+                    {[
+                      { id: 'realtime', label: '⚡ Tiempo Real (Webhooks)', desc: 'Instantáneo' },
+                      { id: '5min', label: '⏱️ Cada 5 minutos', desc: 'Alta frecuencia' },
+                      { id: '15min', label: '⏱️ Cada 15 minutos', desc: 'Recomendado' },
+                      { id: 'hourly', label: '⏱️ Cada 1 hora', desc: 'Bajo tráfico' },
+                      { id: 'manual', label: '✋ Solo Manual', desc: 'Bajo demanda' }
+                    ].map(f => (
+                      <button
+                        key={f.id}
+                        type="button"
+                        onClick={() => setApliConfig({ ...apliConfig, syncInterval: f.id })}
+                        style={{
+                          padding: '10px',
+                          borderRadius: '10px',
+                          border: `1.5px solid ${apliConfig.syncInterval === f.id ? '#0284c7' : '#CBD5E1'}`,
+                          background: apliConfig.syncInterval === f.id ? '#0284c7' : '#FFFFFF',
+                          color: apliConfig.syncInterval === f.id ? '#FFFFFF' : '#334155',
+                          fontWeight: '700',
+                          fontSize: '11.5px',
+                          textAlign: 'left',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        <div>{f.label}</div>
+                        <div style={{ fontSize: '10px', opacity: 0.85, fontWeight: '500' }}>{f.desc}</div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={handleSaveApliSettings}
+                    disabled={isSavingApli}
+                    style={{
+                      background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      padding: '10px 22px',
+                      borderRadius: '10px',
+                      fontSize: '13px',
+                      fontWeight: '800',
+                      cursor: isSavingApli ? 'not-allowed' : 'pointer',
+                      boxShadow: '0 4px 12px rgba(15, 164, 222, 0.3)'
+                    }}
+                  >
+                    {isSavingApli ? 'Guardando...' : '💾 Guardar Preferencias de Sincronización'}
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ── SUBTAB 3: WEBHOOKS ── */}
+            {apliSubTab === 'webhooks' && (
+              <div style={{ background: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+                <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span>🔗</span> Endpoints y Webhooks de Notificación
+                </h3>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px', marginBottom: '20px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                      URL del Webhook de DACAS Shop (Ingresar en panel de Apli)
+                    </label>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input
+                        type="text"
+                        readOnly
+                        value={`http://${window.location.hostname}:3001/api/ecommerce/settings/apli/webhook`}
+                        style={{ flex: 1, padding: '10px 12px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', background: '#F8FAFC', fontFamily: 'monospace' }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          navigator.clipboard.writeText(`http://${window.location.hostname}:3001/api/ecommerce/settings/apli/webhook`);
+                          alert('¡URL del Webhook copiada al portapapeles!');
+                        }}
+                        style={{ background: '#0fa4de', color: '#FFFFFF', border: 'none', padding: '0 16px', borderRadius: '10px', fontSize: '12.5px', fontWeight: '800', cursor: 'pointer' }}
+                      >
+                        📋 Copiar
+                      </button>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                      Secreto de Firma Webhook (HMAC-SHA256)
+                    </label>
+                    <input
+                      type="text"
+                      value={apliConfig.webhookSecret || ''}
+                      onChange={(e) => setApliConfig({ ...apliConfig, webhookSecret: e.target.value })}
+                      placeholder="whsec_..."
+                      style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', fontFamily: 'monospace' }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ background: '#F8FAFC', padding: '16px', borderRadius: '12px', border: '1px solid #E2E8F0', marginBottom: '20px' }}>
+                  <div style={{ fontWeight: '800', fontSize: '12.5px', color: '#0F172A', marginBottom: '8px' }}>
+                    Eventos de Apli Suscritos:
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                    {['product.stock_updated', 'order.invoice_generated', 'order.status_change', 'customer.credit_limit_updated'].map(ev => (
+                      <span key={ev} style={{ background: '#E0F2FE', color: '#0369A1', padding: '4px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: '750', fontFamily: 'monospace' }}>
+                        ✓ {ev}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                  <button
+                    type="button"
+                    onClick={handleSaveApliSettings}
+                    disabled={isSavingApli}
+                    style={{
+                      background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                      color: '#FFFFFF',
+                      border: 'none',
+                      padding: '10px 20px',
+                      borderRadius: '10px',
+                      fontSize: '13px',
+                      fontWeight: '800',
+                      cursor: isSavingApli ? 'not-allowed' : 'pointer'
+                    }}
+                  >
+                    💾 Guardar Configuración de Webhook
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* ── SUBTAB 4: LOGS & AUDITORÍA ── */}
+            {apliSubTab === 'logs' && (
+              <div style={{ background: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+                  <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>📊</span> Registro de Transacciones y Eventos Apli ({apliLogs.length})
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={fetchApliLogs}
+                    style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', padding: '6px 12px', borderRadius: '8px', fontSize: '11.5px', fontWeight: '750', cursor: 'pointer', color: '#334155' }}
+                  >
+                    🔄 Actualizar Logs
+                  </button>
+                </div>
+
+                {apliLogs.length === 0 ? (
+                  <div style={{ padding: '30px', textAlign: 'center', color: '#64748B' }}>
+                    No hay registros de eventos aún.
+                  </div>
+                ) : (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px' }}>
+                      <thead>
+                        <tr style={{ background: '#F8FAFC', borderBottom: '2px solid #E2E8F0', textAlign: 'left', color: '#475569' }}>
+                          <th style={{ padding: '10px 12px', fontWeight: '800' }}>Fecha & Hora</th>
+                          <th style={{ padding: '10px 12px', fontWeight: '800' }}>Tipo de Evento</th>
+                          <th style={{ padding: '10px 12px', fontWeight: '800' }}>Estado</th>
+                          <th style={{ padding: '10px 12px', fontWeight: '800' }}>Detalle de Transacción</th>
+                          <th style={{ padding: '10px 12px', fontWeight: '800' }}>Duración</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {apliLogs.map((log) => (
+                          <tr key={log.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                            <td style={{ padding: '10px 12px', color: '#64748B', whiteSpace: 'nowrap' }}>
+                              {new Date(log.timestamp).toLocaleString()}
+                            </td>
+                            <td style={{ padding: '10px 12px', fontWeight: '750', color: '#0F172A' }}>
+                              <span style={{
+                                background: log.type.includes('STOCK') ? '#FEF3C7' : log.type.includes('ORDER') ? '#E0F2FE' : '#F1F5F9',
+                                color: log.type.includes('STOCK') ? '#B45309' : log.type.includes('ORDER') ? '#0369A1' : '#475569',
+                                padding: '3px 8px',
+                                borderRadius: '6px',
+                                fontSize: '10.5px'
+                              }}>
+                                {log.type}
+                              </span>
+                            </td>
+                            <td style={{ padding: '10px 12px' }}>
+                              <span style={{
+                                background: log.status === 'SUCCESS' ? '#DCFCE7' : '#FEE2E2',
+                                color: log.status === 'SUCCESS' ? '#15803D' : '#DC2626',
+                                padding: '3px 8px',
+                                borderRadius: '6px',
+                                fontWeight: '800',
+                                fontSize: '10.5px'
+                              }}>
+                                {log.status === 'SUCCESS' ? '✓ OK' : '✕ ERROR'}
+                              </span>
+                            </td>
+                            <td style={{ padding: '10px 12px', color: '#334155' }}>
+                              {log.details}
+                            </td>
+                            <td style={{ padding: '10px 12px', color: '#64748B', fontFamily: 'monospace' }}>
+                              {log.durationMs} ms
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+
+          </section>
+        )}
+
+        {/* ═══════════════ N8N AI AGENTS & BOT MODULE ═══════════════ */}
+        {activeTab === 'n8n_bot' && (
+          <section className="board-section" style={{ width: '100%', boxSizing: 'border-box' }}>
+            {/* Header Banner & Live Status */}
+            <div style={{
+              background: 'linear-gradient(135deg, #071524 0%, #0d2847 50%, #0fa4de 100%)',
+              color: '#FFFFFF',
+              borderRadius: '20px',
+              padding: '24px 28px',
+              marginBottom: '24px',
+              boxShadow: '0 8px 30px rgba(7, 21, 36, 0.25)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '20px'
+            }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
+                  <div style={{
+                    width: '44px',
+                    height: '44px',
+                    borderRadius: '12px',
+                    background: 'linear-gradient(135deg, #FF6D5A 0%, #EA4C89 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    fontSize: '1.4rem',
+                    boxShadow: '0 4px 14px rgba(255, 109, 90, 0.4)'
+                  }}>
+                    🤖
+                  </div>
+                  <div>
+                    <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '900', letterSpacing: '-0.02em', color: '#FFFFFF' }}>
+                      Agentes IA & Bot n8n para Clientes B2B
+                    </h2>
+                    <p style={{ margin: '2px 0 0', fontSize: '13px', color: '#E0F2FE' }}>
+                      Orquestación de Agentes de IA en n8n para asesoría técnica, consulta de stock en tiempo real y cotizaciones mayoristas.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Status Badges */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap', marginTop: '12px' }}>
+                  <span style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '5px 12px',
+                    borderRadius: '999px',
+                    fontSize: '12px',
+                    fontWeight: '800',
+                    background: n8nConfig.enabled ? 'rgba(34, 197, 94, 0.2)' : 'rgba(239, 68, 68, 0.2)',
+                    color: n8nConfig.enabled ? '#4ADE80' : '#F87171',
+                    border: `1px solid ${n8nConfig.enabled ? 'rgba(34, 197, 94, 0.4)' : 'rgba(239, 68, 68, 0.4)'}`
+                  }}>
+                    <span style={{
+                      width: '8px',
+                      height: '8px',
+                      borderRadius: '50%',
+                      background: n8nConfig.enabled ? '#22C55E' : '#EF4444'
+                    }}></span>
+                    {n8nConfig.enabled ? 'Bot IA Activo en Shop' : 'Bot Desactivado'}
+                  </span>
+
+                  <span style={{ fontSize: '12px', color: '#FFFFFF', background: 'rgba(255, 255, 255, 0.12)', padding: '5px 12px', borderRadius: '8px' }}>
+                    🎯 Tasa de Resolución: <strong>{n8nConfig.resolutionRate || '94%'}</strong>
+                  </span>
+
+                  <span style={{ fontSize: '12px', color: '#FFFFFF', background: 'rgba(255, 255, 255, 0.12)', padding: '5px 12px', borderRadius: '8px' }}>
+                    💬 Consultas B2B: <strong>{n8nConfig.conversationsCount || '142'}</strong>
+                  </span>
+
+                  <span style={{ fontSize: '12px', color: '#FFFFFF', background: 'rgba(255, 255, 255, 0.12)', padding: '5px 12px', borderRadius: '8px' }}>
+                    🧠 Modelo: <strong style={{ textTransform: 'uppercase', color: '#38BDF8' }}>{n8nConfig.aiModel || 'gpt-4o'}</strong>
+                  </span>
+                </div>
+              </div>
+
+              {/* Quick Actions Header */}
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={handleTestN8nConnection}
+                  disabled={n8nTesting}
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.15)',
+                    color: '#FFFFFF',
+                    border: '1px solid rgba(255, 255, 255, 0.3)',
+                    borderRadius: '12px',
+                    padding: '10px 16px',
+                    fontSize: '13px',
+                    fontWeight: '800',
+                    cursor: n8nTesting ? 'not-allowed' : 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    backdropFilter: 'blur(6px)',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <span>⚡</span> {n8nTesting ? 'Probando Webhook...' : 'Probar Conexión'}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setN8nSubTab('playground')}
+                  style={{
+                    background: '#FFFFFF',
+                    color: '#0369A1',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '10px 18px',
+                    fontSize: '13px',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 4px 14px rgba(0, 0, 0, 0.15)',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <span>🧪</span> Abrir Simulador
+                </button>
+              </div>
+            </div>
+
+            {/* Test Connection / Save Result Alerts */}
+            {n8nTestResult && (
+              <div style={{
+                background: n8nTestResult.success ? '#ECFDF5' : '#FEF2F2',
+                color: n8nTestResult.success ? '#065F46' : '#991B1B',
+                border: `1.5px solid ${n8nTestResult.success ? '#A7F3D0' : '#FECACA'}`,
+                padding: '12px 18px',
+                borderRadius: '12px',
+                marginBottom: '18px',
+                fontSize: '13px',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+              }}>
+                <span>{n8nTestResult.success ? '✅' : '❌'}</span>
+                <span>{n8nTestResult.message}</span>
+              </div>
+            )}
+
+            {n8nSaveSuccess && (
+              <div style={{
+                background: '#ECFDF5',
+                color: '#065F46',
+                border: '1.5px solid #A7F3D0',
+                padding: '12px 18px',
+                borderRadius: '12px',
+                marginBottom: '18px',
+                fontSize: '13px',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px'
+              }}>
+                <span>✓</span>
+                <span>¡Configuración de los Agentes de IA n8n guardada exitosamente!</span>
+              </div>
+            )}
+
+            {/* Sub-Tabs Nav for N8N */}
+            <div style={{
+              display: 'flex',
+              gap: '10px',
+              borderBottom: '2px solid #E2E8F0',
+              paddingBottom: '12px',
+              marginBottom: '24px',
+              flexWrap: 'wrap'
+            }}>
+              {[
+                { id: 'config', label: '⚙️ Configuración & Webhook', desc: 'Parámetros y Prompts' },
+                { id: 'playground', label: '🧪 Playground & Simulador', desc: 'Prueba en Tiempo Real' },
+                { id: 'workflow', label: '📦 Workflow Oficial n8n', desc: 'Descargar / Copiar JSON' },
+                { id: 'logs', label: '📊 Logs de Conversaciones', desc: `${n8nLogs.length} Chats Registrados` }
+              ].map(st => (
+                <button
+                  key={st.id}
+                  type="button"
+                  onClick={() => setN8nSubTab(st.id)}
+                  style={{
+                    background: n8nSubTab === st.id ? '#0fa4de' : '#FFFFFF',
+                    color: n8nSubTab === st.id ? '#FFFFFF' : '#475569',
+                    border: `1.5px solid ${n8nSubTab === st.id ? '#0fa4de' : '#CBD5E1'}`,
+                    padding: '10px 16px',
+                    borderRadius: '12px',
+                    fontWeight: '800',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'flex-start',
+                    gap: '2px',
+                    boxShadow: n8nSubTab === st.id ? '0 4px 12px rgba(15, 164, 222, 0.25)' : 'none',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <span>{st.label}</span>
+                  <span style={{ fontSize: '10.5px', opacity: n8nSubTab === st.id ? 0.9 : 0.65, fontWeight: '600' }}>
+                    {st.desc}
+                  </span>
+                </button>
+              ))}
+            </div>
+
+            {/* ── SUBTAB 1: CONFIGURACIÓN & WEBHOOK ── */}
+            {n8nSubTab === 'config' && (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '20px' }}>
+                {/* Left Card: Webhook & Core Parameters */}
+                <div style={{ background: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+                  <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>🔗</span> Conexión al Webhook de n8n
+                  </h3>
+
+                  {/* Switch Enable */}
+                  <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0', marginBottom: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <div>
+                      <div style={{ fontWeight: '800', fontSize: '13px', color: '#0F172A' }}>Habilitar Bot de IA en el Shop</div>
+                      <div style={{ fontSize: '11.5px', color: '#64748B' }}>Muestra el widget del agente de IA en la tienda B2B.</div>
+                    </div>
+                    <label style={{ position: 'relative', display: 'inline-block', width: '48px', height: '26px', cursor: 'pointer' }}>
+                      <input
+                        type="checkbox"
+                        checked={n8nConfig.enabled}
+                        onChange={(e) => setN8nConfig({ ...n8nConfig, enabled: e.target.checked })}
+                        style={{ opacity: 0, width: 0, height: 0 }}
+                      />
+                      <span style={{
+                        position: 'absolute', cursor: 'pointer', top: 0, left: 0, right: 0, bottom: 0,
+                        backgroundColor: n8nConfig.enabled ? '#0fa4de' : '#CBD5E1',
+                        transition: '0.3s', borderRadius: '34px'
+                      }}>
+                        <span style={{
+                          position: 'absolute', content: '""', height: '20px', width: '20px', left: n8nConfig.enabled ? '24px' : '3px', bottom: '3px',
+                          backgroundColor: 'white', transition: '0.3s', borderRadius: '50%'
+                        }} />
+                      </span>
+                    </label>
+                  </div>
+
+                  {/* Webhook URL */}
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '750', color: '#334155', marginBottom: '6px' }}>
+                      URL del Webhook de n8n (Node Webhook Trigger)
+                    </label>
+                    <input
+                      type="url"
+                      value={n8nConfig.webhookUrl || ''}
+                      onChange={(e) => setN8nConfig({ ...n8nConfig, webhookUrl: e.target.value })}
+                      placeholder="https://tu-n8n.com/webhook/dacas-b2b-agent"
+                      style={{
+                        width: '100%',
+                        boxSizing: 'border-box',
+                        height: '42px',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #CBD5E1',
+                        fontSize: '13px',
+                        fontFamily: 'monospace',
+                        outline: 'none'
+                      }}
+                    />
+                    <p style={{ margin: '6px 0 0', fontSize: '11px', color: '#64748B' }}>
+                      Endpoint HTTP POST configurado en tu instancia de n8n para recibir el mensaje del usuario.
+                    </p>
+                  </div>
+
+                  {/* Auth Header & Token */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', minHeight: '22px', marginBottom: '6px' }}>
+                        <label style={{ fontSize: '12px', fontWeight: '750', color: '#334155' }}>
+                          Header de Autenticación
+                        </label>
+                      </div>
+                      <input
+                        type="text"
+                        value={n8nConfig.authHeaderName || 'X-N8N-API-KEY'}
+                        onChange={(e) => setN8nConfig({ ...n8nConfig, authHeaderName: e.target.value })}
+                        style={{
+                          width: '100%',
+                          boxSizing: 'border-box',
+                          height: '42px',
+                          padding: '10px 14px',
+                          borderRadius: '10px',
+                          border: '1.5px solid #CBD5E1',
+                          fontSize: '12.5px',
+                          fontFamily: 'monospace',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '22px', marginBottom: '6px' }}>
+                        <label style={{ fontSize: '12px', fontWeight: '750', color: '#334155' }}>
+                          API Token / Secreto
+                        </label>
+                        <button
+                          type="button"
+                          onClick={() => setShowN8nToken(!showN8nToken)}
+                          style={{
+                            background: '#F1F5F9',
+                            border: '1px solid #CBD5E1',
+                            borderRadius: '6px',
+                            color: '#0fa4de',
+                            fontSize: '11px',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            padding: '2px 8px',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          <span>{showN8nToken ? '🙈' : '👁️'}</span>
+                          <span>{showN8nToken ? 'Ocultar' : 'Mostrar'}</span>
+                        </button>
+                      </div>
+                      <input
+                        type={showN8nToken ? 'text' : 'password'}
+                        value={n8nConfig.authToken || ''}
+                        onChange={(e) => setN8nConfig({ ...n8nConfig, authToken: e.target.value })}
+                        style={{
+                          width: '100%',
+                          boxSizing: 'border-box',
+                          height: '42px',
+                          padding: '10px 14px',
+                          borderRadius: '10px',
+                          border: '1.5px solid #CBD5E1',
+                          fontSize: '12.5px',
+                          fontFamily: 'monospace',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Bot Visual & Identity Settings */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '16px', marginBottom: '16px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: '750', color: '#334155', minHeight: '22px', marginBottom: '6px' }}>
+                        Nombre del Bot
+                      </label>
+                      <input
+                        type="text"
+                        value={n8nConfig.botName || ''}
+                        onChange={(e) => setN8nConfig({ ...n8nConfig, botName: e.target.value })}
+                        style={{
+                          width: '100%',
+                          boxSizing: 'border-box',
+                          height: '42px',
+                          padding: '10px 14px',
+                          borderRadius: '10px',
+                          border: '1.5px solid #CBD5E1',
+                          fontSize: '13px',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: '750', color: '#334155', minHeight: '22px', marginBottom: '6px' }}>
+                        Subtítulo del Header
+                      </label>
+                      <input
+                        type="text"
+                        value={n8nConfig.botSubtitle || ''}
+                        onChange={(e) => setN8nConfig({ ...n8nConfig, botSubtitle: e.target.value })}
+                        style={{
+                          width: '100%',
+                          boxSizing: 'border-box',
+                          height: '42px',
+                          padding: '10px 14px',
+                          borderRadius: '10px',
+                          border: '1.5px solid #CBD5E1',
+                          fontSize: '13px',
+                          outline: 'none'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Welcome Message */}
+                  <div style={{ marginBottom: '16px' }}>
+                    <label style={{ display: 'block', fontSize: '12px', fontWeight: '750', color: '#334155', marginBottom: '6px' }}>
+                      Mensaje de Bienvenida Inicial
+                    </label>
+                    <textarea
+                      rows="3"
+                      value={n8nConfig.welcomeMessage || ''}
+                      onChange={(e) => setN8nConfig({ ...n8nConfig, welcomeMessage: e.target.value })}
+                      style={{
+                        width: '100%',
+                        boxSizing: 'border-box',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
+                        border: '1.5px solid #CBD5E1',
+                        fontSize: '12.5px',
+                        lineHeight: '1.45',
+                        outline: 'none'
+                      }}
+                    />
+                  </div>
+                </div>
+
+                {/* Right Card: AI Agent Tools & System Prompt */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                  <div style={{ background: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+                    <h3 style={{ margin: '0 0 16px', fontSize: '15px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span>🛠️</span> Herramientas (Tools) del Agente n8n
+                    </h3>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', marginBottom: '18px' }}>
+                      {[
+                        { key: 'searchProducts', label: '🔍 Catálogo & Precios USD' },
+                        { key: 'checkStock', label: '📦 Stock en Tiempo Real' },
+                        { key: 'calculateQuote', label: '🧮 Cotizador de Proyectos' },
+                        { key: 'recommendSolutions', label: '⚡ Recomendador Técnico' },
+                        { key: 'checkOrderStatus', label: '🧾 Estado de Órdenes' },
+                        { key: 'createSupportTicket', label: '🎫 Creación de Tickets' }
+                      ].map(tool => (
+                        <label
+                          key={tool.key}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '8px',
+                            background: n8nConfig.enabledTools?.[tool.key] ? '#F0F9FF' : '#F8FAFC',
+                            border: `1px solid ${n8nConfig.enabledTools?.[tool.key] ? '#BAE6FD' : '#E2E8F0'}`,
+                            padding: '10px 12px',
+                            borderRadius: '10px',
+                            fontSize: '12px',
+                            fontWeight: '700',
+                            color: n8nConfig.enabledTools?.[tool.key] ? '#0369A1' : '#475569',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={Boolean(n8nConfig.enabledTools?.[tool.key])}
+                            onChange={(e) => setN8nConfig({
+                              ...n8nConfig,
+                              enabledTools: { ...(n8nConfig.enabledTools || {}), [tool.key]: e.target.checked }
+                            })}
+                            style={{ accentColor: '#0fa4de', width: '16px', height: '16px' }}
+                          />
+                          <span>{tool.label}</span>
+                        </label>
+                      ))}
+                    </div>
+
+                    {/* System Prompt */}
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                        System Prompt / Rol del Agente de IA
+                      </label>
+                      <textarea
+                        rows="4"
+                        value={n8nConfig.systemPrompt || ''}
+                        onChange={(e) => setN8nConfig({ ...n8nConfig, systemPrompt: e.target.value })}
+                        style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '12px', fontFamily: 'monospace', lineHeight: '1.45' }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Save Buttons Card */}
+                  <div style={{ background: '#F0FDF4', padding: '20px', borderRadius: '16px', border: '1.5px solid #BBF7D0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                    <div>
+                      <div style={{ fontWeight: '800', fontSize: '13.5px', color: '#166534' }}>Guardar Parámetros de n8n</div>
+                      <div style={{ fontSize: '11.5px', color: '#15803D' }}>Se aplicará de inmediato al Bot del Shop.</div>
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px' }}>
+                      <button
+                        type="button"
+                        onClick={handleResetN8nSettings}
+                        style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', color: '#475569', padding: '9px 16px', borderRadius: '10px', fontSize: '12.5px', fontWeight: '700', cursor: 'pointer' }}
+                      >
+                        Restablecer
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleSaveN8nSettings}
+                        disabled={isSavingN8n}
+                        style={{
+                          background: 'linear-gradient(135deg, #16A34A 0%, #15803D 100%)',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          padding: '10px 20px',
+                          borderRadius: '10px',
+                          fontSize: '13px',
+                          fontWeight: '800',
+                          cursor: isSavingN8n ? 'not-allowed' : 'pointer',
+                          boxShadow: '0 4px 12px rgba(22, 163, 74, 0.35)'
+                        }}
+                      >
+                        {isSavingN8n ? 'Guardando...' : '💾 Guardar Configuración'}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── SUBTAB 2: PLAYGROUND & SIMULADOR EN VIVO ── */}
+            {n8nSubTab === 'playground' && (
+              <div style={{ background: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span>🧪</span> Simulador y Playground de Agentes n8n
+                    </h3>
+                    <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748B' }}>
+                      Prueba cómo responde tu agente de n8n a diferentes escenarios de integradores y clientes B2B.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setPlaygroundMessages([
+                      {
+                        id: 'p_reset',
+                        sender: 'bot',
+                        text: '👋 Sesión reiniciada. ¿Qué consulta deseas probar con el Agente n8n?',
+                        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+                      }
+                    ])}
+                    style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', padding: '6px 12px', borderRadius: '8px', fontSize: '12px', fontWeight: '750', cursor: 'pointer', color: '#334155' }}
+                  >
+                    🔄 Reiniciar Chat de Prueba
+                  </button>
+                </div>
+
+                {/* Quick Test Prompt Buttons */}
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '14px', flexWrap: 'wrap' }}>
+                  {[
+                    '¿Qué stock tienen de Fortinet FortiGate 60F?',
+                    'Recomiéndame switches Aruba PoE para oficina',
+                    '¿Cómo registro mi empresa como distribuidor?',
+                    '¿Cuáles son las formas de pago en USD y ARS?'
+                  ].map((p, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => handlePlaygroundSend(p)}
+                      style={{
+                        background: '#EFF6FF',
+                        border: '1px solid #BFDBFE',
+                        color: '#1D4ED8',
+                        padding: '6px 12px',
+                        borderRadius: '999px',
+                        fontSize: '11.5px',
+                        fontWeight: '700',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      💡 {p}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Playground Chat Container */}
+                <div style={{
+                  border: '1.5px solid #E2E8F0',
+                  borderRadius: '16px',
+                  background: '#F8FAFC',
+                  height: '420px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  overflow: 'hidden'
+                }}>
+                  {/* Messages */}
+                  <div style={{ flex: 1, padding: '16px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                    {playgroundMessages.map((m) => {
+                      const isBot = m.sender === 'bot';
+                      return (
+                        <div
+                          key={m.id}
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            alignItems: isBot ? 'flex-start' : 'flex-end',
+                            gap: '4px'
+                          }}
+                        >
+                          <div
+                            style={{
+                              maxWidth: '85%',
+                              padding: '12px 16px',
+                              borderRadius: isBot ? '16px 16px 16px 4px' : '16px 16px 4px 16px',
+                              background: isBot ? '#FFFFFF' : '#0fa4de',
+                              color: isBot ? '#1E293B' : '#FFFFFF',
+                              fontSize: '13px',
+                              lineHeight: '1.45',
+                              border: isBot ? '1px solid #E2E8F0' : 'none',
+                              boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+                            }}
+                          >
+                            {m.text}
+
+                            {/* Product Recommendations */}
+                            {m.recommendedProducts && m.recommendedProducts.length > 0 && (
+                              <div style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                                <div style={{ fontSize: '11px', fontWeight: '800', color: '#0369A1' }}>
+                                  📦 Hardware Conciliado:
+                                </div>
+                                {m.recommendedProducts.map(p => (
+                                  <div key={p.id} style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', padding: '6px 10px', borderRadius: '8px', fontSize: '11.5px', color: '#0F172A', display: 'flex', justifyContent: 'space-between' }}>
+                                    <span style={{ fontWeight: '700' }}>{p.name}</span>
+                                    <span style={{ color: '#0284c7', fontWeight: '800' }}>USD ${Number(p.price || 0).toLocaleString()}</span>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+
+                            {m.toolUsed && (
+                              <div style={{ marginTop: '8px', fontSize: '10.5px', color: '#64748B', display: 'flex', gap: '10px' }}>
+                                <span>🛠️ Tool: <code>{m.toolUsed}</code></span>
+                                {m.latencyMs && <span>⚡ {m.latencyMs} ms</span>}
+                              </div>
+                            )}
+                          </div>
+                          <span style={{ fontSize: '10px', color: '#94A3B8', padding: '0 4px' }}>
+                            {m.timestamp}
+                          </span>
+                        </div>
+                      );
+                    })}
+
+                    {isPlaygroundTyping && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '8px 14px', borderRadius: '14px', width: 'fit-content' }}>
+                        <span style={{ fontSize: '11.5px', color: '#0fa4de', fontWeight: '700' }}>Agente n8n ejecutando LangChain</span>
+                        <span>⏳</span>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Input Form */}
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      handlePlaygroundSend();
+                    }}
+                    style={{
+                      padding: '12px 16px',
+                      background: '#FFFFFF',
+                      borderTop: '1px solid #E2E8F0',
+                      display: 'flex',
+                      gap: '10px',
+                      alignItems: 'center'
+                    }}
+                  >
+                    <input
+                      type="text"
+                      value={playgroundInput}
+                      onChange={(e) => setPlaygroundInput(e.target.value)}
+                      placeholder="Escribe una pregunta para probar el agente de IA..."
+                      style={{ flex: 1, padding: '10px 14px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13px' }}
+                    />
+                    <button
+                      type="submit"
+                      disabled={!playgroundInput.trim() || isPlaygroundTyping}
+                      style={{
+                        background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        padding: '10px 20px',
+                        borderRadius: '10px',
+                        fontWeight: '800',
+                        fontSize: '13px',
+                        cursor: playgroundInput.trim() ? 'pointer' : 'not-allowed'
+                      }}
+                    >
+                      Enviar ➤
+                    </button>
+                  </form>
+                </div>
+              </div>
+            )}
+
+            {/* ── SUBTAB 3: WORKFLOW OFICIAL N8N (JSON) ── */}
+            {n8nSubTab === 'workflow' && (
+              <div style={{ background: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+                  <div>
+                    <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span>📦</span> Plantilla de Flujo Oficial para Importar en n8n
+                    </h3>
+                    <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748B' }}>
+                      Descarga o copia el JSON preconfigurado con Webhook Trigger, AI Agent, Tools de Catálogo y Memoria Buffer.
+                    </p>
+                  </div>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const jsonStr = JSON.stringify(n8nWorkflow || DEFAULT_N8N_WORKFLOW_TEMPLATE, null, 2);
+                        navigator.clipboard.writeText(jsonStr);
+                        alert('¡Workflow JSON de n8n copiado al portapapeles! Ahora en n8n puedes pulsar Ctrl+V / Cmd+V o "Import from Clipboard".');
+                      }}
+                      style={{ background: '#0fa4de', color: '#FFFFFF', border: 'none', padding: '9px 16px', borderRadius: '10px', fontSize: '12.5px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      📋 Copiar JSON al Portapapeles
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const jsonStr = JSON.stringify(n8nWorkflow || DEFAULT_N8N_WORKFLOW_TEMPLATE, null, 2);
+                        const blob = new Blob([jsonStr], { type: 'application/json' });
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = url;
+                        a.download = 'dacas_b2b_n8n_workflow.json';
+                        a.click();
+                        URL.revokeObjectURL(url);
+                      }}
+                      style={{ background: '#0284c7', color: '#FFFFFF', border: 'none', padding: '9px 16px', borderRadius: '10px', fontSize: '12.5px', fontWeight: '800', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}
+                    >
+                      📥 Descargar .json
+                    </button>
+                  </div>
+                </div>
+
+                {/* Quick Steps Guide */}
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '12px', marginBottom: '20px' }}>
+                  <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+                    <div style={{ fontWeight: '800', fontSize: '12.5px', color: '#0F172A', marginBottom: '4px' }}>1. Importar en n8n</div>
+                    <div style={{ fontSize: '11.5px', color: '#64748B' }}>En tu canvas de n8n, haz click en <strong>Import from File</strong> y sube el archivo descargado.</div>
+                  </div>
+                  <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+                    <div style={{ fontWeight: '800', fontSize: '12.5px', color: '#0F172A', marginBottom: '4px' }}>2. Conectar tu LLM</div>
+                    <div style={{ fontSize: '11.5px', color: '#64748B' }}>Configura tu credencial de <strong>OpenAI, Anthropic o Gemini</strong> en el nodo Chat Model.</div>
+                  </div>
+                  <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+                    <div style={{ fontWeight: '800', fontSize: '12.5px', color: '#0F172A', marginBottom: '4px' }}>3. Activar Webhook</div>
+                    <div style={{ fontSize: '11.5px', color: '#64748B' }}>Pasa el flujo a <strong>Active</strong> y pega la URL del Webhook en la pestaña de Configuración.</div>
+                  </div>
+                </div>
+
+                {/* Code Viewer */}
+                <div style={{ background: '#0b1329', padding: '16px', borderRadius: '14px', overflow: 'hidden', border: '1px solid #1e293b' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', color: '#94a3b8', fontSize: '11.5px', fontFamily: 'monospace' }}>
+                    <span>dacas_b2b_n8n_workflow.json</span>
+                    <span>{(JSON.stringify(n8nWorkflow || DEFAULT_N8N_WORKFLOW_TEMPLATE).length / 1024).toFixed(1)} KB</span>
+                  </div>
+                  <pre style={{ margin: 0, maxHeight: '300px', overflowY: 'auto', color: '#38bdf8', fontSize: '11.5px', fontFamily: 'monospace', lineHeight: '1.4' }}>
+                    {JSON.stringify(n8nWorkflow || DEFAULT_N8N_WORKFLOW_TEMPLATE, null, 2)}
+                  </pre>
+                </div>
+              </div>
+            )}
+
+            {/* ── SUBTAB 4: LOGS & AUDITORÍA ── */}
+            {n8nSubTab === 'logs' && (
+              <div style={{ background: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 10px rgba(0,0,0,0.03)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
+                  <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>📊</span> Registro de Consultas y Trazabilidad de Agentes ({n8nLogs.length})
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={fetchN8nLogs}
+                    style={{ background: '#F1F5F9', border: '1px solid #CBD5E1', padding: '6px 12px', borderRadius: '8px', fontSize: '11.5px', fontWeight: '750', cursor: 'pointer', color: '#334155' }}
+                  >
+                    🔄 Actualizar Historial
+                  </button>
+                </div>
+
+                {n8nLogs.length === 0 ? (
+                  <div style={{ padding: '30px', textAlign: 'center', color: '#64748B' }}>
+                    No hay conversaciones registradas aún.
+                  </div>
+                ) : (
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px' }}>
+                      <thead>
+                        <tr style={{ background: '#F8FAFC', borderBottom: '2px solid #E2E8F0', textAlign: 'left', color: '#475569' }}>
+                          <th style={{ padding: '10px 12px', fontWeight: '800' }}>Fecha & Hora</th>
+                          <th style={{ padding: '10px 12px', fontWeight: '800' }}>Usuario / Integrador</th>
+                          <th style={{ padding: '10px 12px', fontWeight: '800' }}>Pregunta / Prompt</th>
+                          <th style={{ padding: '10px 12px', fontWeight: '800' }}>Respuesta del Agente</th>
+                          <th style={{ padding: '10px 12px', fontWeight: '800' }}>Herramienta</th>
+                          <th style={{ padding: '10px 12px', fontWeight: '800' }}>Latencia</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {n8nLogs.map((log) => (
+                          <tr key={log.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                            <td style={{ padding: '10px 12px', color: '#64748B', whiteSpace: 'nowrap' }}>
+                              {new Date(log.timestamp).toLocaleString()}
+                            </td>
+                            <td style={{ padding: '10px 12px', fontWeight: '750', color: '#0F172A' }}>
+                              {log.user}
+                            </td>
+                            <td style={{ padding: '10px 12px', color: '#334155', maxWidth: '220px', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                              {log.query}
+                            </td>
+                            <td style={{ padding: '10px 12px', color: '#64748B', maxWidth: '280px', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                              {log.response}
+                            </td>
+                            <td style={{ padding: '10px 12px' }}>
+                              <span style={{ background: '#E0F2FE', color: '#0369A1', padding: '3px 8px', borderRadius: '6px', fontSize: '10.5px', fontWeight: '700' }}>
+                                {log.toolUsed}
+                              </span>
+                            </td>
+                            <td style={{ padding: '10px 12px', color: '#64748B', fontFamily: 'monospace' }}>
+                              {log.latencyMs} ms
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             )}
 
@@ -6492,11 +8888,12 @@ function AdminEcommerce({ embedded = false }) {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    color: '#64748B'
                   }}
                   title="Cerrar"
                 >
-                  ✕
+                  <BrandingVectorIcon name="x" size={18} color="#64748B" />
                 </button>
               </div>
             </div>
@@ -6911,7 +9308,7 @@ function AdminEcommerce({ embedded = false }) {
                 }}
                 title="Cerrar"
               >
-                ✕
+                <BrandingVectorIcon name="x" size={16} color="#64748B" />
               </button>
             </div>
 
@@ -7309,7 +9706,7 @@ function AdminEcommerce({ embedded = false }) {
                     justifyContent: 'center'
                   }}
                 >
-                  ✕
+                  <BrandingVectorIcon name="x" size={16} color="#64748B" />
                 </button>
               </div>
             </div>
@@ -7486,14 +9883,15 @@ function AdminEcommerce({ embedded = false }) {
           <div className="modal-content" style={{ maxWidth: '600px', padding: '28px', borderRadius: '18px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px' }}>
               <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>➕</span> Crear y Asignar Nueva Marca
+                <BrandingVectorIcon name="plus" size={18} color="#0FA4DE" />
+                <span>Crear y Asignar Nueva Marca</span>
               </h3>
               <button
                 type="button"
                 onClick={() => setShowNewBrandModal(false)}
-                style={{ background: 'transparent', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#94A3B8' }}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#94A3B8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
-                ✕
+                <BrandingVectorIcon name="x" size={18} color="#94A3B8" />
               </button>
             </div>
 
@@ -7655,9 +10053,9 @@ function AdminEcommerce({ embedded = false }) {
               <button
                 type="button"
                 onClick={() => setEditingBrandModal(null)}
-                style={{ background: 'transparent', border: 'none', fontSize: '18px', cursor: 'pointer', color: '#94A3B8' }}
+                style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#94A3B8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
-                ✕
+                <BrandingVectorIcon name="x" size={18} color="#94A3B8" />
               </button>
             </div>
 

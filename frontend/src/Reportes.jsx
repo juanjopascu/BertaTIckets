@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import BrandingVectorIcon from './BrandingVectorIcon';
 import { 
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   PieChart, Pie, Cell
@@ -519,8 +520,8 @@ function Reportes({ embedded = false }) {
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div className="user-controls">
-                  <button className="nav-btn" onClick={() => window.print()} style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-                    🖨️ Exportar PDF / Imprimir
+                  <button className="nav-btn" onClick={() => window.print()} style={{ background: 'var(--card-bg)', color: 'var(--text-main)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                    <BrandingVectorIcon name="printer" size={15} color="currentColor" /> Exportar PDF / Imprimir
                   </button>
                 </div>
               </div>
@@ -555,17 +556,17 @@ function Reportes({ embedded = false }) {
 
         {/* Selector de Pestañas (Samsung One UI 8.5 Style) */}
         <div className="tab-buttons">
-          <button className={`tab-btn ${activeTab === 'sla' ? 'active' : ''}`} onClick={() => setActiveTab('sla')}>
-            🏢 SLA de Departamentos
+          <button className={`tab-btn ${activeTab === 'sla' ? 'active' : ''}`} onClick={() => setActiveTab('sla')} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <BrandingVectorIcon name="building" size={16} color="currentColor" /> SLA de Departamentos
           </button>
-          <button className={`tab-btn ${activeTab === 'estados' ? 'active' : ''}`} onClick={() => setActiveTab('estados')}>
-            🏷️ Tiempos en Estados
+          <button className={`tab-btn ${activeTab === 'estados' ? 'active' : ''}`} onClick={() => setActiveTab('estados')} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <BrandingVectorIcon name="tag" size={16} color="currentColor" /> Tiempos en Estados
           </button>
-          <button className={`tab-btn ${activeTab === 'agentes' ? 'active' : ''}`} onClick={() => setActiveTab('agentes')}>
-            👤 Desempeño de Agentes
+          <button className={`tab-btn ${activeTab === 'agentes' ? 'active' : ''}`} onClick={() => setActiveTab('agentes')} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <BrandingVectorIcon name="user" size={16} color="currentColor" /> Desempeño de Agentes
           </button>
-          <button className={`tab-btn ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')}>
-            🕵️ Auditoría y Trazabilidad
+          <button className={`tab-btn ${activeTab === 'audit' ? 'active' : ''}`} onClick={() => setActiveTab('audit')} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px' }}>
+            <BrandingVectorIcon name="shield" size={16} color="currentColor" /> Auditoría y Trazabilidad
           </button>
         </div>
 
@@ -575,8 +576,8 @@ function Reportes({ embedded = false }) {
             <div className="report-section-card">
               <div className="action-bar">
                 <h3>Cumplimiento de SLA por Departamento</h3>
-                <button className="nav-btn" onClick={exportSlaCSV} style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}>
-                  📥 Descargar CSV
+                <button className="nav-btn" onClick={exportSlaCSV} style={{ background: 'var(--primary-light)', color: 'var(--primary)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <BrandingVectorIcon name="download" size={15} color="currentColor" /> Descargar CSV
                 </button>
               </div>
 
@@ -679,9 +680,13 @@ function Reportes({ embedded = false }) {
                           <td>{t.limiteSLA} horas</td>
                           <td>
                             {t.cumplido ? (
-                              <span className="badge-compliant">✓ Cumplido</span>
+                              <span className="badge-compliant" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                <BrandingVectorIcon name="check" size={12} color="currentColor" strokeWidth={3} /> Cumplido
+                              </span>
                             ) : (
-                              <span className="badge-violated">✗ Incumplido</span>
+                              <span className="badge-violated" style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                <BrandingVectorIcon name="x" size={12} color="currentColor" strokeWidth={3} /> Incumplido
+                              </span>
                             )}
                           </td>
                         </tr>
@@ -700,8 +705,8 @@ function Reportes({ embedded = false }) {
             <div className="report-section-card">
               <div className="action-bar">
                 <h3>Tiempo Promedio de Permanencia por Estado</h3>
-                <button className="nav-btn" onClick={exportStateTimesCSV} style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}>
-                  📥 Descargar CSV
+                <button className="nav-btn" onClick={exportStateTimesCSV} style={{ background: 'var(--primary-light)', color: 'var(--primary)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <BrandingVectorIcon name="download" size={15} color="currentColor" /> Descargar CSV
                 </button>
               </div>
 
@@ -759,8 +764,8 @@ function Reportes({ embedded = false }) {
             <div className="report-section-card">
               <div className="action-bar">
                 <h3>Tiempo Acumulado de Asignación por Agente</h3>
-                <button className="nav-btn" onClick={exportAgentCSV} style={{ background: 'var(--primary-light)', color: 'var(--primary)' }}>
-                  📥 Descargar CSV
+                <button className="nav-btn" onClick={exportAgentCSV} style={{ background: 'var(--primary-light)', color: 'var(--primary)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <BrandingVectorIcon name="download" size={15} color="currentColor" /> Descargar CSV
                 </button>
               </div>
 
@@ -847,10 +852,13 @@ function Reportes({ embedded = false }) {
                   borderBottom: subTabAudit === 'metricas' ? '3px solid var(--primary)' : '3px solid transparent',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                  borderRadius: '4px 4px 0 0'
+                  borderRadius: '4px 4px 0 0',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
                 }}
               >
-                📊 Métricas Resumidas
+                <BrandingVectorIcon name="zap" size={15} color="currentColor" /> Métricas Resumidas
               </button>
               <button 
                 onClick={() => setSubTabAudit('bitacora')}
@@ -864,10 +872,13 @@ function Reportes({ embedded = false }) {
                   borderBottom: subTabAudit === 'bitacora' ? '3px solid var(--primary)' : '3px solid transparent',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                  borderRadius: '4px 4px 0 0'
+                  borderRadius: '4px 4px 0 0',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px'
                 }}
               >
-                📜 Bitácora de Operaciones (Línea de Tiempo)
+                <BrandingVectorIcon name="file-text" size={15} color="currentColor" /> Bitácora de Operaciones (Línea de Tiempo)
               </button>
             </div>
 
@@ -881,25 +892,28 @@ function Reportes({ embedded = false }) {
                     </p>
                   </div>
                   <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <input
-                      type="text"
-                      placeholder="🔍 Buscar por ID, asunto, creador u owner..."
-                      value={searchAudit}
-                      onChange={(e) => setSearchAudit(e.target.value)}
-                      style={{
-                        padding: '10px 16px',
-                        borderRadius: '12px',
-                        border: '1px solid #d2d2d7',
-                        background: 'white',
-                        color: 'black',
-                        minWidth: '280px',
-                        fontSize: '0.9rem',
-                        outline: 'none',
-                        boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)'
-                      }}
-                    />
-                    <button className="nav-btn" onClick={exportAuditCSV} style={{ background: 'var(--primary-light)', color: 'var(--primary)', whiteSpace: 'nowrap' }}>
-                      📥 Descargar CSV de Auditoría
+                    <div style={{ position: 'relative' }}>
+                      <BrandingVectorIcon name="search" size={15} color="#8e8e93" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                      <input
+                        type="text"
+                        placeholder="Buscar por ID, asunto, creador u owner..."
+                        value={searchAudit}
+                        onChange={(e) => setSearchAudit(e.target.value)}
+                        style={{
+                          padding: '10px 16px 10px 36px',
+                          borderRadius: '12px',
+                          border: '1px solid #d2d2d7',
+                          background: 'white',
+                          color: 'black',
+                          minWidth: '280px',
+                          fontSize: '0.9rem',
+                          outline: 'none',
+                          boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)'
+                        }}
+                      />
+                    </div>
+                    <button className="nav-btn" onClick={exportAuditCSV} style={{ background: 'var(--primary-light)', color: 'var(--primary)', whiteSpace: 'nowrap', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <BrandingVectorIcon name="download" size={15} color="currentColor" /> Descargar CSV de Auditoría
                     </button>
                   </div>
                 </div>
@@ -1038,25 +1052,28 @@ function Reportes({ embedded = false }) {
                     </p>
                   </div>
                   <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-                    <input
-                      type="text"
-                      placeholder="🔍 Buscar por Ticket, Operador, Acción..."
-                      value={searchBitacora}
-                      onChange={(e) => setSearchBitacora(e.target.value)}
-                      style={{
-                        padding: '10px 16px',
-                        borderRadius: '12px',
-                        border: '1px solid #d2d2d7',
-                        background: 'white',
-                        color: 'black',
-                        minWidth: '320px',
-                        fontSize: '0.9rem',
-                        outline: 'none',
-                        boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)'
-                      }}
-                    />
-                    <button className="nav-btn" onClick={exportBitacoraCSV} style={{ background: '#eff6ff', color: '#1e40af', whiteSpace: 'nowrap', fontWeight: 'bold' }}>
-                      📥 Exportar Bitácora (CSV)
+                    <div style={{ position: 'relative' }}>
+                      <BrandingVectorIcon name="search" size={15} color="#8e8e93" style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)' }} />
+                      <input
+                        type="text"
+                        placeholder="Buscar por Ticket, Operador, Acción..."
+                        value={searchBitacora}
+                        onChange={(e) => setSearchBitacora(e.target.value)}
+                        style={{
+                          padding: '10px 16px 10px 36px',
+                          borderRadius: '12px',
+                          border: '1px solid #d2d2d7',
+                          background: 'white',
+                          color: 'black',
+                          minWidth: '320px',
+                          fontSize: '0.9rem',
+                          outline: 'none',
+                          boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.05)'
+                        }}
+                      />
+                    </div>
+                    <button className="nav-btn" onClick={exportBitacoraCSV} style={{ background: '#eff6ff', color: '#1e40af', whiteSpace: 'nowrap', fontWeight: 'bold', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                      <BrandingVectorIcon name="download" size={15} color="currentColor" /> Exportar Bitácora (CSV)
                     </button>
                   </div>
                 </div>

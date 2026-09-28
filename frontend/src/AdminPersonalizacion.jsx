@@ -208,7 +208,7 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
       passwordPlaceholder: '••••••••',
       submitButtonText: 'Ingresar',
       showShopLink: true,
-      shopLinkText: '🛍️ Ir a la Tienda DACAS Shop',
+      shopLinkText: 'Ir a la Tienda DACAS Shop',
       showMicrosoftLogin: true,
       microsoftButtonText: 'Iniciar sesión con Microsoft',
       showThemeToggle: true,
@@ -662,9 +662,14 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
           padding: '10px 24px',
           textAlign: 'center',
           fontWeight: '700',
-          fontSize: '14px'
+          fontSize: '14px',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: '8px'
         }}>
-          ⚠️ {errorMessage}
+          <BrandingVectorIcon name="alert-triangle" size={16} color="#ffffff" />
+          <span>{errorMessage}</span>
         </div>
       )}
 
@@ -862,7 +867,7 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
                       type="text"
                       value={iconSearchText}
                       onChange={e => setIconSearchText(e.target.value)}
-                      placeholder="🔍 Buscar ícono..."
+                      placeholder="Buscar ícono..."
                       style={{
                         padding: '6px 12px',
                         borderRadius: '8px',
@@ -931,7 +936,7 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
                               }}
                               title="Eliminar este ícono personalizado"
                             >
-                              ✕
+                              <UIIcon name="x" size={10} color="#ffffff" />
                             </button>
                           )}
 
@@ -1079,9 +1084,9 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
                           fontSize: '13px'
                         }}
                       >
-                        <option value="circle">⭕ Circular (Redondo)</option>
-                        <option value="rounded">🔲 Bordes Suaves (16px)</option>
-                        <option value="original">◻️ Rectangular / Original</option>
+                        <option value="circle">Circular (Redondo)</option>
+                        <option value="rounded">Bordes Suaves (16px)</option>
+                        <option value="original">Rectangular / Original</option>
                       </select>
                     </div>
 
@@ -1833,7 +1838,7 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
                   {/* AVATAR RENDER EN SIMULADOR */}
                   {config.login.avatarType === 'berto_svg' && (
                     <div style={{ width: '74px', height: '74px', margin: '0 auto 12px auto', borderRadius: '50%', background: '#fef3c7', display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 4px 12px rgba(0,0,0,0.08)' }}>
-                      <span style={{ fontSize: '2.2rem' }}>🐶</span>
+                      <UIIcon name="sparkles" size={32} color="#d97706" />
                     </div>
                   )}
 
@@ -1930,15 +1935,19 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
                   </div>
 
                   {config.login.showShopLink && (
-                    <div style={{ marginTop: '12px', fontSize: '11px', color: '#0fa4de', fontWeight: '700' }}>
-                      {config.login.shopLinkText || '🛍️ Ir a la Tienda DACAS Shop'}
+                    <div style={{ marginTop: '12px', fontSize: '11px', color: '#0fa4de', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
+                      <BrandingVectorIcon name="shopping-bag" size={12} color="#0fa4de" />
+                      <span>{config.login.shopLinkText || 'Ir a la Tienda DACAS Shop'}</span>
                     </div>
                   )}
 
                   {config.login.showMicrosoftLogin && (
                     <div style={{ marginTop: '12px', borderTop: `1px solid ${isDark ? '#334155' : '#e2e8f0'}`, paddingTop: '12px' }}>
                       <div style={{ background: '#0078d4', color: '#fff', padding: '8px', borderRadius: '6px', fontSize: '11px', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px' }}>
-                        <span>🪟</span> {config.login.microsoftButtonText || 'Iniciar sesión con Microsoft'}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                          <path d="M7.462 0H0v7.462h7.462V0zM16 0H8.538v7.462H16V0zM7.462 8.538H0V16h7.462V8.538zM16 8.538H8.538V16H16V8.538z" />
+                        </svg>
+                        <span>{config.login.microsoftButtonText || 'Iniciar sesión con Microsoft'}</span>
                       </div>
                     </div>
                   )}
@@ -1962,9 +1971,14 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
                       padding: '8px 14px',
                       fontSize: '12px',
                       fontWeight: '700',
-                      textAlign: 'center'
+                      textAlign: 'center',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px'
                     }}>
-                      📢 {config.announcement.text || 'Mensaje de anuncio global para todos los usuarios.'}
+                      <BrandingVectorIcon name="megaphone" size={14} color="#ffffff" />
+                      <span>{config.announcement.text || 'Mensaje de anuncio global para todos los usuarios.'}</span>
                     </div>
                   )}
 
@@ -2071,10 +2085,14 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
                   color: textMuted,
                   cursor: 'pointer',
                   fontSize: '18px',
-                  fontWeight: 'bold'
+                  fontWeight: 'bold',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  padding: '4px'
                 }}
               >
-                ✕
+                <UIIcon name="x" size={18} />
               </button>
             </div>
 
@@ -2108,9 +2126,9 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
                 </label>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
                   {[
-                    { key: 'file', label: '📁 Archivo (SVG/PNG)', icon: 'upload' },
-                    { key: 'svg', label: '💻 Código SVG', icon: 'sparkles' },
-                    { key: 'url', label: '🔗 URL Web', icon: 'image' }
+                    { key: 'file', label: 'Archivo (SVG/PNG)', icon: 'upload' },
+                    { key: 'svg', label: 'Código SVG', icon: 'sparkles' },
+                    { key: 'url', label: 'URL Web', icon: 'image' }
                   ].map(m => (
                     <button
                       key={m.key}
@@ -2124,10 +2142,16 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
                         color: newIconForm.sourceType === m.key ? '#0fa4de' : textCol,
                         fontSize: '11px',
                         fontWeight: '700',
-                        cursor: 'pointer'
+                        cursor: 'pointer',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '4px'
                       }}
                     >
-                      {m.label}
+                      <UIIcon name={m.icon} size={16} />
+                      <span>{m.label}</span>
                     </button>
                   ))}
                 </div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import BrandingVectorIcon from './BrandingVectorIcon';
 
 const MACROS = [
   "Hola, hemos recibido tu consulta. Estamos trabajando en ello.",
@@ -11,7 +12,8 @@ const API_BASE_URL = `http://${window.location.hostname}:3001`;
 
 const TRAVEL_GROUPS = [
   {
-    title: '👤 Datos Personales',
+    title: 'Datos Personales',
+    icon: 'user',
     fields: [
       'Quien solicita',
       'Correo Electronico',
@@ -28,14 +30,16 @@ const TRAVEL_GROUPS = [
     ]
   },
   {
-    title: '📞 Teléfono Completo',
+    title: 'Teléfono Completo',
+    icon: 'phone',
     fields: [
       'Codigo De Area',
       'Numero de telefono'
     ]
   },
   {
-    title: '✈️ Datos del Viaje',
+    title: 'Datos del Viaje',
+    icon: 'plane',
     fields: [
       'Tipo de Viaje',
       'Pais de Origen// Departure Country',
@@ -61,7 +65,8 @@ const TRAVEL_GROUPS = [
     ]
   },
   {
-    title: '🚨 Datos de Emergencia',
+    title: 'Datos de Emergencia',
+    icon: 'alert-circle',
     fields: [
       'Contacto',
       'Parentesco',
@@ -69,7 +74,8 @@ const TRAVEL_GROUPS = [
     ]
   },
   {
-    title: '🏨 Solicita Hotel',
+    title: 'Solicita Hotel',
+    icon: 'hotel',
     fields: [
       '¿Solicita Hotel?',
       'Check IN',
@@ -250,7 +256,9 @@ function TicketModal({ cliente, onClose, onTicketUpdated, usuario, isCustomer, d
                 boxShadow: '0 4px 12px rgba(15, 118, 110, 0.02)'
               }}>
                 <span style={{
-                  display: 'block',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
                   fontSize: '0.72rem',
                   fontWeight: '700',
                   color: 'var(--primary)',
@@ -258,7 +266,8 @@ function TicketModal({ cliente, onClose, onTicketUpdated, usuario, isCustomer, d
                   letterSpacing: '0.5px',
                   marginBottom: '6px'
                 }}>
-                  💬 Comentarios
+                  <BrandingVectorIcon name="message-square" size={13} color="var(--primary)" />
+                  <span>Comentarios</span>
                 </span>
                 <p style={{
                   margin: 0,
@@ -337,10 +346,13 @@ function TicketModal({ cliente, onClose, onTicketUpdated, usuario, isCustomer, d
               </div>
             )}
 
-            {/* 🏷️ Información Adicional de Ticket en Flexbox */}
+            {/* Información Adicional de Ticket en Flexbox */}
             {!isExpense && (cliente.pais || cliente.marca || cliente.nombre_empresa || cliente.orden_compra_cliente || cliente.stock || cliente.soft_hard || cliente.factura_cancelada) && (
               <div style={{ marginTop: '20px', borderTop: '1px solid var(--border-color)', paddingTop: '15px' }}>
-                <h4 style={{ fontSize: '0.9rem', color: 'var(--text-main)', marginBottom: '10px', textAlign: 'left' }}>🏷️ Información Adicional de Ticket</h4>
+                <h4 style={{ fontSize: '0.9rem', color: 'var(--text-main)', marginBottom: '10px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <BrandingVectorIcon name="tag" size={16} color="var(--primary)" />
+                  <span>Información Adicional de Ticket</span>
+                </h4>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', textAlign: 'left' }}>
                   {cliente.pais && (
                     <div style={{ flex: '1 1 140px', minWidth: '120px', background: 'rgba(67, 97, 238, 0.04)', padding: '8px 12px', borderRadius: '12px', border: '1px solid rgba(67, 97, 238, 0.08)' }}>
@@ -388,10 +400,13 @@ function TicketModal({ cliente, onClose, onTicketUpdated, usuario, isCustomer, d
               </div>
             )}
 
-            {/* 📋 Datos de Formulario */}
+            {/* Datos de Formulario */}
             {!isExpense && cliente.camposExtra && Object.keys(cliente.camposExtra).length > 0 && (
               <div style={{ marginTop: '20px', borderTop: '1px solid var(--border-color)', paddingTop: '15px' }}>
-                <h4 style={{ fontSize: '0.9rem', color: 'var(--text-main)', marginBottom: '10px', textAlign: 'left' }}>📋 Datos de Formulario</h4>
+                <h4 style={{ fontSize: '0.9rem', color: 'var(--text-main)', marginBottom: '10px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <BrandingVectorIcon name="file-text" size={16} color="var(--primary)" />
+                  <span>Datos de Formulario</span>
+                </h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}>
                   {Object.entries(cliente.camposExtra).map(([lbl, val], idx) => (
                     <div key={idx} style={{ background: 'rgba(120, 120, 128, 0.04)', padding: '10px 14px', borderRadius: '10px', border: '1px solid var(--border-color)' }}>
@@ -405,7 +420,7 @@ function TicketModal({ cliente, onClose, onTicketUpdated, usuario, isCustomer, d
               </div>
             )}
 
-            {/* 💸 Vista Especializada para REINTEGROS */}
+            {/* Vista Especializada para REINTEGROS */}
             {isExpense && expenseType === 'reintegro' && camposExtraObj && (
               <div style={{ marginTop: '20px', borderTop: '1px solid var(--border-color)', paddingTop: '15px' }}>
                 <div style={{
@@ -425,9 +440,13 @@ function TicketModal({ cliente, onClose, onTicketUpdated, usuario, isCustomer, d
                       padding: '4px 10px',
                       borderRadius: '10px',
                       textTransform: 'uppercase',
-                      letterSpacing: '0.5px'
+                      letterSpacing: '0.5px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px'
                     }}>
-                      💸 Reintegro de Gastos
+                      <BrandingVectorIcon name="receipt" size={14} color="#fff" />
+                      <span>Reintegro de Gastos</span>
                     </span>
                     <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                       Ticket #{cliente.id}
@@ -471,7 +490,7 @@ function TicketModal({ cliente, onClose, onTicketUpdated, usuario, isCustomer, d
               </div>
             )}
 
-            {/* ✈️ Vista Especializada para RESERVAS DE VIAJE */}
+            {/* Vista Especializada para RESERVAS DE VIAJE */}
             {isExpense && expenseType === 'viaje' && camposExtraObj && (
               <div style={{ marginTop: '20px', borderTop: '1px solid var(--border-color)', paddingTop: '15px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
@@ -483,9 +502,13 @@ function TicketModal({ cliente, onClose, onTicketUpdated, usuario, isCustomer, d
                     padding: '4px 10px',
                     borderRadius: '10px',
                     textTransform: 'uppercase',
-                    letterSpacing: '0.5px'
+                    letterSpacing: '0.5px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
                   }}>
-                    ✈️ Reserva de Viajes
+                    <BrandingVectorIcon name="plane" size={14} color="#fff" />
+                    <span>Reserva de Viajes</span>
                   </span>
                   <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
                     Ticket #{cliente.id}
@@ -505,8 +528,9 @@ function TicketModal({ cliente, onClose, onTicketUpdated, usuario, isCustomer, d
                         padding: '12px 16px',
                         boxShadow: 'var(--shadow-sm)'
                       }}>
-                        <h5 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', color: 'var(--purple-brand)', fontWeight: '700', fontFamily: 'Outfit, sans-serif', borderBottom: '1px solid var(--border-color)', paddingBottom: '4px' }}>
-                          {grp.title}
+                        <h5 style={{ margin: '0 0 10px 0', fontSize: '0.85rem', color: 'var(--purple-brand)', fontWeight: '700', fontFamily: 'Outfit, sans-serif', borderBottom: '1px solid var(--border-color)', paddingBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <BrandingVectorIcon name={grp.icon} size={15} color="var(--purple-brand)" />
+                          <span>{grp.title}</span>
                         </h5>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
                           {grp.fields.map((fldName, fldIdx) => {
@@ -532,7 +556,10 @@ function TicketModal({ cliente, onClose, onTicketUpdated, usuario, isCustomer, d
             {/* Sección de adjuntos del ticket principal */}
             {((cliente.archivos && cliente.archivos.length > 0) || cliente.archivo_url) && (
               <div style={{ marginTop: '20px', borderTop: '1px solid var(--border-color)', paddingTop: '15px' }}>
-                <h4 style={{ fontSize: '0.9rem', color: 'var(--text-main)', marginBottom: '10px', textAlign: 'left' }}>📎 Archivos Adjuntos</h4>
+                <h4 style={{ fontSize: '0.9rem', color: 'var(--text-main)', marginBottom: '10px', textAlign: 'left', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <BrandingVectorIcon name="paperclip" size={16} color="var(--primary)" />
+                  <span>Archivos Adjuntos</span>
+                </h4>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', textAlign: 'left' }}>
                   {cliente.archivos && cliente.archivos.length > 0 ? (
                     cliente.archivos.map((file, idx) => {
@@ -559,7 +586,7 @@ function TicketModal({ cliente, onClose, onTicketUpdated, usuario, isCustomer, d
                           onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-color)'}
                           onMouseLeave={(e) => e.currentTarget.style.background = 'var(--input-bg)'}
                         >
-                          <span style={{ fontSize: '1.2rem' }}>{esImagen ? '🖼️' : '📄'}</span>
+                          <BrandingVectorIcon name={esImagen ? 'image' : 'file-text'} size={18} color="var(--primary)" />
                           <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }} title={file.nombre}>
                             {file.nombre}
                           </div>
@@ -588,7 +615,7 @@ function TicketModal({ cliente, onClose, onTicketUpdated, usuario, isCustomer, d
                       onMouseEnter={(e) => e.currentTarget.style.background = 'var(--bg-color)'}
                       onMouseLeave={(e) => e.currentTarget.style.background = 'var(--input-bg)'}
                     >
-                      <span style={{ fontSize: '1.2rem' }}>📄</span>
+                      <BrandingVectorIcon name="file-text" size={18} color="var(--primary)" />
                       <div style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
                         Ver Archivo Principal
                       </div>
@@ -643,7 +670,10 @@ function TicketModal({ cliente, onClose, onTicketUpdated, usuario, isCustomer, d
                                     }} 
                                   />
                                 </a>
-                                <div style={{ fontSize: '0.72rem', color: '#8e8e93', marginTop: '2px' }}>📎 {file.nombre}</div>
+                                <div style={{ fontSize: '0.72rem', color: '#8e8e93', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  <BrandingVectorIcon name="paperclip" size={11} color="#8e8e93" />
+                                  <span>{file.nombre}</span>
+                                </div>
                               </div>
                             );
                           } else {
@@ -669,7 +699,7 @@ function TicketModal({ cliente, onClose, onTicketUpdated, usuario, isCustomer, d
                                   textAlign: 'left'
                                 }}
                               >
-                                <span>📄</span>
+                                <BrandingVectorIcon name="file-text" size={14} color="var(--text-main)" />
                                 <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={file.nombre}>
                                   {file.nombre}
                                 </span>
@@ -688,8 +718,11 @@ function TicketModal({ cliente, onClose, onTicketUpdated, usuario, isCustomer, d
               {error && <div style={{ color: 'var(--danger)', fontSize: '0.8rem', marginBottom: '5px' }}>{error}</div>}
               
               {!isCustomer && (
-                <div style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <label style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>⚡ Respuestas Rápidas:</label>
+                <div style={{ marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <label style={{ fontSize: '0.85rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <BrandingVectorIcon name="zap" size={15} color="var(--primary)" />
+                    <span>Respuestas Rápidas:</span>
+                  </label>
                   <select onChange={(e) => handleMacroSelect(e.target.value)} className="modal-macro-select" defaultValue="">
                     <option value="" disabled>Seleccionar Macro...</option>
                     {MACROS.map((m, idx) => (
@@ -708,7 +741,10 @@ function TicketModal({ cliente, onClose, onTicketUpdated, usuario, isCustomer, d
               />
               
               <div style={{ display: 'flex', flexDirection: 'column', gap: '5px', background: 'var(--input-bg)', padding: '10px', borderRadius: '10px', border: '1px dashed var(--border-color)', width: '100%', boxSizing: 'border-box', marginBottom: '10px', textAlign: 'left' }}>
-                <label style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-main)' }}>📎 Adjuntar Archivos a la Nota (Hasta 15 MB c/u):</label>
+                <label style={{ fontSize: '0.8rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <BrandingVectorIcon name="paperclip" size={14} color="var(--text-main)" />
+                  <span>Adjuntar Archivos a la Nota (Hasta 15 MB c/u):</span>
+                </label>
                 <input 
                   type="file" 
                   multiple 
@@ -720,8 +756,10 @@ function TicketModal({ cliente, onClose, onTicketUpdated, usuario, isCustomer, d
                     <strong>Seleccionados ({archivosNota.length}):</strong>
                     <ul style={{ paddingLeft: '16px', margin: '4px 0 0 0' }}>
                       {archivosNota.map((file, idx) => (
-                        <li key={idx}>
-                          📎 {file.name} <span style={{ color: '#8e8e93' }}>({(file.size / (1024 * 1024)).toFixed(2)} MB)</span>
+                        <li key={idx} style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
+                          <BrandingVectorIcon name="paperclip" size={12} color="#8e8e93" />
+                          <span>{file.name}</span>
+                          <span style={{ color: '#8e8e93' }}>({(file.size / (1024 * 1024)).toFixed(2)} MB)</span>
                         </li>
                       ))}
                     </ul>
