@@ -37,7 +37,7 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
     nombre: '', 
     email: '', 
     password: '', 
-    rol: 'cliente',
+    rol: 'vendedor',
     accesos: { departamentos: [], estados: [] },
     equipoId: '',
     crear_tickets: true,
@@ -234,7 +234,7 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
   const handleCancelEdit = () => {
     setEditingId(null);
     setFormData({ 
-      nombre: '', email: '', password: '', rol: 'cliente', 
+      nombre: '', email: '', password: '', rol: 'vendedor', 
       accesos: { departamentos: [], estados: [] },
       equipoId: '',
       crear_tickets: true,
@@ -340,7 +340,7 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                   <button className="nav-btn" style={{ background: 'var(--primary)', color: 'white', border: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px' }} onClick={() => {
                     setEditingId(null);
                     setFormData({
-                      nombre: '', email: '', password: '', rol: 'cliente',
+                      nombre: '', email: '', password: '', rol: 'vendedor',
                       accesos: { departamentos: [], estados: [] },
                       equipoId: '',
                       crear_tickets: true,
@@ -397,7 +397,8 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                     <div className="form-group" style={{ margin: 0, flex: '1 1 240px' }}>
                       <label>Rol en el Sistema</label>
                       <select name="rol" value={formData.rol} onChange={handleInputChange} className="status-select" style={{ padding: '14px 18px', width: '100%' }}>
-                        <option value="cliente">Cliente (Solo crea tickets)</option>
+                        <option value="vendedor">Vendedor (Gestión y emisión de tickets)</option>
+                        <option value="pm">PM (Product Manager)</option>
                         <option value="manager">Manager (Monitorea múltiples clientes)</option>
                         <option value="staff">Staff (Atiende tickets específicos)</option>
                         <option value="admin_ecommerce">Admin E-commerce (Gestión de Tienda y Catálogo)</option>
@@ -774,8 +775,8 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                         <div style={{ lineHeight: '1.25' }}>
                           <span style={{ 
                             padding: '2px 8px', borderRadius: '12px', fontSize: '10.5px', 
-                            background: u.rol === 'admin' ? 'var(--danger-bg)' : u.rol === 'admin_ecommerce' ? (theme === 'dark' ? 'rgba(15, 164, 222, 0.2)' : '#e0f2fe') : u.rol === 'staff' ? 'var(--warning-bg)' : u.rol === 'manager' ? (theme === 'dark' ? 'rgba(192, 132, 252, 0.15)' : '#f3e8ff') : 'var(--primary-light)', 
-                            color: u.rol === 'admin' ? 'var(--danger)' : u.rol === 'admin_ecommerce' ? '#0284c7' : u.rol === 'staff' ? 'var(--warning)' : u.rol === 'manager' ? 'var(--purple-brand)' : 'var(--primary)',
+                            background: u.rol === 'admin' ? 'var(--danger-bg)' : u.rol === 'admin_ecommerce' ? (theme === 'dark' ? 'rgba(15, 164, 222, 0.2)' : '#e0f2fe') : u.rol === 'staff' ? 'var(--warning-bg)' : u.rol === 'manager' ? (theme === 'dark' ? 'rgba(192, 132, 252, 0.15)' : '#f3e8ff') : u.rol === 'pm' ? (theme === 'dark' ? 'rgba(245, 158, 11, 0.18)' : '#fef3c7') : 'var(--primary-light)', 
+                            color: u.rol === 'admin' ? 'var(--danger)' : u.rol === 'admin_ecommerce' ? '#0284c7' : u.rol === 'staff' ? 'var(--warning)' : u.rol === 'manager' ? 'var(--purple-brand)' : u.rol === 'pm' ? '#d97706' : 'var(--primary)',
                             fontWeight: 700,
                             display: 'inline-flex',
                             alignItems: 'center',
@@ -789,8 +790,10 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                               <><BrandingVectorIcon name="briefcase" size={12} /> Staff</>
                             ) : u.rol === 'manager' ? (
                               <><BrandingVectorIcon name="users" size={12} /> Manager</>
+                            ) : u.rol === 'pm' ? (
+                              <><BrandingVectorIcon name="layers" size={12} /> PM</>
                             ) : (
-                              <><BrandingVectorIcon name="user" size={12} /> Cliente</>
+                              <><BrandingVectorIcon name="user" size={12} /> Vendedor</>
                             )}
                           </span>
                         </div>
@@ -956,8 +959,8 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                         <td>
                           <span style={{ 
                             padding: '3px 8px', borderRadius: '12px', fontSize: '0.8rem', 
-                            background: s.rol === 'admin' ? 'var(--danger-bg)' : s.rol === 'admin_ecommerce' ? (theme === 'dark' ? 'rgba(15, 164, 222, 0.2)' : '#e0f2fe') : s.rol === 'staff' ? 'var(--warning-bg)' : s.rol === 'manager' ? (theme === 'dark' ? 'rgba(192, 132, 252, 0.15)' : '#f3e8ff') : 'var(--primary-light)', 
-                            color: s.rol === 'admin' ? 'var(--danger)' : s.rol === 'admin_ecommerce' ? '#0284c7' : s.rol === 'staff' ? 'var(--warning)' : s.rol === 'manager' ? 'var(--purple-brand)' : 'var(--primary)',
+                            background: s.rol === 'admin' ? 'var(--danger-bg)' : s.rol === 'admin_ecommerce' ? (theme === 'dark' ? 'rgba(15, 164, 222, 0.2)' : '#e0f2fe') : s.rol === 'staff' ? 'var(--warning-bg)' : s.rol === 'manager' ? (theme === 'dark' ? 'rgba(192, 132, 252, 0.15)' : '#f3e8ff') : s.rol === 'pm' ? (theme === 'dark' ? 'rgba(245, 158, 11, 0.18)' : '#fef3c7') : 'var(--primary-light)', 
+                            color: s.rol === 'admin' ? 'var(--danger)' : s.rol === 'admin_ecommerce' ? '#0284c7' : s.rol === 'staff' ? 'var(--warning)' : s.rol === 'manager' ? 'var(--purple-brand)' : s.rol === 'pm' ? '#d97706' : 'var(--primary)',
                             fontWeight: 700,
                             display: 'inline-flex',
                             alignItems: 'center',
@@ -971,8 +974,10 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                               <><BrandingVectorIcon name="briefcase" size={12} /> Staff</>
                             ) : s.rol === 'manager' ? (
                               <><BrandingVectorIcon name="users" size={12} /> Manager</>
+                            ) : s.rol === 'pm' ? (
+                              <><BrandingVectorIcon name="layers" size={12} /> PM</>
                             ) : (
-                              <><BrandingVectorIcon name="user" size={12} /> Cliente</>
+                              <><BrandingVectorIcon name="user" size={12} /> Vendedor</>
                             )}
                           </span>
                         </td>
