@@ -6,6 +6,7 @@ import {
 } from 'recharts';
 import AdminProductFormTiendanube from './AdminProductFormTiendanube';
 import BrandingVectorIcon from './BrandingVectorIcon';
+import NotificationBell from './NotificationBell';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 const COLORS = ['#0fa4de', '#38bdf8', '#0284c7', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4'];
@@ -2174,7 +2175,19 @@ function AdminEcommerce({ embedded = false }) {
               </div>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div className="user-controls">
+                <div className="user-controls" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {/* Notification Bell */}
+                  <NotificationBell 
+                    usuario={typeof usuario !== 'undefined' ? usuario : { rol: 'admin_ecommerce', nombre: 'Admin E-Commerce' }}
+                    onNavigate={(targetView) => {
+                      if (targetView === 'erp') {
+                        window.location.href = '/admin/erp';
+                      } else if (targetView === 'crm') {
+                        window.location.href = '/';
+                      }
+                    }}
+                  />
+
                   <button
                     type="button"
                     className="nav-btn"

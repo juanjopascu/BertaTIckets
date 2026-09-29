@@ -1,0 +1,269 @@
+[
+  {
+    "id": "rep_1790714566512",
+    "titulo": "Ventas Proyectadas Q4 por Línea",
+    "descripcion": "Proyecciones comerciales de cierre de año",
+    "modulo": "erp_finanzas",
+    "tipoGrafico": "bar",
+    "metrica": "facturacion",
+    "dimension": "linea",
+    "unidad": "USD",
+    "color": "#0fa4de",
+    "pinned": true,
+    "createdAt": "2026-09-29T20:42:46.512Z",
+    "data": [
+      {
+        "label": "Ciberseguridad",
+        "valor": 650000,
+        "extra": "+22%"
+      },
+      {
+        "label": "Networking",
+        "valor": 420000,
+        "extra": "+15%"
+      },
+      {
+        "label": "Cloud & Licencias",
+        "valor": 280000,
+        "extra": "+30%"
+      }
+    ]
+  },
+  {
+    "id": "rep-1",
+    "titulo": "Margen Comercial por Línea de Producto (Marcas)",
+    "descripcion": "Comparativa de rentabilidad bruta y volumen de facturación entre Fortinet, Cisco, Ubiquiti y MikroTik.",
+    "modulo": "erp_finanzas",
+    "tipoGrafico": "bar",
+    "metrica": "margen_pct",
+    "dimension": "marca",
+    "unidad": "%",
+    "color": "#10b981",
+    "pinned": true,
+    "createdAt": "2026-09-29T10:00:00Z",
+    "data": [
+      {
+        "label": "Fortinet",
+        "valor": 28.8,
+        "extra": "$415,200 USD",
+        "count": 272
+      },
+      {
+        "label": "MikroTik",
+        "valor": 31.2,
+        "extra": "$87,555 USD",
+        "count": 195
+      },
+      {
+        "label": "Ubiquiti",
+        "valor": 34.5,
+        "extra": "$58,590 USD",
+        "count": 310
+      },
+      {
+        "label": "Cisco Enterprise",
+        "valor": 24.1,
+        "extra": "$124,800 USD",
+        "count": 48
+      },
+      {
+        "label": "Accesorios & Fibra",
+        "valor": 42,
+        "extra": "$32,100 USD",
+        "count": 420
+      }
+    ]
+  },
+  {
+    "id": "rep-2",
+    "titulo": "Tiempos de Resolución y SLA por Nivel de Prioridad",
+    "descripcion": "Horas promedio de resolución en tickets de soporte técnico según criticidad (Crítico, Alto, Medio, Bajo).",
+    "modulo": "crm_tickets",
+    "tipoGrafico": "area",
+    "metrica": "horas_resolucion",
+    "dimension": "prioridad",
+    "unidad": "hs",
+    "color": "#8b5cf6",
+    "pinned": true,
+    "createdAt": "2026-09-29T10:15:00Z",
+    "data": [
+      {
+        "label": "Urgente / Crítico",
+        "valor": 1.4,
+        "extra": "99.8% SLA",
+        "count": 85
+      },
+      {
+        "label": "Prioridad Alta",
+        "valor": 3.2,
+        "extra": "98.5% SLA",
+        "count": 210
+      },
+      {
+        "label": "Prioridad Media",
+        "valor": 6.8,
+        "extra": "97.2% SLA",
+        "count": 540
+      },
+      {
+        "label": "Prioridad Baja",
+        "valor": 14.5,
+        "extra": "99.1% SLA",
+        "count": 380
+      },
+      {
+        "label": "Consultas Generales",
+        "valor": 2.1,
+        "extra": "100% SLA",
+        "count": 205
+      }
+    ]
+  },
+  {
+    "id": "rep-3",
+    "titulo": "Rendimiento de Despacho y Eficiencia por Hub Logístico",
+    "descripcion": "Cumplimiento de órdenes dentro del plazo de 24h/48h en cada uno de los 8 centros de distribución regional.",
+    "modulo": "logistica_hubs",
+    "tipoGrafico": "bar",
+    "metrica": "cumplimiento_despacho_pct",
+    "dimension": "hub",
+    "unidad": "%",
+    "color": "#0fa4de",
+    "pinned": true,
+    "createdAt": "2026-09-29T10:30:00Z",
+    "data": [
+      {
+        "label": "Hub BUE (Argentina)",
+        "valor": 99.4,
+        "extra": "1,120 envíos",
+        "count": 1120
+      },
+      {
+        "label": "Hub SCL (Chile)",
+        "valor": 98.8,
+        "extra": "680 envíos",
+        "count": 680
+      },
+      {
+        "label": "Hub MIA (USA FTZ)",
+        "valor": 99.6,
+        "extra": "340 envíos",
+        "count": 340
+      },
+      {
+        "label": "Hub BOG (Colombia)",
+        "valor": 97.9,
+        "extra": "490 envíos",
+        "count": 490
+      },
+      {
+        "label": "Hub LIM (Perú)",
+        "valor": 98.2,
+        "extra": "310 envíos",
+        "count": 310
+      },
+      {
+        "label": "Hub MEX (México)",
+        "valor": 97.5,
+        "extra": "260 envíos",
+        "count": 260
+      },
+      {
+        "label": "Hub SP (Brasil)",
+        "valor": 98,
+        "extra": "180 envíos",
+        "count": 180
+      },
+      {
+        "label": "Oficina MVD (Uruguay)",
+        "valor": 100,
+        "extra": "95 envíos",
+        "count": 95
+      }
+    ]
+  },
+  {
+    "id": "rep-4",
+    "titulo": "Conversión de Carritos y Ticket Promedio en DACAS Shop",
+    "descripcion": "Evolución mensual del ticket promedio en USD y tasa de carritos convertidos en órdenes en firme.",
+    "modulo": "ecommerce_shop",
+    "tipoGrafico": "line",
+    "metrica": "ticket_promedio_usd",
+    "dimension": "mes",
+    "unidad": "USD",
+    "color": "#06b6d4",
+    "pinned": false,
+    "createdAt": "2026-09-29T10:45:00Z",
+    "data": [
+      {
+        "label": "Mayo",
+        "valor": 710,
+        "extra": "38.4% conv",
+        "count": 94
+      },
+      {
+        "label": "Junio",
+        "valor": 735,
+        "extra": "39.8% conv",
+        "count": 112
+      },
+      {
+        "label": "Julio",
+        "valor": 760,
+        "extra": "41.2% conv",
+        "count": 128
+      },
+      {
+        "label": "Agosto",
+        "valor": 785,
+        "extra": "42.0% conv",
+        "count": 145
+      },
+      {
+        "label": "Septiembre",
+        "valor": 820,
+        "extra": "43.5% conv",
+        "count": 163
+      }
+    ]
+  },
+  {
+    "id": "rep-5",
+    "titulo": "Distribución de Cartera B2B por Nivel de Facturación",
+    "descripcion": "Segmentación de cuentas mayoristas según volumen de compra anual (Tier 1 Platinum a Tier 4 Regular).",
+    "modulo": "clientes_b2b",
+    "tipoGrafico": "pie",
+    "metrica": "porcentaje_cuentas",
+    "dimension": "tier",
+    "unidad": "%",
+    "color": "#f59e0b",
+    "pinned": false,
+    "createdAt": "2026-09-29T11:00:00Z",
+    "data": [
+      {
+        "label": "Tier 1 Platinum (> $100k)",
+        "valor": 38,
+        "extra": "45 cuentas",
+        "count": 45
+      },
+      {
+        "label": "Tier 2 Gold ($30k - $100k)",
+        "valor": 32,
+        "extra": "82 cuentas",
+        "count": 82
+      },
+      {
+        "label": "Tier 3 Silver ($10k - $30k)",
+        "valor": 20,
+        "extra": "115 cuentas",
+        "count": 115
+      },
+      {
+        "label": "Tier 4 Regular (< $10k)",
+        "valor": 10,
+        "extra": "100 cuentas",
+        "count": 100
+      }
+    ]
+  }
+]

@@ -109,7 +109,7 @@ function AdminConfigTickets({ embedded = false }) {
         <main className="crm-main" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '30px' }}>
           <section className="form-section" style={{ background: '#ffffff', borderRadius: '24px', padding: '30px', boxShadow: '0 8px 30px rgba(0,0,0,0.04)', border: '1px solid rgba(0,0,0,0.06)' }}>
             <h2 style={{ fontSize: '1.4rem', fontWeight: '700', marginBottom: '20px', color: '#1c1c1e' }}>Funciones del Formulario</h2>
-            
+
             {mensaje && (
               <div style={{ background: '#eafaf1', color: '#2e7d32', padding: '12px 20px', borderRadius: '12px', marginBottom: '20px', fontWeight: '500', display: 'flex', alignItems: 'center', gap: '8px', border: '1px solid #c8e6c9', animation: 'fadeIn 0.3s ease' }}>
                 <BrandingVectorIcon name="check-circle" size={16} color="#2e7d32" />
@@ -136,28 +136,28 @@ function AdminConfigTickets({ embedded = false }) {
                   </div>
                 </div>
                 <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '60px', height: '34px' }}>
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={config.habilitarNuevoTicketProcesos}
                     onChange={() => handleToggle('habilitarNuevoTicketProcesos')}
                     style={{ opacity: 0, width: 0, height: 0 }}
                   />
-                  <span className="slider" style={{ 
-                    position: 'absolute', 
-                    cursor: 'pointer', 
-                    top: 0, left: 0, right: 0, bottom: 0, 
-                    backgroundColor: config.habilitarNuevoTicketProcesos ? 'var(--primary)' : '#ccc', 
-                    transition: '.4s', 
-                    borderRadius: '34px' 
+                  <span className="slider" style={{
+                    position: 'absolute',
+                    cursor: 'pointer',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: config.habilitarNuevoTicketProcesos ? 'var(--primary)' : '#ccc',
+                    transition: '.4s',
+                    borderRadius: '34px'
                   }}>
-                    <span className="knob" style={{ 
-                      position: 'absolute', 
-                      content: '""', 
-                      height: '26px', width: '26px', 
-                      left: config.habilitarNuevoTicketProcesos ? '30px' : '4px', 
-                      bottom: '4px', 
-                      backgroundColor: 'white', 
-                      transition: '.4s', 
+                    <span className="knob" style={{
+                      position: 'absolute',
+                      content: '""',
+                      height: '26px', width: '26px',
+                      left: config.habilitarNuevoTicketProcesos ? '30px' : '4px',
+                      bottom: '4px',
+                      backgroundColor: 'white',
+                      transition: '.4s',
                       borderRadius: '50%',
                       boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                     }}></span>
@@ -177,28 +177,28 @@ function AdminConfigTickets({ embedded = false }) {
                   </div>
                 </div>
                 <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '60px', height: '34px' }}>
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={config.habilitarReintegroGastos}
                     onChange={() => handleToggle('habilitarReintegroGastos')}
                     style={{ opacity: 0, width: 0, height: 0 }}
                   />
-                  <span className="slider" style={{ 
-                    position: 'absolute', 
-                    cursor: 'pointer', 
-                    top: 0, left: 0, right: 0, bottom: 0, 
-                    backgroundColor: config.habilitarReintegroGastos ? '#6b21a8' : '#ccc', 
-                    transition: '.4s', 
-                    borderRadius: '34px' 
+                  <span className="slider" style={{
+                    position: 'absolute',
+                    cursor: 'pointer',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: config.habilitarReintegroGastos ? '#6b21a8' : '#ccc',
+                    transition: '.4s',
+                    borderRadius: '34px'
                   }}>
-                    <span className="knob" style={{ 
-                      position: 'absolute', 
-                      content: '""', 
-                      height: '26px', width: '26px', 
-                      left: config.habilitarReintegroGastos ? '30px' : '4px', 
-                      bottom: '4px', 
-                      backgroundColor: 'white', 
-                      transition: '.4s', 
+                    <span className="knob" style={{
+                      position: 'absolute',
+                      content: '""',
+                      height: '26px', width: '26px',
+                      left: config.habilitarReintegroGastos ? '30px' : '4px',
+                      bottom: '4px',
+                      backgroundColor: 'white',
+                      transition: '.4s',
                       borderRadius: '50%',
                       boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                     }}></span>
@@ -218,28 +218,28 @@ function AdminConfigTickets({ embedded = false }) {
                   </div>
                 </div>
                 <label className="switch" style={{ position: 'relative', display: 'inline-block', width: '60px', height: '34px' }}>
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     checked={config.habilitarReservaViajes}
                     onChange={() => handleToggle('habilitarReservaViajes')}
                     style={{ opacity: 0, width: 0, height: 0 }}
                   />
-                  <span className="slider" style={{ 
-                    position: 'absolute', 
-                    cursor: 'pointer', 
-                    top: 0, left: 0, right: 0, bottom: 0, 
-                    backgroundColor: config.habilitarReservaViajes ? 'var(--purple-brand)' : '#ccc', 
-                    transition: '.4s', 
-                    borderRadius: '34px' 
+                  <span className="slider" style={{
+                    position: 'absolute',
+                    cursor: 'pointer',
+                    top: 0, left: 0, right: 0, bottom: 0,
+                    backgroundColor: config.habilitarReservaViajes ? 'var(--purple-brand)' : '#ccc',
+                    transition: '.4s',
+                    borderRadius: '34px'
                   }}>
-                    <span className="knob" style={{ 
-                      position: 'absolute', 
-                      content: '""', 
-                      height: '26px', width: '26px', 
-                      left: config.habilitarReservaViajes ? '30px' : '4px', 
-                      bottom: '4px', 
-                      backgroundColor: 'white', 
-                      transition: '.4s', 
+                    <span className="knob" style={{
+                      position: 'absolute',
+                      content: '""',
+                      height: '26px', width: '26px',
+                      left: config.habilitarReservaViajes ? '30px' : '4px',
+                      bottom: '4px',
+                      backgroundColor: 'white',
+                      transition: '.4s',
                       borderRadius: '50%',
                       boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                     }}></span>
@@ -249,8 +249,8 @@ function AdminConfigTickets({ embedded = false }) {
             </div>
 
             <div style={{ marginTop: '40px', display: 'flex', justifyContent: 'flex-end' }}>
-              <button 
-                onClick={handleSave} 
+              <button
+                onClick={handleSave}
                 disabled={saving}
                 style={{
                   padding: '14px 28px',

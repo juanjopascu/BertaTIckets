@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BrandingVectorIcon from './BrandingVectorIcon';
+import NotificationBell from './NotificationBell';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 
@@ -28,7 +29,7 @@ export default function AdminErpConfig({ embedded = false, usuario, theme = 'lig
 
   // Settings & Country APIs
   const [settings, setSettings] = useState({
-    instance_name: 'DACAS Enterprise Oracle NetSuite OneWorld Cluster',
+    instance_name: 'DACAS Enterprise ERP OneWorld Cluster',
     version: '2.0.0',
     base_currency: 'USD',
     multi_subsidiary_consolidation: true,
@@ -314,15 +315,86 @@ export default function AdminErpConfig({ embedded = false, usuario, theme = 'lig
   });
 
   return (
-    <div style={{
+    <div className="erp-config-wrap" style={{
       padding: embedded ? '0' : '28px 36px',
       maxWidth: '1680px',
       margin: '0 auto',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-      color: '#0f172a',
+      color: 'var(--text-main, #0f172a)',
       background: 'transparent'
     }}>
-      {/* ── TOP HEADER: Oracle NetSuite ERP Admin DACAS ── */}
+      <style>{`
+        .erp-config-wrap {
+          color: var(--text-main, #0f172a);
+        }
+        [data-theme='dark'] .erp-config-wrap {
+          color: #ffffff !important;
+        }
+        [data-theme='dark'] .erp-config-wrap div[style*="background: #FFFFFF"],
+        [data-theme='dark'] .erp-config-wrap div[style*="background:#FFFFFF"],
+        [data-theme='dark'] .erp-config-wrap div[style*="background: rgb(255, 255, 255)"],
+        [data-theme='dark'] .erp-config-wrap div[style*="background-color: #FFFFFF"],
+        [data-theme='dark'] .erp-config-wrap div[style*="background-color: rgb(255, 255, 255)"],
+        [data-theme='dark'] .erp-config-wrap div[style*="background: white"],
+        [data-theme='dark'] .erp-config-wrap div[style*="background:#ffffff"],
+        [data-theme='dark'] .erp-config-wrap div[style*="background: #ffffff"] {
+          background: var(--card-bg, #0f2742) !important;
+          border-color: var(--border-color, rgba(15, 164, 222, 0.22)) !important;
+          color: var(--text-main, #ffffff) !important;
+        }
+        [data-theme='dark'] .erp-config-wrap div[style*="background: #F8FAFC"],
+        [data-theme='dark'] .erp-config-wrap div[style*="background:#F8FAFC"],
+        [data-theme='dark'] .erp-config-wrap div[style*="background: rgb(248, 250, 252)"],
+        [data-theme='dark'] .erp-config-wrap div[style*="background-color: #F8FAFC"],
+        [data-theme='dark'] .erp-config-wrap div[style*="background: #f8fafc"],
+        [data-theme='dark'] .erp-config-wrap button[style*="background: #F8FAFC"],
+        [data-theme='dark'] .erp-config-wrap button[style*="background:#F8FAFC"],
+        [data-theme='dark'] .erp-config-wrap button[style*="background: rgb(248, 250, 252)"],
+        [data-theme='dark'] .erp-config-wrap button[style*="background: #f8fafc"] {
+          background: var(--pill-bg, #12354c) !important;
+          border-color: var(--border-color, rgba(15, 164, 222, 0.22)) !important;
+          color: var(--text-main, #ffffff) !important;
+        }
+        [data-theme='dark'] .erp-config-wrap [style*="color: #071524"],
+        [data-theme='dark'] .erp-config-wrap [style*="color:#071524"],
+        [data-theme='dark'] .erp-config-wrap [style*="color: #0f172a"],
+        [data-theme='dark'] .erp-config-wrap [style*="color:#0f172a"],
+        [data-theme='dark'] .erp-config-wrap [style*="color: #1e293b"],
+        [data-theme='dark'] .erp-config-wrap [style*="color: #334155"],
+        [data-theme='dark'] .erp-config-wrap [style*="color: rgb(7, 21, 36)"],
+        [data-theme='dark'] .erp-config-wrap [style*="color: rgb(15, 23, 42)"] {
+          color: var(--text-main, #ffffff) !important;
+        }
+        [data-theme='dark'] .erp-config-wrap [style*="color: #64748B"],
+        [data-theme='dark'] .erp-config-wrap [style*="color:#64748B"],
+        [data-theme='dark'] .erp-config-wrap [style*="color: #475569"],
+        [data-theme='dark'] .erp-config-wrap [style*="color:#475569"],
+        [data-theme='dark'] .erp-config-wrap [style*="color: rgb(100, 116, 139)"],
+        [data-theme='dark'] .erp-config-wrap [style*="color: rgb(71, 85, 105)"] {
+          color: var(--text-muted, #94a3b8) !important;
+        }
+        [data-theme='dark'] .erp-config-wrap select,
+        [data-theme='dark'] .erp-config-wrap input,
+        [data-theme='dark'] .erp-config-wrap textarea {
+          background-color: var(--input-bg, #0b1d33) !important;
+          color: var(--text-main, #ffffff) !important;
+          border-color: var(--border-color, rgba(15, 164, 222, 0.22)) !important;
+        }
+        [data-theme='dark'] .erp-config-wrap select option {
+          background-color: var(--card-bg, #0f2742) !important;
+          color: var(--text-main, #ffffff) !important;
+        }
+        [data-theme='dark'] .erp-config-wrap th {
+          background: var(--pill-bg, #12354c) !important;
+          color: #38bdf8 !important;
+          border-bottom-color: var(--border-color, rgba(15, 164, 222, 0.22)) !important;
+        }
+        [data-theme='dark'] .erp-config-wrap td {
+          border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+          color: var(--text-main, #ffffff) !important;
+        }
+      `}</style>
+      {/* ── TOP HEADER: DACAS ERP Admin ── */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -332,35 +404,37 @@ export default function AdminErpConfig({ embedded = false, usuario, theme = 'lig
         marginBottom: '20px',
         padding: '20px 24px',
         borderRadius: '16px',
-        background: '#FFFFFF',
-        border: '1px solid #E2E8F0',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.03)'
+        background: 'var(--card-bg, #FFFFFF)',
+        border: '1px solid var(--border-color, #E2E8F0)',
+        boxShadow: 'var(--shadow-md, 0 4px 20px rgba(0,0,0,0.03))'
       }}>
         {/* Left Title & Brand */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <button
-            type="button"
-            onClick={onBack ? onBack : () => navigate('/')}
-            style={{
-              background: '#F8FAFC',
-              border: '1px solid #CBD5E1',
-              borderRadius: '10px',
-              padding: '8px 14px',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              color: '#0fa4de',
-              fontSize: '13px',
-              fontWeight: '800',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
-              transition: 'all 0.15s ease'
-            }}
-            title="Ir a Home / Panel Principal"
-          >
-            <BrandingVectorIcon name="home" size={16} color="#0fa4de" />
-            <span>Home</span>
-          </button>
+          {!embedded && (
+            <button
+              type="button"
+              onClick={onBack ? onBack : () => navigate('/')}
+              style={{
+                background: 'var(--pill-bg, #F8FAFC)',
+                border: '1px solid var(--border-color, #CBD5E1)',
+                borderRadius: '10px',
+                padding: '8px 14px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                color: 'var(--primary, #0fa4de)',
+                fontSize: '13px',
+                fontWeight: '800',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+                transition: 'all 0.15s ease'
+              }}
+              title="Ir a Home / Panel Principal"
+            >
+              <BrandingVectorIcon name="home" size={16} color="var(--primary, #0fa4de)" />
+              <span>Home</span>
+            </button>
+          )}
 
           <div style={{
             width: '46px',
@@ -406,8 +480,17 @@ export default function AdminErpConfig({ embedded = false, usuario, theme = 'lig
               background: '#22C55E',
               boxShadow: '0 0 8px #22C55E'
             }} />
-            <span>NetSuite DB Activa (erp_database.json)</span>
+            <span>Base ERP Activa (erp_database.json)</span>
           </div>
+
+          {/* Notification Bell */}
+          <NotificationBell 
+            usuario={usuario}
+            onNavigate={(targetView) => {
+              if (onBack) onBack();
+              else window.location.href = targetView === 'erp' ? '/admin/erp' : targetView === 'ecommerce' ? '/admin/ecommerce' : '/';
+            }}
+          />
 
           {/* Reconcile Button */}
           <button
@@ -537,7 +620,7 @@ export default function AdminErpConfig({ embedded = false, usuario, theme = 'lig
         </div>
       )}
 
-      {/* ── MAIN NETSUITE ERP CONFIG NAVIGATION TABS ── */}
+      {/* ── MAIN ERP CONFIG NAVIGATION TABS ── */}
       <div style={{
         display: 'flex',
         gap: '6px',
@@ -870,7 +953,7 @@ export default function AdminErpConfig({ embedded = false, usuario, theme = 'lig
             }}>
               <div style={{ marginBottom: '24px' }}>
                 <h2 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: '900', color: '#071524' }}>
-                  Parámetros Corporativos NetSuite OneWorld
+                  Parámetros Corporativos ERP OneWorld
                 </h2>
                 <p style={{ margin: 0, fontSize: '13px', color: '#64748B' }}>
                   Ajuste de nomenclaturas, validaciones cruzadas entre subsidiarias y políticas de emisión de comprobantes.
@@ -1255,7 +1338,7 @@ export default function AdminErpConfig({ embedded = false, usuario, theme = 'lig
               }}>
                 <div style={{ marginBottom: '22px' }}>
                   <h2 style={{ margin: '0 0 4px 0', fontSize: '18px', fontWeight: '900', color: '#071524' }}>
-                    Auditoría de Integridad y Reconciliación NetSuite
+                    Auditoría de Integridad y Reconciliación ERP
                   </h2>
                   <p style={{ margin: 0, fontSize: '13px', color: '#64748B' }}>
                     Verificación de consistencia entre cuentas comerciales por cobrar (A/R), por pagar (A/P) y base independiente.
@@ -1339,7 +1422,7 @@ export default function AdminErpConfig({ embedded = false, usuario, theme = 'lig
                   <div>
                     <strong style={{ fontSize: '14px', color: '#071524' }}>Copia de Seguridad de la Base ERP</strong>
                     <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
-                      Descarga instantánea del archivo JSON con la arquitectura NetSuite OneWorld completa.
+                      Descarga instantánea del archivo JSON con la arquitectura ERP OneWorld completa.
                     </div>
                   </div>
                   <button
@@ -1530,7 +1613,7 @@ export default function AdminErpConfig({ embedded = false, usuario, theme = 'lig
               <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '12px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
-                    Asignar a Subsidiaria NetSuite
+                    Asignar a Subsidiaria ERP
                   </label>
                   <select
                     value={apiForm.subsidiary_name}

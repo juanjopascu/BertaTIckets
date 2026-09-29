@@ -48,5 +48,15 @@
     "text": "",
     "type": "info",
     "dismissible": true
-  }
+  },
+  "operatingCountries": [
+    { "id": "arg", "name": "Argentina", "flag": "🇦🇷", "city": "Buenos Aires", "hub": "Hub Central BUE", "timezone": "America/Argentina/Buenos_Aires", "utcOffset": "UTC-3", "currency": "ARS", "active": true },
+    { "id": "chl", "name": "Chile", "flag": "🇨🇱", "city": "Santiago", "hub": "Hub SCL", "timezone": "America/Santiago", "utcOffset": "UTC-3", "currency": "CLP", "active": true },
+    { "id": "ury", "name": "Uruguay", "flag": "🇺🇾", "city": "Montevideo", "hub": "Hub MVD", "timezone": "America/Montevideo", "utcOffset": "UTC-3", "currency": "UYU", "active": true },
+    { "id": "bra", "name": "Brasil", "flag": "🇧🇷", "city": "São Paulo", "hub": "Hub SAO", "timezone": "America/Sao_Paulo", "utcOffset": "UTC-3", "currency": "BRL", "active": true },
+    { "id": "usa", "name": "Estados Unidos", "flag": "🇺🇸", "city": "Miami / FL", "hub": "Miami FTZ Logistics", "timezone": "America/New_York", "utcOffset": "UTC-4", "currency": "USD", "active": true },
+    { "id": "col", "name": "Colombia", "flag": "🇨🇴", "city": "Bogotá", "hub": "Hub BOG", "timezone": "America/Bogota", "utcOffset": "UTC-5", "currency": "COP", "active": true },
+    { "id": "per", "name": "Perú", "flag": "🇵🇪", "city": "Lima", "hub": "Hub LIM", "timezone": "America/Lima", "utcOffset": "UTC-5", "currency": "PEN", "active": true },
+    { "id": "mex", "name": "México", "flag": "🇲🇽", "city": "CDMX", "hub": "Hub MEX", "timezone": "America/Mexico_City", "utcOffset": "UTC-6", "currency": "MXN", "active": true }
+  ]
 }

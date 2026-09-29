@@ -1,0 +1,94 @@
+[
+  {
+    "id": "notif-1790711402382-9mfn",
+    "category": "crm",
+    "title": "Aviso Operativo DACAS",
+    "message": "Se han completado las verificaciones del ERP, CRM y E-Commerce con exito.",
+    "severity": "info",
+    "read": false,
+    "targetView": null,
+    "targetTab": null,
+    "ticketId": null,
+    "orderId": null,
+    "actionLabel": "Ver Detalles",
+    "roles": [
+      "admin",
+      "admin_erp",
+      "admin_ecommerce",
+      "staff",
+      "vendedor",
+      "pm",
+      "manager",
+      "cliente"
+    ],
+    "timestamp": "2026-09-29T19:50:02.382Z"
+  },
+  {
+    "id": "notif-1790710017754-jq43",
+    "category": "erp",
+    "title": "Aviso Global de Mantenimiento",
+    "message": "El sistema se actualizará a las 22:00 hs sin interrupción de servicios.",
+    "severity": "info",
+    "read": false,
+    "targetView": null,
+    "targetTab": null,
+    "ticketId": null,
+    "orderId": null,
+    "actionLabel": "Ver Detalles",
+    "roles": [
+      "admin",
+      "staff"
+    ],
+    "timestamp": "2026-09-29T19:26:57.754Z"
+  },
+  {
+    "id": "notif-erp-2",
+    "category": "erp",
+    "title": "Alerta de Umbral de Inventario",
+    "message": "Stock de FortiGate 60F en Hub Central Buenos Aires alcanzó el límite mínimo de reposición (2 unidades).",
+    "severity": "warning",
+    "read": true,
+    "targetView": "erp",
+    "targetTab": "inventory",
+    "actionLabel": "Gestionar Stock",
+    "roles": [
+      "admin",
+      "admin_erp"
+    ],
+    "timestamp": "2026-09-29T16:41:31.396Z"
+  },
+  {
+    "id": "notif-crm-2",
+    "category": "crm",
+    "title": "Oportunidad Ganada: Servicios CL",
+    "message": "Se confirmó el cierre exitoso del caso comercial en Chile. Estado actualizado a Ganado.",
+    "severity": "success",
+    "read": true,
+    "targetView": "crm",
+    "ticketId": 3,
+    "actionLabel": "Ver CRM",
+    "roles": [
+      "admin",
+      "staff",
+      "vendedor",
+      "pm"
+    ],
+    "timestamp": "2026-09-29T13:11:31.396Z"
+  },
+  {
+    "id": "notif-ecom-2",
+    "category": "ecommerce",
+    "title": "Cliente B2B Verificado",
+    "message": "Connect Cloud Chile SpA completó la verificación impositiva y habilitó su cuenta con lista mayorista.",
+    "severity": "info",
+    "read": true,
+    "targetView": "ecommerce",
+    "targetTab": "clientes",
+    "actionLabel": "Ver Cliente",
+    "roles": [
+      "admin",
+      "admin_ecommerce"
+    ],
+    "timestamp": "2026-09-29T07:11:31.396Z"
+  }
+]

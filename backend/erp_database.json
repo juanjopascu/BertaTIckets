@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
-  "architecture": "Oracle NetSuite OneWorld Multi-Subsidiary & Multi-Currency",
-  "updated_at": "2026-09-29T15:33:55.685Z",
+  "architecture": "DACAS OneWorld Multi-Subsidiary & Multi-Currency",
+  "updated_at": "2026-09-29T21:03:30.579Z",
   "subsidiaries": [
     {
       "id": 1,
@@ -737,10 +737,10 @@
       "issue_date": "2026-09-27",
       "due_date": "2026-11-27",
       "total": 34200,
-      "amount_paid": 0,
-      "balance_due": 34200,
+      "amount_paid": 34200,
+      "balance_due": 0,
       "currency": "USD",
-      "status": "Abierta (Pendiente de Cobro)"
+      "status": "Cobrada / Pagada"
     },
     {
       "id": 303,
@@ -860,7 +860,7 @@
     }
   ],
   "settings": {
-    "instance_name": "DACAS Enterprise Oracle NetSuite OneWorld Cluster",
+    "instance_name": "DACAS Enterprise ERP OneWorld Cluster",
     "version": "2.0.0",
     "base_currency": "USD",
     "multi_subsidiary_consolidation": true,

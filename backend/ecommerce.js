@@ -2831,7 +2831,7 @@ router.delete('/client/end-users/:id', optionalAuthToken, async (req, res) => {
 });
 
 // ==========================================
-// MÓDULO ERP DACAS - ORACLE NETSUITE ONEWORLD
+// MÓDULO ERP DACAS - ONEWORLD
 // (Persistido en Base de Datos ERP Independiente erp_database.json)
 // ==========================================
 
@@ -3000,7 +3000,7 @@ router.post('/admin/erp/orders/:id/sync', optionalAuthToken, async (req, res) =>
     if (!order) {
       return res.status(404).json({ error: 'Orden no encontrada en base ERP' });
     }
-    res.json({ success: true, message: `Orden #${req.params.id} aprobada y facturada en NetSuite ERP exitosamente.`, order });
+    res.json({ success: true, message: `Orden #${req.params.id} aprobada y facturada en ERP exitosamente.`, order });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -3081,7 +3081,7 @@ router.post('/admin/erp/sync-all', optionalAuthToken, async (req, res) => {
     const now = new Date().toISOString();
     res.json({
       success: true,
-      message: 'Base de datos ERP NetSuite OneWorld DACAS verificada y sincronizada correctamente.',
+      message: 'Base de datos ERP OneWorld DACAS verificada y sincronizada correctamente.',
       timestamp: now
     });
   } catch (error) {

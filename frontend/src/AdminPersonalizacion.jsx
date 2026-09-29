@@ -145,6 +145,28 @@ function UIIcon({ name, size = 16, color = 'currentColor', strokeWidth = 2, styl
           <line x1="6" y1="6" x2="18" y2="18" />
         </svg>
       );
+    case 'globe':
+      return (
+        <svg {...props}>
+          <circle cx="12" cy="12" r="10" />
+          <line x1="2" y1="12" x2="22" y2="12" />
+          <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+        </svg>
+      );
+    case 'map-pin':
+      return (
+        <svg {...props}>
+          <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+          <circle cx="12" cy="10" r="3" />
+        </svg>
+      );
+    case 'clock':
+      return (
+        <svg {...props}>
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+      );
     default:
       return (
         <svg {...props}>
@@ -154,6 +176,27 @@ function UIIcon({ name, size = 16, color = 'currentColor', strokeWidth = 2, styl
   }
 }
 
+// Catálogo de presets de países y sedes disponibles para incorporar a la firma
+const COUNTRY_PRESETS = [
+  { id: 'arg', name: 'Argentina', flag: '🇦🇷', city: 'Buenos Aires', hub: 'Hub Central BUE', timezone: 'America/Argentina/Buenos_Aires', utcOffset: 'UTC-3', currency: 'ARS' },
+  { id: 'chl', name: 'Chile', flag: '🇨🇱', city: 'Santiago', hub: 'Hub SCL', timezone: 'America/Santiago', utcOffset: 'UTC-3', currency: 'CLP' },
+  { id: 'ury', name: 'Uruguay', flag: '🇺🇾', city: 'Montevideo', hub: 'Oficina MVD', timezone: 'America/Montevideo', utcOffset: 'UTC-3', currency: 'UYU' },
+  { id: 'bra', name: 'Brasil', flag: '🇧🇷', city: 'São Paulo', hub: 'Hub SP', timezone: 'America/Sao_Paulo', utcOffset: 'UTC-3', currency: 'BRL' },
+  { id: 'usa', name: 'Estados Unidos (Miami)', flag: '🇺🇸', city: 'Miami, FL', hub: 'HQ Logistics MIA', timezone: 'America/New_York', utcOffset: 'UTC-4', currency: 'USD' },
+  { id: 'col', name: 'Colombia', flag: '🇨🇴', city: 'Bogotá', hub: 'Hub BOG', timezone: 'America/Bogota', utcOffset: 'UTC-5', currency: 'COP' },
+  { id: 'per', name: 'Perú', flag: '🇵🇪', city: 'Lima', hub: 'Hub LIM', timezone: 'America/Lima', utcOffset: 'UTC-5', currency: 'PEN' },
+  { id: 'mex', name: 'México', flag: '🇲🇽', city: 'CDMX', hub: 'Hub MEX', timezone: 'America/Mexico_City', utcOffset: 'UTC-6', currency: 'MXN' },
+  { id: 'pry', name: 'Paraguay', flag: '🇵🇾', city: 'Asunción', hub: 'Hub ASU', timezone: 'America/Asuncion', utcOffset: 'UTC-4', currency: 'PYG' },
+  { id: 'bol', name: 'Bolivia', flag: '🇧🇴', city: 'Santa Cruz / La Paz', hub: 'Hub LPZ', timezone: 'America/La_Paz', utcOffset: 'UTC-4', currency: 'BOB' },
+  { id: 'ecu', name: 'Ecuador', flag: '🇪🇨', city: 'Quito / Guayaquil', hub: 'Hub UIO', timezone: 'America/Guayaquil', utcOffset: 'UTC-5', currency: 'USD' },
+  { id: 'pan', name: 'Panamá', flag: '🇵🇦', city: 'Ciudad de Panamá', hub: 'Hub PTY', timezone: 'America/Panama', utcOffset: 'UTC-5', currency: 'USD' },
+  { id: 'cri', name: 'Costa Rica', flag: '🇨🇷', city: 'San José', hub: 'Hub SJO', timezone: 'America/Costa_Rica', utcOffset: 'UTC-6', currency: 'CRC' },
+  { id: 'gtm', name: 'Guatemala', flag: '🇬🇹', city: 'Ciudad de Guatemala', hub: 'Hub GUA', timezone: 'America/Guatemala', utcOffset: 'UTC-6', currency: 'GTQ' },
+  { id: 'dom', name: 'República Dominicana', flag: '🇩🇴', city: 'Santo Domingo', hub: 'Hub SDQ', timezone: 'America/Santo_Domingo', utcOffset: 'UTC-4', currency: 'DOP' },
+  { id: 'esp', name: 'España', flag: '🇪🇸', city: 'Madrid', hub: 'Hub MAD Europa', timezone: 'Europe/Madrid', utcOffset: 'UTC+1', currency: 'EUR' },
+  { id: 'gbr', name: 'Reino Unido', flag: '🇬🇧', city: 'Londres', hub: 'Hub LHR Europa', timezone: 'Europe/London', utcOffset: 'UTC+0', currency: 'GBP' }
+];
+
 export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embedded = false, onBack }) {
   const navigate = useNavigate();
   const fileInputRef = useRef(null);
@@ -161,13 +204,27 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
   const headerLogoInputRef = useRef(null);
   const customIconFileInputRef = useRef(null);
 
-  const [activeTab, setActiveTab] = useState('login'); // 'login' | 'portal' | 'theme' | 'announcement'
-  const [previewMode, setPreviewMode] = useState('login'); // 'login' | 'dashboard'
+  const [activeTab, setActiveTab] = useState('login'); // 'login' | 'portal' | 'theme' | 'countries' | 'announcement'
+  const [previewMode, setPreviewMode] = useState('login'); // 'login' | 'dashboard' | 'countries'
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  // Estados de gestión de países de operación de la firma
+  const [selectedPresetCountryId, setSelectedPresetCountryId] = useState('pry');
+  const [showCustomCountryModal, setShowCustomCountryModal] = useState(false);
+  const [customCountryForm, setCustomCountryForm] = useState({
+    name: '',
+    flag: '🌐',
+    city: '',
+    hub: '',
+    timezone: 'America/Argentina/Buenos_Aires',
+    utcOffset: 'UTC-3',
+    currency: 'USD'
+  });
+  const [countryActionMessage, setCountryActionMessage] = useState(null);
 
   // Estados de biblioteca de íconos y modal para agregar nuevos
   const [iconCategoryFilter, setIconCategoryFilter] = useState('todos');
@@ -234,7 +291,17 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
       text: '',
       type: 'info',
       dismissible: true
-    }
+    },
+    operatingCountries: [
+      { id: 'arg', name: 'Argentina', flag: '🇦🇷', city: 'Buenos Aires', hub: 'Hub Central BUE', timezone: 'America/Argentina/Buenos_Aires', utcOffset: 'UTC-3', currency: 'ARS', active: true },
+      { id: 'chl', name: 'Chile', flag: '🇨🇱', city: 'Santiago', hub: 'Hub SCL', timezone: 'America/Santiago', utcOffset: 'UTC-3', currency: 'CLP', active: true },
+      { id: 'ury', name: 'Uruguay', flag: '🇺🇾', city: 'Montevideo', hub: 'Oficina MVD', timezone: 'America/Montevideo', utcOffset: 'UTC-3', currency: 'UYU', active: true },
+      { id: 'bra', name: 'Brasil', flag: '🇧🇷', city: 'São Paulo', hub: 'Hub SP', timezone: 'America/Sao_Paulo', utcOffset: 'UTC-3', currency: 'BRL', active: true },
+      { id: 'usa', name: 'Estados Unidos (Miami)', flag: '🇺🇸', city: 'Miami, FL', hub: 'HQ Logistics MIA', timezone: 'America/New_York', utcOffset: 'UTC-4', currency: 'USD', active: true },
+      { id: 'col', name: 'Colombia', flag: '🇨🇴', city: 'Bogotá', hub: 'Hub BOG', timezone: 'America/Bogota', utcOffset: 'UTC-5', currency: 'COP', active: true },
+      { id: 'per', name: 'Perú', flag: '🇵🇪', city: 'Lima', hub: 'Hub LIM', timezone: 'America/Lima', utcOffset: 'UTC-5', currency: 'PEN', active: true },
+      { id: 'mex', name: 'México', flag: '🇲🇽', city: 'CDMX', hub: 'Hub MEX', timezone: 'America/Mexico_City', utcOffset: 'UTC-6', currency: 'MXN', active: true }
+    ]
   });
 
   const fetchBranding = async () => {
@@ -249,7 +316,10 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
           customIcons: data.customIcons || [],
           login: { ...prev.login, ...(data.login || {}) },
           theme: { ...prev.theme, ...(data.theme || {}) },
-          announcement: { ...prev.announcement, ...(data.announcement || {}) }
+          announcement: { ...prev.announcement, ...(data.announcement || {}) },
+          operatingCountries: Array.isArray(data.operatingCountries) && data.operatingCountries.length > 0
+            ? data.operatingCountries
+            : (prev.operatingCountries || [])
         }));
       }
     } catch (err) {
@@ -436,6 +506,100 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
     } finally {
       setSaving(false);
     }
+  };
+
+  // ── Handlers de Países de Operación de la Firma ──
+  const handleAddPresetCountry = () => {
+    const preset = COUNTRY_PRESETS.find(c => c.id === selectedPresetCountryId);
+    if (!preset) return;
+
+    const exists = (config.operatingCountries || []).some(c => c.id === preset.id || c.name.toLowerCase() === preset.name.toLowerCase());
+    if (exists) {
+      setCountryActionMessage(`El país "${preset.name}" ya se encuentra en la nómina de la firma.`);
+      setTimeout(() => setCountryActionMessage(null), 3000);
+      return;
+    }
+
+    const updated = [...(config.operatingCountries || []), { ...preset, active: true }];
+    setConfig(prev => ({ ...prev, operatingCountries: updated }));
+    setCountryActionMessage(`"${preset.name} ${preset.flag}" ha sido incorporado con éxito a las sedes de la firma.`);
+    setTimeout(() => setCountryActionMessage(null), 3500);
+
+    // Seleccionar siguiente preset disponible
+    const nextAvailable = COUNTRY_PRESETS.find(p => !updated.some(u => u.id === p.id));
+    if (nextAvailable) setSelectedPresetCountryId(nextAvailable.id);
+  };
+
+  const handleRemoveCountry = (countryId) => {
+    const target = (config.operatingCountries || []).find(c => c.id === countryId);
+    const countryName = target ? target.name : 'este país';
+    if (!window.confirm(`¿Confirmas quitar a "${countryName}" de los países donde opera la firma?`)) {
+      return;
+    }
+    const updated = (config.operatingCountries || []).filter(c => c.id !== countryId);
+    setConfig(prev => ({ ...prev, operatingCountries: updated }));
+    setCountryActionMessage(`Se ha quitado a "${countryName}" de la lista de sedes.`);
+    setTimeout(() => setCountryActionMessage(null), 3000);
+  };
+
+  const handleToggleCountryActive = (countryId) => {
+    const updated = (config.operatingCountries || []).map(c => 
+      c.id === countryId ? { ...c, active: !c.active } : c
+    );
+    setConfig(prev => ({ ...prev, operatingCountries: updated }));
+  };
+
+  const handleUpdateCountryHub = (countryId, newHub) => {
+    const updated = (config.operatingCountries || []).map(c => 
+      c.id === countryId ? { ...c, hub: newHub } : c
+    );
+    setConfig(prev => ({ ...prev, operatingCountries: updated }));
+  };
+
+  const handleCustomCountrySubmit = (e) => {
+    e.preventDefault();
+    if (!customCountryForm.name.trim()) {
+      alert('Por favor ingresa el nombre del país.');
+      return;
+    }
+    const newId = 'custom_' + customCountryForm.name.toLowerCase().replace(/[^a-z0-9]/g, '_') + '_' + Date.now();
+    const newCountry = {
+      id: newId,
+      name: customCountryForm.name.trim(),
+      flag: customCountryForm.flag.trim() || '🌐',
+      city: customCountryForm.city.trim() || 'Oficina Comercial',
+      hub: customCountryForm.hub.trim() || `Hub ${customCountryForm.name.trim()}`,
+      timezone: customCountryForm.timezone || 'America/Argentina/Buenos_Aires',
+      utcOffset: customCountryForm.utcOffset || 'UTC-3',
+      currency: customCountryForm.currency.trim().toUpperCase() || 'USD',
+      active: true
+    };
+
+    setConfig(prev => ({
+      ...prev,
+      operatingCountries: [...(prev.operatingCountries || []), newCountry]
+    }));
+
+    setShowCustomCountryModal(false);
+    setCustomCountryForm({
+      name: '',
+      flag: '🌐',
+      city: '',
+      hub: '',
+      timezone: 'America/Argentina/Buenos_Aires',
+      utcOffset: 'UTC-3',
+      currency: 'USD'
+    });
+    setCountryActionMessage(`País personalizado "${newCountry.name}" agregado con éxito.`);
+    setTimeout(() => setCountryActionMessage(null), 3500);
+  };
+
+  const handleRestoreDefaultCountries = () => {
+    if (!window.confirm('¿Deseas restaurar la lista oficial de sedes de DACAS (8 países centrales)?')) return;
+    const defaults = COUNTRY_PRESETS.slice(0, 8).map(c => ({ ...c, active: true }));
+    setConfig(prev => ({ ...prev, operatingCountries: defaults }));
+    setCountryActionMessage('Se restablecieron los 8 países centrales de operación.');
+    setTimeout(() => setCountryActionMessage(null), 3000);
   };
 
   const handleReset = async () => {
@@ -702,6 +866,7 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
               { key: 'login', label: 'Pantalla de Login', icon: 'monitor' },
               { key: 'portal', label: 'Encabezado & Identidad', icon: 'layout' },
               { key: 'theme', label: 'Colores & Temas', icon: 'palette' },
+              { key: 'countries', label: 'Países de Operación', icon: 'globe' },
               { key: 'announcement', label: 'Anuncio Global', icon: 'megaphone' }
             ].map(tab => (
               <button
@@ -709,6 +874,7 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
                 onClick={() => {
                   setActiveTab(tab.key);
                   if (tab.key === 'login') setPreviewMode('login');
+                  else if (tab.key === 'countries') setPreviewMode('countries');
                   else setPreviewMode('dashboard');
                 }}
                 style={{
@@ -1731,6 +1897,355 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
             </div>
           )}
 
+          {/* TAB 5: PAÍSES DE OPERACIÓN DE LA FIRMA */}
+          {activeTab === 'countries' && (
+            <div style={{
+              background: cardBg,
+              borderRadius: '22px',
+              border: `1px solid ${borderCol}`,
+              padding: '24px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '24px',
+              boxShadow: '0 14px 34px -4px rgba(7, 21, 36, 0.08)'
+            }}>
+              {/* Header de la sección */}
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                  <h3 style={{ margin: 0, fontSize: '1.22rem', fontWeight: '800', color: textCol, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <UIIcon name="globe" size={22} color="var(--primary, #0fa4de)" />
+                    <span>Sedes & Países de Operación de la Firma</span>
+                  </h3>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    <button
+                      type="button"
+                      onClick={handleRestoreDefaultCountries}
+                      style={{
+                        padding: '7px 13px',
+                        borderRadius: '10px',
+                        border: `1px solid ${borderCol}`,
+                        background: inputBg,
+                        color: textMuted,
+                        fontSize: '12px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                      title="Restablecer a los 8 países centrales de DACAS"
+                    >
+                      <UIIcon name="rotate-ccw" size={13} color={textMuted} />
+                      <span>Restablecer Países Oficiales</span>
+                    </button>
+                  </div>
+                </div>
+                <p style={{ margin: '6px 0 0 0', fontSize: '0.85rem', color: textMuted, lineHeight: '1.45' }}>
+                  Configura los países, husos horarios, hubs logísticos y monedas oficiales donde opera DACAS. Se sincronizan automáticamente con los relojes analógicos en vivo, widgets y convertidores de divisas del Command Center.
+                </p>
+              </div>
+
+              {/* Mensaje de acción reciente / Toast */}
+              {countryActionMessage && (
+                <div style={{
+                  background: 'rgba(15, 164, 222, 0.12)',
+                  border: '1px solid rgba(15, 164, 222, 0.3)',
+                  color: '#0284c7',
+                  padding: '10px 16px',
+                  borderRadius: '12px',
+                  fontSize: '13px',
+                  fontWeight: '700',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}>
+                  <UIIcon name="check" size={16} color="#0284c7" />
+                  <span>{countryActionMessage}</span>
+                </div>
+              )}
+
+              {/* ── LÍNEA DE ACCIÓN RÁPIDA: AGREGAR PAÍS A LA FIRMA ── */}
+              <div style={{
+                background: isDark ? 'rgba(15, 23, 42, 0.6)' : '#f8fafc',
+                border: `1.5px dashed ${isDark ? '#334155' : '#cbd5e1'}`,
+                borderRadius: '16px',
+                padding: '16px 20px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '12px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
+                  <span style={{ fontSize: '13px', fontWeight: '800', color: textCol, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <UIIcon name="plus" size={15} color="#0fa4de" />
+                    <span>Línea de Operación Regional: Agregar y Gestionar Sedes</span>
+                  </span>
+                  <span style={{ fontSize: '12px', color: textMuted }}>
+                    {(config.operatingCountries || []).length} país{(config.operatingCountries || []).length === 1 ? '' : 'es'} registrado{(config.operatingCountries || []).length === 1 ? '' : 's'}
+                  </span>
+                </div>
+
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px',
+                  flexWrap: 'wrap'
+                }}>
+                  {/* Selector de presets */}
+                  <div style={{ flex: '1 1 260px', position: 'relative' }}>
+                    <select
+                      value={selectedPresetCountryId}
+                      onChange={e => setSelectedPresetCountryId(e.target.value)}
+                      style={{
+                        width: '100%',
+                        padding: '10px 14px',
+                        borderRadius: '10px',
+                        border: `1px solid ${borderCol}`,
+                        background: inputBg,
+                        color: textCol,
+                        fontSize: '13px',
+                        fontWeight: '600',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      <optgroup label="América Latina & Caribe">
+                        {COUNTRY_PRESETS.filter(p => ['arg', 'chl', 'ury', 'bra', 'pry', 'bol', 'col', 'per', 'ecu', 'pan', 'mex', 'cri', 'gtm', 'dom'].includes(p.id)).map(p => {
+                          const isAlreadyAdded = (config.operatingCountries || []).some(c => c.id === p.id || c.name.toLowerCase() === p.name.toLowerCase());
+                          return (
+                            <option key={p.id} value={p.id} disabled={isAlreadyAdded}>
+                              {p.flag} {p.name} ({p.city}) — {p.utcOffset} {isAlreadyAdded ? '✓ Ya incorporado' : ''}
+                            </option>
+                          );
+                        })}
+                      </optgroup>
+                      <optgroup label="Norteamérica & Internacional">
+                        {COUNTRY_PRESETS.filter(p => ['usa', 'esp', 'gbr'].includes(p.id)).map(p => {
+                          const isAlreadyAdded = (config.operatingCountries || []).some(c => c.id === p.id || c.name.toLowerCase() === p.name.toLowerCase());
+                          return (
+                            <option key={p.id} value={p.id} disabled={isAlreadyAdded}>
+                              {p.flag} {p.name} ({p.city}) — {p.utcOffset} {isAlreadyAdded ? '✓ Ya incorporado' : ''}
+                            </option>
+                          );
+                        })}
+                      </optgroup>
+                    </select>
+                  </div>
+
+                  {/* Botón Incorporar Preset Seleccionado */}
+                  <button
+                    type="button"
+                    onClick={handleAddPresetCountry}
+                    style={{
+                      padding: '10px 18px',
+                      borderRadius: '10px',
+                      border: 'none',
+                      background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                      color: '#ffffff',
+                      fontWeight: '800',
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      boxShadow: '0 4px 12px rgba(15, 164, 222, 0.3)',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    <UIIcon name="plus" size={15} color="#ffffff" />
+                    <span>Agregar a la Firma</span>
+                  </button>
+
+                  {/* Botón Crear País Personalizado */}
+                  <button
+                    type="button"
+                    onClick={() => setShowCustomCountryModal(true)}
+                    style={{
+                      padding: '10px 16px',
+                      borderRadius: '10px',
+                      border: `1px solid ${borderCol}`,
+                      background: inputBg,
+                      color: textCol,
+                      fontWeight: '700',
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      whiteSpace: 'nowrap'
+                    }}
+                  >
+                    <UIIcon name="globe" size={15} color={textMuted} />
+                    <span>+ País Personalizado...</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* ── NÓMINA DE PAÍSES OPERATIVOS: LISTA / GRILLA ── */}
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                  <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: '800', color: textCol, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>Nómina de Sedes y Presencia Regional</span>
+                    <span style={{ fontSize: '11px', background: 'rgba(15, 164, 222, 0.12)', color: '#0fa4de', padding: '2px 8px', borderRadius: '12px', fontWeight: '800' }}>
+                      {(config.operatingCountries || []).filter(c => c.active !== false).length} Activos
+                    </span>
+                  </h4>
+                  <span style={{ fontSize: '12px', color: textMuted }}>
+                    Haz clic en el interruptor para pausar o en el cesto para quitar un país.
+                  </span>
+                </div>
+
+                {(!config.operatingCountries || config.operatingCountries.length === 0) ? (
+                  <div style={{
+                    padding: '40px 20px',
+                    textAlign: 'center',
+                    background: inputBg,
+                    borderRadius: '16px',
+                    border: `1px dashed ${borderCol}`
+                  }}>
+                    <UIIcon name="globe" size={36} color={textMuted} />
+                    <p style={{ margin: '10px 0 14px 0', fontSize: '14px', color: textMuted, fontWeight: '600' }}>
+                      No hay países donde opere la firma actualmente.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={handleRestoreDefaultCountries}
+                      style={{
+                        padding: '8px 16px',
+                        borderRadius: '10px',
+                        border: 'none',
+                        background: '#0fa4de',
+                        color: '#fff',
+                        fontWeight: '700',
+                        fontSize: '13px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Cargar 8 Sedes Oficiales DACAS
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))',
+                    gap: '12px'
+                  }}>
+                    {config.operatingCountries.map((country) => {
+                      const isActive = country.active !== false;
+                      return (
+                        <div
+                          key={country.id}
+                          style={{
+                            background: isActive ? (isDark ? 'rgba(30, 41, 59, 0.5)' : '#ffffff') : (isDark ? 'rgba(15, 23, 42, 0.3)' : '#f8fafc'),
+                            border: `1px solid ${isActive ? borderCol : 'transparent'}`,
+                            borderRadius: '16px',
+                            padding: '14px 16px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '10px',
+                            transition: 'all 0.2s ease',
+                            opacity: isActive ? 1 : 0.6,
+                            boxShadow: isActive ? '0 4px 14px rgba(0, 0, 0, 0.04)' : 'none'
+                          }}
+                        >
+                          {/* Cabecera del país */}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <span style={{ fontSize: '24px', lineHeight: 1 }}>{country.flag || '🌐'}</span>
+                              <div>
+                                <strong style={{ fontSize: '14px', color: textCol, display: 'block' }}>
+                                  {country.name}
+                                </strong>
+                                <span style={{ fontSize: '11px', color: textMuted }}>
+                                  {country.city || 'Sede Regional'}
+                                </span>
+                              </div>
+                            </div>
+
+                            {/* Badge de UTC */}
+                            <span style={{
+                              fontSize: '11px',
+                              fontWeight: '800',
+                              padding: '2px 8px',
+                              borderRadius: '8px',
+                              background: isActive ? 'rgba(15, 164, 222, 0.12)' : (isDark ? '#334155' : '#e2e8f0'),
+                              color: isActive ? '#0284c7' : textMuted
+                            }}>
+                              {country.utcOffset || 'UTC'}
+                            </span>
+                          </div>
+
+                          {/* Detalles / Hub & Moneda */}
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            background: isDark ? 'rgba(15, 23, 42, 0.4)' : '#f8fafc',
+                            padding: '8px 10px',
+                            borderRadius: '10px',
+                            fontSize: '11px'
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <UIIcon name="map-pin" size={12} color="#0fa4de" />
+                              <span style={{ fontWeight: '700', color: textCol }}>{country.hub || 'Hub Logístico'}</span>
+                            </div>
+                            <span style={{ fontWeight: '800', color: textMuted }}>
+                              Moneda: <strong style={{ color: textCol }}>{country.currency || 'USD'}</strong>
+                            </span>
+                          </div>
+
+                          {/* Acciones: Toggle Activo y Quitar País */}
+                          <div style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            paddingTop: '6px',
+                            borderTop: `1px solid ${borderCol}`
+                          }}>
+                            {/* Switch Operativo */}
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', userSelect: 'none' }}>
+                              <input
+                                type="checkbox"
+                                checked={isActive}
+                                onChange={() => handleToggleCountryActive(country.id)}
+                                style={{ width: '16px', height: '16px', cursor: 'pointer', accentColor: '#0fa4de' }}
+                              />
+                              <span style={{ fontSize: '12px', fontWeight: '700', color: isActive ? '#10b981' : textMuted }}>
+                                {isActive ? 'Operando' : 'Pausado'}
+                              </span>
+                            </label>
+
+                            {/* Botón Quitar País */}
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveCountry(country.id)}
+                              style={{
+                                padding: '5px 10px',
+                                borderRadius: '8px',
+                                border: '1px solid rgba(239, 68, 68, 0.25)',
+                                background: 'rgba(239, 68, 68, 0.08)',
+                                color: '#ef4444',
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                transition: 'all 0.15s ease'
+                              }}
+                              title={`Quitar ${country.name} de las sedes de la firma`}
+                            >
+                              <UIIcon name="trash" size={12} color="#ef4444" />
+                              <span>Quitar País</span>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
         </div>
 
         {/* RIGHT COLUMN: Real-Time Interactive Live Preview */}
@@ -1800,6 +2315,26 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
                 >
                   <UIIcon name="layout" size={12} color={previewMode === 'dashboard' ? '#ffffff' : textMuted} />
                   <span>Encabezado Portal</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setPreviewMode('countries')}
+                  style={{
+                    border: 'none',
+                    padding: '5px 10px',
+                    borderRadius: '7px',
+                    fontSize: '11px',
+                    fontWeight: '800',
+                    cursor: 'pointer',
+                    background: previewMode === 'countries' ? '#0fa4de' : 'transparent',
+                    color: previewMode === 'countries' ? '#ffffff' : textMuted,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <UIIcon name="globe" size={12} color={previewMode === 'countries' ? '#ffffff' : textMuted} />
+                  <span>Sedes & Clocks</span>
                 </button>
               </div>
             </div>
@@ -2033,11 +2568,326 @@ export default function AdminPersonalizacion({ usuario, theme, toggleTheme, embe
                 </div>
               )}
 
+              {previewMode === 'countries' && (
+                <div style={{
+                  width: '100%',
+                  background: isDark ? '#1e293b' : '#ffffff',
+                  borderRadius: '18px',
+                  border: `1px solid ${borderCol}`,
+                  padding: '16px',
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.08)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: `1px solid ${borderCol}`, paddingBottom: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <UIIcon name="clock" size={16} color="var(--primary, #0fa4de)" />
+                      <strong style={{ fontSize: '13px', color: textCol }}>Sedes Operativas de la Firma</strong>
+                    </div>
+                    <span style={{ fontSize: '11px', background: 'rgba(15, 164, 222, 0.1)', color: '#0fa4de', padding: '2px 8px', borderRadius: '12px', fontWeight: '700' }}>
+                      {(config.operatingCountries || []).filter(c => c.active !== false).length} Activos
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', maxHeight: '340px', overflowY: 'auto' }}>
+                    {(config.operatingCountries || []).map(c => {
+                      const isAct = c.active !== false;
+                      return (
+                        <div key={c.id} style={{
+                          padding: '10px',
+                          borderRadius: '12px',
+                          background: isAct ? (isDark ? '#0f172a' : '#f8fafc') : (isDark ? '#111827' : '#f1f5f9'),
+                          border: `1px solid ${isAct ? borderCol : 'transparent'}`,
+                          opacity: isAct ? 1 : 0.45,
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '4px'
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: '18px' }}>{c.flag}</span>
+                            <span style={{ fontSize: '10px', fontWeight: '700', padding: '1px 6px', borderRadius: '6px', background: '#0fa4de', color: '#fff' }}>
+                              {c.utcOffset || 'UTC'}
+                            </span>
+                          </div>
+                          <strong style={{ fontSize: '12px', color: textCol, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {c.name}
+                          </strong>
+                          <span style={{ fontSize: '10px', color: textMuted }}>{c.city}</span>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '2px' }}>
+                            <span style={{ fontSize: '9px', fontWeight: '600', color: '#0284c7' }}>{c.hub}</span>
+                            <span style={{ fontSize: '9px', fontWeight: '800', color: textMuted }}>{c.currency}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div style={{ fontSize: '11px', color: textMuted, textAlign: 'center', paddingTop: '6px' }}>
+                    Los países activos se agrupan automáticamente por huso horario en los relojes analógicos del Home.
+                  </div>
+                </div>
+              )}
+
             </div>
           </div>
         </div>
 
       </div>
+
+      {/* MODAL PARA CREAR PAÍS PERSONALIZADO */}
+      {showCustomCountryModal && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(15, 23, 42, 0.65)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 9999,
+          padding: '20px'
+        }}>
+          <div style={{
+            background: cardBg,
+            borderRadius: '22px',
+            border: `1px solid ${borderCol}`,
+            width: '100%',
+            maxWidth: '480px',
+            overflow: 'hidden',
+            boxShadow: '0 25px 60px -12px rgba(0, 0, 0, 0.35)',
+            animation: 'fadeIn 0.2s ease-out'
+          }}>
+            <div style={{
+              padding: '18px 24px',
+              borderBottom: `1px solid ${borderCol}`,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <UIIcon name="globe" size={18} color="var(--primary, #0fa4de)" />
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800', color: textCol }}>
+                  Incorporar Nuevo País / Sede
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCustomCountryModal(false)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: textMuted,
+                  cursor: 'pointer',
+                  padding: '4px'
+                }}
+              >
+                <UIIcon name="close" size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleCustomCountrySubmit} style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '14px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '10px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: '700', color: textMuted, display: 'block', marginBottom: '4px' }}>
+                    Bandera / Emoji
+                  </label>
+                  <input
+                    type="text"
+                    value={customCountryForm.flag}
+                    onChange={e => setCustomCountryForm(prev => ({ ...prev, flag: e.target.value }))}
+                    placeholder="Ej: 🇪🇨"
+                    style={{
+                      width: '100%',
+                      padding: '10px',
+                      borderRadius: '10px',
+                      border: `1px solid ${borderCol}`,
+                      background: inputBg,
+                      color: textCol,
+                      fontSize: '18px',
+                      textAlign: 'center',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: '700', color: textMuted, display: 'block', marginBottom: '4px' }}>
+                    Nombre del País *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={customCountryForm.name}
+                    onChange={e => setCustomCountryForm(prev => ({ ...prev, name: e.target.value }))}
+                    placeholder="Ej: Ecuador"
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      border: `1px solid ${borderCol}`,
+                      background: inputBg,
+                      color: textCol,
+                      fontSize: '13px',
+                      fontWeight: '600',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: '700', color: textMuted, display: 'block', marginBottom: '4px' }}>
+                    Ciudad Principal / Capital
+                  </label>
+                  <input
+                    type="text"
+                    value={customCountryForm.city}
+                    onChange={e => setCustomCountryForm(prev => ({ ...prev, city: e.target.value }))}
+                    placeholder="Ej: Quito / Guayaquil"
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      border: `1px solid ${borderCol}`,
+                      background: inputBg,
+                      color: textCol,
+                      fontSize: '13px',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: '700', color: textMuted, display: 'block', marginBottom: '4px' }}>
+                    Nombre de Hub Logístico
+                  </label>
+                  <input
+                    type="text"
+                    value={customCountryForm.hub}
+                    onChange={e => setCustomCountryForm(prev => ({ ...prev, hub: e.target.value }))}
+                    placeholder="Ej: Hub UIO Pacífico"
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      border: `1px solid ${borderCol}`,
+                      background: inputBg,
+                      color: textCol,
+                      fontSize: '13px',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: '700', color: textMuted, display: 'block', marginBottom: '4px' }}>
+                    Huso Horario IANA
+                  </label>
+                  <input
+                    type="text"
+                    value={customCountryForm.timezone}
+                    onChange={e => setCustomCountryForm(prev => ({ ...prev, timezone: e.target.value }))}
+                    placeholder="Ej: America/Guayaquil"
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      border: `1px solid ${borderCol}`,
+                      background: inputBg,
+                      color: textCol,
+                      fontSize: '12px',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+                <div>
+                  <label style={{ fontSize: '11px', fontWeight: '700', color: textMuted, display: 'block', marginBottom: '4px' }}>
+                    Offset UTC
+                  </label>
+                  <input
+                    type="text"
+                    value={customCountryForm.utcOffset}
+                    onChange={e => setCustomCountryForm(prev => ({ ...prev, utcOffset: e.target.value }))}
+                    placeholder="Ej: UTC-5"
+                    style={{
+                      width: '100%',
+                      padding: '10px 12px',
+                      borderRadius: '10px',
+                      border: `1px solid ${borderCol}`,
+                      background: inputBg,
+                      color: textCol,
+                      fontSize: '12px',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label style={{ fontSize: '11px', fontWeight: '700', color: textMuted, display: 'block', marginBottom: '4px' }}>
+                  Código de Moneda Oficial
+                </label>
+                <input
+                  type="text"
+                  value={customCountryForm.currency}
+                  onChange={e => setCustomCountryForm(prev => ({ ...prev, currency: e.target.value }))}
+                  placeholder="Ej: USD, EUR, PYG, BOB"
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    borderRadius: '10px',
+                    border: `1px solid ${borderCol}`,
+                    background: inputBg,
+                    color: textCol,
+                    fontSize: '13px',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowCustomCountryModal(false)}
+                  style={{
+                    padding: '10px 16px',
+                    borderRadius: '10px',
+                    border: `1px solid ${borderCol}`,
+                    background: inputBg,
+                    color: textMuted,
+                    fontWeight: '700',
+                    fontSize: '13px',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  style={{
+                    padding: '10px 20px',
+                    borderRadius: '10px',
+                    border: 'none',
+                    background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                    color: '#ffffff',
+                    fontWeight: '800',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 12px rgba(15, 164, 222, 0.3)'
+                  }}
+                >
+                  Incorporar País
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* MODAL PARA CARGAR / AGREGAR NUEVO ÍCONO PERSONALIZADO */}
       {showAddIconModal && (

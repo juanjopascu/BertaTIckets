@@ -15,7 +15,10 @@ import AdminConfigTickets from './AdminConfigTickets';
 import AdminCanalesAyuda from './AdminCanalesAyuda';
 import AdminErp from './AdminErp';
 import AdminErpConfig from './AdminErpConfig';
+import AdminReporteriaGeneral from './AdminReporteriaGeneral';
 import BrandingVectorIcon from './BrandingVectorIcon';
+import HomeCommandCenter from './HomeCommandCenter';
+import NotificationBell from './NotificationBell';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 const API_URL = `${API_BASE_URL}/api/clientes`;
@@ -55,6 +58,14 @@ function AdminViewIcon({ name, size = 18, strokeWidth = 2 }) {
         <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
           <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
           <circle cx="12" cy="12" r="3"/>
+        </svg>
+      );
+    case 'reporteria-general':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 3v18h18"/>
+          <path d="m19 9-5 5-4-4-3 3"/>
+          <circle cx="19" cy="9" r="2"/>
         </svg>
       );
     case 'reportes':
@@ -216,7 +227,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
   const [ticketsProcesosAbierto, setTicketsProcesosAbierto] = useState(true);
 
   useEffect(() => {
-    if (['personalizacion', 'usuarios', 'canales-ayuda', 'logs', 'importar-kayako'].includes(activeAdminView)) {
+    if (['personalizacion', 'usuarios', 'canales-ayuda', 'logs', 'importar-kayako', 'erp-admin', 'reporteria-general'].includes(activeAdminView)) {
       setAdminGeneralAbierto(true);
     } else if (['departamentos', 'estados', 'templates', 'organizaciones', 'equipos', 'config-tickets', 'reportes'].includes(activeAdminView)) {
       setTicketsProcesosAbierto(true);
@@ -394,7 +405,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
           : data;
         
         if (deptosPermitidos.length > 0) {
-          setDepartamentoActivo(deptosPermitidos[0].id);
+          setDepartamentoActivo(prev => (prev !== null && prev !== undefined) ? prev : deptosPermitidos[0].id);
         }
       }
     } catch (err) {
@@ -708,8 +719,9 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
   };
 
   const activeDept = departamentos.find(d => d.id === departamentoActivo);
-  const activeDeptName = activeDept?.nombre || 'Seleccione un departamento';
-  const clientesFiltrados = activeDept?.nombre.toLowerCase() === 'general'
+  const isHomeView = !activeAdminView && !departamentoActivo;
+  const activeDeptName = isHomeView ? 'Consolidado Regional' : (activeDept?.nombre || 'Seleccione un departamento');
+  const clientesFiltrados = (isHomeView || activeDept?.nombre?.toLowerCase() === 'general')
     ? clientes
     : clientes.filter(c => c.departamento === departamentoActivo);
   
@@ -803,39 +815,29 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
 
             {/* Controles de Usuario */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <div className="user-controls" style={{ width: 'auto', padding: 0 }}>
+              <div className="user-controls" style={{ width: 'auto', padding: 0, display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <span style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>Hola, <strong style={{ color: 'var(--text-main)' }}>{usuario?.nombre}</strong></span>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setActiveAdminView(null);
-                    setDepartamentoActivo(null);
-                    setBusqueda('');
-                    setFiltroEstado('Todos');
-                    setFiltroPrioridad('Todas');
-                    setFiltroAsignado('Todos');
+                
+                {/* Campana de Notificaciones (ERP, CRM, E-Commerce) */}
+                <NotificationBell 
+                  usuario={usuario}
+                  onNavigate={(targetView, targetTab, meta) => {
+                    if (targetView === 'erp') {
+                      setActiveAdminView('erp');
+                    } else if (targetView === 'ecommerce') {
+                      setActiveAdminView('tiendanube');
+                    } else if (targetView === 'crm') {
+                      setActiveAdminView(null);
+                      if (meta?.ticketId) {
+                        const match = clientes.find(c => c.id === Number(meta.ticketId));
+                        if (match) {
+                          setModalCliente(match);
+                        }
+                      }
+                    }
                   }}
-                  className="nav-btn"
-                  title="Ir al inicio del Dashboard"
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    padding: '8px 14px',
-                    borderRadius: '10px',
-                    fontWeight: '700',
-                    fontSize: '0.86rem',
-                    background: (!activeAdminView && !departamentoActivo) ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : 'var(--pill-bg, #f1f5f9)',
-                    color: (!activeAdminView && !departamentoActivo) ? '#ffffff' : 'var(--text-main, #0f172a)',
-                    border: '1px solid var(--border-color, #e2e8f0)',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s ease',
-                    boxShadow: (!activeAdminView && !departamentoActivo) ? '0 2px 8px rgba(15, 164, 222, 0.3)' : 'none'
-                  }}
-                >
-                  <BrandingVectorIcon name="home" size={15} color="currentColor" />
-                  <span>Home</span>
-                </button>
+                />
+
                 <button 
                   type="button" 
                   onClick={toggleTheme} 
@@ -975,7 +977,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                       <button
                         type="button"
                         onClick={() => setAdminGeneralAbierto(!adminGeneralAbierto)}
-                        className={`sidebar-menu-btn ${['personalizacion', 'canales-ayuda', 'logs', 'importar-kayako', 'usuarios'].includes(activeAdminView) ? 'active' : ''}`}
+                        className={`sidebar-menu-btn ${['personalizacion', 'canales-ayuda', 'logs', 'importar-kayako', 'usuarios', 'erp-admin', 'reporteria-general'].includes(activeAdminView) ? 'active' : ''}`}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -1080,6 +1082,18 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                                 <AdminViewIcon name="erp-admin" size={15} />
                               </span>
                               <span className="sidebar-btn-text">ERP Admin</span>
+                            </button>
+                          </li>
+                          <li>
+                            <button 
+                              className={`sidebar-menu-btn ${activeAdminView === 'reporteria-general' ? 'active' : ''}`}
+                              onClick={() => setActiveAdminView(activeAdminView === 'reporteria-general' ? null : 'reporteria-general')}
+                              style={{ padding: '8px 12px', fontSize: '0.85rem' }}
+                            >
+                              <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                <AdminViewIcon name="reporteria-general" size={15} />
+                              </span>
+                              <span className="sidebar-btn-text">Reportería General</span>
                             </button>
                           </li>
                         </ul>
@@ -1591,12 +1605,36 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                   }}
                 />
               )}
+              {activeAdminView === 'reporteria-general' && (
+                <AdminReporteriaGeneral
+                  embedded={true}
+                  usuario={usuario}
+                  theme={theme}
+                  onBack={() => {
+                    setActiveAdminView(null);
+                    setIsMaximized(false);
+                  }}
+                />
+              )}
             </div>
           </div>
         ) : (
           <div className="board-wrapper">
+            {isHomeView && (
+              <HomeCommandCenter
+                usuario={usuario}
+                clientes={clientes}
+                departamentos={departamentos}
+                estados={estados}
+                usuarios={usuarios}
+                theme={theme}
+                setActiveAdminView={setActiveAdminView}
+                setDepartamentoActivo={setDepartamentoActivo}
+              />
+            )}
+
             <div className="board-header">
-              <h2>Tickets en: <span>{activeDeptName}</span></h2>
+              <h2>{isHomeView ? 'Registro de Tickets Globales' : 'Tickets en:'} <span>{activeDeptName}</span></h2>
             </div>
 
           {/* BOTÓN NUEVO TICKET (ONE UI STYLE) */}

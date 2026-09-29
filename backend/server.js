@@ -707,7 +707,17 @@ const DEFAULT_BRANDING_SETTINGS = {
         text: '',
         type: 'info', // 'info' | 'warning' | 'success' | 'danger'
         dismissible: true
-    }
+    },
+    operatingCountries: [
+        { id: 'arg', name: 'Argentina', flag: '🇦🇷', city: 'Buenos Aires', hub: 'Hub Central BUE', timezone: 'America/Argentina/Buenos_Aires', utcOffset: 'UTC-3', currency: 'ARS', active: true },
+        { id: 'chl', name: 'Chile', flag: '🇨🇱', city: 'Santiago', hub: 'Hub SCL', timezone: 'America/Santiago', utcOffset: 'UTC-3', currency: 'CLP', active: true },
+        { id: 'ury', name: 'Uruguay', flag: '🇺🇾', city: 'Montevideo', hub: 'Hub MVD', timezone: 'America/Montevideo', utcOffset: 'UTC-3', currency: 'UYU', active: true },
+        { id: 'bra', name: 'Brasil', flag: '🇧🇷', city: 'São Paulo', hub: 'Hub SAO', timezone: 'America/Sao_Paulo', utcOffset: 'UTC-3', currency: 'BRL', active: true },
+        { id: 'usa', name: 'Estados Unidos', flag: '🇺🇸', city: 'Miami / FL', hub: 'Miami FTZ Logistics', timezone: 'America/New_York', utcOffset: 'UTC-4', currency: 'USD', active: true },
+        { id: 'col', name: 'Colombia', flag: '🇨🇴', city: 'Bogotá', hub: 'Hub BOG', timezone: 'America/Bogota', utcOffset: 'UTC-5', currency: 'COP', active: true },
+        { id: 'per', name: 'Perú', flag: '🇵🇪', city: 'Lima', hub: 'Hub LIM', timezone: 'America/Lima', utcOffset: 'UTC-5', currency: 'PEN', active: true },
+        { id: 'mex', name: 'México', flag: '🇲🇽', city: 'CDMX', hub: 'Hub MEX', timezone: 'America/Mexico_City', utcOffset: 'UTC-6', currency: 'MXN', active: true }
+    ]
 };
 
 let configBrandingDb = { ...DEFAULT_BRANDING_SETTINGS };
@@ -721,7 +731,10 @@ try {
             ...savedData,
             login: { ...DEFAULT_BRANDING_SETTINGS.login, ...(savedData.login || {}) },
             theme: { ...DEFAULT_BRANDING_SETTINGS.theme, ...(savedData.theme || {}) },
-            announcement: { ...DEFAULT_BRANDING_SETTINGS.announcement, ...(savedData.announcement || {}) }
+            announcement: { ...DEFAULT_BRANDING_SETTINGS.announcement, ...(savedData.announcement || {}) },
+            operatingCountries: Array.isArray(savedData.operatingCountries) && savedData.operatingCountries.length > 0
+                ? savedData.operatingCountries
+                : DEFAULT_BRANDING_SETTINGS.operatingCountries
         };
     }
 } catch (err) {
@@ -762,7 +775,10 @@ app.put('/api/system/branding', requireCrmAuth, (req, res) => {
         announcement: {
             ...configBrandingDb.announcement,
             ...(updates.announcement || {})
-        }
+        },
+        operatingCountries: Array.isArray(updates.operatingCountries)
+            ? updates.operatingCountries
+            : configBrandingDb.operatingCountries
     };
 
     saveBrandingSettings();
@@ -797,6 +813,94 @@ app.post('/api/system/branding/reset', requireCrmAuth, (req, res) => {
     configBrandingDb = JSON.parse(JSON.stringify(DEFAULT_BRANDING_SETTINGS));
     saveBrandingSettings();
     res.status(200).json({ mensaje: 'Personalización restaurada a valores por defecto', branding: configBrandingDb });
+});
+
+// ==========================================
+// ENDPOINTS DE REPORTES PERSONALIZADOS
+// ==========================================
+const CUSTOM_REPORTS_FILE = path.join(__dirname, 'custom_reports.json');
+
+function loadCustomReportsDb() {
+    try {
+        if (fs.existsSync(CUSTOM_REPORTS_FILE)) {
+            const raw = fs.readFileSync(CUSTOM_REPORTS_FILE, 'utf-8');
+            return JSON.parse(raw);
+        }
+    } catch (e) {
+        console.error('Error al cargar custom_reports.json:', e);
+    }
+    return [];
+}
+
+function saveCustomReportsDb(reports) {
+    try {
+        fs.writeFileSync(CUSTOM_REPORTS_FILE, JSON.stringify(reports, null, 2), 'utf-8');
+    } catch (e) {
+        console.error('Error al guardar custom_reports.json:', e);
+    }
+}
+
+app.get('/api/reports/custom', (req, res) => {
+    const reports = loadCustomReportsDb();
+    res.status(200).json(reports);
+});
+
+app.post('/api/reports/custom', (req, res) => {
+    const { titulo, descripcion, modulo, tipoGrafico, metrica, dimension, unidad, color, data, pinned } = req.body;
+    if (!titulo) {
+        return res.status(400).json({ error: 'El título del reporte es obligatorio.' });
+    }
+    const reports = loadCustomReportsDb();
+    const newReport = {
+        id: 'rep_' + Date.now(),
+        titulo: titulo.trim(),
+        descripcion: (descripcion || '').trim(),
+        modulo: modulo || 'erp_finanzas',
+        tipoGrafico: tipoGrafico || 'bar',
+        metrica: metrica || 'general',
+        dimension: dimension || 'general',
+        unidad: unidad || '',
+        color: color || '#0fa4de',
+        pinned: !!pinned,
+        createdAt: new Date().toISOString(),
+        data: Array.isArray(data) && data.length > 0 ? data : [
+            { label: 'Enero', valor: 100 },
+            { label: 'Febrero', valor: 150 },
+            { label: 'Marzo', valor: 120 }
+        ]
+    };
+    reports.unshift(newReport);
+    saveCustomReportsDb(reports);
+    res.status(201).json(newReport);
+});
+
+app.put('/api/reports/custom/:id', (req, res) => {
+    const { id } = req.params;
+    const reports = loadCustomReportsDb();
+    const index = reports.findIndex(r => r.id === id);
+    if (index === -1) {
+        return res.status(404).json({ error: 'Reporte no encontrado' });
+    }
+    reports[index] = {
+        ...reports[index],
+        ...req.body,
+        id,
+        updatedAt: new Date().toISOString()
+    };
+    saveCustomReportsDb(reports);
+    res.status(200).json(reports[index]);
+});
+
+app.delete('/api/reports/custom/:id', (req, res) => {
+    const { id } = req.params;
+    let reports = loadCustomReportsDb();
+    const exists = reports.some(r => r.id === id);
+    if (!exists) {
+        return res.status(404).json({ error: 'Reporte no encontrado' });
+    }
+    reports = reports.filter(r => r.id !== id);
+    saveCustomReportsDb(reports);
+    res.status(200).json({ mensaje: 'Reporte eliminado correctamente', id });
 });
 
 // ==========================================
@@ -2628,10 +2732,94 @@ ${itemsSummary || '• 1 x Ítem de Hardware / Licenciamiento'}
 }
 
 // Conectar callback con el router de ecommerce
-ecommerceRoutes.onOrderCreated = createOperacionesTicketForOrder;
+const notificationService = require('./services/notificationService');
+
+ecommerceRoutes.onOrderCreated = (order) => {
+    const ticket = createOperacionesTicketForOrder(order);
+    try {
+        notificationService.addNotification({
+            category: 'ecommerce',
+            title: `Nuevo Pedido E-Commerce #${order.id}`,
+            message: `Pedido por $${order.total || '0'} USD recibido de ${order.user_name || order.user_company || 'Cliente B2B'}.`,
+            severity: 'success',
+            targetView: 'ecommerce',
+            targetTab: 'ordenes',
+            orderId: order.id,
+            actionLabel: 'Ver Pedido',
+            roles: ['admin', 'admin_ecommerce']
+        });
+        if (ticket) {
+            notificationService.addNotification({
+                category: 'crm',
+                title: `Ticket de Onboarding Generado #${ticket.id}`,
+                message: `Ticket en Operaciones para la Orden #${order.id} (${order.user_company || order.user_name || 'B2B'}).`,
+                severity: 'info',
+                targetView: 'crm',
+                ticketId: ticket.id,
+                actionLabel: 'Abrir Ticket',
+                roles: ['admin', 'staff']
+            });
+        }
+    } catch (e) {
+        console.error('Error notificando nueva orden:', e);
+    }
+    return ticket;
+};
+
 ecommerceRoutes.validateSession = (sesionId) => {
     return sesionesActivas.find(s => s.id === sesionId) || null;
 };
+
+// ── RUTAS DE NOTIFICACIONES MULTI-SISTEMA (ERP, CRM, E-COMMERCE) ──
+app.get('/api/notifications', (req, res) => {
+    const role = req.query.role || 'admin';
+    const notifications = notificationService.getNotifications(role);
+    res.json({ success: true, notifications });
+});
+
+app.put('/api/notifications/:id/read', (req, res) => {
+    const updated = notificationService.markAsRead(req.params.id);
+    if (!updated) return res.status(404).json({ error: 'Notificación no encontrada' });
+    res.json({ success: true, notification: updated });
+});
+
+app.put('/api/notifications/read-all', (req, res) => {
+    const role = req.query.role || 'admin';
+    const result = notificationService.markAllAsRead(role);
+    res.json({ success: true, ...result });
+});
+
+app.post('/api/notifications', (req, res) => {
+    // Identificar el rol del usuario emisor por sesión activa o parámetro
+    let userRole = req.body.senderRole || req.headers['x-user-role'];
+    const sesionId = req.headers['x-session-id'] || req.query.sesionId || req.body.sesionId;
+    if (sesionId) {
+        const sesion = sesionesActivas.find(s => s.id === sesionId);
+        if (sesion) {
+            userRole = sesion.rol;
+        }
+    }
+
+    // Regla estricta: Solo el rol Administrador puede mandar notificaciones al resto de los usuarios
+    if (userRole !== 'admin') {
+        return res.status(403).json({
+            success: false,
+            error: 'Permiso denegado: Únicamente los usuarios con rol de Administrador pueden mandar notificaciones al resto de los usuarios.'
+        });
+    }
+
+    const newNotif = notificationService.addNotification({
+        ...req.body,
+        emisor: req.body.senderName || 'Administrador',
+        emisorRol: 'admin'
+    });
+    res.json({ success: true, notification: newNotif });
+});
+
+app.delete('/api/notifications/:id', (req, res) => {
+    const ok = notificationService.deleteNotification(req.params.id);
+    res.json({ success: ok });
+});
 
 // Montar rutas de E-commerce
 app.use('/api/ecommerce', ecommerceRoutes);
@@ -2639,3 +2827,4 @@ app.use('/api/ecommerce', ecommerceRoutes);
 app.listen(port, () => {
     console.log(`🚀 Servidor backend ejecutándose (En Memoria) en http://localhost:${port}`);
 });
+

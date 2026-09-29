@@ -17,6 +17,7 @@ import AdminCanalesAyuda from './AdminCanalesAyuda';
 import AdminPersonalizacion from './AdminPersonalizacion';
 import AdminErp from './AdminErp';
 import AdminErpConfig from './AdminErpConfig';
+import AdminReporteriaGeneral from './AdminReporteriaGeneral';
 import Shop from './Shop';
 import ShopClientPortal from './ShopClientPortal';
 import ShopCheckout from './ShopCheckout';
@@ -61,6 +62,31 @@ function DynamicFaviconAndTitle() {
   }, [location.pathname]);
 
   return null;
+}
+
+// Componente de protección de rutas basado en roles (definido fuera de App para estabilidad de reconciliación)
+function ProtectedRoute({ children, rolesPermitidos, usuario }) {
+  const location = useLocation();
+  const current = usuario || (() => {
+    try {
+      return JSON.parse(localStorage.getItem('usuario') || 'null');
+    } catch {
+      return null;
+    }
+  })();
+
+  if (!current) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+  if (rolesPermitidos && !rolesPermitidos.includes(current.rol)) {
+    // Si un usuario no autorizado intenta entrar a una ruta, lo redirigimos a donde le corresponde
+    if (current.rol === 'admin_ecommerce') return <Navigate to="/admin/ecommerce" replace />;
+    if (current.rol === 'admin_erp') return <Navigate to="/admin/erp" replace />;
+    if (current.rol === 'admin' || current.rol === 'staff') return <Navigate to="/" replace />;
+    if (current.rol === 'cliente' || current.rol === 'vendedor' || current.rol === 'pm' || current.rol === 'manager') return <Navigate to="/mis-tickets" replace />;
+    return <Navigate to="/" replace />;
+  }
+  return children;
 }
 
 function App() {
@@ -120,23 +146,6 @@ function App() {
     return () => clearInterval(interval);
   }, [usuario]);
 
-  // Componente de protección de rutas basado en roles
-  const ProtectedRoute = ({ children, rolesPermitidos }) => {
-    const location = useLocation();
-    if (!usuario) {
-      return <Navigate to="/login" state={{ from: location }} replace />;
-    }
-    if (rolesPermitidos && !rolesPermitidos.includes(usuario.rol)) {
-      // Si un usuario no autorizado intenta entrar a una ruta, lo redirigimos a donde le corresponde
-      if (usuario.rol === 'admin_ecommerce') return <Navigate to="/admin/ecommerce" replace />;
-      if (usuario.rol === 'admin_erp') return <Navigate to="/admin/erp" replace />;
-      if (usuario.rol === 'admin' || usuario.rol === 'staff') return <Navigate to="/" replace />;
-      if (usuario.rol === 'cliente' || usuario.rol === 'vendedor' || usuario.rol === 'pm' || usuario.rol === 'manager') return <Navigate to="/mis-tickets" replace />;
-      return <Navigate to="/" replace />;
-    }
-    return children;
-  };
-
   return (
     <Router>
       <DynamicFaviconAndTitle />
@@ -156,7 +165,7 @@ function App() {
         <Route
           path="/"
           element={
-            <ProtectedRoute rolesPermitidos={['admin', 'staff', 'admin_ecommerce', 'admin_erp']}>
+            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin', 'staff', 'admin_ecommerce', 'admin_erp']}>
               <Dashboard usuario={usuario} setUsuario={setUsuario} theme={theme} toggleTheme={toggleTheme} />
             </ProtectedRoute>
           }
@@ -164,7 +173,7 @@ function App() {
         <Route
           path="/admin"
           element={
-            <ProtectedRoute rolesPermitidos={['admin']}>
+            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin']}>
               <AdminUsuarios usuario={usuario} theme={theme} toggleTheme={toggleTheme} />
             </ProtectedRoute>
           }
@@ -172,7 +181,7 @@ function App() {
         <Route
           path="/departamentos"
           element={
-            <ProtectedRoute rolesPermitidos={['admin']}>
+            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin']}>
               <AdminDepartamentos />
             </ProtectedRoute>
           }
@@ -180,7 +189,7 @@ function App() {
         <Route
           path="/estados"
           element={
-            <ProtectedRoute rolesPermitidos={['admin']}>
+            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin']}>
               <AdminEstados />
             </ProtectedRoute>
           }
@@ -188,7 +197,7 @@ function App() {
         <Route
           path="/reportes"
           element={
-            <ProtectedRoute rolesPermitidos={['admin', 'admin_ecommerce', 'admin_erp']}>
+            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin', 'admin_ecommerce', 'admin_erp']}>
               <Reportes />
             </ProtectedRoute>
           }
@@ -196,7 +205,7 @@ function App() {
         <Route
           path="/templates"
           element={
-            <ProtectedRoute rolesPermitidos={['admin']}>
+            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin']}>
               <AdminTemplates />
             </ProtectedRoute>
           }
@@ -204,7 +213,7 @@ function App() {
         <Route
           path="/organizaciones"
           element={
-            <ProtectedRoute rolesPermitidos={['admin']}>
+            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin']}>
               <AdminOrganizaciones />
             </ProtectedRoute>
           }
@@ -212,7 +221,7 @@ function App() {
         <Route
           path="/equipos"
           element={
-            <ProtectedRoute rolesPermitidos={['admin']}>
+            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin']}>
               <AdminEquipos />
             </ProtectedRoute>
           }
@@ -220,7 +229,7 @@ function App() {
         <Route
           path="/admin/importar-kayako"
           element={
-            <ProtectedRoute rolesPermitidos={['admin']}>
+            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin']}>
               <AdminImportarKayako />
             </ProtectedRoute>
           }
@@ -228,7 +237,7 @@ function App() {
         <Route
           path="/config-tickets"
           element={
-            <ProtectedRoute rolesPermitidos={['admin']}>
+            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin']}>
               <AdminConfigTickets />
             </ProtectedRoute>
           }
@@ -236,7 +245,7 @@ function App() {
         <Route
           path="/admin/ecommerce"
           element={
-            <ProtectedRoute rolesPermitidos={['admin', 'admin_ecommerce']}>
+            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin', 'admin_ecommerce']}>
               <AdminEcommerce />
             </ProtectedRoute>
           }
@@ -244,7 +253,7 @@ function App() {
         <Route
           path="/admin/erp"
           element={
-            <ProtectedRoute rolesPermitidos={['admin', 'staff', 'admin_ecommerce', 'admin_erp']}>
+            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin', 'staff', 'admin_ecommerce', 'admin_erp']}>
               <AdminErp usuario={usuario} theme={theme} toggleTheme={toggleTheme} />
             </ProtectedRoute>
           }
@@ -252,7 +261,7 @@ function App() {
         <Route
           path="/admin/erp-admin"
           element={
-            <ProtectedRoute rolesPermitidos={['admin', 'staff', 'admin_ecommerce', 'admin_erp']}>
+            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin', 'staff', 'admin_ecommerce', 'admin_erp']}>
               <AdminErpConfig usuario={usuario} theme={theme} toggleTheme={toggleTheme} />
             </ProtectedRoute>
           }
@@ -260,7 +269,7 @@ function App() {
         <Route
           path="/admin/canales-ayuda"
           element={
-            <ProtectedRoute rolesPermitidos={['admin']}>
+            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin']}>
               <AdminCanalesAyuda />
             </ProtectedRoute>
           }
@@ -268,8 +277,16 @@ function App() {
         <Route
           path="/admin/personalizacion"
           element={
-            <ProtectedRoute rolesPermitidos={['admin', 'admin_ecommerce']}>
+            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin', 'admin_ecommerce']}>
               <AdminPersonalizacion usuario={usuario} theme={theme} toggleTheme={toggleTheme} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/admin/reporteria-general"
+          element={
+            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin', 'staff', 'admin_erp', 'admin_ecommerce', 'manager']}>
+              <AdminReporteriaGeneral usuario={usuario} theme={theme} toggleTheme={toggleTheme} />
             </ProtectedRoute>
           }
         />
@@ -278,7 +295,7 @@ function App() {
         <Route
           path="/mis-tickets"
           element={
-            <ProtectedRoute rolesPermitidos={['cliente', 'vendedor', 'pm', 'usuario', 'manager']}>
+            <ProtectedRoute usuario={usuario} rolesPermitidos={['cliente', 'vendedor', 'pm', 'usuario', 'manager']}>
               <PanelUsuario usuario={usuario} setUsuario={setUsuario} theme={theme} toggleTheme={toggleTheme} />
             </ProtectedRoute>
           }

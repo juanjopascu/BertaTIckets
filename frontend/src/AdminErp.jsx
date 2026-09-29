@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import BrandingVectorIcon from './BrandingVectorIcon';
+import NotificationBell from './NotificationBell';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 
@@ -42,7 +43,7 @@ export default function AdminErp({ usuario, theme = 'light', embedded = false, o
     databaseStatus: 'connected',
     latencyMs: 1,
     lastSync: new Date().toISOString(),
-    erpSystem: 'Oracle NetSuite OneWorld (Base Independiente)',
+    erpSystem: 'DACAS ERP OneWorld (Base Independiente)',
     environment: 'local_database'
   });
 
@@ -138,7 +139,7 @@ export default function AdminErp({ usuario, theme = 'light', embedded = false, o
       if (resCredit.ok) setCreditAccounts(await resCredit.json());
       if (resEndUsers.ok) setEndUsers(await resEndUsers.json());
     } catch (err) {
-      console.error('Error cargando datos NetSuite ERP:', err);
+      console.error('Error cargando datos ERP:', err);
     } finally {
       setLoading(false);
     }
@@ -160,7 +161,7 @@ export default function AdminErp({ usuario, theme = 'light', embedded = false, o
       const res = await fetch(`${API_BASE_URL}/api/ecommerce/admin/erp/sync-all`, { method: 'POST' });
       const data = await res.json();
       if (res.ok) {
-        showTemporaryFeedback(data.message || 'Base de datos ERP NetSuite verificada correctamente.');
+        showTemporaryFeedback(data.message || 'Base de datos ERP verificada correctamente.');
         fetchAllData(selectedSubsidiary);
       } else {
         showTemporaryFeedback(`Error: ${data.error || 'Fallo de verificación'}`, true);
@@ -332,15 +333,88 @@ export default function AdminErp({ usuario, theme = 'light', embedded = false, o
   });
 
   return (
-    <div style={{
+    <div className="erp-dashboard-wrap" style={{
       padding: embedded ? '0' : '28px 36px',
       maxWidth: '1680px',
       margin: '0 auto',
       fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
-      color: '#0f172a',
+      color: 'var(--text-main, #0f172a)',
       background: 'transparent'
     }}>
-      {/* ── TOP HEADER: Oracle NetSuite OneWorld DACAS ── */}
+      <style>{`
+        .erp-dashboard-wrap {
+          color: var(--text-main, #0f172a);
+        }
+        [data-theme='dark'] .erp-dashboard-wrap {
+          color: #ffffff !important;
+        }
+        [data-theme='dark'] .erp-dashboard-wrap div[style*="background: #FFFFFF"],
+        [data-theme='dark'] .erp-dashboard-wrap div[style*="background:#FFFFFF"],
+        [data-theme='dark'] .erp-dashboard-wrap div[style*="background: rgb(255, 255, 255)"],
+        [data-theme='dark'] .erp-dashboard-wrap div[style*="background-color: #FFFFFF"],
+        [data-theme='dark'] .erp-dashboard-wrap div[style*="background-color: rgb(255, 255, 255)"],
+        [data-theme='dark'] .erp-dashboard-wrap div[style*="background: white"],
+        [data-theme='dark'] .erp-dashboard-wrap div[style*="background:#ffffff"],
+        [data-theme='dark'] .erp-dashboard-wrap div[style*="background: #ffffff"] {
+          background: var(--card-bg, #0f2742) !important;
+          border-color: var(--border-color, rgba(15, 164, 222, 0.22)) !important;
+          color: var(--text-main, #ffffff) !important;
+        }
+        [data-theme='dark'] .erp-dashboard-wrap div[style*="background: #F8FAFC"],
+        [data-theme='dark'] .erp-dashboard-wrap div[style*="background:#F8FAFC"],
+        [data-theme='dark'] .erp-dashboard-wrap div[style*="background: rgb(248, 250, 252)"],
+        [data-theme='dark'] .erp-dashboard-wrap div[style*="background-color: #F8FAFC"],
+        [data-theme='dark'] .erp-dashboard-wrap div[style*="background: #f8fafc"],
+        [data-theme='dark'] .erp-dashboard-wrap button[style*="background: #F8FAFC"],
+        [data-theme='dark'] .erp-dashboard-wrap button[style*="background:#F8FAFC"],
+        [data-theme='dark'] .erp-dashboard-wrap button[style*="background: rgb(248, 250, 252)"],
+        [data-theme='dark'] .erp-dashboard-wrap button[style*="background: #f8fafc"],
+        [data-theme='dark'] .erp-dashboard-wrap button[style*="background: #FFFFFF"],
+        [data-theme='dark'] .erp-dashboard-wrap button[style*="background: rgb(255, 255, 255)"] {
+          background: var(--pill-bg, #12354c) !important;
+          border-color: var(--border-color, rgba(15, 164, 222, 0.22)) !important;
+          color: var(--text-main, #ffffff) !important;
+        }
+        [data-theme='dark'] .erp-dashboard-wrap [style*="color: #071524"],
+        [data-theme='dark'] .erp-dashboard-wrap [style*="color:#071524"],
+        [data-theme='dark'] .erp-dashboard-wrap [style*="color: #0f172a"],
+        [data-theme='dark'] .erp-dashboard-wrap [style*="color:#0f172a"],
+        [data-theme='dark'] .erp-dashboard-wrap [style*="color: #1e293b"],
+        [data-theme='dark'] .erp-dashboard-wrap [style*="color: #334155"],
+        [data-theme='dark'] .erp-dashboard-wrap [style*="color: rgb(7, 21, 36)"],
+        [data-theme='dark'] .erp-dashboard-wrap [style*="color: rgb(15, 23, 42)"] {
+          color: var(--text-main, #ffffff) !important;
+        }
+        [data-theme='dark'] .erp-dashboard-wrap [style*="color: #64748B"],
+        [data-theme='dark'] .erp-dashboard-wrap [style*="color:#64748B"],
+        [data-theme='dark'] .erp-dashboard-wrap [style*="color: #475569"],
+        [data-theme='dark'] .erp-dashboard-wrap [style*="color:#475569"],
+        [data-theme='dark'] .erp-dashboard-wrap [style*="color: rgb(100, 116, 139)"],
+        [data-theme='dark'] .erp-dashboard-wrap [style*="color: rgb(71, 85, 105)"] {
+          color: var(--text-muted, #94a3b8) !important;
+        }
+        [data-theme='dark'] .erp-dashboard-wrap select,
+        [data-theme='dark'] .erp-dashboard-wrap input,
+        [data-theme='dark'] .erp-dashboard-wrap textarea {
+          background-color: var(--input-bg, #0b1d33) !important;
+          color: var(--text-main, #ffffff) !important;
+          border-color: var(--border-color, rgba(15, 164, 222, 0.22)) !important;
+        }
+        [data-theme='dark'] .erp-dashboard-wrap select option {
+          background-color: var(--card-bg, #0f2742) !important;
+          color: var(--text-main, #ffffff) !important;
+        }
+        [data-theme='dark'] .erp-dashboard-wrap th {
+          background: var(--pill-bg, #12354c) !important;
+          color: #38bdf8 !important;
+          border-bottom-color: var(--border-color, rgba(15, 164, 222, 0.22)) !important;
+        }
+        [data-theme='dark'] .erp-dashboard-wrap td {
+          border-bottom-color: rgba(255, 255, 255, 0.08) !important;
+          color: var(--text-main, #ffffff) !important;
+        }
+      `}</style>
+      {/* ── TOP HEADER: DACAS OneWorld ERP ── */}
       <div style={{
         display: 'flex',
         justifyContent: 'space-between',
@@ -350,38 +424,40 @@ export default function AdminErp({ usuario, theme = 'light', embedded = false, o
         marginBottom: '20px',
         padding: '20px 24px',
         borderRadius: '16px',
-        background: '#FFFFFF',
-        border: '1px solid #E2E8F0',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.03)'
+        background: 'var(--card-bg, #FFFFFF)',
+        border: '1px solid var(--border-color, #E2E8F0)',
+        boxShadow: 'var(--shadow-md, 0 4px 20px rgba(0,0,0,0.03))'
       }}>
         {/* Left Title */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-          <button
-            type="button"
-            onClick={() => {
-              if (onBack) onBack();
-              else window.location.href = '/';
-            }}
-            style={{
-              background: '#F8FAFC',
-              border: '1px solid #CBD5E1',
-              borderRadius: '10px',
-              padding: '8px 14px',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              color: '#0fa4de',
-              fontSize: '13px',
-              fontWeight: '800',
-              boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
-              transition: 'all 0.15s ease'
-            }}
-            title="Ir a Home / Panel Principal"
-          >
-            <BrandingVectorIcon name="home" size={16} color="#0fa4de" />
-            <span>Home</span>
-          </button>
+          {!embedded && (
+            <button
+              type="button"
+              onClick={() => {
+                if (onBack) onBack();
+                else window.location.href = '/';
+              }}
+              style={{
+                background: 'var(--pill-bg, #F8FAFC)',
+                border: '1px solid var(--border-color, #CBD5E1)',
+                borderRadius: '10px',
+                padding: '8px 14px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                color: 'var(--primary, #0fa4de)',
+                fontSize: '13px',
+                fontWeight: '800',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+                transition: 'all 0.15s ease'
+              }}
+              title="Ir a Home / Panel Principal"
+            >
+              <BrandingVectorIcon name="home" size={16} color="var(--primary, #0fa4de)" />
+              <span>Home</span>
+            </button>
+          )}
 
           <div 
             onClick={() => {
@@ -406,7 +482,7 @@ export default function AdminErp({ usuario, theme = 'light', embedded = false, o
             <BrandingVectorIcon name="database" size={24} color="#ffffff" />
           </div>
           <div>
-            <h1 style={{ margin: 0, fontSize: '1.6rem', fontWeight: '900', color: '#071524', letterSpacing: '-0.02em' }}>
+            <h1 style={{ margin: 0, fontSize: '1.6rem', fontWeight: '900', color: 'var(--text-main, #071524)', letterSpacing: '-0.02em' }}>
               Sistema ERP Empresarial DACAS
             </h1>
           </div>
@@ -458,8 +534,22 @@ export default function AdminErp({ usuario, theme = 'light', embedded = false, o
               background: '#22C55E',
               boxShadow: '0 0 8px #22C55E'
             }} />
-            <span>NetSuite DB Activa (Local)</span>
+            <span>Base ERP Activa (Local)</span>
           </div>
+
+          {/* Notification Bell */}
+          <NotificationBell 
+            usuario={usuario}
+            onNavigate={(targetView, targetTab) => {
+              if (targetView === 'erp' && targetTab) {
+                setActiveTab(targetTab);
+              } else if (onBack) {
+                onBack();
+              } else {
+                window.location.href = targetView === 'ecommerce' ? '/admin/ecommerce' : '/';
+              }
+            }}
+          />
 
           {/* Verification Button */}
           <button
@@ -517,42 +607,15 @@ export default function AdminErp({ usuario, theme = 'light', embedded = false, o
         </div>
       )}
 
-      {/* ── MAIN NETSUITE NAVIGATION TABS ── */}
+      {/* ── MAIN ERP NAVIGATION TABS ── */}
       <div style={{
         display: 'flex',
         gap: '6px',
-        borderBottom: '2px solid #E2E8F0',
+        borderBottom: '2px solid var(--border-color, #E2E8F0)',
         marginBottom: '24px',
         overflowX: 'auto',
         paddingBottom: '2px'
       }}>
-        <button
-          type="button"
-          onClick={() => {
-            if (onBack) onBack();
-            else window.location.href = '/';
-          }}
-          style={{
-            background: 'transparent',
-            border: 'none',
-            borderBottom: '3px solid transparent',
-            padding: '12px 18px',
-            borderRadius: '12px 12px 0 0',
-            fontWeight: '800',
-            fontSize: '13.5px',
-            color: '#0fa4de',
-            cursor: 'pointer',
-            whiteSpace: 'nowrap',
-            transition: 'all 0.15s ease',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}
-          title="Ir a Home / Panel Principal"
-        >
-          <BrandingVectorIcon name="home" size={17} color="#0fa4de" />
-          <span>Home</span>
-        </button>
         {[
           { key: 'overview', label: 'SuiteOverview (Tablero)', icon: 'activity', desc: 'KPIs & Salud Financiera' },
           { key: 'order_to_cash', label: 'Order-to-Cash (Ventas)', icon: 'shopping-bag', desc: 'Órdenes, Facturas & End Users' },
@@ -568,14 +631,14 @@ export default function AdminErp({ usuario, theme = 'light', embedded = false, o
               type="button"
               onClick={() => setActiveTab(tab.key)}
               style={{
-                background: isActive ? '#FFFFFF' : 'transparent',
+                background: isActive ? 'var(--card-bg, #FFFFFF)' : 'transparent',
                 border: 'none',
-                borderBottom: isActive ? '3px solid #0fa4de' : '3px solid transparent',
+                borderBottom: isActive ? '3px solid var(--primary, #0fa4de)' : '3px solid transparent',
                 padding: '12px 18px',
                 borderRadius: '12px 12px 0 0',
                 fontWeight: isActive ? '800' : '600',
                 fontSize: '13.5px',
-                color: isActive ? '#0284c7' : '#64748B',
+                color: isActive ? 'var(--primary, #0284c7)' : 'var(--text-muted, #64748B)',
                 cursor: 'pointer',
                 whiteSpace: 'nowrap',
                 transition: 'all 0.15s ease',
@@ -585,7 +648,7 @@ export default function AdminErp({ usuario, theme = 'light', embedded = false, o
                 boxShadow: isActive ? '0 -2px 10px rgba(0,0,0,0.02)' : 'none'
               }}
             >
-              <BrandingVectorIcon name={tab.icon} size={16} color={isActive ? '#0fa4de' : '#64748B'} />
+              <BrandingVectorIcon name={tab.icon} size={16} color={isActive ? 'var(--primary, #0fa4de)' : 'var(--text-muted, #64748B)'} />
               <span>{tab.label}</span>
             </button>
           );
@@ -593,7 +656,7 @@ export default function AdminErp({ usuario, theme = 'light', embedded = false, o
       </div>
 
       {/* ══════════════════════════════════════════════════════════════════════
-          TAB 1: SUITEOVERVIEW (TABLERO EJECUTIVO NETSUITE)
+          TAB 1: SUITEOVERVIEW (TABLERO EJECUTIVO ERP)
       ══════════════════════════════════════════════════════════════════════ */}
       {activeTab === 'overview' && (
         <div style={{ animation: 'fadeIn 0.2s ease-out' }}>
@@ -682,7 +745,7 @@ export default function AdminErp({ usuario, theme = 'light', embedded = false, o
             </div>
           </div>
 
-          {/* Quick NetSuite Action Banner & Operational Status */}
+          {/* Quick ERP Action Banner & Operational Status */}
           <div style={{
             display: 'grid',
             gridTemplateColumns: '1.4fr 1fr',
@@ -694,7 +757,7 @@ export default function AdminErp({ usuario, theme = 'light', embedded = false, o
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
                 <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#071524', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <BrandingVectorIcon name="activity" size={17} color="#0fa4de" />
-                  <span>Estado Financiero Consolidado NetSuite (OneWorld)</span>
+                  <span>Estado Financiero Consolidado ERP (OneWorld)</span>
                 </h3>
                 <span style={{ fontSize: '12px', color: '#64748B' }}>Moneda Base: USD</span>
               </div>
@@ -727,7 +790,7 @@ export default function AdminErp({ usuario, theme = 'light', embedded = false, o
             <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
               {/* Quick Actions */}
               <div style={{ background: '#FFFFFF', borderRadius: '16px', padding: '20px', border: '1px solid #E2E8F0' }}>
-                <h4 style={{ margin: '0 0 14px', fontSize: '14px', fontWeight: '800', color: '#071524' }}>Acciones Rápidas NetSuite</h4>
+                <h4 style={{ margin: '0 0 14px', fontSize: '14px', fontWeight: '800', color: '#071524' }}>Acciones Rápidas ERP</h4>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
                   <button
                     onClick={() => { setActiveTab('order_to_cash'); setSubTabVentas('sales_orders'); }}
@@ -846,7 +909,7 @@ export default function AdminErp({ usuario, theme = 'light', embedded = false, o
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                   <thead>
                     <tr style={{ background: '#F8FAFC', borderBottom: '2px solid #E2E8F0', color: '#64748B', textAlign: 'left' }}>
-                      <th style={{ padding: '12px 14px', fontWeight: '800' }}>SO# NetSuite</th>
+                      <th style={{ padding: '12px 14px', fontWeight: '800' }}>SO# ERP</th>
                       <th style={{ padding: '12px 14px', fontWeight: '800' }}>Cliente</th>
                       <th style={{ padding: '12px 14px', fontWeight: '800' }}>Subsidiaria</th>
                       <th style={{ padding: '12px 14px', fontWeight: '800' }}>Depósito</th>
@@ -970,7 +1033,7 @@ export default function AdminErp({ usuario, theme = 'light', embedded = false, o
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                   <thead>
                     <tr style={{ background: '#F8FAFC', borderBottom: '2px solid #E2E8F0', color: '#64748B', textAlign: 'left' }}>
-                      <th style={{ padding: '12px 14px', fontWeight: '800' }}>Cuenta NetSuite</th>
+                      <th style={{ padding: '12px 14px', fontWeight: '800' }}>Cuenta ERP</th>
                       <th style={{ padding: '12px 14px', fontWeight: '800' }}>Razón Social</th>
                       <th style={{ padding: '12px 14px', fontWeight: '800' }}>Tax ID / CUIT</th>
                       <th style={{ padding: '12px 14px', fontWeight: '800' }}>Límite Crédito</th>
@@ -1155,7 +1218,7 @@ export default function AdminErp({ usuario, theme = 'light', embedded = false, o
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                   <thead>
                     <tr style={{ background: '#F8FAFC', borderBottom: '2px solid #E2E8F0', color: '#64748B', textAlign: 'left' }}>
-                      <th style={{ padding: '12px 14px', fontWeight: '800' }}>PO# NetSuite</th>
+                      <th style={{ padding: '12px 14px', fontWeight: '800' }}>PO# ERP</th>
                       <th style={{ padding: '12px 14px', fontWeight: '800' }}>Proveedor (Vendor)</th>
                       <th style={{ padding: '12px 14px', fontWeight: '800' }}>Almacén Destino</th>
                       <th style={{ padding: '12px 14px', fontWeight: '800' }}>Fecha Entrega</th>
@@ -1347,7 +1410,7 @@ export default function AdminErp({ usuario, theme = 'light', embedded = false, o
           {subTabInventario === 'items_master' && (
             <div style={{ background: '#FFFFFF', borderRadius: '16px', padding: '24px', border: '1px solid #E2E8F0' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#071524' }}>Maestro de Artículos NetSuite (Items Catalog)</h3>
+                <h3 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#071524' }}>Maestro de Artículos ERP (Items Catalog)</h3>
                 <button
                   onClick={() => setShowStockModal(true)}
                   style={{ background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)', color: '#FFFFFF', border: 'none', padding: '9px 16px', borderRadius: '10px', fontSize: '13px', fontWeight: '800', cursor: 'pointer' }}
@@ -1362,7 +1425,7 @@ export default function AdminErp({ usuario, theme = 'light', embedded = false, o
                     <tr style={{ background: '#F8FAFC', borderBottom: '2px solid #E2E8F0', color: '#64748B', textAlign: 'left' }}>
                       <th style={{ padding: '12px 14px', fontWeight: '800' }}>SKU / MPN</th>
                       <th style={{ padding: '12px 14px', fontWeight: '800' }}>Descripción & Marca</th>
-                      <th style={{ padding: '12px 14px', fontWeight: '800' }}>Tipo NetSuite</th>
+                      <th style={{ padding: '12px 14px', fontWeight: '800' }}>Tipo de Ítem ERP</th>
                       <th style={{ padding: '12px 14px', fontWeight: '800' }}>Costo Promedio</th>
                       <th style={{ padding: '12px 14px', fontWeight: '800' }}>Precio Mayorista</th>
                       <th style={{ padding: '12px 14px', fontWeight: '800' }}>Stock Total</th>
@@ -1508,7 +1571,7 @@ export default function AdminErp({ usuario, theme = 'light', embedded = false, o
           {/* Subview 1: Chart of Accounts */}
           {subTabFinanzas === 'chart_of_accounts' && (
             <div style={{ background: '#FFFFFF', borderRadius: '16px', padding: '24px', border: '1px solid #E2E8F0' }}>
-              <h3 style={{ margin: '0 0 16px', fontSize: '16px', fontWeight: '800', color: '#071524' }}>Plan de Cuentas General NetSuite (Chart of Accounts)</h3>
+              <h3 style={{ margin: '0 0 16px', fontSize: '16px', fontWeight: '800', color: '#071524' }}>Plan de Cuentas General ERP (Chart of Accounts)</h3>
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                   <thead>
@@ -1671,7 +1734,7 @@ export default function AdminErp({ usuario, theme = 'light', embedded = false, o
           {/* Subview 1: Subsidiaries */}
           {subTabOneWorld === 'subsidiaries' && (
             <div style={{ background: '#FFFFFF', borderRadius: '16px', padding: '24px', border: '1px solid #E2E8F0' }}>
-              <h3 style={{ margin: '0 0 16px', fontSize: '16px', fontWeight: '800', color: '#071524' }}>Entidades Jurídicas Subsidiarias (Oracle NetSuite OneWorld)</h3>
+              <h3 style={{ margin: '0 0 16px', fontSize: '16px', fontWeight: '800', color: '#071524' }}>Entidades Jurídicas Subsidiarias (DACAS OneWorld)</h3>
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '13px' }}>
                   <thead>

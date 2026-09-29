@@ -3,10 +3,10 @@ const path = require('path');
 
 const ERP_DB_FILE = process.env.ERP_DB_FILE || path.join(__dirname, '..', 'erp_database.json');
 
-// Datos iniciales representativos de DACAS Enterprise adaptados a la arquitectura Oracle NetSuite OneWorld
+// Datos iniciales representativos de DACAS Enterprise adaptados a la arquitectura ERP OneWorld
 const INITIAL_ERP_DATA = {
   version: '2.0.0',
-  architecture: 'Oracle NetSuite OneWorld Multi-Subsidiary & Multi-Currency',
+  architecture: 'DACAS OneWorld Multi-Subsidiary & Multi-Currency',
   updated_at: new Date().toISOString(),
   
   // ── 1. SUBSIDIARIAS CORPORATIVAS (OneWorld) ──
@@ -191,7 +191,7 @@ const INITIAL_ERP_DATA = {
     }
   ],
 
-  // ── 6. MAESTRO DE ARTÍCULOS (Items Master NetSuite) ──
+  // ── 6. MAESTRO DE ARTÍCULOS (Items Master ERP) ──
   catalog_items: [
     {
       id: 1,
@@ -430,7 +430,7 @@ const INITIAL_ERP_DATA = {
     }
   ],
 
-  // ── 10. ÓRDENES DE VENTA (Sales Orders NetSuite / SO) ──
+  // ── 10. ÓRDENES DE VENTA (Sales Orders ERP / SO) ──
   orders: [
     {
       id: 1055,
@@ -648,7 +648,7 @@ const INITIAL_ERP_DATA = {
 
   // ── 14. CONFIGURACIÓN Y PARÁMETROS GLOBALES DEL ERP ──
   settings: {
-    instance_name: 'DACAS Enterprise Oracle NetSuite OneWorld Cluster',
+    instance_name: 'DACAS Enterprise ERP OneWorld Cluster',
     version: '2.0.0',
     base_currency: 'USD',
     multi_subsidiary_consolidation: true,
@@ -810,7 +810,7 @@ class ErpDatabaseService {
       if (fs.existsSync(ERP_DB_FILE)) {
         const raw = fs.readFileSync(ERP_DB_FILE, 'utf8');
         this.db = JSON.parse(raw);
-        // Garantizar que existan todas las colecciones NetSuite OneWorld
+        // Garantizar que existan todas las colecciones ERP OneWorld
         if (!this.db.subsidiaries) this.db.subsidiaries = JSON.parse(JSON.stringify(INITIAL_ERP_DATA.subsidiaries));
         if (!this.db.currencies) this.db.currencies = JSON.parse(JSON.stringify(INITIAL_ERP_DATA.currencies));
         if (!this.db.chart_of_accounts) this.db.chart_of_accounts = JSON.parse(JSON.stringify(INITIAL_ERP_DATA.chart_of_accounts));
@@ -831,7 +831,7 @@ class ErpDatabaseService {
         this.db = JSON.parse(JSON.stringify(INITIAL_ERP_DATA));
         this.saveDatabase();
       }
-      console.log('✅ Base de datos ERP NetSuite OneWorld lista en:', ERP_DB_FILE);
+      console.log('✅ Base de datos ERP OneWorld lista en:', ERP_DB_FILE);
     } catch (err) {
       console.error('Error cargando erp_database.json:', err);
       this.db = JSON.parse(JSON.stringify(INITIAL_ERP_DATA));
@@ -866,7 +866,7 @@ class ErpDatabaseService {
       purchaseOrders = purchaseOrders.filter(p => p.subsidiary === subsidiary);
     }
 
-    // Cálculos NetSuite con fallback representativo
+    // Cálculos ERP con fallback representativo
     let totalRevenue = invoices.reduce((sum, i) => sum + (parseFloat(i.total) || 0), 0);
     if (!totalRevenue && orders.length > 0) {
       totalRevenue = orders.reduce((sum, o) => sum + (parseFloat(o.total) || 0), 0);
@@ -910,7 +910,7 @@ class ErpDatabaseService {
         databaseStatus: 'connected',
         latencyMs: 1,
         lastSync: new Date().toISOString(),
-        erpSystem: 'Oracle NetSuite OneWorld (Base Independiente)',
+        erpSystem: 'DACAS ERP OneWorld (Base Independiente)',
         environment: 'local_database'
       }
     };
@@ -1102,7 +1102,7 @@ class ErpDatabaseService {
         item_name: it.nombre,
         location: locationCode,
         adjustment: parseInt(adjustmentQty),
-        reason: reason || 'Ajuste manual de inventario NetSuite',
+        reason: reason || 'Ajuste manual de inventario ERP',
         timestamp: new Date().toISOString()
       });
 
