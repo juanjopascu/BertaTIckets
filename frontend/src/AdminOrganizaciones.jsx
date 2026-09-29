@@ -76,8 +76,8 @@ function AdminOrganizaciones({ embedded = false }) {
   // Managers are users with role 'manager' (or admins)
   const availableManagers = usuarios.filter(u => u.rol === 'manager' || u.rol === 'admin');
   
-  // Clientes are users with role 'cliente'
-  const availableClientes = usuarios.filter(u => u.rol === 'cliente');
+  // Clientes / Vendedores / PMs are users with role 'cliente', 'vendedor', or 'pm'
+  const availableClientes = usuarios.filter(u => u.rol === 'cliente' || u.rol === 'vendedor' || u.rol === 'pm');
 
   const handleToggleManager = (email) => {
     if (selectedManagers.includes(email)) {

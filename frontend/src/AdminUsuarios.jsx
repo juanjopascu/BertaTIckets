@@ -29,7 +29,78 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
   const [logSearchText, setLogSearchText] = useState('');
   const [autoRefreshLogs, setAutoRefreshLogs] = useState(true);
   const [selectedLogDetail, setSelectedLogDetail] = useState(null);
-  
+  const [logModalTab, setLogModalTab] = useState('visual'); // 'visual' | 'json'
+  const [copiedLogJson, setCopiedLogJson] = useState(false);
+
+  const handleCopyLogJson = (data) => {
+    try {
+      navigator.clipboard.writeText(JSON.stringify(data || {}, null, 2));
+      setCopiedLogJson(true);
+      setTimeout(() => setCopiedLogJson(false), 2000);
+    } catch (e) {
+      console.error('Error al copiar JSON:', e);
+    }
+  };
+
+  const formatFieldLabel = (key) => {
+    const labels = {
+      productId: 'ID de Producto',
+      productName: 'Producto',
+      sku: 'Código SKU',
+      brand: 'Marca / Fabricante',
+      price: 'Precio de Lista',
+      category: 'Categoría',
+      timestamp: 'Fecha del Evento',
+      orderId: 'N° de Pedido',
+      total: 'Total Retenido',
+      subtotal: 'Subtotal',
+      metodoPago: 'Método de Pago',
+      usuarioId: 'ID Usuario',
+      email: 'Email',
+      nombre: 'Nombre',
+      rol: 'Rol',
+      origen: 'Origen',
+      estado: 'Estado',
+      accion: 'Acción'
+    };
+    if (labels[key]) return labels[key];
+    return key
+      .replace(/([A-Z])/g, ' $1')
+      .replace(/_/g, ' ')
+      .replace(/^./, str => str.toUpperCase());
+  };
+
+  const getLogUser = (log) => {
+    if (!log) return { nombre: 'Visitante B2B', email: '', rol: '' };
+    const u = log.usuario;
+    if (typeof u === 'object' && u !== null) {
+      return {
+        nombre: u.nombre || u.name || u.razon_social || u.email || 'Usuario B2B',
+        email: u.email || '',
+        rol: u.rol || u.role || ''
+      };
+    }
+    if (typeof u === 'string' && u.trim().length > 0) {
+      return {
+        nombre: u,
+        email: u.includes('@') ? u : '',
+        rol: ''
+      };
+    }
+    if (log.detalles?.user) {
+      return {
+        nombre: log.detalles.user.nombre || log.detalles.user.name || 'Usuario B2B',
+        email: log.detalles.user.email || '',
+        rol: log.detalles.user.rol || log.detalles.user.role || ''
+      };
+    }
+    return {
+      nombre: 'Visitante B2B',
+      email: '',
+      rol: 'Invitado'
+    };
+  };
+
   const [editingId, setEditingId] = useState(null);
   const [mostrarModal, setMostrarModal] = useState(false);
   
@@ -1441,7 +1512,7 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                           <td style={{ padding: '6px 12px', textAlign: 'center', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
                             <button
                               type="button"
-                              onClick={() => setSelectedLogDetail(log)}
+                              onClick={() => { setSelectedLogDetail(log); setLogModalTab('visual'); }}
                               style={{
                                 background: isCartAbandoned ? '#f59e0b' : isProductView ? '#0284c7' : '#3b82f6',
                                 color: '#ffffff',
@@ -1500,151 +1571,410 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                   flexDirection: 'column',
                   gap: '18px'
                 }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <BrandingVectorIcon
                         name={(selectedLogDetail.accion || '').includes('CARRITO') ? 'shopping-cart' : (selectedLogDetail.accion || '').includes('PRODUCTO') ? 'eye' : 'file-text'}
                         size={22}
                         color="var(--primary)"
                       />
-                      <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '800', color: '#0f172a' }}>
-                        {(selectedLogDetail.accion || '').includes('CARRITO') ? 'Auditoría de Carrito Abandonado' : (selectedLogDetail.accion || '').includes('PRODUCTO') ? 'Detalle de Producto Consultado' : `Detalle del Evento #${selectedLogDetail.id}`}
-                      </h3>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setSelectedLogDetail(null)}
-                      style={{ background: '#f1f5f9', border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569' }}
-                    >
-                      <BrandingVectorIcon name="x" size={16} color="#475569" />
-                    </button>
-                  </div>
-
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', background: '#f8fafc', padding: '16px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
-                    <div>
-                      <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>Acción</span>
-                      <div style={{ fontSize: '0.88rem', fontWeight: '800', color: '#0f172a' }}>{selectedLogDetail.accion}</div>
-                    </div>
-                    <div>
-                      <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>Nivel</span>
-                      <div style={{ fontSize: '0.88rem', fontWeight: '800', color: selectedLogDetail.tipo === 'WARNING' ? '#d97706' : '#0284c7' }}>{selectedLogDetail.tipo}</div>
-                    </div>
-                    <div>
-                      <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>Fecha y Hora</span>
-                      <div style={{ fontSize: '0.85rem', color: '#334155' }}>{new Date(selectedLogDetail.timestamp).toLocaleString()}</div>
-                    </div>
-                    <div>
-                      <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>IP & Dispositivo</span>
-                      <div style={{ fontSize: '0.85rem', color: '#334155', fontFamily: 'monospace' }}>{selectedLogDetail.ip}</div>
-                    </div>
-                  </div>
-
-                  {/* DESGLOSE ESPECIAL SI ES CARRITO ABANDONADO */}
-                  {selectedLogDetail.detalles?.items && Array.isArray(selectedLogDetail.detalles.items) && selectedLogDetail.detalles.items.length > 0 && (
-                    <div style={{ background: '#fffbeb', border: '1px solid #fde68a', padding: '16px', borderRadius: '16px' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <span style={{ fontSize: '12px', fontWeight: '800', color: '#b45309', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                          <BrandingVectorIcon name="box" size={14} color="#b45309" /> Productos Que Estaban En El Carrito
-                        </span>
-                        <span style={{ fontSize: '13px', fontWeight: '900', color: '#b45309' }}>
-                          Total Retenido: USD ${Number(selectedLogDetail.detalles.total || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '800', color: '#0f172a' }}>
+                          {(selectedLogDetail.accion || '').includes('CARRITO') ? 'Auditoría de Carrito Abandonado' : (selectedLogDetail.accion || '').includes('PRODUCTO') ? 'Detalle de Producto Consultado' : `Detalle del Evento #${selectedLogDetail.id}`}
+                        </h3>
+                        <span style={{ fontSize: '11.5px', color: '#64748b' }}>
+                          {logModalTab === 'visual' ? 'Vista interactiva y comercial de trazabilidad' : 'Estructura técnica de datos en JSON crudo'}
                         </span>
                       </div>
-                      <div style={{ overflowX: 'auto' }}>
-                        <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11.5px' }}>
-                          <thead>
-                            <tr style={{ background: '#fef3c7', textAlign: 'left', borderBottom: '1px solid #fcd34d' }}>
-                              <th style={{ padding: '6px 8px', color: '#92400e' }}>Producto / Marca</th>
-                              <th style={{ padding: '6px 8px', color: '#92400e' }}>SKU</th>
-                              <th style={{ padding: '6px 8px', color: '#92400e', textAlign: 'center' }}>Cant.</th>
-                              <th style={{ padding: '6px 8px', color: '#92400e', textAlign: 'right' }}>Precio Unit.</th>
-                              <th style={{ padding: '6px 8px', color: '#92400e', textAlign: 'right' }}>Subtotal</th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {selectedLogDetail.detalles.items.map((item, idx) => (
-                              <tr key={idx} style={{ borderBottom: '1px solid #fef3c7' }}>
-                                <td style={{ padding: '6px 8px', fontWeight: '700', color: '#0f172a' }}>
-                                  {item.brand ? <span style={{ color: '#0284c7', marginRight: '4px' }}>[{item.brand}]</span> : null}
-                                  {item.name}
-                                </td>
-                                <td style={{ padding: '6px 8px', color: '#64748b', fontFamily: 'monospace' }}>{item.sku || 'N/A'}</td>
-                                <td style={{ padding: '6px 8px', textAlign: 'center', fontWeight: '700' }}>{item.qty}</td>
-                                <td style={{ padding: '6px 8px', textAlign: 'right' }}>USD ${item.price}</td>
-                                <td style={{ padding: '6px 8px', textAlign: 'right', fontWeight: '700', color: '#b45309' }}>USD ${item.subtotal || (item.qty * item.price)}</td>
-                              </tr>
-                            ))}
-                          </tbody>
-                        </table>
-                      </div>
                     </div>
-                  )}
 
-                  {/* FICHA ESPECIAL SI ES PRODUCTO VISITADO */}
-                  {(selectedLogDetail.accion || '').includes('PRODUCTO_VISITADO') && selectedLogDetail.detalles?.productName && (
-                    <div style={{ background: '#f0f9ff', border: '1px solid #bae6fd', padding: '16px', borderRadius: '16px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                        <BrandingVectorIcon name="eye" size={13} color="#0284c7" /> Especificaciones del Producto Consultado
-                      </span>
-                      <div style={{ fontSize: '14px', fontWeight: '800', color: '#0f172a', marginBottom: '4px' }}>
-                        {selectedLogDetail.detalles.brand ? `${selectedLogDetail.detalles.brand} - ` : ''}{selectedLogDetail.detalles.productName}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      {/* Segmented Switcher: Vista Visual vs JSON */}
+                      <div style={{ display: 'flex', background: '#f1f5f9', padding: '3px', borderRadius: '10px', gap: '3px' }}>
+                        <button
+                          type="button"
+                          onClick={() => setLogModalTab('visual')}
+                          style={{
+                            border: 'none',
+                            padding: '6px 13px',
+                            borderRadius: '8px',
+                            fontSize: '11.5px',
+                            fontWeight: logModalTab === 'visual' ? '800' : '600',
+                            background: logModalTab === 'visual' ? '#ffffff' : 'transparent',
+                            color: logModalTab === 'visual' ? '#0f172a' : '#64748b',
+                            boxShadow: logModalTab === 'visual' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          <BrandingVectorIcon name="eye" size={13} color={logModalTab === 'visual' ? '#0fa4de' : '#64748b'} />
+                          <span>Vista Visual</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setLogModalTab('json')}
+                          style={{
+                            border: 'none',
+                            padding: '6px 13px',
+                            borderRadius: '8px',
+                            fontSize: '11.5px',
+                            fontWeight: logModalTab === 'json' ? '800' : '600',
+                            background: logModalTab === 'json' ? '#ffffff' : 'transparent',
+                            color: logModalTab === 'json' ? '#0f172a' : '#64748b',
+                            boxShadow: logModalTab === 'json' ? '0 1px 3px rgba(0,0,0,0.1)' : 'none',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px',
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          <BrandingVectorIcon name="terminal" size={13} color={logModalTab === 'json' ? '#0fa4de' : '#64748b'} />
+                          <span>Ver JSON</span>
+                        </button>
                       </div>
-                      <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', fontSize: '12px', color: '#475569' }}>
-                        <span><strong>SKU:</strong> {selectedLogDetail.detalles.sku || 'N/A'}</span>
-                        <span><strong>Categoría:</strong> {selectedLogDetail.detalles.category || 'General'}</span>
-                        <span><strong>Precio de Lista:</strong> USD ${selectedLogDetail.detalles.price || 0}</span>
-                      </div>
-                    </div>
-                  )}
 
-                  <div>
-                    <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
-                      Descripción Forense
-                    </span>
-                    <p style={{ margin: 0, fontSize: '0.88rem', color: '#0f172a', background: '#f8fafc', padding: '12px', borderRadius: '12px', lineHeight: 1.4, border: '1px solid #e2e8f0' }}>
-                      {selectedLogDetail.descripcion}
-                    </p>
-                  </div>
-
-                  <div>
-                    <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
-                      Payload JSON Crudo & Trazabilidad
-                    </span>
-                    <pre style={{
-                      margin: 0,
-                      background: '#071524',
-                      color: '#38bdf8',
-                      padding: '14px',
-                      borderRadius: '12px',
-                      fontSize: '11px',
-                      fontFamily: 'monospace',
-                      overflowX: 'auto',
-                      maxHeight: '160px'
-                    }}>
-                      {JSON.stringify(selectedLogDetail.detalles || {}, null, 2)}
-                    </pre>
-                  </div>
-
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    {selectedLogDetail.usuario?.email ? (
-                      <a
-                        href={`mailto:${selectedLogDetail.usuario.email}?subject=Asistencia en Compra DACAS B2B - Carrito Pendiente&body=Estimado ${selectedLogDetail.usuario.nombre}, hemos notado que tenía una cotización/carrito pendiente en el portal mayorista DACAS...`}
-                        style={{
-                          background: '#10b981',
-                          color: '#ffffff',
-                          textDecoration: 'none',
-                          padding: '8px 16px',
-                          borderRadius: '10px',
-                          fontSize: '12px',
-                          fontWeight: '700',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px'
-                        }}
+                      <button
+                        type="button"
+                        onClick={() => setSelectedLogDetail(null)}
+                        style={{ background: '#f1f5f9', border: 'none', width: '32px', height: '32px', borderRadius: '50%', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#475569' }}
                       >
-                        <BrandingVectorIcon name="mail" size={13} /> Contactar Cliente para Recuperación
-                      </a>
-                    ) : <div />}
+                        <BrandingVectorIcon name="x" size={16} color="#475569" />
+                      </button>
+                    </div>
+                  </div>
+
+                  {logModalTab === 'visual' ? (
+                    <>
+                      {/* Grid de Metadatos Principales */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px', background: '#f8fafc', padding: '14px 16px', borderRadius: '16px', border: '1px solid #e2e8f0' }}>
+                        <div>
+                          <span style={{ fontSize: '10.5px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Acción</span>
+                          <div style={{ fontSize: '0.86rem', fontWeight: '800', color: '#0f172a', marginTop: '2px' }}>{selectedLogDetail.accion}</div>
+                        </div>
+                        <div>
+                          <span style={{ fontSize: '10.5px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Nivel</span>
+                          <div style={{ marginTop: '2px' }}>
+                            <span style={{
+                              display: 'inline-block',
+                              padding: '2px 8px',
+                              borderRadius: '6px',
+                              fontSize: '11px',
+                              fontWeight: '800',
+                              background: selectedLogDetail.tipo === 'WARNING' ? '#fef3c7' : selectedLogDetail.tipo === 'SECURITY' ? '#fee2e2' : '#e0f2fe',
+                              color: selectedLogDetail.tipo === 'WARNING' ? '#b45309' : selectedLogDetail.tipo === 'SECURITY' ? '#dc2626' : '#0284c7'
+                            }}>
+                              {selectedLogDetail.tipo}
+                            </span>
+                          </div>
+                        </div>
+                        <div>
+                          <span style={{ fontSize: '10.5px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Fecha y Hora</span>
+                          <div style={{ fontSize: '0.83rem', color: '#334155', fontWeight: '600', marginTop: '2px' }}>{new Date(selectedLogDetail.timestamp).toLocaleString()}</div>
+                        </div>
+                        <div>
+                          <span style={{ fontSize: '10.5px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>IP & Dispositivo</span>
+                          <div style={{ fontSize: '0.83rem', color: '#334155', fontFamily: 'monospace', fontWeight: '600', marginTop: '2px' }}>{selectedLogDetail.ip}</div>
+                        </div>
+                      </div>
+
+                      {/* TARJETA DESTACADA DEL USUARIO QUE REVISÓ EL ÍTEM */}
+                      {(() => {
+                        const logUserInfo = getLogUser(selectedLogDetail);
+                        return (
+                          <div style={{
+                            background: '#ffffff',
+                            border: '1.5px solid #e2e8f0',
+                            borderRadius: '16px',
+                            padding: '14px 18px',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'space-between',
+                            flexWrap: 'wrap',
+                            gap: '12px',
+                            boxShadow: '0 2px 6px rgba(0,0,0,0.02)'
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                              <div style={{
+                                width: '42px',
+                                height: '42px',
+                                borderRadius: '50%',
+                                background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                                color: '#ffffff',
+                                fontWeight: '800',
+                                fontSize: '16px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                boxShadow: '0 2px 8px rgba(15, 164, 222, 0.25)',
+                                flexShrink: 0
+                              }}>
+                                {(logUserInfo.nombre || 'U').charAt(0).toUpperCase()}
+                              </div>
+                              <div>
+                                <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '5px', letterSpacing: '0.03em' }}>
+                                  <BrandingVectorIcon name="user" size={12} color="#0fa4de" />
+                                  <span>Usuario / Cliente que Consultó el Ítem</span>
+                                </div>
+                                <div style={{ fontSize: '15px', fontWeight: '800', color: '#0f172a', marginTop: '2px' }}>
+                                  {logUserInfo.nombre}
+                                </div>
+                                <div style={{ fontSize: '12px', color: '#64748b', display: 'flex', alignItems: 'center', gap: '8px', marginTop: '3px', flexWrap: 'wrap' }}>
+                                  {logUserInfo.email && (
+                                    <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', color: '#475569', fontWeight: '600' }}>
+                                      <BrandingVectorIcon name="mail" size={12} color="#64748b" />
+                                      <span>{logUserInfo.email}</span>
+                                    </span>
+                                  )}
+                                  {logUserInfo.rol && (
+                                    <span style={{
+                                      background: logUserInfo.rol === 'vendedor' ? '#e0f2fe' : logUserInfo.rol === 'pm' ? '#fef3c7' : logUserInfo.rol === 'admin' ? '#fee2e2' : '#f1f5f9',
+                                      color: logUserInfo.rol === 'vendedor' ? '#0284c7' : logUserInfo.rol === 'pm' ? '#d97706' : logUserInfo.rol === 'admin' ? '#dc2626' : '#475569',
+                                      padding: '2px 8px',
+                                      borderRadius: '6px',
+                                      fontSize: '11px',
+                                      fontWeight: '800',
+                                      textTransform: 'capitalize'
+                                    }}>
+                                      Rol: {logUserInfo.rol === 'cliente' ? 'Cliente B2B' : logUserInfo.rol}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+
+                            <div style={{ textAlign: 'right' }}>
+                              <span style={{ fontSize: '10.5px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', display: 'block' }}>
+                                Dirección IP
+                              </span>
+                              <span style={{ fontSize: '12px', fontFamily: 'monospace', fontWeight: '700', color: '#0f172a', background: '#f8fafc', padding: '3px 8px', borderRadius: '6px', border: '1px solid #e2e8f0', display: 'inline-block', marginTop: '3px' }}>
+                                {selectedLogDetail.ip || '127.0.0.1'}
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      })()}
+
+                      {/* FICHA VISUAL DESTACADA PARA PRODUCTOS */}
+                      {((selectedLogDetail.accion || '').includes('PRODUCTO_VISITADO') || selectedLogDetail.detalles?.productName) && (
+                        <div style={{ background: '#f0f9ff', border: '1.5px solid #bae6fd', padding: '18px', borderRadius: '16px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                            <span style={{ fontSize: '11px', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <BrandingVectorIcon name="eye" size={14} color="#0284c7" /> Ficha Comercial del Producto Consultado
+                            </span>
+                            {selectedLogDetail.detalles?.brand && (
+                              <span style={{ fontSize: '11.5px', fontWeight: '800', color: '#0369a1', background: '#e0f2fe', padding: '3px 10px', borderRadius: '8px', border: '1px solid #7dd3fc' }}>
+                                {selectedLogDetail.detalles.brand}
+                              </span>
+                            )}
+                          </div>
+
+                          <div style={{ fontSize: '15px', fontWeight: '800', color: '#0f172a', marginBottom: '14px', lineHeight: '1.3' }}>
+                            {selectedLogDetail.detalles?.productName}
+                          </div>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '10px' }}>
+                            <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '12px', border: '1px solid #e0f2fe' }}>
+                              <div style={{ fontSize: '10.5px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>Código SKU</div>
+                              <div style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a', fontFamily: 'monospace', marginTop: '3px' }}>
+                                {selectedLogDetail.detalles?.sku || 'N/A'}
+                              </div>
+                            </div>
+                            <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '12px', border: '1px solid #e0f2fe' }}>
+                              <div style={{ fontSize: '10.5px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>Categoría</div>
+                              <div style={{ fontSize: '13px', fontWeight: '800', color: '#0284c7', textTransform: 'capitalize', marginTop: '3px' }}>
+                                {selectedLogDetail.detalles?.category || 'General'}
+                              </div>
+                            </div>
+                            <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '12px', border: '1px solid #e0f2fe' }}>
+                              <div style={{ fontSize: '10.5px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>Precio de Lista</div>
+                              <div style={{ fontSize: '14px', fontWeight: '900', color: '#10b981', marginTop: '3px' }}>
+                                USD ${Number(selectedLogDetail.detalles?.price || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                              </div>
+                            </div>
+                            <div style={{ background: '#ffffff', padding: '10px 12px', borderRadius: '12px', border: '1px solid #e0f2fe' }}>
+                              <div style={{ fontSize: '10.5px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>ID Catálogo</div>
+                              <div style={{ fontSize: '13px', fontWeight: '800', color: '#64748b', marginTop: '3px' }}>
+                                #{selectedLogDetail.detalles?.productId || selectedLogDetail.id}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* DESGLOSE ESPECIAL SI ES CARRITO ABANDONADO */}
+                      {selectedLogDetail.detalles?.items && Array.isArray(selectedLogDetail.detalles.items) && selectedLogDetail.detalles.items.length > 0 && (
+                        <div style={{ background: '#fffbeb', border: '1px solid #fde68a', padding: '16px', borderRadius: '16px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                            <span style={{ fontSize: '12px', fontWeight: '800', color: '#b45309', textTransform: 'uppercase', letterSpacing: '0.04em', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                              <BrandingVectorIcon name="box" size={14} color="#b45309" /> Productos Que Estaban En El Carrito
+                            </span>
+                            <span style={{ fontSize: '13px', fontWeight: '900', color: '#b45309' }}>
+                              Total Retenido: USD ${Number(selectedLogDetail.detalles.total || 0).toLocaleString('es-AR', { minimumFractionDigits: 2 })}
+                            </span>
+                          </div>
+                          <div style={{ overflowX: 'auto' }}>
+                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11.5px' }}>
+                              <thead>
+                                <tr style={{ background: '#fef3c7', textAlign: 'left', borderBottom: '1px solid #fcd34d' }}>
+                                  <th style={{ padding: '6px 8px', color: '#92400e' }}>Producto / Marca</th>
+                                  <th style={{ padding: '6px 8px', color: '#92400e' }}>SKU</th>
+                                  <th style={{ padding: '6px 8px', color: '#92400e', textAlign: 'center' }}>Cant.</th>
+                                  <th style={{ padding: '6px 8px', color: '#92400e', textAlign: 'right' }}>Precio Unit.</th>
+                                  <th style={{ padding: '6px 8px', color: '#92400e', textAlign: 'right' }}>Subtotal</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                {selectedLogDetail.detalles.items.map((item, idx) => (
+                                  <tr key={idx} style={{ borderBottom: '1px solid #fef3c7' }}>
+                                    <td style={{ padding: '6px 8px', fontWeight: '700', color: '#0f172a' }}>
+                                      {item.brand ? <span style={{ color: '#0284c7', marginRight: '4px' }}>[{item.brand}]</span> : null}
+                                      {item.name}
+                                    </td>
+                                    <td style={{ padding: '6px 8px', color: '#64748b', fontFamily: 'monospace' }}>{item.sku || 'N/A'}</td>
+                                    <td style={{ padding: '6px 8px', textAlign: 'center', fontWeight: '700' }}>{item.qty}</td>
+                                    <td style={{ padding: '6px 8px', textAlign: 'right' }}>USD ${item.price}</td>
+                                    <td style={{ padding: '6px 8px', textAlign: 'right', fontWeight: '700', color: '#b45309' }}>USD ${item.subtotal || (item.qty * item.price)}</td>
+                                  </tr>
+                                ))}
+                              </tbody>
+                            </table>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* OTROS ATRIBUTOS Y PARÁMETROS VISUALES */}
+                      {selectedLogDetail.detalles && typeof selectedLogDetail.detalles === 'object' && Object.keys(selectedLogDetail.detalles).filter(k => !['productName', 'brand', 'sku', 'price', 'category', 'items', 'total', 'productId'].includes(k)).length > 0 && (
+                        <div style={{ background: '#f8fafc', border: '1px solid #e2e8f0', padding: '14px 16px', borderRadius: '16px' }}>
+                          <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+                            Atributos Adicionales de la Operación
+                          </span>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '8px' }}>
+                            {Object.entries(selectedLogDetail.detalles)
+                              .filter(([k]) => !['productName', 'brand', 'sku', 'price', 'category', 'items', 'total', 'productId'].includes(k))
+                              .map(([k, val]) => (
+                                <div key={k} style={{ background: '#ffffff', padding: '8px 10px', borderRadius: '10px', border: '1px solid #f1f5f9' }}>
+                                  <div style={{ fontSize: '10px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase' }}>
+                                    {formatFieldLabel(k)}
+                                  </div>
+                                  <div style={{ fontSize: '12px', fontWeight: '600', color: '#0f172a', wordBreak: 'break-all', marginTop: '2px' }}>
+                                    {typeof val === 'object' ? JSON.stringify(val) : String(val)}
+                                  </div>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Descripción Forense */}
+                      <div>
+                        <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>
+                          Descripción Forense
+                        </span>
+                        <p style={{ margin: 0, fontSize: '0.88rem', color: '#0f172a', background: '#f8fafc', padding: '12px 14px', borderRadius: '12px', lineHeight: 1.45, border: '1px solid #e2e8f0' }}>
+                          {selectedLogDetail.descripcion}
+                        </p>
+                      </div>
+
+                      {/* Botón rápido opcional para inspeccionar JSON */}
+                      <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '4px' }}>
+                        <button
+                          type="button"
+                          onClick={() => setLogModalTab('json')}
+                          style={{
+                            background: '#f8fafc',
+                            border: '1px dashed #cbd5e1',
+                            borderRadius: '8px',
+                            padding: '6px 12px',
+                            fontSize: '11.5px',
+                            fontWeight: '700',
+                            color: '#64748b',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '5px'
+                          }}
+                        >
+                          <BrandingVectorIcon name="terminal" size={12} color="#64748b" />
+                          <span>Ver Payload JSON Técnico</span>
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      {/* PESTAÑA: JSON CRUDO & TRAZABILIDAD */}
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>
+                            Payload JSON Crudo & Trazabilidad
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => handleCopyLogJson(selectedLogDetail.detalles)}
+                            style={{
+                              background: copiedLogJson ? '#10b981' : '#0fa4de',
+                              color: '#ffffff',
+                              border: 'none',
+                              padding: '5px 12px',
+                              borderRadius: '8px',
+                              fontSize: '11px',
+                              fontWeight: '700',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '5px',
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            <BrandingVectorIcon name={copiedLogJson ? 'check' : 'copy'} size={12} color="#ffffff" />
+                            <span>{copiedLogJson ? '¡Copiado! ✓' : 'Copiar JSON'}</span>
+                          </button>
+                        </div>
+                        <pre style={{
+                          margin: 0,
+                          background: '#071524',
+                          color: '#38bdf8',
+                          padding: '16px',
+                          borderRadius: '14px',
+                          fontSize: '11.5px',
+                          fontFamily: 'monospace',
+                          overflowX: 'auto',
+                          maxHeight: '260px',
+                          lineHeight: '1.5'
+                        }}>
+                          {JSON.stringify(selectedLogDetail.detalles || {}, null, 2)}
+                        </pre>
+                      </div>
+
+                      <div style={{ display: 'flex', justifyContent: 'flex-start' }}>
+                        <button
+                          type="button"
+                          onClick={() => setLogModalTab('visual')}
+                          style={{
+                            background: '#f1f5f9',
+                            border: '1px solid #e2e8f0',
+                            borderRadius: '8px',
+                            padding: '6px 14px',
+                            fontSize: '12px',
+                            fontWeight: '700',
+                            color: '#0f172a',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          <BrandingVectorIcon name="eye" size={13} color="#0f172a" />
+                          <span>← Volver a Vista Visual</span>
+                        </button>
+                      </div>
+                    </>
+                  )}
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', borderTop: '1px solid #f1f5f9', paddingTop: '12px' }}>
                     <button
                       type="button"
                       onClick={() => setSelectedLogDetail(null)}

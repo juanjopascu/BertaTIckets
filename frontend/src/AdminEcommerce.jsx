@@ -9076,7 +9076,7 @@ function AdminEcommerce({ embedded = false }) {
               </div>
 
               {/* Grid 4.5: Cuentas de Usuarios Vinculadas a esta Empresa */}
-              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '20px', borderRadius: '16px', marginBottom: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '20px', borderRadius: '16px', marginBottom: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', overflow: 'hidden' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
                   <div style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span>👥</span> Usuarios con Acceso al Shop ({selectedUser.company_users?.length || 1})
@@ -9105,125 +9105,129 @@ function AdminEcommerce({ embedded = false }) {
                   </button>
                 </div>
 
-                <table className="users-table" style={{ width: '100%', fontSize: '13px' }}>
-                  <thead>
-                    <tr>
-                      <th>Usuario / Contacto</th>
-                      <th>Email (LogIn)</th>
-                      <th>Cargo / Función</th>
-                      <th>Teléfono</th>
-                      <th>Estado</th>
-                      <th>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {(selectedUser.company_users && selectedUser.company_users.length > 0 ? selectedUser.company_users : [selectedUser]).map(u => {
-                      const isCurrentUser = u.id === selectedUser.id;
-                      return (
-                        <tr key={u.id} style={{ background: isCurrentUser ? 'rgba(15, 164, 222, 0.04)' : 'transparent' }}>
-                          <td>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <strong style={{ color: '#0F172A' }}>{u.name}</strong>
-                              {isCurrentUser && (
-                                <span style={{ background: '#E0F2FE', color: '#0369A1', fontSize: '10.5px', fontWeight: '800', padding: '1px 6px', borderRadius: '4px' }}>
-                                  Viendo
-                                </span>
-                              )}
-                            </div>
-                          </td>
-                          <td style={{ color: '#0fa4de', fontWeight: '600' }}>{u.email}</td>
-                          <td>
-                            <span style={{ background: '#F1F5F9', color: '#334155', padding: '2px 8px', borderRadius: '6px', fontSize: '11.5px', fontWeight: '600' }}>
-                              {u.cargo || 'Encargado de Compras'}
-                            </span>
-                          </td>
-                          <td style={{ color: '#64748B' }}>{u.phone || '—'}</td>
-                          <td>
-                            <span style={{
-                              background: (u.status || 'activo') === 'activo' ? '#DCFCE7' : (u.status === 'pendiente' ? '#FEF3C7' : '#FEE2E2'),
-                              color: (u.status || 'activo') === 'activo' ? '#166534' : (u.status === 'pendiente' ? '#92400E' : '#991B1B'),
-                              padding: '2px 8px',
-                              borderRadius: '999px',
-                              fontSize: '11px',
-                              fontWeight: '700'
-                            }}>
-                              {(u.status || 'activo') === 'activo' ? '🟢 Activo' : (u.status === 'pendiente' ? '🟡 Pendiente' : '🔴 Inactivo')}
-                            </span>
-                          </td>
-                          <td>
-                            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                              <button
-                                onClick={() => {
-                                  handleEditUser(u);
-                                  setShowUserModal(false);
-                                }}
-                                style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', color: '#334155', padding: '4px 8px', borderRadius: '6px', cursor: 'pointer', fontSize: '11.5px', fontWeight: '600' }}
-                                title="Editar este usuario"
-                              >
-                                ✏️ Editar
-                              </button>
-                              <button
-                                onClick={() => handleToggleUserStatus(u.id, (u.status || 'activo') === 'activo' ? 'inactivo' : 'activo')}
-                                style={{
-                                  background: (u.status || 'activo') === 'activo' ? '#FEF2F2' : '#F0FDF4',
-                                  border: '1px solid ' + ((u.status || 'activo') === 'activo' ? '#FECACA' : '#BBF7D0'),
-                                  color: (u.status || 'activo') === 'activo' ? '#DC2626' : '#16A34A',
-                                  padding: '4px 8px',
-                                  borderRadius: '6px',
-                                  cursor: 'pointer',
-                                  fontSize: '11.5px',
-                                  fontWeight: '600'
-                                }}
-                                title={(u.status || 'activo') === 'activo' ? 'Desactivar acceso' : 'Activar acceso'}
-                              >
-                                {(u.status || 'activo') === 'activo' ? 'Desactivar' : 'Activar'}
-                              </button>
-                              <button
-                                onClick={() => handleDeleteUser(u.id, u.name)}
-                                style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', padding: '4px 7px', borderRadius: '6px', cursor: 'pointer', fontSize: '11.5px' }}
-                                title="Eliminar cuenta de usuario"
-                              >
-                                🗑️
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })}
-                  </tbody>
-                </table>
+                <div className="crm-table-container" style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', margin: 0, border: '1px solid #E2E8F0', borderRadius: '12px' }}>
+                  <table className="users-table" style={{ width: '100%', minWidth: '650px', fontSize: '12.5px', margin: 0 }}>
+                    <thead>
+                      <tr>
+                        <th style={{ whiteSpace: 'nowrap' }}>Usuario / Contacto</th>
+                        <th style={{ whiteSpace: 'nowrap' }}>Email (LogIn)</th>
+                        <th style={{ whiteSpace: 'nowrap' }}>Cargo / Función</th>
+                        <th style={{ whiteSpace: 'nowrap' }}>Teléfono</th>
+                        <th style={{ whiteSpace: 'nowrap', textAlign: 'center' }}>Estado</th>
+                        <th style={{ whiteSpace: 'nowrap', textAlign: 'center' }}>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {(selectedUser.company_users && selectedUser.company_users.length > 0 ? selectedUser.company_users : [selectedUser]).map(u => {
+                        const isCurrentUser = u.id === selectedUser.id;
+                        return (
+                          <tr key={u.id} style={{ background: isCurrentUser ? 'rgba(15, 164, 222, 0.04)' : 'transparent' }}>
+                            <td style={{ whiteSpace: 'nowrap' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <strong style={{ color: '#0F172A' }}>{u.name}</strong>
+                                {isCurrentUser && (
+                                  <span style={{ background: '#E0F2FE', color: '#0369A1', fontSize: '10.5px', fontWeight: '800', padding: '1px 6px', borderRadius: '4px' }}>
+                                    Viendo
+                                  </span>
+                                )}
+                              </div>
+                            </td>
+                            <td style={{ color: '#0fa4de', fontWeight: '600', wordBreak: 'break-all' }}>{u.email}</td>
+                            <td style={{ whiteSpace: 'nowrap' }}>
+                              <span style={{ background: '#F1F5F9', color: '#334155', padding: '2px 8px', borderRadius: '6px', fontSize: '11.5px', fontWeight: '600' }}>
+                                {u.cargo || 'Encargado de Compras'}
+                              </span>
+                            </td>
+                            <td style={{ color: '#64748B', whiteSpace: 'nowrap' }}>{u.phone || '—'}</td>
+                            <td style={{ whiteSpace: 'nowrap', textAlign: 'center' }}>
+                              <span style={{
+                                background: (u.status || 'activo') === 'activo' ? '#DCFCE7' : (u.status === 'pendiente' ? '#FEF3C7' : '#FEE2E2'),
+                                color: (u.status || 'activo') === 'activo' ? '#166534' : (u.status === 'pendiente' ? '#92400E' : '#991B1B'),
+                                padding: '2px 8px',
+                                borderRadius: '999px',
+                                fontSize: '11px',
+                                fontWeight: '700'
+                              }}>
+                                {(u.status || 'activo') === 'activo' ? '🟢 Activo' : (u.status === 'pendiente' ? '🟡 Pendiente' : '🔴 Inactivo')}
+                              </span>
+                            </td>
+                            <td style={{ whiteSpace: 'nowrap', textAlign: 'center' }}>
+                              <div style={{ display: 'flex', gap: '6px', alignItems: 'center', justifyContent: 'center' }}>
+                                <button
+                                  onClick={() => {
+                                    handleEditUser(u);
+                                    setShowUserModal(false);
+                                  }}
+                                  style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', color: '#334155', padding: '4px 8px', borderRadius: '6px', cursor: 'pointer', fontSize: '11.5px', fontWeight: '600' }}
+                                  title="Editar este usuario"
+                                >
+                                  ✏️ Editar
+                                </button>
+                                <button
+                                  onClick={() => handleToggleUserStatus(u.id, (u.status || 'activo') === 'activo' ? 'inactivo' : 'activo')}
+                                  style={{
+                                    background: (u.status || 'activo') === 'activo' ? '#FEF2F2' : '#F0FDF4',
+                                    border: '1px solid ' + ((u.status || 'activo') === 'activo' ? '#FECACA' : '#BBF7D0'),
+                                    color: (u.status || 'activo') === 'activo' ? '#DC2626' : '#16A34A',
+                                    padding: '4px 8px',
+                                    borderRadius: '6px',
+                                    cursor: 'pointer',
+                                    fontSize: '11.5px',
+                                    fontWeight: '600'
+                                  }}
+                                  title={(u.status || 'activo') === 'activo' ? 'Desactivar acceso' : 'Activar acceso'}
+                                >
+                                  {(u.status || 'activo') === 'activo' ? 'Desactivar' : 'Activar'}
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteUser(u.id, u.name)}
+                                  style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', padding: '4px 7px', borderRadius: '6px', cursor: 'pointer', fontSize: '11.5px' }}
+                                  title="Eliminar cuenta de usuario"
+                                >
+                                  🗑️
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               </div>
 
               {/* Grid 5: Historial de Órdenes */}
-              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '20px', borderRadius: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+              <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '20px', borderRadius: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', overflow: 'hidden' }}>
                 <div style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span>📦</span> Historial de Órdenes y Cotizaciones ({selectedUser.orders?.length || 0})
                 </div>
                 {selectedUser.orders && selectedUser.orders.length > 0 ? (
-                  <table className="users-table">
-                    <thead>
-                      <tr>
-                        <th>ID Orden</th>
-                        <th>Fecha</th>
-                        <th>Total (USD)</th>
-                        <th>Estado</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {selectedUser.orders.map(o => (
-                        <tr key={o.id}>
-                          <td><strong>#{o.id}</strong></td>
-                          <td>{o.created_at ? new Date(o.created_at).toLocaleDateString() : '—'}</td>
-                          <td><span style={{ fontWeight: '800', color: '#071524' }}>${o.total} USD</span></td>
-                          <td>
-                            <span style={{ fontSize: '11px', fontWeight: '700', padding: '3px 8px', borderRadius: '8px', ...statusStyle(o.status) }}>
-                              {statusLabel(o.status)}
-                            </span>
-                          </td>
+                  <div className="crm-table-container" style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', margin: 0, border: '1px solid #E2E8F0', borderRadius: '12px' }}>
+                    <table className="users-table" style={{ width: '100%', minWidth: '500px', fontSize: '12.5px', margin: 0 }}>
+                      <thead>
+                        <tr>
+                          <th style={{ whiteSpace: 'nowrap' }}>ID Orden</th>
+                          <th style={{ whiteSpace: 'nowrap' }}>Fecha</th>
+                          <th style={{ whiteSpace: 'nowrap' }}>Total (USD)</th>
+                          <th style={{ whiteSpace: 'nowrap', textAlign: 'center' }}>Estado</th>
                         </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                      </thead>
+                      <tbody>
+                        {selectedUser.orders.map(o => (
+                          <tr key={o.id}>
+                            <td><strong>#{o.id}</strong></td>
+                            <td>{o.created_at ? new Date(o.created_at).toLocaleDateString() : '—'}</td>
+                            <td><span style={{ fontWeight: '800', color: '#071524' }}>${o.total} USD</span></td>
+                            <td style={{ textAlign: 'center' }}>
+                              <span style={{ fontSize: '11px', fontWeight: '700', padding: '3px 8px', borderRadius: '8px', ...statusStyle(o.status) }}>
+                                {statusLabel(o.status)}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 ) : (
                   <div style={{ textAlign: 'center', padding: '24px', background: '#F8FAFC', borderRadius: '12px', border: '1px dashed #CBD5E1', color: '#64748B', fontSize: '13px' }}>
                     <span style={{ fontSize: '24px', display: 'block', marginBottom: '6px' }}>🛒</span>

@@ -1440,8 +1440,8 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                             onChange={handleSelectClienteExistente}
                             style={{ width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #d2d2d7', background: 'white', outline: 'none' }}
                           >
-                            <option value="">-- Selecciona un cliente/manager registrado --</option>
-                            {usuarios.filter(u => u.rol === 'cliente' || u.rol === 'manager').map(u => (
+                            <option value="">-- Selecciona un usuario registrado (Vendedor/PM/Manager) --</option>
+                            {usuarios.filter(u => u.rol === 'cliente' || u.rol === 'vendedor' || u.rol === 'pm' || u.rol === 'manager').map(u => (
                               <option key={u.id} value={u.email}>
                                 {u.nombre} ({u.email}) - Rol: {u.rol}
                               </option>

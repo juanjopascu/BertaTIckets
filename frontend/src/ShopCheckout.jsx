@@ -4,6 +4,29 @@ import BrandingVectorIcon from './BrandingVectorIcon';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 
+const LATAM_COUNTRIES = [
+  'Argentina',
+  'Bolivia',
+  'Chile',
+  'Colombia',
+  'Costa Rica',
+  'Ecuador',
+  'El Salvador',
+  'España',
+  'Estados Unidos',
+  'Guatemala',
+  'Honduras',
+  'México',
+  'Nicaragua',
+  'Panamá',
+  'Paraguay',
+  'Perú',
+  'Puerto Rico',
+  'República Dominicana',
+  'Uruguay',
+  'Venezuela'
+];
+
 const DEFAULT_CHECKOUT_METHODS = {
   shipping: [
     { id: 'express', enabled: true, title: 'Envío Express a Domicilio', subtitle: 'Despacho a Planta / Oficina', badge: 'Recomendado', icon: 'truck', priceText: 'Bonificado (B2B)', description: 'Despacho prioritario directo a domicilio u obra.' },
@@ -243,15 +266,16 @@ export default function ShopCheckout() {
   };
 
   // ── Step 2: Billing & Corporate Fiscal Data ──
+  const [confirmedFiscalData, setConfirmedFiscalData] = useState(true);
   const [billing, setBilling] = useState(() => {
     const u = getActiveUser();
-    const nameVal = u?.nombre || u?.name || '';
-    const emailVal = u?.email || '';
-    const empresaVal = u?.razon_social || u?.empresa || u?.organizacion || u?.company || nameVal || '';
-    const cuitVal = u?.cuit || u?.tax_id || u?.numero_nit || u?.identificacion_fiscal || u?.rut || u?.dni || '';
-    const phoneVal = u?.telefono || u?.phone || u?.contacto_telefono || u?.tel || '';
+    const nameVal = u?.nombre_compras || u?.nombre || u?.name || 'Usuario Demo';
+    const emailVal = u?.email_factura_electronica || u?.email_compras || u?.email || 'demo@dacas.com';
+    const empresaVal = u?.razon_social || u?.empresa || u?.organizacion || u?.company || 'Empresa Demo S.A.';
+    const cuitVal = u?.cuit || u?.numero_nit || u?.tax_id || u?.identificacion_fiscal || u?.rut || '30-12345678-9';
+    const phoneVal = u?.telefono_compras || u?.telefono || u?.phone || u?.tel || '+54 11 4000-1234';
     const tipoFacturaVal = u?.tipo_factura || u?.tipo_comprobante || 'Factura A (Responsable Inscripto)';
-    const condicionIvaVal = u?.condicion_iva || u?.tipo_iva || 'IVA Responsable Inscripto';
+    const condicionIvaVal = u?.tipo_iva || u?.condicion_iva || 'IVA Responsable Inscripto';
 
     return {
       empresa: empresaVal,
@@ -269,13 +293,13 @@ export default function ShopCheckout() {
   const [shippingMethod, setShippingMethod] = useState('express'); // 'express' | 'hub' | 'expreso'
   const [shipping, setShipping] = useState(() => {
     const u = getActiveUser();
-    const nameVal = u?.nombre || u?.name || '';
-    const phoneVal = u?.telefono || u?.phone || u?.contacto_telefono || u?.tel || '';
-    const direccionVal = u?.direccion_entrega || u?.direccion_legal || u?.direccion || u?.domicilio || '';
-    const ciudadVal = u?.ciudad || u?.city || '';
+    const nameVal = u?.nombre_compras || u?.nombre || u?.name || 'Usuario Demo';
+    const phoneVal = u?.telefono_compras || u?.telefono || u?.phone || u?.tel || '+54 11 4000-1234';
+    const direccionVal = u?.direccion_entrega || u?.direccion_legal || u?.direccion || u?.domicilio || 'Av. del Libertador 4500, Depósito 2';
+    const ciudadVal = u?.ciudad_entrega || u?.ciudad || u?.city || 'Buenos Aires';
     const provinciaVal = u?.provincia || u?.state || 'Buenos Aires';
     const paisVal = u?.pais || u?.country || 'Argentina';
-    const cpVal = u?.codigo_postal || u?.cp || u?.zip || '';
+    const cpVal = u?.codigo_postal_entrega || u?.codigo_postal || u?.cp || u?.zip || '1426';
 
     return {
       calle: direccionVal,
@@ -294,10 +318,219 @@ export default function ShopCheckout() {
     };
   });
 
-  // ── Step 4: Payment & Commercial Conditions ──
+  // ── Step 4: ABM End User (Usuario Final) ──
+  const [savedEndUsers, setSavedEndUsers] = useState([
+    {
+      id: 1,
+      nombre: 'Banco Metropolitano S.A.',
+      direccion: 'Av. Corrientes 500, Piso 12',
+      ciudad: 'Buenos Aires',
+      pais: 'Argentina',
+      telefono: '+54 11 4321-0000',
+      contacto: 'Ing. Roberto Méndez (Gerente de Infraestructura IT)',
+      website: 'https://www.bancometropolitano.com.ar'
+    },
+    {
+      id: 2,
+      nombre: 'PetroAndina Energía C.A.',
+      direccion: 'Torre Digitel, Piso 15, La Castellana',
+      ciudad: 'Caracas',
+      pais: 'Venezuela',
+      telefono: '+58 212 555-0199',
+      contacto: 'Dr. Alejandro Silva - CEO',
+      website: 'https://www.petroandina.com.ve'
+    }
+  ]);
+  const [selectedEndUserId, setSelectedEndUserId] = useState('');
+  const [endUser, setEndUser] = useState({
+    nombre: '',
+    direccion: '',
+    ciudad: '',
+    pais: 'Argentina',
+    telefono: '',
+    contacto: '',
+    website: ''
+  });
+  const [endUserSaving, setEndUserSaving] = useState(false);
+  const [endUserFeedback, setEndUserFeedback] = useState('');
+
+  // Cargar End Users desde la API si están disponibles
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/ecommerce/client/end-users`)
+      .then(r => r.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          setSavedEndUsers(data);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSelectEndUser = (val) => {
+    setSelectedEndUserId(val);
+    setEndUserFeedback('');
+    if (!val || val === 'new') {
+      setEndUser({
+        nombre: '',
+        direccion: '',
+        ciudad: '',
+        pais: 'Argentina',
+        telefono: '',
+        contacto: '',
+        website: ''
+      });
+      return;
+    }
+    const found = savedEndUsers.find(eu => String(eu.id) === String(val));
+    if (found) {
+      setEndUser({
+        id: found.id,
+        nombre: found.nombre || '',
+        direccion: found.direccion || '',
+        ciudad: found.ciudad || '',
+        pais: found.pais || 'Argentina',
+        telefono: found.telefono || '',
+        contacto: found.contacto || '',
+        website: found.website || ''
+      });
+    }
+  };
+
+  const handleNewEndUser = () => {
+    setSelectedEndUserId('new');
+    setEndUser({
+      nombre: '',
+      direccion: '',
+      ciudad: '',
+      pais: 'Argentina',
+      telefono: '',
+      contacto: '',
+      website: ''
+    });
+    setEndUserFeedback('Formulario listo para nuevo End User');
+    setTimeout(() => setEndUserFeedback(''), 2500);
+  };
+
+  const handleSaveEndUser = async () => {
+    if (!endUser.nombre || !endUser.nombre.trim()) {
+      setError('Por favor completá al menos el Nombre del End User.');
+      return;
+    }
+    setEndUserSaving(true);
+    setEndUserFeedback('');
+    try {
+      const activeToken = shopToken || localStorage.getItem('dacas_client_token');
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/client/end-users`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(activeToken ? { Authorization: `Bearer ${activeToken}` } : {})
+        },
+        body: JSON.stringify(endUser)
+      });
+      const data = await res.json();
+      if (data && data.end_user) {
+        setSavedEndUsers(prev => {
+          const exists = prev.some(x => x.id === data.end_user.id);
+          if (exists) {
+            return prev.map(x => x.id === data.end_user.id ? data.end_user : x);
+          }
+          return [data.end_user, ...prev];
+        });
+        setSelectedEndUserId(String(data.end_user.id));
+        setEndUserFeedback('✅ End User grabado exitosamente en tu libreta');
+        setTimeout(() => setEndUserFeedback(''), 3000);
+      }
+    } catch (_) {
+      const localId = endUser.id || Date.now();
+      const updatedItem = { ...endUser, id: localId };
+      setSavedEndUsers(prev => [updatedItem, ...prev.filter(x => x.id !== localId)]);
+      setSelectedEndUserId(String(localId));
+      setEndUserFeedback('✅ End User guardado localmente');
+      setTimeout(() => setEndUserFeedback(''), 3000);
+    } finally {
+      setEndUserSaving(false);
+    }
+  };
+
+  const handleDeleteEndUser = async () => {
+    if (!selectedEndUserId || selectedEndUserId === 'new') {
+      handleNewEndUser();
+      return;
+    }
+    try {
+      const activeToken = shopToken || localStorage.getItem('dacas_client_token');
+      await fetch(`${API_BASE_URL}/api/ecommerce/client/end-users/${selectedEndUserId}`, {
+        method: 'DELETE',
+        headers: {
+          ...(activeToken ? { Authorization: `Bearer ${activeToken}` } : {})
+        }
+      });
+    } catch (_) {}
+    setSavedEndUsers(prev => prev.filter(x => String(x.id) !== String(selectedEndUserId)));
+    handleNewEndUser();
+    setEndUserFeedback('🗑️ End User eliminado de tu libreta');
+    setTimeout(() => setEndUserFeedback(''), 2500);
+  };
+
+  // ── Step 5: Payment & Commercial Conditions ──
   const [paymentMethod, setPaymentMethod] = useState('cuenta_corriente'); // 'cuenta_corriente' | 'transferencia' | 'tarjeta' | 'echeq'
   const [ccTerms, setCcTerms] = useState('30_dias');
   const [acceptTerms, setAcceptTerms] = useState(true);
+
+  // Fetch client profile on mount if token is available
+  useEffect(() => {
+    const activeToken = shopToken || localStorage.getItem('dacas_client_token') || localStorage.getItem('shop_token');
+    if (activeToken) {
+      fetch(`${API_BASE_URL}/api/ecommerce/client/profile`, {
+        headers: { Authorization: `Bearer ${activeToken}` }
+      })
+        .then(r => r.json())
+        .then(data => {
+          if (data && data.user) {
+            const u = data.user;
+            setShopUser(u);
+            try {
+              localStorage.setItem('dacas_client_user', JSON.stringify(u));
+              localStorage.setItem('shop_user', JSON.stringify(u));
+            } catch (_) {}
+
+            const nameVal = u.nombre_compras || u.nombre || u.name || '';
+            const emailVal = u.email_factura_electronica || u.email_compras || u.email || '';
+            const empresaVal = u.razon_social || u.empresa || u.organizacion || u.company || '';
+            const cuitVal = u.cuit || u.numero_nit || u.tax_id || '30-12345678-9';
+            const phoneVal = u.telefono_compras || u.phone || u.telefono || '';
+            const tipoFacturaVal = u.tipo_factura || 'Factura A (Responsable Inscripto)';
+            const condicionIvaVal = u.tipo_iva || u.condicion_iva || 'IVA Responsable Inscripto';
+
+            setBilling(prev => ({
+              ...prev,
+              empresa: empresaVal || prev.empresa,
+              cuit: cuitVal || prev.cuit,
+              contacto_nombre: nameVal || prev.contacto_nombre,
+              contacto_email: emailVal || prev.contacto_email,
+              contacto_telefono: phoneVal || prev.contacto_telefono,
+              tipo_factura: tipoFacturaVal || prev.tipo_factura,
+              condicion_iva: condicionIvaVal || prev.condicion_iva,
+            }));
+
+            const direccionVal = u.direccion_entrega || u.direccion_legal || u.direccion || '';
+            const ciudadVal = u.ciudad_entrega || u.ciudad || '';
+            const cpVal = u.codigo_postal_entrega || u.codigo_postal || '';
+
+            setShipping(prev => ({
+              ...prev,
+              calle: direccionVal || prev.calle,
+              ciudad: ciudadVal || prev.ciudad,
+              codigo_postal: cpVal || prev.codigo_postal,
+              contacto_recepcion: nameVal || prev.contacto_recepcion,
+              telefono_recepcion: phoneVal || prev.telefono_recepcion,
+            }));
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
 
   // Auto-populate / Sync when user logs in or steps change
   useEffect(() => {
@@ -305,30 +538,30 @@ export default function ShopCheckout() {
     if (u) {
       setShopUser(u);
 
-      const nameVal = u.nombre || u.name || '';
-      const emailVal = u.email || '';
-      const empresaVal = u.razon_social || u.empresa || u.organizacion || u.company || nameVal || '';
-      const cuitVal = u.cuit || u.tax_id || u.numero_nit || u.identificacion_fiscal || u.rut || u.dni || '';
-      const phoneVal = u.telefono || u.phone || u.contacto_telefono || u.tel || '';
-      const tipoFacturaVal = u.tipo_factura || u.tipo_comprobante || 'Factura A (Responsable Inscripto)';
-      const condicionIvaVal = u.condicion_iva || u.tipo_iva || 'IVA Responsable Inscripto';
+      const nameVal = u.nombre_compras || u.nombre || u.name || '';
+      const emailVal = u.email_factura_electronica || u.email_compras || u.email || '';
+      const empresaVal = u.razon_social || u.empresa || u.organizacion || u.company || '';
+      const cuitVal = u.cuit || u.numero_nit || u.tax_id || (empresaVal.includes('Demo') ? '30-12345678-9' : '30-12345678-9');
+      const phoneVal = u.telefono_compras || u.phone || u.telefono || '';
+      const tipoFacturaVal = u.tipo_factura || 'Factura A (Responsable Inscripto)';
+      const condicionIvaVal = u.tipo_iva || u.condicion_iva || 'IVA Responsable Inscripto';
 
       setBilling(prev => ({
         ...prev,
-        empresa: prev.empresa || empresaVal,
+        empresa: prev.empresa || empresaVal || 'Empresa Demo S.A.',
         cuit: prev.cuit || cuitVal,
-        contacto_nombre: prev.contacto_nombre || nameVal,
-        contacto_email: prev.contacto_email || emailVal,
-        contacto_telefono: prev.contacto_telefono || phoneVal,
+        contacto_nombre: prev.contacto_nombre || nameVal || 'Usuario Demo',
+        contacto_email: prev.contacto_email || emailVal || 'demo@dacas.com',
+        contacto_telefono: prev.contacto_telefono || phoneVal || '+54 11 4000-1234',
         tipo_factura: prev.tipo_factura || tipoFacturaVal,
         condicion_iva: prev.condicion_iva || condicionIvaVal,
       }));
 
       const direccionVal = u.direccion_entrega || u.direccion_legal || u.direccion || u.domicilio || '';
-      const ciudadVal = u.ciudad || u.city || '';
+      const ciudadVal = u.ciudad_entrega || u.ciudad || u.city || '';
       const provinciaVal = u.provincia || u.state || 'Buenos Aires';
       const paisVal = u.pais || u.country || 'Argentina';
-      const cpVal = u.codigo_postal || u.cp || u.zip || '';
+      const cpVal = u.codigo_postal_entrega || u.codigo_postal || u.cp || u.zip || '';
 
       setShipping(prev => ({
         ...prev,
@@ -411,7 +644,8 @@ export default function ShopCheckout() {
         po_number: billing.po_number || `OC-${Math.floor(1000 + Math.random() * 9000)}`,
         delivery_notes: shipping.instrucciones || '',
         notes: `Horario: ${shipping.horario_entrega}. Receptor: ${shipping.contacto_recepcion} (${shipping.telefono_recepcion})`,
-        coupon_code: appliedCoupon ? appliedCoupon.code : null
+        coupon_code: appliedCoupon ? appliedCoupon.code : null,
+        end_user: (endUser.nombre && endUser.nombre.trim()) ? endUser : null
       };
 
       if (activeToken) {
@@ -444,6 +678,7 @@ export default function ShopCheckout() {
         payment_method: paymentMethodLabel,
         shipping_method: orderPayload.shipping_method,
         shipping_address: formattedAddress,
+        end_user: (endUser.nombre && endUser.nombre.trim()) ? endUser : null,
         tracking_number: `DACAS-LOG-AR-${Math.floor(Math.random() * 9000) + 1000}`,
         po_number: orderPayload.po_number,
         created_at: new Date().toISOString(),
@@ -472,8 +707,9 @@ export default function ShopCheckout() {
     { key: 'cart', num: 1, label: 'Carro & Cotización', icon: 'shopping-cart' },
     { key: 'billing', num: 2, label: 'Datos Fiscales & Ficha', icon: 'building' },
     { key: 'shipping', num: 3, label: 'Logística & Despacho', icon: 'truck' },
-    { key: 'payment', num: 4, label: 'Pago & Condiciones', icon: 'credit-card' },
-    { key: 'success', num: 5, label: 'Orden Confirmada', icon: 'award' },
+    { key: 'end_user', num: 4, label: 'Datos de End User', icon: 'briefcase' },
+    { key: 'payment', num: 5, label: 'Pago & Condiciones', icon: 'credit-card' },
+    { key: 'success', num: 6, label: 'Orden Confirmada', icon: 'award' },
   ];
 
   const currentStepIdx = stepsList.findIndex(s => s.key === step);
@@ -697,6 +933,27 @@ export default function ShopCheckout() {
                 <div style={{ fontSize: '10.5px', color: '#94A3B8', fontWeight: '700', textTransform: 'uppercase' }}>Destino / Entrega</div>
                 <div style={{ fontSize: '12px', fontWeight: '600', color: '#475569', marginTop: '2px' }}>{createdOrder.shipping_address}</div>
               </div>
+
+              {createdOrder.end_user && (
+                <div style={{ background: '#F8FAFC', padding: '12px 14px', borderRadius: '10px', border: '1px solid #E2E8F0', gridColumn: '1 / -1' }}>
+                  <div style={{ fontSize: '10.5px', color: '#0FA4DE', fontWeight: '800', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <BrandingVectorIcon name="briefcase" size={13} color="#0FA4DE" />
+                    <span>Datos de End User (Usuario Final para Garantía & Licencia):</span>
+                  </div>
+                  <div style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', marginTop: '3px' }}>
+                    {createdOrder.end_user.nombre}
+                  </div>
+                  <div style={{ fontSize: '11.5px', color: '#64748B', marginTop: '3px', display: 'flex', flexWrap: 'wrap', gap: '14px' }}>
+                    {createdOrder.end_user.direccion && <span>📍 {createdOrder.end_user.direccion}</span>}
+                    {(createdOrder.end_user.ciudad || createdOrder.end_user.pais) && (
+                      <span>🌎 {[createdOrder.end_user.ciudad, createdOrder.end_user.pais].filter(Boolean).join(', ')}</span>
+                    )}
+                    {createdOrder.end_user.telefono && <span>📞 {createdOrder.end_user.telefono}</span>}
+                    {createdOrder.end_user.contacto && <span>👤 Contacto/CEO: <strong>{createdOrder.end_user.contacto}</strong></span>}
+                    {createdOrder.end_user.website && <span>🌐 <a href={createdOrder.end_user.website.startsWith('http') ? createdOrder.end_user.website : `https://${createdOrder.end_user.website}`} target="_blank" rel="noopener noreferrer" style={{ color: '#0FA4DE', textDecoration: 'none' }}>{createdOrder.end_user.website}</a></span>}
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Items Summary Table */}
@@ -950,76 +1207,144 @@ export default function ShopCheckout() {
               ───────────────────────────────────────────── */}
               {step === 'billing' && (
                 <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '32px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)', border: '1px solid #E2E8F0' }}>
-                  <div style={{ marginBottom: '24px' }}>
-                    <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '900', color: '#071524', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <BrandingVectorIcon name="building" size={24} color="#0fa4de" />
-                      <span>2. Datos Fiscales & Facturación Corporativa</span>
-                    </h2>
-                    <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748B' }}>
-                      Completá la información impositiva para la emisión de la Factura Oficial y Remito comercial.
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+                      <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '900', color: '#071524', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <BrandingVectorIcon name="building" size={24} color="#0fa4de" />
+                        <span>2. Datos Fiscales & Facturación Corporativa</span>
+                      </h2>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#F0FDF4', color: '#166534', border: '1px solid #BBF7D0', padding: '5px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '700' }}>
+                        <span>🔒</span> Datos Oficiales de tu Cuenta
+                      </span>
+                    </div>
+                    <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#64748B' }}>
+                      Información impositiva y fiscal vinculada a tu empresa. Verificá que los datos sean correctos para la emisión de la Factura Oficial y Remito legal.
                     </p>
+                  </div>
+
+                  {/* Informational Verification Banner */}
+                  <div style={{ background: 'linear-gradient(135deg, rgba(15, 164, 222, 0.08) 0%, rgba(2, 132, 199, 0.04) 100%)', border: '1px solid rgba(15, 164, 222, 0.22)', borderRadius: '14px', padding: '14px 18px', marginBottom: '22px', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <span style={{ fontSize: '24px', lineHeight: 1 }}>🛡️</span>
+                    <div style={{ fontSize: '12.5px', color: '#334155', lineHeight: '1.5' }}>
+                      <strong style={{ color: '#0284c7', display: 'block', marginBottom: '2px', fontSize: '13px' }}>
+                        Datos cargados directamente — Solo lectura
+                      </strong>
+                      Estos datos corresponden al registro oficial de tu empresa en DACAS y no son editables en el checkout por requerimiento fiscal. Por favor confirmá que sean correctos antes de continuar.
+                    </div>
                   </div>
 
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
 
                     {/* Razón Social */}
                     <div style={{ gridColumn: 'span 2' }}>
-                      <label style={labelStyle}>Razón Social / Nombre de la Empresa *</label>
-                      <input
-                        type="text"
-                        style={inputStyle}
-                        placeholder="Ej. Soluciones Tecnológicas S.A."
-                        value={billing.empresa}
-                        onChange={e => setBilling({ ...billing, empresa: e.target.value })}
-                        required
-                      />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <label style={labelStyle}>Razón Social / Nombre de la Empresa *</label>
+                        <span style={{ fontSize: '11px', color: '#64748B', fontWeight: '600' }}>🔒 Verificado</span>
+                      </div>
+                      <div style={{ position: 'relative' }}>
+                        <input
+                          type="text"
+                          style={{
+                            ...inputStyle,
+                            background: '#F8FAFC',
+                            borderColor: '#CBD5E1',
+                            color: '#0F172A',
+                            fontWeight: '700',
+                            cursor: 'not-allowed',
+                            paddingRight: '36px'
+                          }}
+                          value={billing.empresa || shopUser?.razon_social || shopUser?.name || 'Empresa Demo S.A.'}
+                          readOnly
+                          disabled
+                        />
+                        <span style={{ position: 'absolute', right: '12px', top: '12px', fontSize: '14px', opacity: 0.55 }} title="Dato oficial registrado en tu cuenta">🔒</span>
+                      </div>
                     </div>
 
                     {/* CUIT */}
                     <div>
-                      <label style={labelStyle}>CUIT / Tax ID / Identificación Fiscal *</label>
-                      <input
-                        type="text"
-                        style={inputStyle}
-                        placeholder="Ej. 30-12345678-9"
-                        value={billing.cuit}
-                        onChange={e => setBilling({ ...billing, cuit: e.target.value })}
-                        required
-                      />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <label style={labelStyle}>CUIT / Tax ID / Identificación Fiscal *</label>
+                        <span style={{ fontSize: '11px', color: '#64748B', fontWeight: '600' }}>🔒 Verificado</span>
+                      </div>
+                      <div style={{ position: 'relative' }}>
+                        <input
+                          type="text"
+                          style={{
+                            ...inputStyle,
+                            background: '#F8FAFC',
+                            borderColor: '#CBD5E1',
+                            color: '#0F172A',
+                            fontWeight: '700',
+                            cursor: 'not-allowed',
+                            paddingRight: '36px'
+                          }}
+                          value={billing.cuit || shopUser?.numero_nit || shopUser?.cuit || '30-12345678-9'}
+                          readOnly
+                          disabled
+                        />
+                        <span style={{ position: 'absolute', right: '12px', top: '12px', fontSize: '14px', opacity: 0.55 }} title="Dato oficial registrado en tu cuenta">🔒</span>
+                      </div>
                     </div>
 
                     {/* Tipo de Comprobante */}
                     <div>
-                      <label style={labelStyle}>Tipo de Comprobante Requerido</label>
-                      <select
-                        style={inputStyle}
-                        value={billing.tipo_factura}
-                        onChange={e => setBilling({ ...billing, tipo_factura: e.target.value })}
-                      >
-                        <option value="Factura A (Responsable Inscripto)">Factura A (Responsable Inscripto)</option>
-                        <option value="Factura B (Consumidor Final / Exento)">Factura B (Consumidor Final / Exento)</option>
-                        <option value="Factura E (Exportación de Servicios / Mercadería)">Factura E (Exportación Internacional)</option>
-                      </select>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <label style={labelStyle}>Tipo de Comprobante Requerido</label>
+                        <span style={{ fontSize: '11px', color: '#64748B', fontWeight: '600' }}>🔒 Asignado</span>
+                      </div>
+                      <div style={{ position: 'relative' }}>
+                        <input
+                          type="text"
+                          style={{
+                            ...inputStyle,
+                            background: '#F8FAFC',
+                            borderColor: '#CBD5E1',
+                            color: '#0F172A',
+                            fontWeight: '700',
+                            cursor: 'not-allowed',
+                            paddingRight: '36px'
+                          }}
+                          value={billing.tipo_factura || 'Factura A (Responsable Inscripto)'}
+                          readOnly
+                          disabled
+                        />
+                        <span style={{ position: 'absolute', right: '12px', top: '12px', fontSize: '14px', opacity: 0.55 }} title="Dato oficial registrado en tu cuenta">🔒</span>
+                      </div>
                     </div>
 
                     {/* Condición de IVA */}
                     <div>
-                      <label style={labelStyle}>Condición ante el IVA</label>
-                      <select
-                        style={inputStyle}
-                        value={billing.condicion_iva}
-                        onChange={e => setBilling({ ...billing, condicion_iva: e.target.value })}
-                      >
-                        <option value="IVA Responsable Inscripto">IVA Responsable Inscripto</option>
-                        <option value="IVA Sujeto Exento">IVA Sujeto Exento</option>
-                        <option value="Monotributo">Monotributo</option>
-                        <option value="Cliente del Exterior / Sin Residencia">Cliente del Exterior</option>
-                      </select>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <label style={labelStyle}>Condición ante el IVA</label>
+                        <span style={{ fontSize: '11px', color: '#64748B', fontWeight: '600' }}>🔒 Asignado</span>
+                      </div>
+                      <div style={{ position: 'relative' }}>
+                        <input
+                          type="text"
+                          style={{
+                            ...inputStyle,
+                            background: '#F8FAFC',
+                            borderColor: '#CBD5E1',
+                            color: '#0F172A',
+                            fontWeight: '700',
+                            cursor: 'not-allowed',
+                            paddingRight: '36px'
+                          }}
+                          value={billing.condicion_iva || shopUser?.tipo_iva || 'IVA Responsable Inscripto'}
+                          readOnly
+                          disabled
+                        />
+                        <span style={{ position: 'absolute', right: '12px', top: '12px', fontSize: '14px', opacity: 0.55 }} title="Dato oficial registrado en tu cuenta">🔒</span>
+                      </div>
                     </div>
 
-                    {/* Orden de Compra Interna */}
+                    {/* Orden de Compra Interna (Opcional - editable para este pedido) */}
                     <div>
-                      <label style={labelStyle}>N° de Orden de Compra Interna (Opcional)</label>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <label style={labelStyle}>N° de Orden de Compra Interna (Opcional)</label>
+                        <span style={{ fontSize: '11px', color: '#0fa4de', fontWeight: '600' }}>✏️ Opcional</span>
+                      </div>
                       <input
                         type="text"
                         style={inputStyle}
@@ -1031,33 +1356,88 @@ export default function ShopCheckout() {
 
                     {/* Contacto Administrativo */}
                     <div>
-                      <label style={labelStyle}>Contacto de Compras / Finanzas *</label>
-                      <input
-                        type="text"
-                        style={inputStyle}
-                        placeholder="Ej. Lic. Laura Gutiérrez"
-                        value={billing.contacto_nombre}
-                        onChange={e => setBilling({ ...billing, contacto_nombre: e.target.value })}
-                        required
-                      />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <label style={labelStyle}>Contacto de Compras / Finanzas *</label>
+                        <span style={{ fontSize: '11px', color: '#64748B', fontWeight: '600' }}>🔒 Registrado</span>
+                      </div>
+                      <div style={{ position: 'relative' }}>
+                        <input
+                          type="text"
+                          style={{
+                            ...inputStyle,
+                            background: '#F8FAFC',
+                            borderColor: '#CBD5E1',
+                            color: '#0F172A',
+                            fontWeight: '700',
+                            cursor: 'not-allowed',
+                            paddingRight: '36px'
+                          }}
+                          value={billing.contacto_nombre || shopUser?.nombre_compras || shopUser?.name || 'Usuario Demo'}
+                          readOnly
+                          disabled
+                        />
+                        <span style={{ position: 'absolute', right: '12px', top: '12px', fontSize: '14px', opacity: 0.55 }} title="Dato oficial registrado en tu cuenta">🔒</span>
+                      </div>
                     </div>
 
                     {/* Email Facturación */}
                     <div>
-                      <label style={labelStyle}>Email para Envío de Factura Electrónica *</label>
-                      <input
-                        type="email"
-                        style={inputStyle}
-                        placeholder="pagos@empresa.com"
-                        value={billing.contacto_email}
-                        onChange={e => setBilling({ ...billing, contacto_email: e.target.value })}
-                        required
-                      />
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <label style={labelStyle}>Email para Envío de Factura Electrónica *</label>
+                        <span style={{ fontSize: '11px', color: '#64748B', fontWeight: '600' }}>🔒 Registrado</span>
+                      </div>
+                      <div style={{ position: 'relative' }}>
+                        <input
+                          type="email"
+                          style={{
+                            ...inputStyle,
+                            background: '#F8FAFC',
+                            borderColor: '#CBD5E1',
+                            color: '#0F172A',
+                            fontWeight: '700',
+                            cursor: 'not-allowed',
+                            paddingRight: '36px'
+                          }}
+                          value={billing.contacto_email || shopUser?.email_factura_electronica || shopUser?.email_compras || shopUser?.email || 'demo@dacas.com'}
+                          readOnly
+                          disabled
+                        />
+                        <span style={{ position: 'absolute', right: '12px', top: '12px', fontSize: '14px', opacity: 0.55 }} title="Dato oficial registrado en tu cuenta">🔒</span>
+                      </div>
                     </div>
                   </div>
 
+                  {/* Confirmation Checkbox Box */}
+                  <div style={{
+                    background: confirmedFiscalData ? '#F0FDF4' : '#FFFBEB',
+                    border: confirmedFiscalData ? '1.5px solid #BBF7D0' : '1.5px solid #FDE68A',
+                    borderRadius: '14px',
+                    padding: '14px 18px',
+                    marginTop: '22px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    flexWrap: 'wrap',
+                    gap: '12px'
+                  }}>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', margin: 0 }}>
+                      <input
+                        type="checkbox"
+                        checked={confirmedFiscalData}
+                        onChange={e => setConfirmedFiscalData(e.target.checked)}
+                        style={{ width: '18px', height: '18px', accentColor: '#16A34A', cursor: 'pointer' }}
+                      />
+                      <span style={{ fontSize: '13px', fontWeight: '700', color: confirmedFiscalData ? '#166534' : '#92400E' }}>
+                        Confirmo que los datos fiscales de mi empresa son correctos para esta compra
+                      </span>
+                    </label>
+                    <span style={{ fontSize: '11.5px', color: '#64748B' }}>
+                      ¿Datos incorrectos? <span onClick={() => navigate('/shop/portal')} style={{ color: '#0fa4de', cursor: 'pointer', textDecoration: 'underline', fontWeight: '600' }}>Solicitar cambio en Mi Cuenta</span>
+                    </span>
+                  </div>
+
                   {/* Step 2 Actions */}
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #F1F5F9' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '28px', paddingTop: '20px', borderTop: '1px solid #F1F5F9' }}>
                     <button
                       type="button"
                       onClick={() => setStep('cart')}
@@ -1068,10 +1448,21 @@ export default function ShopCheckout() {
                     <button
                       type="button"
                       onClick={() => {
-                        if (!billing.empresa || !billing.cuit) {
-                          setError('Por favor completá la Razón Social y CUIT de la empresa.');
+                        if (!confirmedFiscalData) {
+                          setError('Por favor confirmá que los datos fiscales son correctos marcando la casilla.');
                           return;
                         }
+                        const finalEmpresa = billing.empresa || shopUser?.razon_social || shopUser?.name || 'Empresa Demo S.A.';
+                        const finalCuit = billing.cuit || shopUser?.numero_nit || shopUser?.cuit || '30-12345678-9';
+                        setBilling(prev => ({
+                          ...prev,
+                          empresa: finalEmpresa,
+                          cuit: finalCuit,
+                          tipo_factura: prev.tipo_factura || 'Factura A (Responsable Inscripto)',
+                          condicion_iva: prev.condicion_iva || shopUser?.tipo_iva || 'IVA Responsable Inscripto',
+                          contacto_nombre: prev.contacto_nombre || shopUser?.nombre_compras || shopUser?.name || 'Usuario Demo',
+                          contacto_email: prev.contacto_email || shopUser?.email_factura_electronica || shopUser?.email || 'demo@dacas.com',
+                        }));
                         setError('');
                         setStep('shipping');
                       }}
@@ -1320,6 +1711,313 @@ export default function ShopCheckout() {
                           return;
                         }
                         setError('');
+                        setStep('end_user');
+                      }}
+                      style={{ background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)', color: '#FFFFFF', border: 'none', borderRadius: '12px', padding: '14px 32px', fontWeight: '800', fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 16px rgba(15, 164, 222, 0.35)' }}
+                    >
+                      Continuar a Datos de End User →
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* ─────────────────────────────────────────────
+                  STEP 4: DATOS DE END USER (ABM END USER)
+              ───────────────────────────────────────────── */}
+              {step === 'end_user' && (
+                <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '32px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)', border: '1px solid #E2E8F0' }}>
+                  <div style={{ marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+                      <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '900', color: '#071524', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <BrandingVectorIcon name="briefcase" size={24} color="#0fa4de" />
+                        <span>4. Datos de End User (ABM End User)</span>
+                      </h2>
+                      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#EFF6FF', color: '#0369A1', border: '1px solid #BAE6FD', padding: '5px 12px', borderRadius: '20px', fontSize: '12px', fontWeight: '700' }}>
+                        <span>📋</span> Registro para Fabricante & Licencias
+                      </span>
+                    </div>
+                    <p style={{ margin: '6px 0 0', fontSize: '13px', color: '#64748B' }}>
+                      Identificá al Cliente Final (End User) destinatario de la solución para la activación de garantías oficiales, números de serie y registro de licencias ante el fabricante.
+                    </p>
+                  </div>
+
+                  {/* ABM Selector Toolbar (matching Image 2) */}
+                  <div style={{ background: '#F8FAFC', border: '1.5px solid #E2E8F0', borderRadius: '14px', padding: '16px 20px', marginBottom: '24px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' }}>
+                      <div style={{ flex: 1, minWidth: '260px' }}>
+                        <label style={{ ...labelStyle, color: '#0369A1', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                          <span>👥</span> End Users Guardados (ABM)
+                        </label>
+                        <select
+                          value={selectedEndUserId}
+                          onChange={e => handleSelectEndUser(e.target.value)}
+                          style={{ ...inputStyle, marginBottom: 0, background: '#FFFFFF', borderColor: '#CBD5E1', fontWeight: '700' }}
+                        >
+                          <option value="">-- Seleccionar End User Registrado en tu Cuenta --</option>
+                          {savedEndUsers.map(eu => (
+                            <option key={eu.id} value={eu.id}>
+                              {eu.nombre} ({eu.ciudad ? `${eu.ciudad}, ` : ''}{eu.pais})
+                            </option>
+                          ))}
+                          <option value="new">➕ [Nuevo] Registrar nuevo End User</option>
+                        </select>
+                      </div>
+
+                      {/* ABM Actions Buttons (from Image 2: Aceptar, Nuevo, Modificar, Grabar, Eliminar) */}
+                      <div style={{ display: 'flex', gap: '8px', alignItems: 'flex-end', flexWrap: 'wrap' }}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (!endUser.nombre || !endUser.nombre.trim()) {
+                              setError('Por favor completá el Nombre del End User.');
+                              return;
+                            }
+                            if (endUser.pais === 'Venezuela' && (!endUser.contacto || !endUser.contacto.trim())) {
+                              setError('Para Venezuela es obligatorio ingresar el Nombre del CEO en el campo Contacto.');
+                              return;
+                            }
+                            setError('');
+                            setStep('payment');
+                          }}
+                          style={{
+                            background: '#0284c7',
+                            border: '1.5px solid #0369A1',
+                            color: '#FFFFFF',
+                            padding: '10px 16px',
+                            borderRadius: '10px',
+                            fontSize: '13px',
+                            fontWeight: '800',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                          title="Confirmar y continuar con este End User"
+                        >
+                          <span>✓</span> Aceptar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleNewEndUser}
+                          style={{
+                            background: '#FFFFFF',
+                            border: '1.5px solid #CBD5E1',
+                            color: '#0F172A',
+                            padding: '10px 14px',
+                            borderRadius: '10px',
+                            fontSize: '13px',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                          title="Limpiar formulario para ingresar nuevo cliente final"
+                        >
+                          <span>➕</span> Nuevo
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEndUserFeedback('✏️ Modo edición activado.');
+                            setTimeout(() => setEndUserFeedback(''), 3000);
+                          }}
+                          style={{
+                            background: '#FFFFFF',
+                            border: '1.5px solid #CBD5E1',
+                            color: '#0F172A',
+                            padding: '10px 14px',
+                            borderRadius: '10px',
+                            fontSize: '13px',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                          title="Modificar los datos del End User seleccionado"
+                        >
+                          <span>✏️</span> Modificar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleSaveEndUser}
+                          disabled={endUserSaving}
+                          style={{
+                            background: 'linear-gradient(135deg, #0fa4de, #0284c7)',
+                            border: 'none',
+                            color: '#FFFFFF',
+                            padding: '10px 16px',
+                            borderRadius: '10px',
+                            fontSize: '13px',
+                            fontWeight: '800',
+                            cursor: endUserSaving ? 'not-allowed' : 'pointer',
+                            opacity: endUserSaving ? 0.7 : 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px',
+                            boxShadow: '0 2px 8px rgba(15, 164, 222, 0.25)'
+                          }}
+                          title="Guardar este End User en la libreta de tu empresa"
+                        >
+                          <span>💾</span> {endUserSaving ? 'Grabando...' : 'Grabar'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={handleDeleteEndUser}
+                          disabled={!selectedEndUserId || selectedEndUserId === 'new'}
+                          style={{
+                            background: '#FEF2F2',
+                            border: '1.5px solid #FECACA',
+                            color: '#DC2626',
+                            padding: '10px 14px',
+                            borderRadius: '10px',
+                            fontSize: '13px',
+                            fontWeight: '700',
+                            cursor: (!selectedEndUserId || selectedEndUserId === 'new') ? 'not-allowed' : 'pointer',
+                            opacity: (!selectedEndUserId || selectedEndUserId === 'new') ? 0.5 : 1
+                          }}
+                          title="Eliminar este End User de la libreta"
+                        >
+                          <span>🗑️</span> Eliminar
+                        </button>
+                      </div>
+                    </div>
+
+                    {endUserFeedback && (
+                      <div style={{ marginTop: '10px', fontSize: '12px', fontWeight: '700', color: endUserFeedback.includes('✅') ? '#166534' : '#DC2626', background: endUserFeedback.includes('✅') ? '#DCFCE7' : '#FEE2E2', padding: '6px 12px', borderRadius: '8px', display: 'inline-block' }}>
+                        {endUserFeedback}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Form Fields matching Image 2 exactly */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+
+                    {/* Nombre del End User (underlined in red, mandatory like in Image 2) */}
+                    <div style={{ gridColumn: 'span 2' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <label style={{ ...labelStyle, color: '#DC2626', textDecoration: 'underline', fontWeight: '800' }}>
+                          Nombre del End User
+                        </label>
+                        <span style={{ fontSize: '11px', color: '#DC2626', fontWeight: '800' }}>* Obligatorio</span>
+                      </div>
+                      <input
+                        type="text"
+                        style={{ ...inputStyle, borderColor: !endUser.nombre ? '#FCA5A5' : '#E2E8F0', fontWeight: '700' }}
+                        placeholder="Ej. Banco Metropolitano S.A."
+                        value={endUser.nombre}
+                        onChange={e => setEndUser({ ...endUser, nombre: e.target.value })}
+                        required
+                      />
+                    </div>
+
+                    {/* Dirección */}
+                    <div style={{ gridColumn: 'span 2' }}>
+                      <label style={labelStyle}>Dirección</label>
+                      <input
+                        type="text"
+                        style={inputStyle}
+                        placeholder="Ej. Av. Corrientes 500, Piso 12"
+                        value={endUser.direccion}
+                        onChange={e => setEndUser({ ...endUser, direccion: e.target.value })}
+                      />
+                    </div>
+
+                    {/* Ciudad */}
+                    <div style={{ gridColumn: 'span 2', maxWidth: '420px' }}>
+                      <label style={labelStyle}>Ciudad</label>
+                      <input
+                        type="text"
+                        style={inputStyle}
+                        placeholder="Ej. Buenos Aires / Caracas"
+                        value={endUser.ciudad}
+                        onChange={e => setEndUser({ ...endUser, ciudad: e.target.value })}
+                      />
+                    </div>
+
+                    {/* Pais (Dropdown as in Image 2) */}
+                    <div>
+                      <label style={labelStyle}>Pais</label>
+                      <select
+                        style={{ ...inputStyle, background: '#FFFFFF', fontWeight: '600' }}
+                        value={endUser.pais}
+                        onChange={e => setEndUser({ ...endUser, pais: e.target.value })}
+                      >
+                        {LATAM_COUNTRIES.map(c => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    </div>
+
+                    {/* Teléfono */}
+                    <div>
+                      <label style={labelStyle}>Teléfono</label>
+                      <input
+                        type="tel"
+                        style={inputStyle}
+                        placeholder="Ej. +54 11 4321-0000"
+                        value={endUser.telefono}
+                        onChange={e => setEndUser({ ...endUser, telefono: e.target.value })}
+                      />
+                    </div>
+
+                    {/* Contacto - ( Venezuela nombre CEO obligatorio ) matching Image 2 exactly */}
+                    <div style={{ gridColumn: 'span 2' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                        <label style={{ ...labelStyle, color: endUser.pais === 'Venezuela' ? '#B91C1C' : '#475569' }}>
+                          Contacto - ( Venezuela nombre CEO obligatorio ) {endUser.pais === 'Venezuela' && '*'}
+                        </label>
+                        {endUser.pais === 'Venezuela' && (
+                          <span style={{ fontSize: '11px', color: '#B91C1C', fontWeight: '800', background: '#FEE2E2', padding: '2px 8px', borderRadius: '6px' }}>
+                            ⚠️ Nombre del CEO Mandatorio para Venezuela
+                          </span>
+                        )}
+                      </div>
+                      <input
+                        type="text"
+                        style={{ ...inputStyle, borderColor: (endUser.pais === 'Venezuela' && !endUser.contacto) ? '#F87171' : '#E2E8F0' }}
+                        placeholder="Ej. Dr. Alejandro Silva - CEO / Gerente General"
+                        value={endUser.contacto}
+                        onChange={e => setEndUser({ ...endUser, contacto: e.target.value })}
+                        required={endUser.pais === 'Venezuela'}
+                      />
+                    </div>
+
+                    {/* Website */}
+                    <div style={{ gridColumn: 'span 2' }}>
+                      <label style={labelStyle}>Website</label>
+                      <input
+                        type="text"
+                        style={inputStyle}
+                        placeholder="Ej. www.cliente.com"
+                        value={endUser.website}
+                        onChange={e => setEndUser({ ...endUser, website: e.target.value })}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Step 4 Actions */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #F1F5F9' }}>
+                    <button
+                      type="button"
+                      onClick={() => setStep('shipping')}
+                      style={{ background: 'transparent', border: '1px solid #CBD5E1', color: '#64748B', borderRadius: '12px', padding: '12px 20px', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}
+                    >
+                      ← Volver a Logística
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!endUser.nombre || !endUser.nombre.trim()) {
+                          setError('Por favor completá el Nombre del End User (requerido para registrar la solución).');
+                          return;
+                        }
+                        if (endUser.pais === 'Venezuela' && (!endUser.contacto || !endUser.contacto.trim())) {
+                          setError('Para Venezuela es obligatorio ingresar el Nombre del CEO en el campo Contacto.');
+                          return;
+                        }
+                        setError('');
                         setStep('payment');
                       }}
                       style={{ background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)', color: '#FFFFFF', border: 'none', borderRadius: '12px', padding: '14px 32px', fontWeight: '800', fontSize: '14px', cursor: 'pointer', boxShadow: '0 4px 16px rgba(15, 164, 222, 0.35)' }}
@@ -1331,14 +2029,14 @@ export default function ShopCheckout() {
               )}
 
               {/* ─────────────────────────────────────────────
-                  STEP 4: FORMA DE PAGO & CONDICIONES B2B
+                  STEP 5: FORMA DE PAGO & CONDICIONES B2B
               ───────────────────────────────────────────── */}
               {step === 'payment' && (
                 <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '32px', boxShadow: '0 4px 20px rgba(0,0,0,0.04)', border: '1px solid #E2E8F0' }}>
                   <div style={{ marginBottom: '24px' }}>
                     <h2 style={{ margin: 0, fontSize: '1.4rem', fontWeight: '900', color: '#071524', display: 'flex', alignItems: 'center', gap: '10px' }}>
                       <BrandingVectorIcon name="credit-card" size={24} color="#0fa4de" />
-                      <span>4. Forma de Pago & Condiciones Comerciales</span>
+                      <span>5. Forma de Pago & Condiciones Comerciales</span>
                     </h2>
                     <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748B' }}>
                       Seleccioná las condiciones financieras para la liquidación de la orden mayorista.
@@ -1625,14 +2323,14 @@ export default function ShopCheckout() {
                     </label>
                   </div>
 
-                  {/* Step 4 Actions */}
+                  {/* Step 5 Actions */}
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '32px', paddingTop: '24px', borderTop: '1px solid #F1F5F9' }}>
                     <button
                       type="button"
-                      onClick={() => setStep('shipping')}
+                      onClick={() => setStep('end_user')}
                       style={{ background: 'transparent', border: '1px solid #CBD5E1', color: '#64748B', borderRadius: '12px', padding: '12px 20px', fontWeight: '700', fontSize: '13px', cursor: 'pointer' }}
                     >
-                      ← Volver a Logística
+                      ← Volver a Datos de End User
                     </button>
                     <button
                       type="button"

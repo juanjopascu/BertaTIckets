@@ -1,5 +1,214 @@
 [
   {
+    "id": 99,
+    "timestamp": "2026-09-29T12:37:12.641Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $278,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790685432641",
+      "itemsCount": 1,
+      "total": 278.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Licencia Anual FortiGuard Enterprise Protection Bundle ($278.80)",
+      "items": [
+        {
+          "id": 6,
+          "name": "Licencia Anual FortiGuard Enterprise Protection Bundle",
+          "brand": "Fortinet",
+          "sku": "LIC-FG-ENT-1Y",
+          "qty": 1,
+          "price": 278.8,
+          "subtotal": 278.8
+        }
+      ],
+      "timestamp": "2026-09-29T12:37:12.641Z"
+    }
+  },
+  {
+    "id": 98,
+    "timestamp": "2026-09-29T12:36:59.979Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "844d7d112f0dd31a07e54af70776704e862ccbfce228b18eae8818dda23c1aa8"
+    }
+  },
+  {
+    "id": 97,
+    "timestamp": "2026-09-28T20:43:20.908Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "SESION_REVOCADA",
+    "descripcion": "Sesión de Administrador (admin@crm.com) cerrada administrativamente.",
+    "usuario": {
+      "id": "b229541ade5770478d60f4f368ddd14e0965e42a0a0742417703d881c0666236",
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sesionId": "34c5c05fa3a6652ca22204933922126688a0c510d688e83c4947041c1888a04e",
+      "usuarioId": 1,
+      "ipTarget": "127.0.0.1"
+    }
+  },
+  {
+    "id": 96,
+    "timestamp": "2026-09-28T20:43:18.955Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "SESION_REVOCADA",
+    "descripcion": "Sesión de Administrador (admin@crm.com) cerrada administrativamente.",
+    "usuario": {
+      "id": "b229541ade5770478d60f4f368ddd14e0965e42a0a0742417703d881c0666236",
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sesionId": "b5ff0dc82e6a718a618d6a4d30f3162ac9bb45f4ce56c8cad3237d48089df39c",
+      "usuarioId": 1,
+      "ipTarget": "127.0.0.1"
+    }
+  },
+  {
+    "id": 95,
+    "timestamp": "2026-09-28T20:43:16.966Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "SESION_REVOCADA",
+    "descripcion": "Sesión de Administrador (admin@crm.com) cerrada administrativamente.",
+    "usuario": {
+      "id": "b229541ade5770478d60f4f368ddd14e0965e42a0a0742417703d881c0666236",
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sesionId": "2d5b35180ab0af31f8775f92ec6e55f05d41c07cfc106ad4fe9d4c2677f1ca76",
+      "usuarioId": 1,
+      "ipTarget": "127.0.0.1"
+    }
+  },
+  {
+    "id": 94,
+    "timestamp": "2026-09-28T20:43:02.949Z",
+    "origen": "dashboard",
+    "tipo": "INFO",
+    "accion": "USUARIO_MODIFICADO",
+    "descripcion": "Usuario \"Admin E-commerce\" (admin.ecommerce@dacas.com) actualizado por jpascuzzi@dacas.com",
+    "usuario": {
+      "nombre": "jpascuzzi@dacas.com",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "usuarioId": 6,
+      "rol": "admin_ecommerce",
+      "activo": true
+    }
+  },
+  {
+    "id": 93,
+    "timestamp": "2026-09-28T20:42:48.695Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "b229541ade5770478d60f4f368ddd14e0965e42a0a0742417703d881c0666236"
+    }
+  },
+  {
+    "id": 92,
+    "timestamp": "2026-09-28T20:41:14.518Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "34c5c05fa3a6652ca22204933922126688a0c510d688e83c4947041c1888a04e"
+    }
+  },
+  {
+    "id": 91,
+    "timestamp": "2026-09-28T20:41:07.638Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "b5ff0dc82e6a718a618d6a4d30f3162ac9bb45f4ce56c8cad3237d48089df39c"
+    }
+  },
+  {
+    "id": 90,
+    "timestamp": "2026-09-28T20:41:00.329Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "2d5b35180ab0af31f8775f92ec6e55f05d41c07cfc106ad4fe9d4c2677f1ca76"
+    }
+  },
+  {
     "id": 89,
     "timestamp": "2026-09-28T20:26:05.907Z",
     "origen": "ecommerce",

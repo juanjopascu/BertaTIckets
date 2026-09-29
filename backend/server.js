@@ -251,13 +251,14 @@ let nextClienteId = 4;
 
 let usuariosDb = [
     { id: 1, nombre: "Administrador", email: "admin@crm.com", password: hashPassword("admin"), rol: "admin", crear_tickets: true, activo: true, pais: "Argentina", sector: "Administración", horario_atencion: "24/7", ciudad: "Buenos Aires" },
-    { id: 2, nombre: "Cliente de Prueba", email: "cliente@crm.com", password: hashPassword("cliente123"), rol: "cliente", crear_tickets: true, activo: true, pais: "Chile", sector: "Compras", horario_atencion: "09:00 - 18:00", ciudad: "Santiago" },
+    { id: 2, nombre: "Vendedor de Prueba", email: "cliente@crm.com", password: hashPassword("cliente123"), rol: "vendedor", crear_tickets: true, activo: true, pais: "Chile", sector: "Ventas", horario_atencion: "09:00 - 18:00", ciudad: "Santiago" },
     { id: 3, nombre: "Staff de Prueba", email: "staff@crm.com", password: hashPassword("staff123"), rol: "staff", crear_tickets: true, activo: true, accesos: { departamentos: [2], estados: ["Prospecto", "Contactado"] }, equipoId: 1, pais: "Uruguay", sector: "Soporte Técnico", horario_atencion: "08:00 - 17:00", ciudad: "Montevideo" },
     { id: 4, nombre: "Manager de Prueba", email: "manager@crm.com", password: hashPassword("manager123"), rol: "manager", crear_tickets: true, activo: true, pais: "Argentina", sector: "Operaciones", horario_atencion: "09:00 - 18:00", ciudad: "Buenos Aires" },
     { id: 5, nombre: "Juan Pascuzzi", email: "jpascuzzi@dacas.com", password: hashPassword("admin123"), rol: "admin", crear_tickets: true, activo: true, pais: "Argentina", sector: "Dirección", horario_atencion: "24/7", ciudad: "Buenos Aires" },
-    { id: 6, nombre: "Admin E-commerce", email: "admin.ecommerce@dacas.com", password: hashPassword("password123"), rol: "admin_ecommerce", crear_tickets: true, activo: true, pais: "Argentina", sector: "E-Commerce", horario_atencion: "09:00 - 18:00", ciudad: "Buenos Aires" }
+    { id: 6, nombre: "Admin E-commerce", email: "admin.ecommerce@dacas.com", password: hashPassword("password123"), rol: "admin_ecommerce", crear_tickets: true, activo: true, pais: "Argentina", sector: "E-Commerce", horario_atencion: "09:00 - 18:00", ciudad: "Buenos Aires" },
+    { id: 7, nombre: "PM de Prueba", email: "pm@crm.com", password: hashPassword("pm123"), rol: "pm", crear_tickets: true, activo: true, pais: "Argentina", sector: "Producto", horario_atencion: "09:00 - 18:00", ciudad: "Buenos Aires" }
 ];
-let nextUsuarioId = 7;
+let nextUsuarioId = 8;
 
 let nextAccionId = 1;
 function registrarAccionTicket(ticketId, accion, detalle, usuarioStr) {
@@ -807,7 +808,10 @@ app.post('/api/login', rateLimitAuth(8, 15 * 60 * 1000), (req, res) => {
         req.authLimiter?.fail();
         return res.status(400).json({ error: "Email y contraseña requeridos" });
     }
-    const usuario = usuariosDb.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
+    const usuario = usuariosDb.find(u => u.email && (
+        u.email.toLowerCase() === email.toLowerCase() ||
+        (email.toLowerCase() === 'vendedor@crm.com' && u.email.toLowerCase() === 'cliente@crm.com')
+    ));
 
     if (usuario && verifyPassword(password, usuario.password)) {
         if (usuario.activo === false) {
@@ -1038,7 +1042,7 @@ app.post('/api/usuarios', requireCrmAuth, requireCrmAdmin, (req, res) => {
         nombre,
         email,
         password: hashPassword(password),
-        rol: rol || 'cliente',
+        rol: rol || 'vendedor',
         crear_tickets: crear_tickets !== false,
         activo: activo !== false,
         pais: pais || '',

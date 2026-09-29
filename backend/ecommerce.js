@@ -480,6 +480,10 @@ const inMem = {
       nombre_pagos: 'Martín Rodríguez',
       telefono_pagos: '+54 11 4000-1236',
       email_pagos: 'pagos@empresademo.com.ar',
+      cuit: '30-12345678-9',
+      tipo_iva: 'IVA Responsable Inscripto',
+      tipo_factura: 'Factura A (Responsable Inscripto)',
+      email_factura_electronica: 'facturacion@empresademo.com.ar',
       created_at: new Date().toISOString()
     },
     {
@@ -587,6 +591,34 @@ const inMem = {
       status: 'activo',
       avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?q=80&w=300&auto=format&fit=crop',
       created_at: new Date(Date.now() - 86400000 * 5).toISOString()
+    }
+  ],
+  end_users: [
+    {
+      id: 1,
+      user_id: 1,
+      company_name: 'Empresa Demo S.A.',
+      nombre: 'Banco Metropolitano S.A.',
+      direccion: 'Av. Corrientes 500, Piso 12',
+      ciudad: 'Buenos Aires',
+      pais: 'Argentina',
+      telefono: '+54 11 4321-0000',
+      contacto: 'Ing. Roberto Méndez (Gerente de Infraestructura)',
+      website: 'https://www.bancometropolitano.com.ar',
+      created_at: new Date(Date.now() - 86400000 * 5).toISOString()
+    },
+    {
+      id: 2,
+      user_id: 1,
+      company_name: 'Empresa Demo S.A.',
+      nombre: 'PetroAndina Energía C.A.',
+      direccion: 'Torre Digitel, Piso 15, La Castellana',
+      ciudad: 'Caracas',
+      pais: 'Venezuela',
+      telefono: '+58 212 555-0199',
+      contacto: 'Dr. Alejandro Silva - CEO',
+      website: 'https://www.petroandina.com.ve',
+      created_at: new Date(Date.now() - 86400000 * 3).toISOString()
     }
   ],
   countries: [
@@ -924,7 +956,7 @@ const inMem = {
       image_url: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1000&auto=format&fit=crop'
     }
   ],
-  nextIds: { users: 4, countries: 7, products: 7, stock: 7, rules: 5, orders: 1056, order_items: 5, change_requests: 2, company_team: 4 }
+  nextIds: { users: 4, countries: 7, products: 7, stock: 7, rules: 5, orders: 1056, order_items: 5, change_requests: 2, company_team: 4, end_users: 3 }
 };
 
 function executeInMemoryQuery(sql, params = []) {
@@ -1696,17 +1728,15 @@ router.post('/auth/login', async (req, res) => {
         { expiresIn: '24h' }
       );
 
+      const safeUser = { ...user };
+      delete safeUser.password_hash;
+      safeUser.cuit = safeUser.numero_nit || safeUser.cuit || '30-12345678-9';
+      safeUser.tipo_iva = safeUser.tipo_iva || 'IVA Responsable Inscripto';
+      safeUser.tipo_factura = safeUser.tipo_factura || 'Factura A (Responsable Inscripto)';
+
       res.json({ 
         token: accessToken, 
-        user: { 
-          id: user.id, 
-          name: user.name, 
-          email: user.email,
-          razon_social: user.razon_social || user.name,
-          tipo_cliente: user.tipo_cliente,
-          phone: user.phone,
-          status: userStatus
-        } 
+        user: safeUser
       });
     } else {
       res.status(401).json({ error: 'Credenciales inválidas. Verifique su email y contraseña.' });
@@ -2136,6 +2166,9 @@ router.get('/client/profile', authenticateToken, async (req, res) => {
 
     const user = userRes.rows[0];
     delete user.password_hash;
+    user.cuit = user.numero_nit || user.cuit || '30-12345678-9';
+    user.tipo_iva = user.tipo_iva || 'IVA Responsable Inscripto';
+    user.tipo_factura = user.tipo_factura || 'Factura A (Responsable Inscripto)';
 
     // Resumen de órdenes del cliente
     let orders = [];
@@ -2750,6 +2783,96 @@ router.delete('/client/team/:id', authenticateToken, async (req, res) => {
 });
 
 // ==========================================
+// ABM END USERS (CLIENT PORTAL & CHECKOUT)
+// ==========================================
+
+// 1. Obtener lista de End Users de la empresa
+router.get('/client/end-users', optionalAuthToken, async (req, res) => {
+  try {
+    const userId = req.user ? req.user.id : 1;
+    if (isPgConnected) {
+      try {
+        const result = await pool.query(
+          'SELECT * FROM ecommerce_end_users WHERE user_id = $1 ORDER BY nombre ASC',
+          [userId]
+        );
+        if (result.rows && result.rows.length > 0) {
+          return res.json(result.rows);
+        }
+      } catch (_) {}
+    }
+    const list = (inMem.end_users || []).filter(eu => !eu.user_id || eu.user_id === userId || eu.user_id === 1);
+    res.json(list);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 2. Guardar o modificar un End User (ABM)
+router.post('/client/end-users', optionalAuthToken, async (req, res) => {
+  try {
+    const userId = req.user ? req.user.id : 1;
+    const { nombre, direccion, ciudad, pais, telefono, contacto, website, id } = req.body;
+    if (!nombre || !String(nombre).trim()) {
+      return res.status(400).json({ error: 'El Nombre del End User es obligatorio' });
+    }
+
+    if (!inMem.end_users) inMem.end_users = [];
+    if (!inMem.nextIds.end_users) inMem.nextIds.end_users = 3;
+
+    // Actualización si viene con id existente
+    if (id) {
+      const idx = inMem.end_users.findIndex(eu => eu.id === parseInt(id));
+      if (idx !== -1) {
+        inMem.end_users[idx] = {
+          ...inMem.end_users[idx],
+          nombre: String(nombre).trim(),
+          direccion: direccion || '',
+          ciudad: ciudad || '',
+          pais: pais || 'Argentina',
+          telefono: telefono || '',
+          contacto: contacto || '',
+          website: website || '',
+          updated_at: new Date().toISOString()
+        };
+        return res.json({ success: true, message: 'End User actualizado', end_user: inMem.end_users[idx] });
+      }
+    }
+
+    const newEndUser = {
+      id: inMem.nextIds.end_users++,
+      user_id: userId,
+      nombre: String(nombre).trim(),
+      direccion: direccion || '',
+      ciudad: ciudad || '',
+      pais: pais || 'Argentina',
+      telefono: telefono || '',
+      contacto: contacto || '',
+      website: website || '',
+      created_at: new Date().toISOString()
+    };
+    inMem.end_users.push(newEndUser);
+
+    res.status(201).json({ success: true, message: 'End User grabado exitosamente', end_user: newEndUser });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 3. Eliminar End User
+router.delete('/client/end-users/:id', optionalAuthToken, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id);
+    if (inMem.end_users) {
+      inMem.end_users = inMem.end_users.filter(eu => eu.id !== id);
+    }
+    res.json({ success: true, message: 'End User eliminado' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// ==========================================
 // TRACKING DE AUDITORÍA & COMPORTAMIENTO E-COMMERCE (LOGS)
 // ==========================================
 
@@ -2945,7 +3068,8 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
       po_number,
       delivery_notes,
       notes,
-      coupon_code
+      coupon_code,
+      end_user
     } = req.body;
     const userId = req.user ? req.user.id : null;
 
@@ -3086,6 +3210,7 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
         shipping_method: shipping_method || 'Envío a Domicilio / Planta',
         shipping_address: shipping_address || (user ? user.direccion_entrega : 'Dirección registrada'),
         billing_info: billing_info || { razon_social: user?.empresa || user?.name, cuit: user?.cuit },
+        end_user: end_user || null,
         po_number: effectivePo,
         delivery_notes: delivery_notes || notes || '',
         tracking_number: effectiveTracking,
@@ -3109,6 +3234,7 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
         shipping_method: shipping_method || 'Envío Express a Domicilio / Planta',
         shipping_address: shipping_address || (user ? user.direccion_entrega : 'Dirección registrada'),
         billing_info: billing_info || { razon_social: user?.empresa || user?.name, cuit: user?.cuit },
+        end_user: end_user || null,
         po_number: effectivePo,
         delivery_notes: delivery_notes || notes || '',
         tracking_number: effectiveTracking,
