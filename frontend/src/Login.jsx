@@ -238,6 +238,7 @@ function Login({ setUsuario, initialError, clearInitialError, theme, toggleTheme
   const getDestination = (rol, requestedPath) => {
     if (requestedPath && requestedPath !== '/login') return requestedPath;
     if (rol === 'admin_ecommerce') return '/admin/ecommerce';
+    if (rol === 'admin_erp') return '/admin/erp';
     if (rol === 'admin' || rol === 'staff') return '/';
     return '/mis-tickets';
   };

@@ -256,9 +256,10 @@ let usuariosDb = [
     { id: 4, nombre: "Manager de Prueba", email: "manager@crm.com", password: hashPassword("manager123"), rol: "manager", crear_tickets: true, activo: true, pais: "Argentina", sector: "Operaciones", horario_atencion: "09:00 - 18:00", ciudad: "Buenos Aires" },
     { id: 5, nombre: "Juan Pascuzzi", email: "jpascuzzi@dacas.com", password: hashPassword("admin123"), rol: "admin", crear_tickets: true, activo: true, pais: "Argentina", sector: "Dirección", horario_atencion: "24/7", ciudad: "Buenos Aires" },
     { id: 6, nombre: "Admin E-commerce", email: "admin.ecommerce@dacas.com", password: hashPassword("password123"), rol: "admin_ecommerce", crear_tickets: true, activo: true, pais: "Argentina", sector: "E-Commerce", horario_atencion: "09:00 - 18:00", ciudad: "Buenos Aires" },
-    { id: 7, nombre: "PM de Prueba", email: "pm@crm.com", password: hashPassword("pm123"), rol: "pm", crear_tickets: true, activo: true, pais: "Argentina", sector: "Producto", horario_atencion: "09:00 - 18:00", ciudad: "Buenos Aires" }
+    { id: 7, nombre: "PM de Prueba", email: "pm@crm.com", password: hashPassword("pm123"), rol: "pm", crear_tickets: true, activo: true, pais: "Argentina", sector: "Producto", horario_atencion: "09:00 - 18:00", ciudad: "Buenos Aires" },
+    { id: 8, nombre: "Admin ERP DACAS", email: "admin.erp@dacas.com", password: hashPassword("admin123"), rol: "admin_erp", crear_tickets: true, activo: true, pais: "Argentina", sector: "Sistemas & ERP", horario_atencion: "24/7", ciudad: "Buenos Aires" }
 ];
-let nextUsuarioId = 8;
+let nextUsuarioId = 9;
 
 let nextAccionId = 1;
 function registrarAccionTicket(ticketId, accion, detalle, usuarioStr) {

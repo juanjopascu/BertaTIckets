@@ -1,0 +1,1080 @@
+{
+  "version": "2.0.0",
+  "architecture": "Oracle NetSuite OneWorld Multi-Subsidiary & Multi-Currency",
+  "updated_at": "2026-09-29T15:33:55.685Z",
+  "subsidiaries": [
+    {
+      "id": 1,
+      "code": "SUB-ARG",
+      "name": "DACAS Argentina S.A.",
+      "country": "Argentina",
+      "currency": "USD",
+      "local_currency": "ARS",
+      "tax_id": "30-70891234-5",
+      "address": "Av. Ingeniero Huergo 1167, CABA",
+      "legal_rep": "Juan José Pascuzzi",
+      "status": "Activa"
+    },
+    {
+      "id": 2,
+      "code": "SUB-CHL",
+      "name": "DACAS Chile SpA",
+      "country": "Chile",
+      "currency": "USD",
+      "local_currency": "CLP",
+      "tax_id": "76.543.210-K",
+      "address": "Av. Andrés Bello 2711, Las Condes, Santiago",
+      "legal_rep": "Carlos Vives",
+      "status": "Activa"
+    },
+    {
+      "id": 3,
+      "code": "SUB-COL",
+      "name": "DACAS Colombia SAS",
+      "country": "Colombia",
+      "currency": "USD",
+      "local_currency": "COP",
+      "tax_id": "901.234.567-8",
+      "address": "Calle 100 #19-61, Edificio Oxo Center, Bogotá",
+      "legal_rep": "Andrea Echeverri",
+      "status": "Activa"
+    },
+    {
+      "id": 4,
+      "code": "SUB-PER",
+      "name": "DACAS Perú SAC",
+      "country": "Perú",
+      "currency": "USD",
+      "local_currency": "PEN",
+      "tax_id": "20601234567",
+      "address": "Av. Javier Prado Este 444, San Isidro, Lima",
+      "legal_rep": "Mario Vargas",
+      "status": "Activa"
+    },
+    {
+      "id": 5,
+      "code": "SUB-MIA",
+      "name": "DACAS International LLC",
+      "country": "Estados Unidos",
+      "currency": "USD",
+      "local_currency": "USD",
+      "tax_id": "EIN 84-1234567",
+      "address": "8305 NW 27th St, Suite 107, Doral, FL 33122",
+      "legal_rep": "Roberto Gomez",
+      "status": "Activa"
+    }
+  ],
+  "currencies": [
+    {
+      "code": "USD",
+      "name": "US Dollar (Base Corporativa)",
+      "symbol": "$",
+      "rate": 1,
+      "is_base": true,
+      "updated_at": "2026-09-29T14:23:01.942Z"
+    },
+    {
+      "code": "ARS",
+      "name": "Peso Argentino",
+      "symbol": "$",
+      "rate": 1290,
+      "is_base": false,
+      "updated_at": "2026-09-29T14:23:01.942Z"
+    },
+    {
+      "code": "CLP",
+      "name": "Peso Chileno",
+      "symbol": "$",
+      "rate": 945.5,
+      "is_base": false,
+      "updated_at": "2026-09-29T14:23:01.942Z"
+    },
+    {
+      "code": "COP",
+      "name": "Peso Colombiano",
+      "symbol": "$",
+      "rate": 4180,
+      "is_base": false,
+      "updated_at": "2026-09-29T14:23:01.942Z"
+    },
+    {
+      "code": "PEN",
+      "name": "Sol Peruano",
+      "symbol": "S/",
+      "rate": 3.75,
+      "is_base": false,
+      "updated_at": "2026-09-29T14:23:01.942Z"
+    },
+    {
+      "code": "EUR",
+      "name": "Euro",
+      "symbol": "€",
+      "rate": 0.925,
+      "is_base": false,
+      "updated_at": "2026-09-29T14:23:01.942Z"
+    }
+  ],
+  "chart_of_accounts": [
+    {
+      "code": "1010",
+      "name": "Efectivo & Cuentas Bancarias Operativas",
+      "type": "Activo Circulante",
+      "subcategory": "Bancos / Tesorería",
+      "balance_usd": 2480500
+    },
+    {
+      "code": "1100",
+      "name": "Cuentas por Cobrar Comerciales (A/R)",
+      "type": "Activo Circulante",
+      "subcategory": "Crédito a Clientes",
+      "balance_usd": 842600
+    },
+    {
+      "code": "1200",
+      "name": "Inventario de Mercaderías para Reventa",
+      "type": "Activo Circulante",
+      "subcategory": "Inventario Almacenes",
+      "balance_usd": 1915400
+    },
+    {
+      "code": "1500",
+      "name": "Propiedad, Planta, Equipos & Servidores",
+      "type": "Activo No Circulante",
+      "subcategory": "Activo Fijo",
+      "balance_usd": 540000
+    },
+    {
+      "code": "2010",
+      "name": "Cuentas por Pagar a Proveedores (A/P)",
+      "type": "Pasivo Corriente",
+      "subcategory": "Deuda Proveedores",
+      "balance_usd": 495000
+    },
+    {
+      "code": "2100",
+      "name": "Impuestos Fiscales por Pagar (IVA/Retenciones)",
+      "type": "Pasivo Corriente",
+      "subcategory": "Fiscal",
+      "balance_usd": 118400
+    },
+    {
+      "code": "3010",
+      "name": "Capital Social Emitido & Pagado",
+      "type": "Patrimonio Neto",
+      "subcategory": "Capital",
+      "balance_usd": 3500000
+    },
+    {
+      "code": "3020",
+      "name": "Resultados Acumulados de Ejercicios Anteriores",
+      "type": "Patrimonio Neto",
+      "subcategory": "Reservas",
+      "balance_usd": 1120100
+    },
+    {
+      "code": "4010",
+      "name": "Ingresos por Venta de Equipamiento Hardware",
+      "type": "Ingreso Operacional",
+      "subcategory": "Ventas Hardware",
+      "balance_usd": 4210000
+    },
+    {
+      "code": "4020",
+      "name": "Ingresos por Licencias Software & SaaS",
+      "type": "Ingreso Operacional",
+      "subcategory": "Ventas Licencias",
+      "balance_usd": 1890000
+    },
+    {
+      "code": "5010",
+      "name": "Costo de Mercaderías Vendidas (COGS Hardware)",
+      "type": "Costo de Ventas",
+      "subcategory": "Costo Directo",
+      "balance_usd": 3120000
+    },
+    {
+      "code": "5020",
+      "name": "Costo de Licencias & Soporte Mayorista",
+      "type": "Costo de Ventas",
+      "subcategory": "Costo Directo",
+      "balance_usd": 1250000
+    },
+    {
+      "code": "6010",
+      "name": "Gastos de Operación, Logística & Depósitos",
+      "type": "Gasto Operativo",
+      "subcategory": "Gastos Operacionales",
+      "balance_usd": 485000
+    },
+    {
+      "code": "6020",
+      "name": "Gastos de Comercialización & Comisiones",
+      "type": "Gasto Operativo",
+      "subcategory": "Ventas",
+      "balance_usd": 215000
+    }
+  ],
+  "journal_entries": [
+    {
+      "id": 1,
+      "entry_number": "AS-2026-0041",
+      "date": "2026-09-28",
+      "subsidiary": "DACAS Argentina S.A.",
+      "memo": "Devengamiento Facturación Mensual de Hardware Fortinet & Cisco",
+      "currency": "USD",
+      "total_amount": 52700,
+      "status": "Aprobado & Contabilizado",
+      "lines": [
+        {
+          "account": "1100 - Cuentas por Cobrar Comerciales (A/R)",
+          "debit": 52700,
+          "credit": 0
+        },
+        {
+          "account": "4010 - Ingresos por Venta de Equipamiento Hardware",
+          "debit": 0,
+          "credit": 52700
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "entry_number": "AS-2026-0042",
+      "date": "2026-09-27",
+      "subsidiary": "DACAS International LLC",
+      "memo": "Pago de Orden de Compra Internacional PO-2026-0104 a Fortinet Inc.",
+      "currency": "USD",
+      "total_amount": 145000,
+      "status": "Aprobado & Contabilizado",
+      "lines": [
+        {
+          "account": "2010 - Cuentas por Pagar a Proveedores (A/P)",
+          "debit": 145000,
+          "credit": 0
+        },
+        {
+          "account": "1010 - Efectivo & Cuentas Bancarias Operativas",
+          "debit": 0,
+          "credit": 145000
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "entry_number": "AS-2026-0043",
+      "date": "2026-09-26",
+      "subsidiary": "DACAS Chile SpA",
+      "memo": "Reconocimiento de Costo de Ventas e Inventario por despacho SO-1056",
+      "currency": "USD",
+      "total_amount": 24600,
+      "status": "Aprobado & Contabilizado",
+      "lines": [
+        {
+          "account": "5010 - Costo de Mercaderías Vendidas (COGS Hardware)",
+          "debit": 24600,
+          "credit": 0
+        },
+        {
+          "account": "1200 - Inventario de Mercaderías para Reventa",
+          "debit": 0,
+          "credit": 24600
+        }
+      ]
+    }
+  ],
+  "locations": [
+    {
+      "id": 1,
+      "code": "LOC-BUE",
+      "name": "Centro de Distribución Central Buenos Aires",
+      "country": "Argentina",
+      "address": "Parque Patricios Tech Hub, CABA",
+      "manager": "Esteban Quilmes",
+      "total_items_count": 540,
+      "valuation_usd": 890400
+    },
+    {
+      "id": 2,
+      "code": "LOC-SCL",
+      "name": "Hub Regional Santiago (Enea Pudahuel)",
+      "country": "Chile",
+      "address": "Centro Empresarial Enea, Pudahuel, Santiago",
+      "manager": "Matías González",
+      "total_items_count": 310,
+      "valuation_usd": 485000
+    },
+    {
+      "id": 3,
+      "code": "LOC-MIA",
+      "name": "Miami Free Trade Zone Logistics Hub",
+      "country": "Estados Unidos",
+      "address": "8305 NW 27th St, Doral, FL",
+      "manager": "Roberto Gómez",
+      "total_items_count": 420,
+      "valuation_usd": 395000
+    },
+    {
+      "id": 4,
+      "code": "LOC-BOG",
+      "name": "Bodega de Enlace Bogotá Fontibón",
+      "country": "Colombia",
+      "address": "Zona Franca Fontibón, Bogotá",
+      "manager": "Camila Restrepo",
+      "total_items_count": 180,
+      "valuation_usd": 145000
+    }
+  ],
+  "catalog_items": [
+    {
+      "id": 1,
+      "sku": "FG-60F-BDL",
+      "mpn": "FG-60F-BDL-950-12",
+      "nombre": "FortiGate 60F Hardware + 1yr FortiGuard Unified Threat Protection",
+      "item_type": "Inventario Físico (Hardware)",
+      "marca": "Fortinet",
+      "categoria": "Next-Gen Firewall",
+      "precio_mayorista": 1250,
+      "costo_promedio": 890,
+      "stock_disponible": 52,
+      "stock_por_almacen": {
+        "LOC-BUE": 30,
+        "LOC-SCL": 10,
+        "LOC-MIA": 8,
+        "LOC-BOG": 4
+      },
+      "lead_time_days": 7,
+      "moneda": "USD"
+    },
+    {
+      "id": 2,
+      "sku": "AP-505-RW",
+      "mpn": "R2H28A",
+      "nombre": "Aruba AP-505 Campus Unified Access Point Wi-Fi 6",
+      "item_type": "Inventario Físico (Hardware)",
+      "marca": "Aruba HPE",
+      "categoria": "Wireless Enterprise",
+      "precio_mayorista": 395,
+      "costo_promedio": 260,
+      "stock_disponible": 110,
+      "stock_por_almacen": {
+        "LOC-BUE": 50,
+        "LOC-SCL": 30,
+        "LOC-MIA": 20,
+        "LOC-BOG": 10
+      },
+      "lead_time_days": 5,
+      "moneda": "USD"
+    },
+    {
+      "id": 3,
+      "sku": "C9300-24T-A",
+      "mpn": "C9300-24T-A-EDU",
+      "nombre": "Cisco Catalyst 9300 24-Port Data Only, Network Advantage",
+      "item_type": "Inventario Físico (Hardware)",
+      "marca": "Cisco",
+      "categoria": "Enterprise Switching",
+      "precio_mayorista": 4120,
+      "costo_promedio": 2950,
+      "stock_disponible": 18,
+      "stock_por_almacen": {
+        "LOC-BUE": 8,
+        "LOC-SCL": 4,
+        "LOC-MIA": 4,
+        "LOC-BOG": 2
+      },
+      "lead_time_days": 14,
+      "moneda": "USD"
+    },
+    {
+      "id": 4,
+      "sku": "FC-10-0060F-950-02-12",
+      "mpn": "FC-10-0060F-950",
+      "nombre": "FortiGate-60F 1 Year 24x7 FortiCare Contract Renewal",
+      "item_type": "Licencia Digital (SaaS / Suscripción)",
+      "marca": "Fortinet",
+      "categoria": "Soporte & Licencias Cloud",
+      "precio_mayorista": 450,
+      "costo_promedio": 330,
+      "stock_disponible": 999,
+      "stock_por_almacen": {
+        "LOC-BUE": 999,
+        "LOC-SCL": 999,
+        "LOC-MIA": 999,
+        "LOC-BOG": 999
+      },
+      "lead_time_days": 1,
+      "moneda": "USD"
+    },
+    {
+      "id": 5,
+      "sku": "SRX300-SYS-JB",
+      "mpn": "SRX300-SYS-JB",
+      "nombre": "Juniper SRX300 Services Gateway with Junos Software Base",
+      "item_type": "Inventario Físico (Hardware)",
+      "marca": "Juniper",
+      "categoria": "Routing & Security",
+      "precio_mayorista": 980,
+      "costo_promedio": 690,
+      "stock_disponible": 25,
+      "stock_por_almacen": {
+        "LOC-BUE": 12,
+        "LOC-SCL": 6,
+        "LOC-MIA": 5,
+        "LOC-BOG": 2
+      },
+      "lead_time_days": 10,
+      "moneda": "USD"
+    },
+    {
+      "id": 6,
+      "sku": "SMT1500C",
+      "mpn": "SMT1500C",
+      "nombre": "APC Smart-UPS 1500VA LCD 120V con SmartConnect Cloud",
+      "item_type": "Inventario Físico (Hardware)",
+      "marca": "APC Schneider",
+      "categoria": "Energía & Racks",
+      "precio_mayorista": 890,
+      "costo_promedio": 620,
+      "stock_disponible": 65,
+      "stock_por_almacen": {
+        "LOC-BUE": 30,
+        "LOC-SCL": 15,
+        "LOC-MIA": 12,
+        "LOC-BOG": 8
+      },
+      "lead_time_days": 7,
+      "moneda": "USD"
+    }
+  ],
+  "vendors": [
+    {
+      "id": 1,
+      "vendor_code": "VEN-FORTI",
+      "name": "Fortinet Inc. USA",
+      "category": "Firewall, SD-WAN & SASE",
+      "country": "Estados Unidos",
+      "tax_id": "US-77-0560707",
+      "payment_terms": "Net 60 Days",
+      "currency": "USD",
+      "email": "orders-americas@fortinet.com",
+      "total_purchases_ytd": 1450000,
+      "balance_payable_ap": 145000
+    },
+    {
+      "id": 2,
+      "vendor_code": "VEN-CISCO",
+      "name": "Cisco Systems Capital Inc.",
+      "category": "Switching, Routing & Colaboración",
+      "country": "Estados Unidos",
+      "tax_id": "US-94-2977755",
+      "payment_terms": "Net 45 Days",
+      "currency": "USD",
+      "email": "distribution-latam@cisco.com",
+      "total_purchases_ytd": 980000,
+      "balance_payable_ap": 88500
+    },
+    {
+      "id": 3,
+      "vendor_code": "VEN-PALO",
+      "name": "Palo Alto Networks LLC",
+      "category": "Next-Gen Security & Prisma Cloud",
+      "country": "Estados Unidos",
+      "tax_id": "US-20-4100223",
+      "payment_terms": "Net 60 Days",
+      "currency": "USD",
+      "email": "partners@paloaltonetworks.com",
+      "total_purchases_ytd": 620000,
+      "balance_payable_ap": 62000
+    },
+    {
+      "id": 4,
+      "vendor_code": "VEN-APC",
+      "name": "Schneider Electric IT Corp",
+      "category": "UPS, Racks & Data Center Cooling",
+      "country": "Estados Unidos",
+      "tax_id": "US-04-3329012",
+      "payment_terms": "Net 30 Days",
+      "currency": "USD",
+      "email": "supply-latam@se.com",
+      "total_purchases_ytd": 310000,
+      "balance_payable_ap": 35000
+    }
+  ],
+  "purchase_orders": [
+    {
+      "id": 101,
+      "po_number": "PO-2026-0104",
+      "vendor_id": 1,
+      "vendor_name": "Fortinet Inc. USA",
+      "subsidiary": "DACAS International LLC",
+      "location": "LOC-MIA",
+      "destination_warehouse": "Miami Free Trade Zone Logistics Hub",
+      "date": "2026-09-18",
+      "delivery_date": "2026-10-05",
+      "total": 145000,
+      "currency": "USD",
+      "status": "Recibida en Almacén",
+      "items_count": 65,
+      "items": [
+        {
+          "sku": "FG-60F-BDL",
+          "nombre": "FortiGate 60F Hardware + 1yr FortiGuard",
+          "cantidad": 50,
+          "precio_unitario": 890
+        },
+        {
+          "sku": "FC-10-0060F-950-02-12",
+          "nombre": "FortiGate-60F 1 Year 24x7 FortiCare",
+          "cantidad": 30,
+          "precio_unitario": 330
+        }
+      ]
+    },
+    {
+      "id": 102,
+      "po_number": "PO-2026-0105",
+      "vendor_id": 2,
+      "vendor_name": "Cisco Systems Capital Inc.",
+      "subsidiary": "DACAS Argentina S.A.",
+      "location": "LOC-BUE",
+      "destination_warehouse": "Centro de Distribución Central Buenos Aires",
+      "date": "2026-09-22",
+      "delivery_date": "2026-10-12",
+      "total": 88500,
+      "currency": "USD",
+      "status": "En Tránsito Internacional",
+      "items_count": 24,
+      "items": [
+        {
+          "sku": "C9300-24T-A",
+          "nombre": "Cisco Catalyst 9300 24-Port Data Only",
+          "cantidad": 30,
+          "precio_unitario": 2950
+        }
+      ]
+    },
+    {
+      "id": 103,
+      "po_number": "PO-2026-0106",
+      "vendor_id": 4,
+      "vendor_name": "Schneider Electric IT Corp",
+      "subsidiary": "DACAS Chile SpA",
+      "location": "LOC-SCL",
+      "destination_warehouse": "Hub Regional Santiago (Enea Pudahuel)",
+      "date": "2026-09-25",
+      "delivery_date": "2026-10-18",
+      "total": 35000,
+      "currency": "USD",
+      "status": "Aprobada / Esperando Despacho",
+      "items_count": 40,
+      "items": [
+        {
+          "sku": "SMT1500C",
+          "nombre": "APC Smart-UPS 1500VA LCD 120V",
+          "cantidad": 40,
+          "precio_unitario": 620
+        }
+      ]
+    }
+  ],
+  "vendor_bills": [
+    {
+      "id": 201,
+      "bill_number": "VB-8901",
+      "po_number": "PO-2026-0104",
+      "vendor_name": "Fortinet Inc. USA",
+      "subsidiary": "DACAS International LLC",
+      "due_date": "2026-10-30",
+      "total": 145000,
+      "amount_paid": 0,
+      "balance_due": 145000,
+      "currency": "USD",
+      "status": "Abierta (Pendiente de Pago)"
+    },
+    {
+      "id": 202,
+      "bill_number": "VB-8902",
+      "po_number": "PO-2026-0105",
+      "vendor_name": "Cisco Systems Capital Inc.",
+      "subsidiary": "DACAS Argentina S.A.",
+      "due_date": "2026-11-15",
+      "total": 88500,
+      "amount_paid": 88500,
+      "balance_due": 0,
+      "currency": "USD",
+      "status": "Completamente Pagada"
+    }
+  ],
+  "orders": [
+    {
+      "id": 1055,
+      "erp_order_id": "SO-2026-1055",
+      "cliente": "Networking Solutions SRL",
+      "subsidiary": "DACAS Argentina S.A.",
+      "total": 18500,
+      "currency": "USD",
+      "payment_method": "Crédito B2B Net 30",
+      "erp_status": "Facturado",
+      "erp_invoice_number": "INV-FC-A-0001-00004921",
+      "erp_dispatch_remito": "REM-0001-00018942",
+      "location": "LOC-BUE",
+      "created_at": "2026-09-24T14:23:01.942Z",
+      "items": [
+        {
+          "sku": "FG-60F-BDL",
+          "nombre": "FortiGate 60F Hardware + 1yr FortiGuard",
+          "cantidad": 3,
+          "precio": 3200
+        },
+        {
+          "sku": "AP-505-RW",
+          "nombre": "Aruba AP-505 Campus Access Point",
+          "cantidad": 10,
+          "precio": 890
+        }
+      ]
+    },
+    {
+      "id": 1056,
+      "erp_order_id": "SO-2026-1056",
+      "cliente": "Telecomunicaciones Andinas SA",
+      "subsidiary": "DACAS Chile SpA",
+      "total": 34200,
+      "currency": "USD",
+      "payment_method": "Crédito B2B Net 60",
+      "erp_status": "Facturado",
+      "erp_invoice_number": "INV-FC-A-0001-00004922",
+      "erp_dispatch_remito": "REM-0001-00018943",
+      "location": "LOC-SCL",
+      "created_at": "2026-09-27T14:23:01.942Z",
+      "items": [
+        {
+          "sku": "SRX300-SYS-JB",
+          "nombre": "Juniper SRX300 Services Gateway",
+          "cantidad": 6,
+          "precio": 1950
+        },
+        {
+          "sku": "C9300-24T-A",
+          "nombre": "Cisco Catalyst 9300 24-Port Data Only",
+          "cantidad": 4,
+          "precio": 5625
+        }
+      ]
+    },
+    {
+      "id": 1057,
+      "erp_order_id": "SO-2026-1057",
+      "cliente": "Data & Cloud Corp SAC",
+      "subsidiary": "DACAS Perú SAC",
+      "total": 12400,
+      "currency": "USD",
+      "payment_method": "Transferencia Bancaria Inmediata",
+      "erp_status": "Facturado",
+      "erp_invoice_number": "INV-FC-A-0001-00006057",
+      "erp_dispatch_remito": "REM-0001-000110057",
+      "location": "LOC-BOG",
+      "created_at": "2026-09-28T14:23:01.942Z",
+      "items": [
+        {
+          "sku": "SMT1500C",
+          "nombre": "APC Smart-UPS 1500VA LCD 120V con SmartConnect",
+          "cantidad": 8,
+          "precio": 1550
+        }
+      ]
+    },
+    {
+      "id": 1058,
+      "erp_order_id": "SO-2026-1058",
+      "cliente": "Banco Santander Río S.A.",
+      "subsidiary": "DACAS Argentina S.A.",
+      "total": 54000,
+      "currency": "USD",
+      "payment_method": "Crédito B2B Net 30",
+      "erp_status": "Facturado",
+      "erp_invoice_number": "INV-FC-A-0001-00004923",
+      "erp_dispatch_remito": "REM-0001-00018944",
+      "location": "LOC-BUE",
+      "created_at": "2026-09-25T14:23:01.942Z",
+      "items": [
+        {
+          "sku": "C9300-24T-A",
+          "nombre": "Cisco Catalyst 9300 24-Port Data Only",
+          "cantidad": 8,
+          "precio": 4120
+        },
+        {
+          "sku": "FG-60F-BDL",
+          "nombre": "FortiGate 60F Hardware + 1yr FortiGuard",
+          "cantidad": 12,
+          "precio": 1753
+        }
+      ]
+    }
+  ],
+  "invoices": [
+    {
+      "id": 301,
+      "invoice_number": "INV-FC-A-0001-00004921",
+      "sales_order_id": "SO-2026-1055",
+      "customer_name": "Networking Solutions SRL",
+      "subsidiary": "DACAS Argentina S.A.",
+      "issue_date": "2026-09-24",
+      "due_date": "2026-10-24",
+      "total": 18500,
+      "amount_paid": 18500,
+      "balance_due": 0,
+      "currency": "USD",
+      "status": "Cobrada / Pagada"
+    },
+    {
+      "id": 302,
+      "invoice_number": "INV-FC-A-0001-00004922",
+      "sales_order_id": "SO-2026-1056",
+      "customer_name": "Telecomunicaciones Andinas SA",
+      "subsidiary": "DACAS Chile SpA",
+      "issue_date": "2026-09-27",
+      "due_date": "2026-11-27",
+      "total": 34200,
+      "amount_paid": 0,
+      "balance_due": 34200,
+      "currency": "USD",
+      "status": "Abierta (Pendiente de Cobro)"
+    },
+    {
+      "id": 303,
+      "invoice_number": "INV-FC-A-0001-00004923",
+      "sales_order_id": "SO-2026-1058",
+      "customer_name": "Banco Santander Río S.A.",
+      "subsidiary": "DACAS Argentina S.A.",
+      "issue_date": "2026-09-25",
+      "due_date": "2026-10-25",
+      "total": 54000,
+      "amount_paid": 54000,
+      "balance_due": 0,
+      "currency": "USD",
+      "status": "Cobrada / Pagada"
+    }
+  ],
+  "credit_accounts": [
+    {
+      "id": 1,
+      "cliente_id": 1,
+      "company_name": "Networking Solutions SRL",
+      "subsidiary": "DACAS Argentina S.A.",
+      "cuit": "30-71829340-9",
+      "condicion_iva": "IVA Responsable Inscripto",
+      "email": "compras@networkingsolutions.com",
+      "phone": "+54 11 4110-3344",
+      "pais": "Argentina",
+      "credit_limit": 100000,
+      "used_credit": 18500,
+      "payment_terms": "Crédito B2B Net 30",
+      "erp_status": "Habilitado",
+      "erp_account_id": "CLI-ERP-1001"
+    },
+    {
+      "id": 2,
+      "cliente_id": 2,
+      "company_name": "Telecomunicaciones Andinas SA",
+      "subsidiary": "DACAS Chile SpA",
+      "cuit": "76.128.940-5",
+      "condicion_iva": "Contribuyente Primera Categoría",
+      "email": "finanzas@telecomandinas.cl",
+      "phone": "+56 2 2400-5500",
+      "pais": "Chile",
+      "credit_limit": 150000,
+      "used_credit": 34200,
+      "payment_terms": "Crédito B2B Net 60",
+      "erp_status": "Habilitado",
+      "erp_account_id": "CLI-ERP-1002"
+    },
+    {
+      "id": 3,
+      "cliente_id": 3,
+      "company_name": "Data & Cloud Corp SAC",
+      "subsidiary": "DACAS Perú SAC",
+      "cuit": "20584920194",
+      "condicion_iva": "Régimen General MYPE",
+      "email": "pagos@datacloud.pe",
+      "phone": "+51 1 700-8800",
+      "pais": "Perú",
+      "credit_limit": 80000,
+      "used_credit": 0,
+      "payment_terms": "Crédito B2B Net 30",
+      "erp_status": "Habilitado",
+      "erp_account_id": "CLI-ERP-1003"
+    }
+  ],
+  "end_users": [
+    {
+      "id": 1,
+      "user_id": 1,
+      "company_name": "Banco Santander Río S.A.",
+      "nombre": "Santander Casa Central",
+      "direccion": "Av. Paseo Colón 315",
+      "ciudad": "Buenos Aires",
+      "pais": "Argentina",
+      "telefono": "+54 11 4341-1000",
+      "contacto": "Ing. Martín Palermo",
+      "website": "www.santander.com.ar",
+      "created_at": "2026-09-14T14:23:01.942Z"
+    },
+    {
+      "id": 2,
+      "user_id": 1,
+      "company_name": "Cencosud S.A.",
+      "nombre": "Cencosud Corporativo",
+      "direccion": "Av. Kennedy 9001",
+      "ciudad": "Santiago",
+      "pais": "Chile",
+      "telefono": "+56 2 2959-0000",
+      "contacto": "Carlos Vives - Gerente IT",
+      "website": "www.cencosud.com",
+      "created_at": "2026-09-21T14:23:01.942Z"
+    },
+    {
+      "id": 3,
+      "user_id": 1,
+      "company_name": "Banesco Banco Universal",
+      "nombre": "Banesco Ciudad Banesco",
+      "direccion": "Av. Principal de Bello Monte",
+      "ciudad": "Caracas",
+      "pais": "Venezuela",
+      "telefono": "+58 212 501-1111",
+      "contacto": "Dr. Juan Carlos Escotet (CEO)",
+      "website": "www.banesco.com",
+      "created_at": "2026-09-26T14:23:01.942Z"
+    }
+  ],
+  "inventory_adjustments": [
+    {
+      "id": 1790691927711,
+      "sku": "FG-60F-BDL",
+      "item_name": "FortiGate 60F Hardware + 1yr FortiGuard Unified Threat Protection",
+      "location": "LOC-BUE",
+      "adjustment": 10,
+      "reason": "Auditoría física de depósito trimestral",
+      "timestamp": "2026-09-29T14:25:27.711Z"
+    }
+  ],
+  "settings": {
+    "instance_name": "DACAS Enterprise Oracle NetSuite OneWorld Cluster",
+    "version": "2.0.0",
+    "base_currency": "USD",
+    "multi_subsidiary_consolidation": true,
+    "require_ceo_venezuela": true,
+    "strict_credit_limit": true,
+    "auto_generate_invoices": true,
+    "auto_generate_remitos": true,
+    "inventory_cost_method": "FIFO Estricto",
+    "decimals": 2,
+    "sync_interval_minutes": 20,
+    "email_notifications_enabled": true,
+    "webhook_enabled": true,
+    "prefixes": {
+      "sales_order": "SO-",
+      "purchase_order": "PO-",
+      "invoice": "INV-",
+      "remito": "REM-",
+      "vendor_bill": "VB-",
+      "journal_entry": "JE-",
+      "customer_id": "CLI-ERP-"
+    },
+    "fiscal_rules": {
+      "argentina": {
+        "country": "Argentina",
+        "code": "ARG",
+        "tax_id_name": "CUIT",
+        "vat_rate": 21,
+        "requires_electronic_invoice": true,
+        "withholding_iibb": true,
+        "currency": "ARS"
+      },
+      "chile": {
+        "country": "Chile",
+        "code": "CHL",
+        "tax_id_name": "RUT",
+        "vat_rate": 19,
+        "requires_electronic_invoice": true,
+        "withholding_iibb": false,
+        "currency": "CLP"
+      },
+      "colombia": {
+        "country": "Colombia",
+        "code": "COL",
+        "tax_id_name": "NIT",
+        "vat_rate": 19,
+        "requires_electronic_invoice": true,
+        "withholding_iibb": false,
+        "currency": "COP"
+      },
+      "peru": {
+        "country": "Perú",
+        "code": "PER",
+        "tax_id_name": "RUC",
+        "vat_rate": 18,
+        "requires_electronic_invoice": true,
+        "withholding_iibb": false,
+        "currency": "PEN"
+      },
+      "venezuela": {
+        "country": "Venezuela",
+        "code": "VEN",
+        "tax_id_name": "RIF",
+        "vat_rate": 16,
+        "requires_electronic_invoice": false,
+        "withholding_iibb": false,
+        "currency": "USD",
+        "requires_ceo": true
+      },
+      "usa": {
+        "country": "Estados Unidos",
+        "code": "USA",
+        "tax_id_name": "EIN",
+        "vat_rate": 7,
+        "requires_electronic_invoice": false,
+        "withholding_iibb": false,
+        "currency": "USD"
+      }
+    },
+    "updated_at": "2026-09-29T14:44:47.288Z"
+  },
+  "country_apis": [
+    {
+      "id": 1,
+      "country": "Argentina",
+      "code": "ARG",
+      "flag": "🇦🇷",
+      "api_name": "AFIP WSFE v1 (Facturación Electrónica CAE)",
+      "endpoint_url": "https://wswhomo.afip.gov.ar/wsfev1/service.asmx",
+      "environment": "Homologación",
+      "auth_type": "Certificado Digital X.509 + Token WSAA",
+      "api_key_or_token": "wsaa_tk_arg_2026_9941a87c129e84",
+      "subsidiary_id": 1,
+      "subsidiary_name": "DACAS Argentina S.A.",
+      "timeout_ms": 5000,
+      "status": "Activo",
+      "last_ping": "2026-09-29T14:39:43.478Z",
+      "ping_latency_ms": 72,
+      "enabled": true,
+      "notes": "WebService de Facturación Electrónica con AFIP para comprobantes A, B y C."
+    },
+    {
+      "id": 2,
+      "country": "Chile",
+      "code": "CHL",
+      "flag": "🇨🇱",
+      "api_name": "SII DTE (Documentos Tributarios Electrónicos)",
+      "endpoint_url": "https://maullin.sii.cl/DTEWS/CrSeed.jws",
+      "environment": "Producción",
+      "auth_type": "Firma Electrónica Avanzada (FEA)",
+      "api_key_or_token": "sii_chl_prod_99812401baef",
+      "subsidiary_id": 2,
+      "subsidiary_name": "DACAS Chile SpA",
+      "timeout_ms": 4000,
+      "status": "Activo",
+      "last_ping": "2026-09-29T14:39:17.875Z",
+      "ping_latency_ms": 88,
+      "enabled": true,
+      "notes": "Conexión con el Servicio de Impuestos Internos para Facturas Exentas y Afectas 33/34."
+    },
+    {
+      "id": 3,
+      "country": "Colombia",
+      "code": "COL",
+      "flag": "🇨🇴",
+      "api_name": "DIAN Factura Electrónica Validada",
+      "endpoint_url": "https://vpfe.dian.gov.co/WcfDianCustomerServices.svc",
+      "environment": "Producción",
+      "auth_type": "Bearer Token OAuth 2.0",
+      "api_key_or_token": "dian_oauth_bearer_col_88194",
+      "subsidiary_id": 3,
+      "subsidiary_name": "DACAS Colombia SAS",
+      "timeout_ms": 5000,
+      "status": "Activo",
+      "last_ping": "2026-09-29T14:39:17.875Z",
+      "ping_latency_ms": 142,
+      "enabled": true,
+      "notes": "Transmisión automática de XML firmado DIAN UBL 2.1 con CUFE."
+    },
+    {
+      "id": 4,
+      "country": "Perú",
+      "code": "PER",
+      "flag": "🇵🇪",
+      "api_name": "SUNAT Facturación Electrónica OSE/SEE",
+      "endpoint_url": "https://e-factura.sunat.gob.pe/ol-ti-itcpfegem/billService",
+      "environment": "Producción",
+      "auth_type": "Clave SOL + Certificado Digital",
+      "api_key_or_token": "sunat_sol_sec_per_7719241",
+      "subsidiary_id": 4,
+      "subsidiary_name": "DACAS Perú SAC",
+      "timeout_ms": 6000,
+      "status": "Activo",
+      "last_ping": "2026-09-29T14:39:17.875Z",
+      "ping_latency_ms": 165,
+      "enabled": true,
+      "notes": "Envío de Facturas Electrónicas y Boletas a SUNAT con código hash CDR."
+    },
+    {
+      "id": 5,
+      "country": "Venezuela",
+      "code": "VEN",
+      "flag": "🇻🇪",
+      "api_name": "SENIAT Imprenta Digital & Retenciones",
+      "endpoint_url": "https://contribuyentes.seniat.gob.ve/api/v1/invoices",
+      "environment": "Sandbox",
+      "auth_type": "API Key Header (X-SENIAT-KEY)",
+      "api_key_or_token": "seniat_sbx_ve_091842",
+      "subsidiary_id": null,
+      "subsidiary_name": "Operaciones Directas Venezuela",
+      "timeout_ms": 8000,
+      "status": "Pendiente",
+      "last_ping": "2026-09-29T14:39:17.875Z",
+      "ping_latency_ms": 310,
+      "enabled": false,
+      "notes": "Integración en fase de homologación con el SENIAT y conciliación fiscal."
+    },
+    {
+      "id": 6,
+      "country": "Estados Unidos",
+      "code": "USA",
+      "flag": "🇺🇸",
+      "api_name": "Avalara AvaTax / Stripe Tax US Engine",
+      "endpoint_url": "https://rest.avatax.com/api/v2/transactions/create",
+      "environment": "Producción",
+      "auth_type": "Basic Auth / API Secret",
+      "api_key_or_token": "avatax_sec_live_us_8892110",
+      "subsidiary_id": 5,
+      "subsidiary_name": "DACAS International LLC",
+      "timeout_ms": 3000,
+      "status": "Activo",
+      "last_ping": "2026-09-29T14:39:17.875Z",
+      "ping_latency_ms": 65,
+      "enabled": true,
+      "notes": "Cálculo de impuestos estatales Sales Tax automatizado en Doral, FL."
+    },
+    {
+      "id": 7,
+      "country": "Uruguay",
+      "code": "URY",
+      "flag": "🇺🇾",
+      "api_name": "DGI CFE (Comprobante Fiscal Electrónico)",
+      "endpoint_url": "https://cfe.dgi.gub.uy/ws_factura",
+      "environment": "Homologación",
+      "auth_type": "Certificado Digital X.509",
+      "api_key_or_token": "",
+      "subsidiary_id": null,
+      "subsidiary_name": "DACAS International LLC",
+      "timeout_ms": 5000,
+      "status": "Activo",
+      "last_ping": "2026-09-29T14:45:03.406Z",
+      "ping_latency_ms": 107,
+      "enabled": true,
+      "notes": "Conexión para clientes y despachos en Uruguay",
+      "created_at": "2026-09-29T14:44:56.555Z"
+    }
+  ]
+}

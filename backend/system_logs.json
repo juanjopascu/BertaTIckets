@@ -1,5 +1,454 @@
 [
   {
+    "id": 121,
+    "timestamp": "2026-09-29T17:38:28.540Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "4180146af675e59e9849befef3ffe905d800e01897b26162a4c9ab265462a203"
+    }
+  },
+  {
+    "id": 120,
+    "timestamp": "2026-09-29T17:38:24.897Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "82a14592fb9651edea1153b7f5edede1cbe8806359a4188c0bff11ad545bc16a"
+    }
+  },
+  {
+    "id": 119,
+    "timestamp": "2026-09-29T15:46:09.884Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "dd66fc80388c85440e5dcd6f854aa83fa3ad0e292fd13ff47cc3092cd289df18"
+    }
+  },
+  {
+    "id": 118,
+    "timestamp": "2026-09-29T15:37:44.513Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "a4606acc390af4f8fd60ea764c4c77e941ad49a8af810f35a0a7b28b990f309a"
+    }
+  },
+  {
+    "id": 117,
+    "timestamp": "2026-09-29T15:36:52.037Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Vendedor de Prueba\" (cliente@crm.com) con rol \"vendedor\".",
+    "usuario": {
+      "nombre": "Vendedor de Prueba",
+      "email": "cliente@crm.com",
+      "rol": "vendedor",
+      "id": 2
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "0f75c334dfe9b495264d6c4e107c1c04658931ce8c96684b8a687cbec8d6b20d"
+    }
+  },
+  {
+    "id": 116,
+    "timestamp": "2026-09-29T15:36:41.178Z",
+    "origen": "dashboard",
+    "tipo": "INFO",
+    "accion": "USUARIO_MODIFICADO",
+    "descripcion": "Usuario \"Vendedor de Prueba\" (cliente@crm.com) actualizado por jpascuzzi@dacas.com",
+    "usuario": {
+      "nombre": "jpascuzzi@dacas.com",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "usuarioId": 2,
+      "rol": "vendedor",
+      "activo": true
+    }
+  },
+  {
+    "id": 115,
+    "timestamp": "2026-09-29T15:36:33.141Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "653a31fd077962bddca7f2ae615af9cfe0e23fb2eba3c8b6359ed2dd59db771d"
+    }
+  },
+  {
+    "id": 114,
+    "timestamp": "2026-09-29T15:36:26.711Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"cliente@crm.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {
+      "emailIntentado": "cliente@crm.com"
+    }
+  },
+  {
+    "id": 113,
+    "timestamp": "2026-09-29T15:33:36.828Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Vendedor de Prueba\" (cliente@crm.com) con rol \"vendedor\".",
+    "usuario": {
+      "nombre": "Vendedor de Prueba",
+      "email": "cliente@crm.com",
+      "rol": "vendedor",
+      "id": 2
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "1d82d54bb93f9a1147266c016736966b695e9909728cc3f4ee86f534694cff2d"
+    }
+  },
+  {
+    "id": 112,
+    "timestamp": "2026-09-29T15:33:26.904Z",
+    "origen": "dashboard",
+    "tipo": "INFO",
+    "accion": "USUARIO_MODIFICADO",
+    "descripcion": "Usuario \"Vendedor de Prueba\" (cliente@crm.com) actualizado por jpascuzzi@dacas.com",
+    "usuario": {
+      "nombre": "jpascuzzi@dacas.com",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "usuarioId": 2,
+      "rol": "vendedor",
+      "activo": true
+    }
+  },
+  {
+    "id": 111,
+    "timestamp": "2026-09-29T14:43:54.370Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "5670e02ccda43027330fc448c58751ece5682852c02ce249eb100ec176660085"
+    }
+  },
+  {
+    "id": 110,
+    "timestamp": "2026-09-29T14:39:29.077Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "eeae570b612d47bf9c7d38290029679a39630d9bb0944f8bf2894626a9ddb1c2"
+    }
+  },
+  {
+    "id": 109,
+    "timestamp": "2026-09-29T14:34:10.157Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "3028abd48ff00f2f895962eebcf7adaff52b3cd118a871c6c4823d5d2509aa50"
+    }
+  },
+  {
+    "id": 108,
+    "timestamp": "2026-09-29T14:23:54.872Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "df65039e0f99006dcf853ca9040f833b9df09dee3b46db86de0acb40fc13c531"
+    }
+  },
+  {
+    "id": 107,
+    "timestamp": "2026-09-29T14:23:03.669Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $278,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790691783669",
+      "itemsCount": 1,
+      "total": 278.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Licencia Anual FortiGuard Enterprise Protection Bundle ($278.80)",
+      "items": [
+        {
+          "id": 6,
+          "name": "Licencia Anual FortiGuard Enterprise Protection Bundle",
+          "brand": "Fortinet",
+          "sku": "LIC-FG-ENT-1Y",
+          "qty": 1,
+          "price": 278.8,
+          "subtotal": 278.8
+        }
+      ],
+      "timestamp": "2026-09-29T14:23:03.669Z"
+    }
+  },
+  {
+    "id": 106,
+    "timestamp": "2026-09-29T14:19:42.720Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "a8b476eccf01581edfe950e92fa03b3a8e94fe961cbeaa22a28cb49dbb883dba"
+    }
+  },
+  {
+    "id": 105,
+    "timestamp": "2026-09-29T13:57:09.271Z",
+    "origen": "dashboard",
+    "tipo": "INFO",
+    "accion": "USUARIO_MODIFICADO",
+    "descripcion": "Usuario \"PM de Prueba\" (pm@crm.com) actualizado por jpascuzzi@dacas.com",
+    "usuario": {
+      "nombre": "jpascuzzi@dacas.com",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "usuarioId": 7,
+      "rol": "pm",
+      "activo": true
+    }
+  },
+  {
+    "id": 104,
+    "timestamp": "2026-09-29T13:42:22.286Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "SESION_REVOCADA",
+    "descripcion": "Sesión de Admin ERP DACAS (admin.erp@dacas.com) cerrada administrativamente.",
+    "usuario": {
+      "id": "11341c0cad44e27a052429bc077a4d07980f0ab47770313a745bc5cdb9d7f63a",
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sesionId": "21a48a8c0aa78c64586498395fc46da31d254b5927376f2c9bf706dfbfb8688b",
+      "usuarioId": 8,
+      "ipTarget": "127.0.0.1"
+    }
+  },
+  {
+    "id": 103,
+    "timestamp": "2026-09-29T13:39:17.699Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $278,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790689157699",
+      "itemsCount": 1,
+      "total": 278.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Licencia Anual FortiGuard Enterprise Protection Bundle ($278.80)",
+      "items": [
+        {
+          "id": 6,
+          "name": "Licencia Anual FortiGuard Enterprise Protection Bundle",
+          "brand": "Fortinet",
+          "sku": "LIC-FG-ENT-1Y",
+          "qty": 1,
+          "price": 278.8,
+          "subtotal": 278.8
+        }
+      ],
+      "timestamp": "2026-09-29T13:39:17.699Z"
+    }
+  },
+  {
+    "id": 102,
+    "timestamp": "2026-09-29T13:23:47.372Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Admin ERP DACAS\" (admin.erp@dacas.com) con rol \"admin_erp\".",
+    "usuario": {
+      "nombre": "Admin ERP DACAS",
+      "email": "admin.erp@dacas.com",
+      "rol": "admin_erp",
+      "id": 8
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "21a48a8c0aa78c64586498395fc46da31d254b5927376f2c9bf706dfbfb8688b"
+    }
+  },
+  {
+    "id": 101,
+    "timestamp": "2026-09-29T13:23:24.650Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "11341c0cad44e27a052429bc077a4d07980f0ab47770313a745bc5cdb9d7f63a"
+    }
+  },
+  {
+    "id": 100,
+    "timestamp": "2026-09-29T13:08:41.671Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "617998dd3728c4818d1ebe9cac20842193358a5403f0f75b59f18830760eddee"
+    }
+  },
+  {
     "id": 99,
     "timestamp": "2026-09-29T12:37:12.641Z",
     "origen": "ecommerce",

@@ -505,34 +505,83 @@ function PanelUsuario({ usuario, setUsuario, theme, toggleTheme }) {
         <div className="header-top">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <div style={{
-                background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
-                color: '#ffffff',
-                fontWeight: '900',
-                fontSize: '1.4rem',
-                letterSpacing: '-0.02em',
-                padding: '8px 16px',
-                borderRadius: '12px',
-                boxShadow: '0 4px 15px rgba(15, 164, 222, 0.4)',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
+              <div 
+                style={{
+                  background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                  color: '#ffffff',
+                  fontWeight: '900',
+                  fontSize: '1.4rem',
+                  letterSpacing: '-0.02em',
+                  padding: '8px 16px',
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 15px rgba(15, 164, 222, 0.4)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  cursor: 'pointer'
+                }}
+                onClick={() => {
+                  setMostrarFormulario(false);
+                  setFiltroEstado('Todos');
+                  setFiltroPrioridad('Todas');
+                  setBusqueda('');
+                }}
+                title="Ir a Home"
+              >
                 <span>DACAS</span>
               </div>
               <div>
-                <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-                  Portal de Clientes <span style={{ color: '#0fa4de' }}>&</span> Soporte
-                </h1>
-                <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                  Seguimiento de tickets técnicos, solicitudes y garantías
-                </div>
+                {usuario?.rol === 'vendedor' ? (
+                  <>
+                    <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+                      Portal <span style={{ color: '#0fa4de' }}>Vendedores</span>
+                    </h1>
+                    <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      Seguimiento comercial, solicitudes y gestión de clientes
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
+                      Portal de Clientes <span style={{ color: '#0fa4de' }}>&</span> Soporte
+                    </h1>
+                    <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
+                      Seguimiento de tickets técnicos, solicitudes y garantías
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div className="user-controls">
                 <span style={{ color: 'var(--text-muted)' }}>Hola, <strong style={{ color: 'var(--text-main)' }}>{usuario.nombre}</strong></span>
+                <button
+                  type="button"
+                  className="nav-btn"
+                  onClick={() => {
+                    setMostrarFormulario(false);
+                    setFiltroEstado('Todos');
+                    setFiltroPrioridad('Todas');
+                    setBusqueda('');
+                  }}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: !mostrarFormulario ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : 'var(--pill-bg, #f1f5f9)',
+                    color: !mostrarFormulario ? '#ffffff' : 'var(--text-main, #0f172a)',
+                    border: '1px solid var(--border-color, #e2e8f0)',
+                    borderRadius: '10px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    boxShadow: !mostrarFormulario ? '0 2px 8px rgba(15, 164, 222, 0.3)' : 'none'
+                  }}
+                  title="Ir al inicio de Mis Tickets"
+                >
+                  <BrandingVectorIcon name="home" size={15} color="currentColor" />
+                  <span>Home</span>
+                </button>
                 <button className="nav-btn" onClick={() => setMostrarFormulario(!mostrarFormulario)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                   {mostrarFormulario ? (
                     'Ver Mis Tickets'

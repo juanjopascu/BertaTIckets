@@ -13,6 +13,8 @@ import AdminUsuarios from './AdminUsuarios';
 import AdminImportarKayako from './AdminImportarKayako';
 import AdminConfigTickets from './AdminConfigTickets';
 import AdminCanalesAyuda from './AdminCanalesAyuda';
+import AdminErp from './AdminErp';
+import AdminErpConfig from './AdminErpConfig';
 import BrandingVectorIcon from './BrandingVectorIcon';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
@@ -38,6 +40,21 @@ function AdminViewIcon({ name, size = 18, strokeWidth = 2 }) {
           <circle cx="8" cy="21" r="1"/>
           <circle cx="19" cy="21" r="1"/>
           <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
+        </svg>
+      );
+    case 'erp':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          <ellipse cx="12" cy="5" rx="9" ry="3"/>
+          <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+          <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+        </svg>
+      );
+    case 'erp-admin':
+      return (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+          <circle cx="12" cy="12" r="3"/>
         </svg>
       );
     case 'reportes':
@@ -154,6 +171,7 @@ function AdminViewIcon({ name, size = 18, strokeWidth = 2 }) {
 const ADMIN_VIEWS_INFO = {
   personalizacion: { title: 'Personalización & Login', iconKey: 'personalizacion', route: '/admin/personalizacion' },
   ecommerce: { title: 'Gestión E-commerce', iconKey: 'ecommerce', route: '/admin/ecommerce' },
+  erp: { title: 'Módulo ERP & End Users', iconKey: 'erp', route: '/admin/erp' },
   reportes: { title: 'Reportes & Métricas', iconKey: 'reportes', route: '/reportes' },
   departamentos: { title: 'Gestión de Departamentos', iconKey: 'departamentos', route: '/departamentos' },
   estados: { title: 'Gestión de Estados', iconKey: 'estados', route: '/estados' },
@@ -161,9 +179,11 @@ const ADMIN_VIEWS_INFO = {
   organizaciones: { title: 'Organizaciones', iconKey: 'organizaciones', route: '/organizaciones' },
   equipos: { title: 'Gestión de Equipos', iconKey: 'equipos', route: '/equipos' },
   usuarios: { title: 'Usuarios del Sistema', iconKey: 'usuarios', route: '/admin' },
+  logs: { title: 'Logs & Auditoría', iconKey: 'logs' },
   'importar-kayako': { title: 'Importar Kayako', iconKey: 'importar-kayako', route: '/admin/importar-kayako' },
   'config-tickets': { title: 'Configuración de Tickets', iconKey: 'config-tickets', route: '/config-tickets' },
-  'canales-ayuda': { title: 'Canales de Ayuda', iconKey: 'canales-ayuda', route: '/admin/canales-ayuda' }
+  'canales-ayuda': { title: 'Canales de Ayuda', iconKey: 'canales-ayuda', route: '/admin/canales-ayuda' },
+  'erp-admin': { title: 'ERP Admin & Integraciones', iconKey: 'erp-admin', route: '/admin/erp-admin' }
 };
 
 function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
@@ -192,6 +212,16 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
 
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
   const [adminAbierto, setAdminAbierto] = useState(true);
+  const [adminGeneralAbierto, setAdminGeneralAbierto] = useState(true);
+  const [ticketsProcesosAbierto, setTicketsProcesosAbierto] = useState(true);
+
+  useEffect(() => {
+    if (['personalizacion', 'usuarios', 'canales-ayuda', 'logs', 'importar-kayako'].includes(activeAdminView)) {
+      setAdminGeneralAbierto(true);
+    } else if (['departamentos', 'estados', 'templates', 'organizaciones', 'equipos', 'config-tickets', 'reportes'].includes(activeAdminView)) {
+      setTicketsProcesosAbierto(true);
+    }
+  }, [activeAdminView]);
 
   const [registroModo, setRegistroModo] = useState('existente'); // 'existente' o 'manual'
   const [selectedClienteEmail, setSelectedClienteEmail] = useState('');
@@ -726,7 +756,18 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
       <header className="crm-header grid-header">
         <div className="header-top">
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            <div 
+              style={{ display: 'flex', alignItems: 'center', gap: '16px', cursor: 'pointer' }}
+              onClick={() => {
+                setActiveAdminView(null);
+                setDepartamentoActivo(null);
+                setBusqueda('');
+                setFiltroEstado('Todos');
+                setFiltroPrioridad('Todas');
+                setFiltroAsignado('Todos');
+              }}
+              title="Ir a Home / Inicio"
+            >
               {branding?.headerLogoType === 'custom_image' && branding?.headerLogoUrl ? (
                 <img
                   src={branding.headerLogoUrl.startsWith('http') ? branding.headerLogoUrl : `${API_BASE_URL}${branding.headerLogoUrl}`}
@@ -764,6 +805,37 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
               <div className="user-controls" style={{ width: 'auto', padding: 0 }}>
                 <span style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>Hola, <strong style={{ color: 'var(--text-main)' }}>{usuario?.nombre}</strong></span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveAdminView(null);
+                    setDepartamentoActivo(null);
+                    setBusqueda('');
+                    setFiltroEstado('Todos');
+                    setFiltroPrioridad('Todas');
+                    setFiltroAsignado('Todos');
+                  }}
+                  className="nav-btn"
+                  title="Ir al inicio del Dashboard"
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 14px',
+                    borderRadius: '10px',
+                    fontWeight: '700',
+                    fontSize: '0.86rem',
+                    background: (!activeAdminView && !departamentoActivo) ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : 'var(--pill-bg, #f1f5f9)',
+                    color: (!activeAdminView && !departamentoActivo) ? '#ffffff' : 'var(--text-main, #0f172a)',
+                    border: '1px solid var(--border-color, #e2e8f0)',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s ease',
+                    boxShadow: (!activeAdminView && !departamentoActivo) ? '0 2px 8px rgba(15, 164, 222, 0.3)' : 'none'
+                  }}
+                >
+                  <BrandingVectorIcon name="home" size={15} color="currentColor" />
+                  <span>Home</span>
+                </button>
                 <button 
                   type="button" 
                   onClick={toggleTheme} 
@@ -834,7 +906,44 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
       <main className="crm-main-grid">
         {/* BARRA LATERAL DE DEPARTAMENTOS Y ADMINISTRACION */}
         <aside className="sidebar-depts sidebar-left">
-          {(usuario?.rol === 'admin' || usuario?.rol === 'admin_ecommerce') && (
+          {/* BOTÓN HOME PRINCIPAL */}
+          <div style={{ marginBottom: '14px' }}>
+            <button
+              type="button"
+              onClick={() => {
+                setActiveAdminView(null);
+                setDepartamentoActivo(null);
+                setBusqueda('');
+                setFiltroEstado('Todos');
+                setFiltroPrioridad('Todas');
+                setFiltroAsignado('Todos');
+              }}
+              className={`sidebar-menu-btn ${!activeAdminView && !departamentoActivo ? 'active' : ''}`}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                fontWeight: '800',
+                padding: '11px 14px',
+                width: '100%',
+                borderRadius: '12px',
+                border: '1.5px solid var(--border-color, #e2e8f0)',
+                background: (!activeAdminView && !departamentoActivo) ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : 'var(--card-bg, #ffffff)',
+                color: (!activeAdminView && !departamentoActivo) ? '#ffffff' : 'var(--text-main, #0f172a)',
+                cursor: 'pointer',
+                boxShadow: (!activeAdminView && !departamentoActivo) ? '0 4px 12px rgba(15, 164, 222, 0.35)' : '0 1px 3px rgba(0,0,0,0.03)',
+                transition: 'all 0.2s ease'
+              }}
+              title="Volver al Inicio del Sistema"
+            >
+              <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                <BrandingVectorIcon name="home" size={18} color={(!activeAdminView && !departamentoActivo) ? '#ffffff' : '#0fa4de'} />
+              </span>
+              <span className="sidebar-btn-text" style={{ fontSize: '0.94rem' }}>Home</span>
+            </button>
+          </div>
+
+          {(usuario?.rol === 'admin' || usuario?.rol === 'admin_ecommerce' || usuario?.rol === 'admin_erp') && (
             <div className="sidebar-section sidebar-section-admin">
               <h3 
                 onClick={() => setAdminAbierto(!adminAbierto)} 
@@ -846,7 +955,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                   userSelect: 'none'
                 }}
               >
-                {usuario?.rol === 'admin_ecommerce' ? 'Gestión E-commerce' : 'Administración'}
+                {usuario?.rol === 'admin_erp' ? 'Módulo ERP' : usuario?.rol === 'admin_ecommerce' ? 'Gestión E-commerce' : 'Administración'}
                 <span style={{ 
                   fontSize: '0.8rem', 
                   color: 'var(--text-muted)',
@@ -858,155 +967,301 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                 </span>
               </h3>
               {adminAbierto && (
-                <ul className="admin-menu-list" style={{ animation: 'fadeIn 0.2s ease-out' }}>
-                  <li>
-                    <button 
-                      className={`sidebar-menu-btn ${activeAdminView === 'personalizacion' ? 'active' : ''}`}
-                      onClick={() => setActiveAdminView(activeAdminView === 'personalizacion' ? null : 'personalizacion')}
-                    >
-                      <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                        <AdminViewIcon name="personalizacion" size={17} />
-                      </span>
-                      <span className="sidebar-btn-text">Personalización & Login</span>
-                    </button>
-                  </li>
-                  <li>
-                    <button 
-                      className={`sidebar-menu-btn ${activeAdminView === 'ecommerce' ? 'active' : ''}`}
-                      onClick={() => setActiveAdminView(activeAdminView === 'ecommerce' ? null : 'ecommerce')}
-                    >
-                      <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                        <AdminViewIcon name="ecommerce" size={17} />
-                      </span>
-                      <span className="sidebar-btn-text">E-commerce</span>
-                    </button>
-                  </li>
-                  <li>
-                    <button 
-                      className={`sidebar-menu-btn ${activeAdminView === 'reportes' ? 'active' : ''}`}
-                      onClick={() => setActiveAdminView(activeAdminView === 'reportes' ? null : 'reportes')}
-                    >
-                      <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                        <AdminViewIcon name="reportes" size={17} />
-                      </span>
-                      <span className="sidebar-btn-text">Reportes</span>
-                    </button>
-                  </li>
+                <div className="admin-menu-groups" style={{ animation: 'fadeIn 0.2s ease-out', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                  
+                  {/* ÍTEM 1: ADMINISTRACIÓN GENERAL */}
                   {usuario?.rol === 'admin' && (
-                    <>
-                      <li>
-                        <button 
-                          className={`sidebar-menu-btn ${activeAdminView === 'departamentos' ? 'active' : ''}`}
-                          onClick={() => setActiveAdminView(activeAdminView === 'departamentos' ? null : 'departamentos')}
-                        >
+                    <div className="admin-group-block" style={{ display: 'flex', flexDirection: 'column' }}>
+                      <button
+                        type="button"
+                        onClick={() => setAdminGeneralAbierto(!adminGeneralAbierto)}
+                        className={`sidebar-menu-btn ${['personalizacion', 'canales-ayuda', 'logs', 'importar-kayako', 'usuarios'].includes(activeAdminView) ? 'active' : ''}`}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          fontWeight: '700',
+                          padding: '10px 14px'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                            <AdminViewIcon name="departamentos" size={17} />
+                            <AdminViewIcon name="personalizacion" size={17} />
                           </span>
-                          <span className="sidebar-btn-text">Gestionar Deptos</span>
-                        </button>
-                      </li>
-                      <li>
-                        <button 
-                          className={`sidebar-menu-btn ${activeAdminView === 'estados' ? 'active' : ''}`}
-                          onClick={() => setActiveAdminView(activeAdminView === 'estados' ? null : 'estados')}
-                        >
-                          <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                            <AdminViewIcon name="estados" size={17} />
-                          </span>
-                          <span className="sidebar-btn-text">Gestionar Estados</span>
-                        </button>
-                      </li>
-                      <li>
-                        <button 
-                          className={`sidebar-menu-btn ${activeAdminView === 'templates' ? 'active' : ''}`}
-                          onClick={() => setActiveAdminView(activeAdminView === 'templates' ? null : 'templates')}
-                        >
+                          <span className="sidebar-btn-text">Administración General</span>
+                        </div>
+                        <span style={{
+                          fontSize: '0.75rem',
+                          color: 'var(--text-muted)',
+                          transform: adminGeneralAbierto ? 'rotate(180deg)' : 'rotate(0deg)',
+                          transition: 'transform 0.2s ease'
+                        }}>
+                          ▼
+                        </span>
+                      </button>
+
+                      {adminGeneralAbierto && (
+                        <ul className="admin-menu-list admin-subgroup-list" style={{
+                          listStyle: 'none',
+                          padding: '4px 0 4px 12px',
+                          margin: '3px 0 3px 12px',
+                          borderLeft: '2px solid var(--border-color, #e2e8f0)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '3px'
+                        }}>
+                          <li>
+                            <button 
+                              className={`sidebar-menu-btn ${activeAdminView === 'personalizacion' ? 'active' : ''}`}
+                              onClick={() => setActiveAdminView(activeAdminView === 'personalizacion' ? null : 'personalizacion')}
+                              style={{ padding: '8px 12px', fontSize: '0.85rem' }}
+                            >
+                              <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                <AdminViewIcon name="personalizacion" size={15} />
+                              </span>
+                              <span className="sidebar-btn-text">Personalización & Login</span>
+                            </button>
+                          </li>
+                          <li>
+                            <button 
+                              className={`sidebar-menu-btn ${activeAdminView === 'canales-ayuda' ? 'active' : ''}`}
+                              onClick={() => setActiveAdminView(activeAdminView === 'canales-ayuda' ? null : 'canales-ayuda')}
+                              style={{ padding: '8px 12px', fontSize: '0.85rem' }}
+                            >
+                              <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                <AdminViewIcon name="canales-ayuda" size={15} />
+                              </span>
+                              <span className="sidebar-btn-text">Canales de Ayuda</span>
+                            </button>
+                          </li>
+                          <li>
+                            <button 
+                              className={`sidebar-menu-btn ${activeAdminView === 'logs' ? 'active' : ''}`}
+                              onClick={() => setActiveAdminView(activeAdminView === 'logs' ? null : 'logs')}
+                              style={{ padding: '8px 12px', fontSize: '0.85rem' }}
+                            >
+                              <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                <AdminViewIcon name="logs" size={15} />
+                              </span>
+                              <span className="sidebar-btn-text">Logs & Auditoría</span>
+                            </button>
+                          </li>
+                          <li>
+                            <button 
+                              className={`sidebar-menu-btn ${activeAdminView === 'importar-kayako' ? 'active' : ''}`}
+                              onClick={() => setActiveAdminView(activeAdminView === 'importar-kayako' ? null : 'importar-kayako')}
+                              style={{ padding: '8px 12px', fontSize: '0.85rem' }}
+                            >
+                              <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                <AdminViewIcon name="importar-kayako" size={15} />
+                              </span>
+                              <span className="sidebar-btn-text">Importar Kayako</span>
+                            </button>
+                          </li>
+                          <li>
+                            <button 
+                              className={`sidebar-menu-btn ${activeAdminView === 'usuarios' ? 'active' : ''}`}
+                              onClick={() => setActiveAdminView(activeAdminView === 'usuarios' ? null : 'usuarios')}
+                              style={{ padding: '8px 12px', fontSize: '0.85rem' }}
+                            >
+                              <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                <AdminViewIcon name="usuarios" size={15} />
+                              </span>
+                              <span className="sidebar-btn-text">Usuarios y Sesiones</span>
+                            </button>
+                          </li>
+                          <li>
+                            <button 
+                              className={`sidebar-menu-btn ${activeAdminView === 'erp-admin' ? 'active' : ''}`}
+                              onClick={() => setActiveAdminView(activeAdminView === 'erp-admin' ? null : 'erp-admin')}
+                              style={{ padding: '8px 12px', fontSize: '0.85rem' }}
+                            >
+                              <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                <AdminViewIcon name="erp-admin" size={15} />
+                              </span>
+                              <span className="sidebar-btn-text">ERP Admin</span>
+                            </button>
+                          </li>
+                        </ul>
+                      )}
+                    </div>
+                  )}
+
+                  {/* ÍTEM 2: CRM PROCESOS */}
+                  {usuario?.rol === 'admin' && (
+                    <div className="admin-group-block" style={{ display: 'flex', flexDirection: 'column' }}>
+                      <button
+                        type="button"
+                        onClick={() => setTicketsProcesosAbierto(!ticketsProcesosAbierto)}
+                        className={`sidebar-menu-btn ${['departamentos', 'estados', 'templates', 'organizaciones', 'equipos', 'config-tickets', 'reportes'].includes(activeAdminView) ? 'active' : ''}`}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          fontWeight: '700',
+                          padding: '10px 14px'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
                             <AdminViewIcon name="templates" size={17} />
                           </span>
-                          <span className="sidebar-btn-text">Plantillas</span>
-                        </button>
-                      </li>
-                      <li>
-                        <button 
-                          className={`sidebar-menu-btn ${activeAdminView === 'organizaciones' ? 'active' : ''}`}
-                          onClick={() => setActiveAdminView(activeAdminView === 'organizaciones' ? null : 'organizaciones')}
-                        >
-                          <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                            <AdminViewIcon name="organizaciones" size={17} />
-                          </span>
-                          <span className="sidebar-btn-text">Organizaciones</span>
-                        </button>
-                      </li>
-                      <li>
-                        <button 
-                          className={`sidebar-menu-btn ${activeAdminView === 'equipos' ? 'active' : ''}`}
-                          onClick={() => setActiveAdminView(activeAdminView === 'equipos' ? null : 'equipos')}
-                        >
-                          <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                            <AdminViewIcon name="equipos" size={17} />
-                          </span>
-                          <span className="sidebar-btn-text">Gestionar Equipos</span>
-                        </button>
-                      </li>
-                      <li>
-                        <button 
-                          className={`sidebar-menu-btn ${activeAdminView === 'usuarios' ? 'active' : ''}`}
-                          onClick={() => setActiveAdminView(activeAdminView === 'usuarios' ? null : 'usuarios')}
-                        >
-                          <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                            <AdminViewIcon name="usuarios" size={17} />
-                          </span>
-                          <span className="sidebar-btn-text">Usuarios y Sesiones</span>
-                        </button>
-                      </li>
-                      <li>
-                        <button 
-                          className={`sidebar-menu-btn ${activeAdminView === 'logs' ? 'active' : ''}`}
-                          onClick={() => setActiveAdminView(activeAdminView === 'logs' ? null : 'logs')}
-                        >
-                          <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                            <AdminViewIcon name="logs" size={17} />
-                          </span>
-                          <span className="sidebar-btn-text">Logs & Auditoría</span>
-                        </button>
-                      </li>
-                      <li>
-                        <button 
-                          className={`sidebar-menu-btn ${activeAdminView === 'importar-kayako' ? 'active' : ''}`}
-                          onClick={() => setActiveAdminView(activeAdminView === 'importar-kayako' ? null : 'importar-kayako')}
-                        >
-                          <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                            <AdminViewIcon name="importar-kayako" size={17} />
-                          </span>
-                          <span className="sidebar-btn-text">Importar Kayako</span>
-                        </button>
-                      </li>
-                      <li>
-                        <button 
-                          className={`sidebar-menu-btn ${activeAdminView === 'config-tickets' ? 'active' : ''}`}
-                          onClick={() => setActiveAdminView(activeAdminView === 'config-tickets' ? null : 'config-tickets')}
-                        >
-                          <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                            <AdminViewIcon name="config-tickets" size={17} />
-                          </span>
-                          <span className="sidebar-btn-text">Configuración Tickets</span>
-                        </button>
-                      </li>
-                      <li>
-                        <button 
-                          className={`sidebar-menu-btn ${activeAdminView === 'canales-ayuda' ? 'active' : ''}`}
-                          onClick={() => setActiveAdminView(activeAdminView === 'canales-ayuda' ? null : 'canales-ayuda')}
-                        >
-                          <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                            <AdminViewIcon name="canales-ayuda" size={17} />
-                          </span>
-                          <span className="sidebar-btn-text">Canales de Ayuda</span>
-                        </button>
-                      </li>
-                    </>
+                          <span className="sidebar-btn-text">CRM Procesos</span>
+                        </div>
+                        <span style={{
+                          fontSize: '0.75rem',
+                          color: 'var(--text-muted)',
+                          transform: ticketsProcesosAbierto ? 'rotate(180deg)' : 'rotate(0deg)',
+                          transition: 'transform 0.2s ease'
+                        }}>
+                          ▼
+                        </span>
+                      </button>
+
+                      {ticketsProcesosAbierto && (
+                        <ul className="admin-menu-list admin-subgroup-list" style={{
+                          listStyle: 'none',
+                          padding: '4px 0 4px 12px',
+                          margin: '3px 0 3px 12px',
+                          borderLeft: '2px solid var(--border-color, #e2e8f0)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '3px'
+                        }}>
+                          <li>
+                            <button 
+                              className={`sidebar-menu-btn ${activeAdminView === 'departamentos' ? 'active' : ''}`}
+                              onClick={() => setActiveAdminView(activeAdminView === 'departamentos' ? null : 'departamentos')}
+                              style={{ padding: '8px 12px', fontSize: '0.85rem' }}
+                            >
+                              <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                <AdminViewIcon name="departamentos" size={15} />
+                              </span>
+                              <span className="sidebar-btn-text">Gestión de Departamentos</span>
+                            </button>
+                          </li>
+                          <li>
+                            <button 
+                              className={`sidebar-menu-btn ${activeAdminView === 'estados' ? 'active' : ''}`}
+                              onClick={() => setActiveAdminView(activeAdminView === 'estados' ? null : 'estados')}
+                              style={{ padding: '8px 12px', fontSize: '0.85rem' }}
+                            >
+                              <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                <AdminViewIcon name="estados" size={15} />
+                              </span>
+                              <span className="sidebar-btn-text">Gestión de Estados</span>
+                            </button>
+                          </li>
+                          <li>
+                            <button 
+                              className={`sidebar-menu-btn ${activeAdminView === 'templates' ? 'active' : ''}`}
+                              onClick={() => setActiveAdminView(activeAdminView === 'templates' ? null : 'templates')}
+                              style={{ padding: '8px 12px', fontSize: '0.85rem' }}
+                            >
+                              <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                <AdminViewIcon name="templates" size={15} />
+                              </span>
+                              <span className="sidebar-btn-text">Plantillas de Respuestas</span>
+                            </button>
+                          </li>
+                          <li>
+                            <button 
+                              className={`sidebar-menu-btn ${activeAdminView === 'organizaciones' ? 'active' : ''}`}
+                              onClick={() => setActiveAdminView(activeAdminView === 'organizaciones' ? null : 'organizaciones')}
+                              style={{ padding: '8px 12px', fontSize: '0.85rem' }}
+                            >
+                              <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                <AdminViewIcon name="organizaciones" size={15} />
+                              </span>
+                              <span className="sidebar-btn-text">Organizaciones</span>
+                            </button>
+                          </li>
+                          <li>
+                            <button 
+                              className={`sidebar-menu-btn ${activeAdminView === 'equipos' ? 'active' : ''}`}
+                              onClick={() => setActiveAdminView(activeAdminView === 'equipos' ? null : 'equipos')}
+                              style={{ padding: '8px 12px', fontSize: '0.85rem' }}
+                            >
+                              <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                <AdminViewIcon name="equipos" size={15} />
+                              </span>
+                              <span className="sidebar-btn-text">Gestión de Equipos</span>
+                            </button>
+                          </li>
+                          <li>
+                            <button 
+                              className={`sidebar-menu-btn ${activeAdminView === 'config-tickets' ? 'active' : ''}`}
+                              onClick={() => setActiveAdminView(activeAdminView === 'config-tickets' ? null : 'config-tickets')}
+                              style={{ padding: '8px 12px', fontSize: '0.85rem' }}
+                            >
+                              <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                <AdminViewIcon name="config-tickets" size={15} />
+                              </span>
+                              <span className="sidebar-btn-text">Configuración de Tickets</span>
+                            </button>
+                          </li>
+                          <li>
+                            <button 
+                              className={`sidebar-menu-btn ${activeAdminView === 'reportes' ? 'active' : ''}`}
+                              onClick={() => setActiveAdminView(activeAdminView === 'reportes' ? null : 'reportes')}
+                              style={{ padding: '8px 12px', fontSize: '0.85rem' }}
+                            >
+                              <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                                <AdminViewIcon name="reportes" size={15} />
+                              </span>
+                              <span className="sidebar-btn-text">Reportes & Métricas</span>
+                            </button>
+                          </li>
+                        </ul>
+                      )}
+                    </div>
                   )}
-                </ul>
+
+                  {/* ÍTEM 3: E-COMMERCE */}
+                  {(usuario?.rol === 'admin' || usuario?.rol === 'admin_ecommerce') && (
+                    <div className="admin-group-block">
+                      <button 
+                        className={`sidebar-menu-btn ${activeAdminView === 'ecommerce' ? 'active' : ''}`}
+                        onClick={() => setActiveAdminView(activeAdminView === 'ecommerce' ? null : 'ecommerce')}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          fontWeight: '700',
+                          padding: '10px 14px'
+                        }}
+                      >
+                        <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                          <AdminViewIcon name="ecommerce" size={17} />
+                        </span>
+                        <span className="sidebar-btn-text">E-Commerce</span>
+                      </button>
+                    </div>
+                  )}
+
+                  {/* ÍTEM 4: ERP */}
+                  {(usuario?.rol === 'admin' || usuario?.rol === 'admin_erp') && (
+                    <div className="admin-group-block">
+                      <button 
+                        className={`sidebar-menu-btn ${activeAdminView === 'erp' ? 'active' : ''}`}
+                        onClick={() => setActiveAdminView(activeAdminView === 'erp' ? null : 'erp')}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                          fontWeight: '700',
+                          padding: '10px 14px'
+                        }}
+                      >
+                        <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
+                          <AdminViewIcon name="erp" size={17} />
+                        </span>
+                        <span className="sidebar-btn-text">ERP</span>
+                      </button>
+                    </div>
+                  )}
+
+                </div>
               )}
             </div>
           )}
@@ -1201,34 +1456,31 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                {isMaximized && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setActiveAdminView(null);
-                      setIsMaximized(false);
-                    }}
-                    style={{
-                      background: 'var(--pill-bg)',
-                      border: '1px solid var(--border-color)',
-                      color: 'var(--text-main)',
-                      borderRadius: '50%',
-                      width: '36px',
-                      height: '36px',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      transition: 'all 0.15s ease'
-                    }}
-                    title="Volver a Tickets"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="19" y1="12" x2="5" y2="12"></line>
-                      <polyline points="12 19 5 12 12 5"></polyline>
-                    </svg>
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setActiveAdminView(null);
+                    setIsMaximized(false);
+                  }}
+                  style={{
+                    background: 'var(--pill-bg, #f1f5f9)',
+                    border: '1px solid var(--border-color, #cbd5e1)',
+                    color: 'var(--text-main, #0f172a)',
+                    borderRadius: '10px',
+                    padding: '7px 13px',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    fontSize: '0.86rem',
+                    fontWeight: '700',
+                    transition: 'all 0.15s ease'
+                  }}
+                  title="Volver a Home / Panel Principal"
+                >
+                  <BrandingVectorIcon name="home" size={15} color="#0fa4de" />
+                  <span>Home</span>
+                </button>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                   <span style={{ display: 'inline-flex', alignItems: 'center', color: '#0fa4de' }}>
                     <AdminViewIcon name={activeAdminView} size={20} />
@@ -1316,6 +1568,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                 />
               )}
               {activeAdminView === 'ecommerce' && <AdminEcommerce embedded={true} />}
+              {activeAdminView === 'erp' && <AdminErp embedded={true} usuario={usuario} theme={theme} onBack={() => setActiveAdminView(null)} />}
               {activeAdminView === 'reportes' && <Reportes embedded={true} />}
               {activeAdminView === 'departamentos' && <AdminDepartamentos embedded={true} />}
               {activeAdminView === 'estados' && <AdminEstados embedded={true} />}
@@ -1327,6 +1580,17 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
               {activeAdminView === 'importar-kayako' && <AdminImportarKayako embedded={true} />}
               {activeAdminView === 'config-tickets' && <AdminConfigTickets embedded={true} />}
               {activeAdminView === 'canales-ayuda' && <AdminCanalesAyuda embedded={true} />}
+              {activeAdminView === 'erp-admin' && (
+                <AdminErpConfig
+                  embedded={true}
+                  usuario={usuario}
+                  theme={theme}
+                  onBack={() => {
+                    setActiveAdminView(null);
+                    setIsMaximized(false);
+                  }}
+                />
+              )}
             </div>
           </div>
         ) : (

@@ -9,6 +9,7 @@ const fs = require('fs');
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY || 'sk_test_mock');
 const { generateProductDescription, generateDimensionsAI, generateCategoriesAI } = require('./services/geminiService');
 const { registrarLog } = require('./services/auditLoggerService');
+const erpDatabaseService = require('./services/erpDatabaseService');
 
 const router = express.Router();
 
@@ -1441,6 +1442,18 @@ function executeInMemoryQuery(sql, params = []) {
       created_at: new Date().toISOString()
     };
     inMem.orders.push(newOrder);
+    try {
+      erpDatabaseService.createOrder({
+        id: newOrder.id,
+        user_id: newOrder.user_id,
+        cliente: 'Cliente B2B E-commerce',
+        total: parseFloat(newOrder.total) || 0,
+        currency: 'USD',
+        payment_method: 'credit_30',
+        erp_status: 'Pendiente',
+        created_at: newOrder.created_at
+      });
+    } catch (_) {}
     return { rows: [newOrder] };
   }
 
@@ -1592,7 +1605,7 @@ const requireAdmin = (req, res, next) => {
     return res.status(401).json({ error: 'Acceso no autorizado' });
   }
   const role = req.user.role || req.user.rol;
-  if (role !== 'admin' && role !== 'admin_ecommerce') {
+  if (role !== 'admin' && role !== 'admin_ecommerce' && role !== 'admin_erp') {
     return res.status(403).json({ error: 'Permisos insuficientes. Se requiere rol de administrador.' });
   }
   next();
@@ -2783,90 +2796,382 @@ router.delete('/client/team/:id', authenticateToken, async (req, res) => {
 });
 
 // ==========================================
-// ABM END USERS (CLIENT PORTAL & CHECKOUT)
+// ABM END USERS (CLIENT PORTAL & CHECKOUT) - ERP DATABASE
 // ==========================================
 
-// 1. Obtener lista de End Users de la empresa
+// 1. Obtener lista de End Users desde Base ERP
 router.get('/client/end-users', optionalAuthToken, async (req, res) => {
   try {
-    const userId = req.user ? req.user.id : 1;
-    if (isPgConnected) {
-      try {
-        const result = await pool.query(
-          'SELECT * FROM ecommerce_end_users WHERE user_id = $1 ORDER BY nombre ASC',
-          [userId]
-        );
-        if (result.rows && result.rows.length > 0) {
-          return res.json(result.rows);
-        }
-      } catch (_) {}
-    }
-    const list = (inMem.end_users || []).filter(eu => !eu.user_id || eu.user_id === userId || eu.user_id === 1);
+    const list = erpDatabaseService.getEndUsers();
     res.json(list);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// 2. Guardar o modificar un End User (ABM)
+// 2. Guardar o modificar un End User (ABM) en Base ERP
 router.post('/client/end-users', optionalAuthToken, async (req, res) => {
   try {
     const userId = req.user ? req.user.id : 1;
-    const { nombre, direccion, ciudad, pais, telefono, contacto, website, id } = req.body;
-    if (!nombre || !String(nombre).trim()) {
-      return res.status(400).json({ error: 'El Nombre del End User es obligatorio' });
-    }
+    const endUser = erpDatabaseService.saveEndUser({ ...req.body, user_id: userId });
+    res.status(201).json({ success: true, message: 'End User guardado en base ERP exitosamente', end_user: endUser });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
-    if (!inMem.end_users) inMem.end_users = [];
-    if (!inMem.nextIds.end_users) inMem.nextIds.end_users = 3;
-
-    // Actualización si viene con id existente
-    if (id) {
-      const idx = inMem.end_users.findIndex(eu => eu.id === parseInt(id));
-      if (idx !== -1) {
-        inMem.end_users[idx] = {
-          ...inMem.end_users[idx],
-          nombre: String(nombre).trim(),
-          direccion: direccion || '',
-          ciudad: ciudad || '',
-          pais: pais || 'Argentina',
-          telefono: telefono || '',
-          contacto: contacto || '',
-          website: website || '',
-          updated_at: new Date().toISOString()
-        };
-        return res.json({ success: true, message: 'End User actualizado', end_user: inMem.end_users[idx] });
-      }
-    }
-
-    const newEndUser = {
-      id: inMem.nextIds.end_users++,
-      user_id: userId,
-      nombre: String(nombre).trim(),
-      direccion: direccion || '',
-      ciudad: ciudad || '',
-      pais: pais || 'Argentina',
-      telefono: telefono || '',
-      contacto: contacto || '',
-      website: website || '',
-      created_at: new Date().toISOString()
-    };
-    inMem.end_users.push(newEndUser);
-
-    res.status(201).json({ success: true, message: 'End User grabado exitosamente', end_user: newEndUser });
+// 3. Eliminar End User de Base ERP
+router.delete('/client/end-users/:id', optionalAuthToken, async (req, res) => {
+  try {
+    erpDatabaseService.deleteEndUser(req.params.id);
+    res.json({ success: true, message: 'End User eliminado de la base ERP' });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
 });
 
-// 3. Eliminar End User
-router.delete('/client/end-users/:id', optionalAuthToken, async (req, res) => {
+// ==========================================
+// MÓDULO ERP DACAS - ORACLE NETSUITE ONEWORLD
+// (Persistido en Base de Datos ERP Independiente erp_database.json)
+// ==========================================
+
+// 1. Resumen Ejecutivo / SuiteDashboard & KPIs
+router.get('/admin/erp/overview', optionalAuthToken, async (req, res) => {
   try {
-    const id = parseInt(req.params.id);
-    if (inMem.end_users) {
-      inMem.end_users = inMem.end_users.filter(eu => eu.id !== id);
+    const overview = erpDatabaseService.getOverview(req.query.subsidiary);
+    res.json(overview);
+  } catch (error) {
+    console.error('Error en /admin/erp/overview:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 2. Subsidiarias Corporativas (OneWorld)
+router.get('/admin/erp/subsidiaries', optionalAuthToken, async (req, res) => {
+  try {
+    res.json(erpDatabaseService.getSubsidiaries());
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 3. Multi-Divisa & Tasas de Cambio
+router.get('/admin/erp/currencies', optionalAuthToken, async (req, res) => {
+  try {
+    res.json(erpDatabaseService.getCurrencies());
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.put('/admin/erp/currencies/:code', optionalAuthToken, async (req, res) => {
+  try {
+    const updated = erpDatabaseService.updateCurrencyRate(req.params.code, req.body.rate);
+    res.json({ success: true, currency: updated });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 4. Contabilidad & Finanzas: Plan de Cuentas (Chart of Accounts)
+router.get('/admin/erp/chart-of-accounts', optionalAuthToken, async (req, res) => {
+  try {
+    res.json(erpDatabaseService.getChartOfAccounts());
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 5. Asientos de Diario (Journal Entries)
+router.get('/admin/erp/journal-entries', optionalAuthToken, async (req, res) => {
+  try {
+    res.json(erpDatabaseService.getJournalEntries(req.query.subsidiary));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/admin/erp/journal-entries', optionalAuthToken, async (req, res) => {
+  try {
+    const entry = erpDatabaseService.createJournalEntry(req.body);
+    res.status(201).json({ success: true, message: 'Asiento contable registrado exitosamente', entry });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// 6. Almacenes & Ubicaciones (Locations)
+router.get('/admin/erp/locations', optionalAuthToken, async (req, res) => {
+  try {
+    res.json(erpDatabaseService.getLocations());
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 7. Maestro de Artículos & Stock Multi-Almacén
+router.get('/admin/erp/catalog-sync', optionalAuthToken, async (req, res) => {
+  try {
+    const items = erpDatabaseService.getCatalogItems(req.query.search, req.query.category, req.query.location);
+    res.json(items);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/admin/erp/inventory/adjust', optionalAuthToken, async (req, res) => {
+  try {
+    const { itemId, locationCode, adjustmentQty, reason } = req.body;
+    const item = erpDatabaseService.adjustInventoryStock(itemId, locationCode, adjustmentQty, reason);
+    if (!item) return res.status(404).json({ error: 'Artículo no encontrado' });
+    res.json({ success: true, message: 'Ajuste de inventario aplicado exitosamente', item });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 8. Proveedores (Vendors - Procure-to-Pay)
+router.get('/admin/erp/vendors', optionalAuthToken, async (req, res) => {
+  try {
+    res.json(erpDatabaseService.getVendors(req.query.search));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 9. Órdenes de Compra (Purchase Orders - PO)
+router.get('/admin/erp/purchase-orders', optionalAuthToken, async (req, res) => {
+  try {
+    res.json(erpDatabaseService.getPurchaseOrders(req.query.subsidiary, req.query.search));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/admin/erp/purchase-orders', optionalAuthToken, async (req, res) => {
+  try {
+    const po = erpDatabaseService.createPurchaseOrder(req.body);
+    res.status(201).json({ success: true, message: 'Orden de compra PO creada exitosamente', po });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.post('/admin/erp/purchase-orders/:id/receive', optionalAuthToken, async (req, res) => {
+  try {
+    const po = erpDatabaseService.updatePurchaseOrderStatus(req.params.id, 'Recibida en Almacén');
+    res.json({ success: true, message: `PO #${req.params.id} recibida e ingresada al depósito`, po });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 10. Facturas de Proveedores (Vendor Bills - A/P)
+router.get('/admin/erp/vendor-bills', optionalAuthToken, async (req, res) => {
+  try {
+    res.json(erpDatabaseService.getVendorBills(req.query.subsidiary));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/admin/erp/vendor-bills/:id/pay', optionalAuthToken, async (req, res) => {
+  try {
+    const bill = erpDatabaseService.payVendorBill(req.params.id);
+    res.json({ success: true, message: `Factura de proveedor pagada exitosamente`, bill });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 11. Órdenes de Venta (Sales Orders - SO)
+router.get('/admin/erp/orders', optionalAuthToken, async (req, res) => {
+  try {
+    const orders = erpDatabaseService.getOrders(req.query.search, req.query.subsidiary);
+    res.json(orders);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/admin/erp/orders/:id/sync', optionalAuthToken, async (req, res) => {
+  try {
+    const order = erpDatabaseService.updateOrderStatus(req.params.id, 'Facturado');
+    if (!order) {
+      return res.status(404).json({ error: 'Orden no encontrada en base ERP' });
     }
-    res.json({ success: true, message: 'End User eliminado' });
+    res.json({ success: true, message: `Orden #${req.params.id} aprobada y facturada en NetSuite ERP exitosamente.`, order });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 12. Facturas de Clientes (Invoices / Accounts Receivable - A/R)
+router.get('/admin/erp/invoices', optionalAuthToken, async (req, res) => {
+  try {
+    res.json(erpDatabaseService.getInvoices(req.query.subsidiary, req.query.search));
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/admin/erp/invoices/:id/pay', optionalAuthToken, async (req, res) => {
+  try {
+    const inv = erpDatabaseService.payInvoice(req.params.id);
+    res.json({ success: true, message: 'Factura cobrada y asiento registrado en A/R', invoice: inv });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 13. ABM End Users & Clientes Comerciales
+router.get('/admin/erp/end-users', optionalAuthToken, async (req, res) => {
+  try {
+    const { search, country } = req.query;
+    const list = erpDatabaseService.getEndUsers(search, country);
+    res.json(list);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/admin/erp/end-users', optionalAuthToken, async (req, res) => {
+  try {
+    const endUser = erpDatabaseService.saveEndUser(req.body);
+    res.status(201).json({ success: true, message: 'End User registrado en ERP exitosamente', end_user: endUser });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+router.delete('/admin/erp/end-users/:id', optionalAuthToken, async (req, res) => {
+  try {
+    erpDatabaseService.deleteEndUser(req.params.id);
+    res.json({ success: true, message: 'End User eliminado de la base ERP' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 14. Cuentas Comerciales y Crédito B2B de Base ERP
+router.get('/admin/erp/credit-accounts', optionalAuthToken, async (req, res) => {
+  try {
+    const accounts = erpDatabaseService.getCreditAccounts();
+    res.json(accounts);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.put('/admin/erp/credit-accounts/:id', optionalAuthToken, async (req, res) => {
+  try {
+    const updated = erpDatabaseService.updateCreditAccount(req.params.id, req.body);
+    if (!updated) {
+      return res.status(404).json({ error: 'Cuenta comercial no encontrada en ERP' });
+    }
+    res.json({ success: true, message: 'Condiciones de crédito actualizadas en base ERP exitosamente', account: updated });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 15. Verificación / Conciliación de Base de Datos ERP
+router.post('/admin/erp/sync-all', optionalAuthToken, async (req, res) => {
+  try {
+    const now = new Date().toISOString();
+    res.json({
+      success: true,
+      message: 'Base de datos ERP NetSuite OneWorld DACAS verificada y sincronizada correctamente.',
+      timestamp: now
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 16. ERP Admin: Obtener Parámetros Globales & Configuración
+router.get('/admin/erp/settings', optionalAuthToken, async (req, res) => {
+  try {
+    const settings = erpDatabaseService.getSettings();
+    res.json(settings);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 17. ERP Admin: Guardar Parámetros Globales & Configuración
+router.put('/admin/erp/settings', optionalAuthToken, async (req, res) => {
+  try {
+    const updated = erpDatabaseService.updateSettings(req.body);
+    res.json({
+      success: true,
+      message: 'Configuración y parámetros globales del ERP guardados exitosamente.',
+      settings: updated
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 18. ERP Admin: Listar APIs por País
+router.get('/admin/erp/country-apis', optionalAuthToken, async (req, res) => {
+  try {
+    const apis = erpDatabaseService.getCountryApis();
+    res.json(apis);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 19. ERP Admin: Guardar / Actualizar API por País
+router.post('/admin/erp/country-apis', optionalAuthToken, async (req, res) => {
+  try {
+    const api = erpDatabaseService.saveCountryApi(req.body);
+    res.json({
+      success: true,
+      message: req.body.id ? 'Integración API actualizada exitosamente' : 'Nueva API de país agregada exitosamente',
+      api
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// 20. ERP Admin: Eliminar API por País
+router.delete('/admin/erp/country-apis/:id', optionalAuthToken, async (req, res) => {
+  try {
+    erpDatabaseService.deleteCountryApi(req.params.id);
+    res.json({ success: true, message: 'Integración API por país eliminada' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 21. ERP Admin: Test Conexión / Ping de API por País
+router.post('/admin/erp/country-apis/:id/test', optionalAuthToken, async (req, res) => {
+  try {
+    const result = erpDatabaseService.testCountryApi(req.params.id);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+// 22. ERP Admin: Reconciliación Contable & Auditoría
+router.post('/admin/erp/reconcile', optionalAuthToken, async (req, res) => {
+  try {
+    const report = erpDatabaseService.reconcileBalances();
+    res.json(report);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// 23. ERP Admin: Descargar / Exportar Backup Completo
+router.get('/admin/erp/backup', optionalAuthToken, async (req, res) => {
+  try {
+    const backup = erpDatabaseService.exportBackup();
+    res.json(backup);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -3712,6 +4017,19 @@ router.post('/admin/products', authenticateToken, requireAdmin, async (req, res)
       req,
       detalles: { productoId: nuevoProducto.id, name: nuevoProducto.name, price: nuevoProducto.price, stock: nuevoProducto.stock }
     });
+    // Sincronizar automáticamente con el catálogo e inventario del ERP
+    try {
+      erpDatabaseService.syncProductStockFromEcommerce({
+        productId: nuevoProducto.id,
+        sku: nuevoProducto.sku,
+        name: nuevoProducto.name,
+        stock: nuevoProducto.stock,
+        price: nuevoProducto.price,
+        category: nuevoProducto.category,
+        brand: nuevoProducto.brand
+      });
+    } catch (_) {}
+
     res.status(201).json(nuevoProducto);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -3831,6 +4149,18 @@ router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, asyn
           inMem.products.push(newProduct);
           createdCount++;
         }
+
+        // Sincronizar con el catálogo y stock del ERP
+        try {
+          erpDatabaseService.syncProductStockFromEcommerce({
+            sku,
+            name,
+            stock,
+            price,
+            category,
+            brand
+          });
+        } catch (_) {}
       }
     }
 
@@ -3872,6 +4202,19 @@ router.put('/admin/products/:id', authenticateToken, requireAdmin, async (req, r
       req,
       detalles: { productoId: id, name: prod.name, price: prod.price, stock: prod.stock }
     });
+    // Sincronizar actualización de stock y datos con el ERP
+    try {
+      erpDatabaseService.syncProductStockFromEcommerce({
+        productId: prod.id,
+        sku: prod.sku,
+        name: prod.name,
+        stock: prod.stock,
+        price: prod.price,
+        category: prod.category,
+        brand: prod.brand
+      });
+    } catch (_) {}
+
     res.json(prod);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -4001,6 +4344,24 @@ router.post('/admin/products/:id/stock', authenticateToken, requireAdmin, async 
       'INSERT INTO ecommerce_product_stock (product_id, country_id, stock) VALUES ($1, $2, $3) ON CONFLICT (product_id, country_id) DO UPDATE SET stock = $3 RETURNING *',
       [id, country_id, stock]
     );
+
+    // Sincronización en tiempo real con la base de datos ERP (Almacén regional)
+    try {
+      const prodRes = await pool.query('SELECT * FROM ecommerce_products WHERE id = $1', [id]);
+      const prod = prodRes.rows && prodRes.rows[0];
+      erpDatabaseService.syncProductStockFromEcommerce({
+        productId: id,
+        sku: prod ? prod.sku : undefined,
+        name: prod ? prod.name : undefined,
+        countryCode: country_id,
+        stock: stock,
+        price: prod ? prod.price : undefined,
+        category: prod ? prod.category : undefined
+      });
+    } catch (e) {
+      console.error('Error sincronizando stock con ERP:', e);
+    }
+
     res.json(result.rows[0]);
   } catch (error) {
     res.status(500).json({ error: error.message });

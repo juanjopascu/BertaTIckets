@@ -2175,6 +2175,27 @@ function AdminEcommerce({ embedded = false }) {
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <div className="user-controls">
+                  <button
+                    type="button"
+                    className="nav-btn"
+                    onClick={() => { window.location.href = '/'; }}
+                    style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '8px 14px',
+                      borderRadius: '10px',
+                      fontWeight: '700',
+                      cursor: 'pointer'
+                    }}
+                    title="Ir a Home / Panel Principal"
+                  >
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                      <polyline points="9 22 9 12 15 12 15 22" />
+                    </svg>
+                    <span>Home</span>
+                  </button>
                   {activeTab === 'reportes' && (
                     <button className="nav-btn" onClick={() => window.print()} style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
                       🖨️ Imprimir / PDF
@@ -2189,6 +2210,19 @@ function AdminEcommerce({ embedded = false }) {
 
       <main className={embedded ? "crm-main-embedded" : "crm-main"} style={embedded ? { width: '100%', maxWidth: '100%', padding: 0, margin: 0 } : {}}>
         <div className="tab-buttons">
+          <button 
+            type="button"
+            className="tab-btn" 
+            onClick={() => { window.location.href = '/'; }}
+            style={{ fontWeight: '800', color: '#0fa4de', marginRight: '4px' }}
+            title="Ir a Home / Panel Principal"
+          >
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+              <polyline points="9 22 9 12 15 12 15 22" />
+            </svg>
+            <span>Home</span>
+          </button>
           <button className={`tab-btn${activeTab === 'products' ? ' active' : ''}`} onClick={() => setActiveTab('products')}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="m7.5 4.27 9 5.15" />

@@ -1250,6 +1250,36 @@ export default function Shop() {
             </div>
           </div>
 
+          {/* Botón Home */}
+          <button
+            type="button"
+            onClick={() => {
+              navigate('/shop');
+              setSearch('');
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            style={{
+              background: '#F8FAFC',
+              border: '1.5px solid #E2E8F0',
+              borderRadius: '999px',
+              padding: '8px 16px',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              color: '#0fa4de',
+              fontSize: '13px',
+              fontWeight: '800',
+              flexShrink: 0,
+              boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
+              transition: 'all 0.15s ease'
+            }}
+            title="Ir a Home Shop"
+          >
+            <BrandingVectorIcon name="home" size={15} color="#0fa4de" />
+            <span>Home</span>
+          </button>
+
           {/* Search Bar */}
           <form style={{ flex: 1, minWidth: 0, position: 'relative' }} onSubmit={(e) => e.preventDefault()}>
             <input
@@ -1469,6 +1499,28 @@ export default function Shop() {
                       >
                         <BrandingVectorIcon name="building" size={14} color="#334155" />
                         <span>Mi Ficha & Solicitar Cambios</span>
+                      </button>
+
+                      <button
+                        onClick={() => { setUserDropdownOpen(false); navigate('/admin/erp'); }}
+                        style={{
+                          width: '100%',
+                          background: 'linear-gradient(135deg, #071524 0%, #1e293b 100%)',
+                          border: 'none',
+                          color: '#38BDF8',
+                          padding: '10px 14px',
+                          borderRadius: '10px',
+                          fontWeight: '800',
+                          fontSize: '12.5px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '8px',
+                          textAlign: 'left'
+                        }}
+                      >
+                        <BrandingVectorIcon name="database" size={14} color="#38BDF8" />
+                        <span>Módulo ERP & Administración</span>
                       </button>
                     </div>
 
