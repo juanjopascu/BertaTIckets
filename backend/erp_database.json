@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
   "architecture": "DACAS OneWorld Multi-Subsidiary & Multi-Currency",
-  "updated_at": "2026-09-29T21:03:30.579Z",
+  "updated_at": "2026-10-01T21:23:11.475Z",
   "subsidiaries": [
     {
       "id": 1,
@@ -335,15 +335,17 @@
       "categoria": "Next-Gen Firewall",
       "precio_mayorista": 1250,
       "costo_promedio": 890,
-      "stock_disponible": 52,
+      "stock_disponible": 61,
       "stock_por_almacen": {
         "LOC-BUE": 30,
         "LOC-SCL": 10,
-        "LOC-MIA": 8,
+        "LOC-MIA": 17,
         "LOC-BOG": 4
       },
       "lead_time_days": 7,
-      "moneda": "USD"
+      "moneda": "USD",
+      "precio_mayorista_usd": 890,
+      "updated_at": "2026-10-01T21:23:11.475Z"
     },
     {
       "id": 2,
@@ -355,15 +357,17 @@
       "categoria": "Wireless Enterprise",
       "precio_mayorista": 395,
       "costo_promedio": 260,
-      "stock_disponible": 110,
+      "stock_disponible": 107,
       "stock_por_almacen": {
         "LOC-BUE": 50,
         "LOC-SCL": 30,
-        "LOC-MIA": 20,
+        "LOC-MIA": 17,
         "LOC-BOG": 10
       },
       "lead_time_days": 5,
-      "moneda": "USD"
+      "moneda": "USD",
+      "precio_mayorista_usd": 480,
+      "updated_at": "2026-10-01T21:00:08.167Z"
     },
     {
       "id": 3,
@@ -849,6 +853,159 @@
     }
   ],
   "inventory_adjustments": [
+    {
+      "id": 1790889791475,
+      "sku": "FG-60F-BDL",
+      "item_name": "FortiGate 60F Hardware + 1yr FortiGuard Unified Threat Protection",
+      "location": "LOC-MIA",
+      "adjustment": 17,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-01T21:23:11.475Z"
+    },
+    {
+      "id": 1790889791329,
+      "sku": "FG-60F-BDL",
+      "item_name": "FortiGate 60F Hardware + 1yr FortiGuard Unified Threat Protection",
+      "location": "LOC-MIA",
+      "adjustment": 19,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-01T21:23:11.329Z"
+    },
+    {
+      "id": 1790889678800,
+      "sku": "FG-60F-BDL",
+      "item_name": "FortiGate 60F Hardware + 1yr FortiGuard Unified Threat Protection",
+      "location": "LOC-MIA",
+      "adjustment": 21,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-01T21:21:18.800Z"
+    },
+    {
+      "id": 1790889678665,
+      "sku": "FG-60F-BDL",
+      "item_name": "FortiGate 60F Hardware + 1yr FortiGuard Unified Threat Protection",
+      "location": "LOC-MIA",
+      "adjustment": 23,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-01T21:21:18.665Z"
+    },
+    {
+      "id": 1790889625514,
+      "sku": "FG-60F-BDL",
+      "item_name": "FortiGate 60F Hardware + 1yr FortiGuard Unified Threat Protection",
+      "location": "LOC-MIA",
+      "adjustment": 25,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-01T21:20:25.514Z"
+    },
+    {
+      "id": 1790889625382,
+      "sku": "FG-60F-BDL",
+      "item_name": "FortiGate 60F Hardware + 1yr FortiGuard Unified Threat Protection",
+      "location": "LOC-MIA",
+      "adjustment": 27,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-01T21:20:25.382Z"
+    },
+    {
+      "id": 1790889529058,
+      "sku": "FG-60F-BDL",
+      "item_name": "FortiGate 60F Hardware + 1yr FortiGuard Unified Threat Protection",
+      "location": "LOC-MIA",
+      "adjustment": 29,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-01T21:18:49.058Z"
+    },
+    {
+      "id": 1790889529032,
+      "sku": "FG-60F-BDL",
+      "item_name": "FortiGate 60F Hardware + 1yr FortiGuard Unified Threat Protection",
+      "location": "LOC-MIA",
+      "adjustment": 31,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-01T21:18:49.032Z"
+    },
+    {
+      "id": 1790889419111,
+      "sku": "FG-60F-BDL",
+      "item_name": "FortiGate 60F Hardware + 1yr FortiGuard Unified Threat Protection",
+      "location": "LOC-MIA",
+      "adjustment": 33,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-01T21:16:59.111Z"
+    },
+    {
+      "id": 1790889419051,
+      "sku": "FG-60F-BDL",
+      "item_name": "FortiGate 60F Hardware + 1yr FortiGuard Unified Threat Protection",
+      "location": "LOC-MIA",
+      "adjustment": 35,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-01T21:16:59.051Z"
+    },
+    {
+      "id": 1790889397055,
+      "sku": "FG-60F-BDL",
+      "item_name": "FortiGate 60F Hardware + 1yr FortiGuard Unified Threat Protection",
+      "location": "LOC-MIA",
+      "adjustment": 37,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-01T21:16:37.055Z"
+    },
+    {
+      "id": 1790889375921,
+      "sku": "FG-60F-BDL",
+      "item_name": "FortiGate 60F Hardware + 1yr FortiGuard Unified Threat Protection",
+      "location": "LOC-MIA",
+      "adjustment": 39,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-01T21:16:15.921Z"
+    },
+    {
+      "id": 1790889304169,
+      "sku": "FG-60F-BDL",
+      "item_name": "FortiGate 60F Hardware + 1yr FortiGuard Unified Threat Protection",
+      "location": "LOC-MIA",
+      "adjustment": 41,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-01T21:15:04.169Z"
+    },
+    {
+      "id": 1790888408167,
+      "sku": "AP-505-RW",
+      "item_name": "Aruba AP-505 Campus Unified Access Point Wi-Fi 6",
+      "location": "LOC-MIA",
+      "adjustment": 17,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-01T21:00:08.167Z"
+    },
+    {
+      "id": 1790888408164,
+      "sku": "FG-60F-BDL",
+      "item_name": "FortiGate 60F Hardware + 1yr FortiGuard Unified Threat Protection",
+      "location": "LOC-MIA",
+      "adjustment": 43,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-01T21:00:08.164Z"
+    },
+    {
+      "id": 1790882152104,
+      "sku": "FG-60F-BDL",
+      "item_name": "FortiGate 60F Hardware + 1yr FortiGuard Unified Threat Protection",
+      "location": "LOC-MIA",
+      "adjustment": 44,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-01T19:15:52.104Z"
+    },
+    {
+      "id": 1790878134830,
+      "sku": "FG-60F-BDL",
+      "item_name": "FortiGate 60F Hardware + 1yr FortiGuard Unified Threat Protection",
+      "location": "LOC-MIA",
+      "adjustment": 45,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-01T18:08:54.830Z"
+    },
     {
       "id": 1790691927711,
       "sku": "FG-60F-BDL",

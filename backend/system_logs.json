@@ -1,5 +1,1096 @@
 [
   {
+    "id": 182,
+    "timestamp": "2026-10-02T12:43:36.260Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 181,
+    "timestamp": "2026-10-02T12:41:30.029Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "343919bdd5c347988b495bb584c1a2dba8ecceba1fdf33ff5f0108e936df4ee4"
+    }
+  },
+  {
+    "id": 180,
+    "timestamp": "2026-10-01T21:23:56.410Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Admin E-commerce\" (admin.ecommerce@dacas.com) con rol \"admin_ecommerce\".",
+    "usuario": {
+      "nombre": "Admin E-commerce",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "admin_ecommerce",
+      "id": 6
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "3f28794b2a18a5c00622c1f9c657b28d42e0b662ab4f37a93e525bb945c4b437"
+    }
+  },
+  {
+    "id": 179,
+    "timestamp": "2026-10-01T21:23:11.483Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1057 registrado por \"Usuario Demo\" por USD $1851.20.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1057,
+      "total": "1851.20",
+      "payment_method": "Cuenta Corriente Corporativa",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 178,
+    "timestamp": "2026-10-01T21:23:11.469Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin.ecommerce@dacas.com",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 177,
+    "timestamp": "2026-10-01T21:23:11.458Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Admin E-commerce\" (admin.ecommerce@dacas.com) con rol \"admin_ecommerce\".",
+    "usuario": {
+      "nombre": "Admin E-commerce",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "admin_ecommerce",
+      "id": 6
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "f2aa91bfca8a1bbfd4aa5488052ba6d5ae398c1128aebd4b75c4fa8eeb40788f"
+    }
+  },
+  {
+    "id": 176,
+    "timestamp": "2026-10-01T21:23:11.342Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1056 registrado por \"Usuario Demo\" por USD $1481.49.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1056,
+      "total": "1481.49",
+      "payment_method": "Cuenta Corriente Corporativa",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 175,
+    "timestamp": "2026-10-01T21:21:18.811Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1066 registrado por \"Usuario Demo\" por USD $1851.20.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1066,
+      "total": "1851.20",
+      "payment_method": "Cuenta Corriente Corporativa",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 174,
+    "timestamp": "2026-10-01T21:21:18.795Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin.ecommerce@dacas.com",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 173,
+    "timestamp": "2026-10-01T21:21:18.785Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Admin E-commerce\" (admin.ecommerce@dacas.com) con rol \"admin_ecommerce\".",
+    "usuario": {
+      "nombre": "Admin E-commerce",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "admin_ecommerce",
+      "id": 6
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "f44a47063e7dbbd6d29a3817fbfd89092bc53f458877fcde345c1535a066339d"
+    }
+  },
+  {
+    "id": 172,
+    "timestamp": "2026-10-01T21:21:18.670Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1065 registrado por \"Usuario Demo\" por USD $1481.49.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1065,
+      "total": "1481.49",
+      "payment_method": "Cuenta Corriente Corporativa",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 171,
+    "timestamp": "2026-10-01T21:20:25.525Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1064 registrado por \"Usuario Demo\" por USD $1481.49.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1064,
+      "total": "1481.49",
+      "payment_method": "Cuenta Corriente Corporativa",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 170,
+    "timestamp": "2026-10-01T21:20:25.502Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Admin E-commerce\" (admin.ecommerce@dacas.com) con rol \"admin_ecommerce\".",
+    "usuario": {
+      "nombre": "Admin E-commerce",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "admin_ecommerce",
+      "id": 6
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "ce74ac6f22ef9df87a3779670d65a48bc3ea8aecaa0ea17eb6e9cc93326d2e69"
+    }
+  },
+  {
+    "id": 169,
+    "timestamp": "2026-10-01T21:20:25.386Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1063 registrado por \"Usuario Demo\" por USD $1481.49.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1063,
+      "total": "1481.49",
+      "payment_method": "Cuenta Corriente Corporativa",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 168,
+    "timestamp": "2026-10-01T21:18:49.070Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1062 registrado por \"Usuario Demo\" por USD $1481.49.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1062,
+      "total": "1481.49",
+      "payment_method": "Cuenta Corriente Corporativa",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 167,
+    "timestamp": "2026-10-01T21:18:49.039Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1061 registrado por \"Usuario Demo\" por USD $1481.49.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1061,
+      "total": "1481.49",
+      "payment_method": "Cuenta Corriente Corporativa",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 166,
+    "timestamp": "2026-10-01T21:16:59.124Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1060 registrado por \"Usuario Demo\" por USD $1481.49.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1060,
+      "total": "1481.49",
+      "payment_method": "Cuenta Corriente Corporativa",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 165,
+    "timestamp": "2026-10-01T21:16:59.061Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1059 registrado por \"Usuario Demo\" por USD $1481.49.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1059,
+      "total": "1481.49",
+      "payment_method": "Cuenta Corriente Corporativa",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 164,
+    "timestamp": "2026-10-01T21:16:37.061Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1058 registrado por \"Usuario Demo\" por USD $1481.49.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1058,
+      "total": "1481.49",
+      "payment_method": "Cuenta Corriente Corporativa",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 163,
+    "timestamp": "2026-10-01T21:16:15.932Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1057 registrado por \"Usuario Demo\" por USD $1481.49.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1057,
+      "total": "1481.49",
+      "payment_method": "Cuenta Corriente Corporativa",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 162,
+    "timestamp": "2026-10-01T21:15:04.177Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1056 registrado por \"Usuario Demo\" por USD $1481.49.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1056,
+      "total": "1481.49",
+      "payment_method": "Cuenta Corriente Corporativa",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 161,
+    "timestamp": "2026-10-01T21:00:08.179Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1056 registrado por \"Dacas\" por USD $1370.00.",
+    "usuario": {
+      "nombre": "rodrigo cascata",
+      "email": "rodrigo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1056,
+      "total": "1370.00",
+      "payment_method": "E-Cheq / Cheque de Pago Diferido",
+      "itemsCount": 2
+    }
+  },
+  {
+    "id": 160,
+    "timestamp": "2026-10-01T20:55:45.453Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 2 producto(s) por total USD $1.370,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "rodrigo cascata",
+      "email": "rodrigo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790888145453",
+      "itemsCount": 2,
+      "total": 1370,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($890.00) | 1x MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router ($480.00)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 890,
+          "subtotal": 890
+        },
+        {
+          "id": 2,
+          "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+          "brand": "MikroTik",
+          "sku": "CRS328-24P-4S",
+          "qty": 1,
+          "price": 480,
+          "subtotal": 480
+        }
+      ],
+      "timestamp": "2026-10-01T20:55:45.453Z"
+    }
+  },
+  {
+    "id": 159,
+    "timestamp": "2026-10-01T20:41:49.815Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $890,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "rodrigo cascata",
+      "email": "rodrigo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790887309815",
+      "itemsCount": 1,
+      "total": 890,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($890.00)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 890,
+          "subtotal": 890
+        }
+      ],
+      "timestamp": "2026-10-01T20:41:49.815Z"
+    }
+  },
+  {
+    "id": 158,
+    "timestamp": "2026-10-01T20:37:39.651Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $890,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "rodrigo cascata",
+      "email": "rodrigo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790887059651",
+      "itemsCount": 1,
+      "total": 890,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($890.00)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 890,
+          "subtotal": 890
+        }
+      ],
+      "timestamp": "2026-10-01T20:37:39.651Z"
+    }
+  },
+  {
+    "id": 157,
+    "timestamp": "2026-10-01T20:32:50.348Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $890,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "rodrigo cascata",
+      "email": "rodrigo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790886770348",
+      "itemsCount": 1,
+      "total": 890,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($890.00)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 890,
+          "subtotal": 890
+        }
+      ],
+      "timestamp": "2026-10-01T20:32:50.348Z"
+    }
+  },
+  {
+    "id": 156,
+    "timestamp": "2026-10-01T20:31:59.623Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "bb76865649d75f77e7d47cb144272bd46ccac5a81cfe9d7286a88d1ea2d71413"
+    }
+  },
+  {
+    "id": 155,
+    "timestamp": "2026-10-01T20:27:50.598Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"admin@dacas.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {
+      "emailIntentado": "admin@dacas.com"
+    }
+  },
+  {
+    "id": 154,
+    "timestamp": "2026-10-01T19:41:25.626Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $890,00 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 4,
+      "nombre": "rodrigo cascata",
+      "email": "rodrigo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790883685625",
+      "itemsCount": 1,
+      "total": 890,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($890.00)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 890,
+          "subtotal": 890
+        }
+      ],
+      "timestamp": "2026-10-01T19:41:25.626Z"
+    }
+  },
+  {
+    "id": 153,
+    "timestamp": "2026-10-01T19:40:42.797Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "d907cb1be4c096ecb121df5f407f8fadb3727338aff3d1f591905202517a4f10"
+    }
+  },
+  {
+    "id": 152,
+    "timestamp": "2026-10-01T19:29:37.667Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Fortinet Fortinet FortiGate 60F - Next Generation Firewall (SKU: FG-60F-BDL-950-12, Cat: security, USD $890.00).",
+    "usuario": {
+      "id": 4,
+      "nombre": "rodrigo cascata",
+      "email": "rodrigo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 1,
+      "productName": "Fortinet FortiGate 60F - Next Generation Firewall",
+      "sku": "FG-60F-BDL-950-12",
+      "brand": "Fortinet",
+      "price": "890.00",
+      "category": "security",
+      "timestamp": "2026-10-01T19:29:37.667Z"
+    }
+  },
+  {
+    "id": 151,
+    "timestamp": "2026-10-01T19:23:14.387Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $890,00 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 4,
+      "nombre": "rodrigo cascata",
+      "email": "rodrigo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790882594387",
+      "itemsCount": 1,
+      "total": 890,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($890.00)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 890,
+          "subtotal": 890
+        }
+      ],
+      "timestamp": "2026-10-01T19:23:14.387Z"
+    }
+  },
+  {
+    "id": 150,
+    "timestamp": "2026-10-01T19:19:17.407Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PEDIDO_ESTADO",
+    "descripcion": "Pedido #1056 actualizado a estado \"en_camino\"",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "ordenId": "1056",
+      "nuevoEstado": "en_camino"
+    }
+  },
+  {
+    "id": 149,
+    "timestamp": "2026-10-01T19:15:52.118Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1056 registrado por \"rodrigo cascata\" por USD $890.00.",
+    "usuario": {
+      "id": 4,
+      "nombre": "rodrigo cascata",
+      "email": "rodrigo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1056,
+      "total": "890.00",
+      "payment_method": "Transferencia Bancaria Inmediata (CBU / SWIFT)",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 148,
+    "timestamp": "2026-10-01T19:14:17.429Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "80536ae6dd770e3c833cd02d72cc17631bd7baffd360f6f4a9726bc1e785832e"
+    }
+  },
+  {
+    "id": 147,
+    "timestamp": "2026-10-01T19:12:37.826Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PEDIDO_ESTADO",
+    "descripcion": "Pedido #1057 actualizado a estado \"entregado\"",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "ordenId": "1057",
+      "nuevoEstado": "entregado"
+    }
+  },
+  {
+    "id": 146,
+    "timestamp": "2026-10-01T19:12:00.758Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1057 registrado por \"Rodrigo Cascata\" por USD $890.00.",
+    "usuario": {
+      "id": 4,
+      "nombre": "Rodrigo Cascata",
+      "email": "rodrigo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1057,
+      "total": "890.00",
+      "payment_method": "Cuenta Corriente B2B (30 días fecha factura)",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 145,
+    "timestamp": "2026-10-01T18:26:16.212Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Fortinet Fortinet FortiGate 60F - Next Generation Firewall (SKU: FG-60F-BDL-950-12, Cat: security, USD $890.00).",
+    "usuario": {
+      "id": 4,
+      "nombre": "Rodrigo Cascata",
+      "email": "rodrigo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 1,
+      "productName": "Fortinet FortiGate 60F - Next Generation Firewall",
+      "sku": "FG-60F-BDL-950-12",
+      "brand": "Fortinet",
+      "price": "890.00",
+      "category": "security",
+      "timestamp": "2026-10-01T18:26:16.212Z"
+    }
+  },
+  {
+    "id": 144,
+    "timestamp": "2026-10-01T18:09:11.474Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Fortinet Fortinet FortiGate 60F - Next Generation Firewall (SKU: FG-60F-BDL-950-12, Cat: security, USD $890.00).",
+    "usuario": {
+      "id": 4,
+      "nombre": "Rodrigo Cascata",
+      "email": "rodrigo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 1,
+      "productName": "Fortinet FortiGate 60F - Next Generation Firewall",
+      "sku": "FG-60F-BDL-950-12",
+      "brand": "Fortinet",
+      "price": "890.00",
+      "category": "security",
+      "timestamp": "2026-10-01T18:09:11.474Z"
+    }
+  },
+  {
+    "id": 143,
+    "timestamp": "2026-10-01T18:08:54.826Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_ACTUALIZADO",
+    "descripcion": "Producto #1 (\"Fortinet FortiGate 60F - Next Generation Firewall\") modificado por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": "1",
+      "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+      "price": "890.00",
+      "stock": 45
+    }
+  },
+  {
+    "id": 142,
+    "timestamp": "2026-10-01T18:06:40.564Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PEDIDO_ESTADO",
+    "descripcion": "Pedido #1056 actualizado a estado \"entregado\"",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "ordenId": "1056",
+      "nuevoEstado": "entregado"
+    }
+  },
+  {
+    "id": 141,
+    "timestamp": "2026-10-01T18:00:08.507Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PEDIDO_ESTADO",
+    "descripcion": "Pedido #1056 actualizado a estado \"cancelled\"",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "ordenId": "1056",
+      "nuevoEstado": "cancelled"
+    }
+  },
+  {
+    "id": 140,
+    "timestamp": "2026-10-01T18:00:06.403Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PEDIDO_ESTADO",
+    "descripcion": "Pedido #1056 actualizado a estado \"paid\"",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "ordenId": "1056",
+      "nuevoEstado": "paid"
+    }
+  },
+  {
+    "id": 139,
+    "timestamp": "2026-10-01T18:00:04.336Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PEDIDO_ESTADO",
+    "descripcion": "Pedido #1056 actualizado a estado \"entregado\"",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "ordenId": "1056",
+      "nuevoEstado": "entregado"
+    }
+  },
+  {
+    "id": 138,
+    "timestamp": "2026-10-01T18:00:02.421Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PEDIDO_ESTADO",
+    "descripcion": "Pedido #1056 actualizado a estado \"en_camino\"",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "ordenId": "1056",
+      "nuevoEstado": "en_camino"
+    }
+  },
+  {
+    "id": 137,
+    "timestamp": "2026-10-01T17:59:36.289Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1056 registrado por \"Rodrigo Cascata\" por USD $1780.00.",
+    "usuario": {
+      "id": 4,
+      "nombre": "Rodrigo Cascata",
+      "email": "rodrigo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1056,
+      "total": "1780.00",
+      "payment_method": "Transferencia Bancaria Inmediata (CBU / SWIFT)",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 136,
+    "timestamp": "2026-10-01T17:57:22.301Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 135,
+    "timestamp": "2026-10-01T17:56:44.072Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 134,
+    "timestamp": "2026-10-01T17:55:42.250Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 133,
+    "timestamp": "2026-10-01T17:53:11.329Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "b7fbd31dc2f1fbf15a5df46cd2b77c839cae073c09115e05e3e630e0ef6b63c6"
+    }
+  },
+  {
     "id": 132,
     "timestamp": "2026-09-29T20:41:39.928Z",
     "origen": "auth",

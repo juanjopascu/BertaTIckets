@@ -668,7 +668,57 @@ const HERO_SLIDES = [
   }
 ];
 
-export default function Shop() {
+class ShopErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("Shop Error caught by boundary:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC', padding: '24px', textAlign: 'center', fontFamily: 'sans-serif' }}>
+          <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', fontSize: '32px' }}>
+            🛍️
+          </div>
+          <h2 style={{ color: '#0F172A', margin: '0 0 8px', fontSize: '1.4rem', fontWeight: 800 }}>
+            Actualizando DACAS Shop...
+          </h2>
+          <p style={{ color: '#64748B', maxWidth: '480px', margin: '0 0 20px', fontSize: '14px' }}>
+            Se ha actualizado la configuración regional del catálogo. Presioná el botón a continuación para recargar la vista.
+          </p>
+          <button
+            onClick={() => {
+              this.setState({ hasError: false });
+              window.location.reload();
+            }}
+            style={{
+              background: '#0FA4DE',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '12px',
+              padding: '12px 28px',
+              fontWeight: 800,
+              fontSize: '14px',
+              cursor: 'pointer',
+              boxShadow: '0 4px 14px rgba(15, 164, 222, 0.35)'
+            }}
+          >
+            Recargar Catálogo DACAS 🔄
+          </button>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+function ShopMain() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
   const [countries, setCountries] = useState([]);
@@ -804,6 +854,31 @@ export default function Shop() {
     window.addEventListener('storage', handleAuthSync);
     return () => window.removeEventListener('storage', handleAuthSync);
   }, []);
+
+  const userCountryCode = (
+    clientUser?.country_code ||
+    (clientUser?.country_id === 4 ? 'CL' : clientUser?.country_id === 5 ? 'CO' : 'AR') ||
+    'AR'
+  ).toUpperCase();
+  const userCountryObj = DACAS_COUNTRIES.find((c) => c.code === userCountryCode) || DACAS_COUNTRIES[1];
+
+  const [showCountryBlockedModal, setShowCountryBlockedModal] = useState(false);
+  const [attemptedCountry, setAttemptedCountry] = useState(null);
+
+  // Sincronizar y forzar el país de la cuenta registrada si el cliente está logueado
+  useEffect(() => {
+    if (clientUser && userCountryCode) {
+      if (selectedCountryCode !== userCountryCode) {
+        setSelectedCountryCode(userCountryCode);
+        try {
+          localStorage.setItem('dacas_selected_country', userCountryCode);
+          window.dispatchEvent(new CustomEvent('dacas_country_changed', { detail: { country: userCountryCode } }));
+        } catch {}
+        fetchProducts(userCountryCode);
+      }
+    }
+  }, [clientUser, userCountryCode, selectedCountryCode]);
+
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authMode, setAuthMode] = useState('register'); // 'register' | 'login'
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
@@ -937,28 +1012,40 @@ export default function Shop() {
   };
 
   useEffect(() => {
-    fetchProducts();
-  }, [clientUser]);
+    fetchProducts(selectedCountryCode);
+  }, [clientUser, selectedCountryCode]);
 
   const DISALLOWED_BRANDS = ['cisco', 'poly', 'ubiquiti', 'dell', 'dell technologies'];
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (targetCountry = selectedCountryCode) => {
     try {
+      const activeCode = targetCountry || selectedCountryCode || 'AR';
       const token = localStorage.getItem('dacas_client_token');
       const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
-      const res = await fetch(`${API_BASE_URL}/api/ecommerce/products`, { headers });
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/products?country=${activeCode}`, { headers });
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
           // Normalize images property and filter disallowed brands
           const normalized = data
             .filter((p) => !p.brand || !DISALLOWED_BRANDS.includes(p.brand.toLowerCase()))
-            .map((p) => ({
-              ...p,
-              images: Array.isArray(p.images) && p.images.length > 0
-                ? p.images
-                : (p.image_url ? [p.image_url] : [])
-            }));
+            .map((p) => {
+              const mainImg = p.image_url || (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : '');
+              const secImgs = Array.isArray(p.secondary_images) ? p.secondary_images : [];
+              let combined = [];
+              if (mainImg) combined.push(mainImg);
+              secImgs.forEach((img) => {
+                if (img && !combined.includes(img)) combined.push(img);
+              });
+              if (combined.length === 0 && Array.isArray(p.images) && p.images.length > 0) {
+                combined = p.images;
+              }
+              return {
+                ...p,
+                image_url: mainImg,
+                images: combined
+              };
+            });
           setProducts(normalized);
           setLoading(false);
           return;
@@ -1164,23 +1251,41 @@ export default function Shop() {
       {/* ── Top Regional Countries Flag Bar (12 Países DACAS) ── */}
       <div style={{ background: '#E2E8F0', borderBottom: '1px solid #CBD5E1', padding: '5px 0' }}>
         <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '800', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-            <BrandingVectorIcon name="globe" size={14} color="#475569" /> Cobertura Regional DACAS:
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '800', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              <BrandingVectorIcon name="globe" size={14} color="#475569" /> Cobertura Regional DACAS:
+            </div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: clientUser ? '#0369a1' : '#0284c7', color: '#ffffff', padding: '2px 9px', borderRadius: '999px', fontSize: '11px', fontWeight: '800', boxShadow: '0 1px 3px rgba(2,132,199,0.3)' }}>
+              <span>{clientUser ? '🔒 Tienda Asignada:' : '📍 Operando en:'} {selectedCountryObj.flag} {selectedCountryObj.name}</span>
+            </div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', padding: '2px 0' }}>
             {DACAS_COUNTRIES.map((c) => {
               const isSelected = selectedCountryCode === c.code;
+              const isLockedForOther = clientUser && userCountryCode !== c.code;
               return (
                 <button
                   key={c.code}
                   onClick={() => {
+                    if (isLockedForOther) {
+                      setAttemptedCountry(c);
+                      setShowCountryBlockedModal(true);
+                      return;
+                    }
                     setSelectedCountryCode(c.code);
-                    localStorage.setItem('dacas_selected_country', c.code);
+                    try {
+                      localStorage.setItem('dacas_selected_country', c.code);
+                      window.dispatchEvent(new CustomEvent('dacas_country_changed', { detail: { country: c.code } }));
+                    } catch {}
+                    fetchProducts(c.code);
                   }}
-                  title={`${c.name} (${c.code})`}
+                  title={isLockedForOther 
+                    ? `🔒 Tu cuenta está registrada en ${userCountryObj.name}. Clic para cambiar de usuario si deseas operar en ${c.name}.`
+                    : `${c.name} (${c.code}) - Clic para ver catálogo y stock de ${c.name}`
+                  }
                   style={{
-                    background: isSelected ? '#CBD5E1' : 'transparent',
-                    border: isSelected ? '1.5px solid #94A3B8' : '1px solid transparent',
+                    background: isSelected ? '#0fa4de' : 'transparent',
+                    border: isSelected ? '1.5px solid #0284c7' : '1px solid transparent',
                     borderRadius: '8px',
                     padding: '3px 7px',
                     cursor: 'pointer',
@@ -1190,13 +1295,17 @@ export default function Shop() {
                     alignItems: 'center',
                     gap: '4px',
                     transition: 'all 0.15s ease',
-                    boxShadow: isSelected ? '0 1px 4px rgba(0,0,0,0.12)' : 'none',
-                    transform: isSelected ? 'scale(1.06)' : 'none'
+                    boxShadow: isSelected ? '0 2px 6px rgba(15, 164, 222, 0.4)' : 'none',
+                    transform: isSelected ? 'scale(1.12)' : 'none',
+                    opacity: isLockedForOther ? 0.65 : 1
                   }}
                   onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.6)'; }}
                   onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
                 >
                   <span>{c.flag}</span>
+                  {isLockedForOther && (
+                    <span style={{ fontSize: '9px', marginLeft: '-2px' }}>🔒</span>
+                  )}
                 </button>
               );
             })}
@@ -2378,6 +2487,8 @@ export default function Shop() {
                     key={product.id}
                     product={product}
                     clientUser={clientUser}
+                    selectedCountryCode={selectedCountryCode}
+                    selectedCountryObj={selectedCountryObj}
                     onOpenAuth={() => {
                       setAuthMode('login');
                       setAuthModalOpen(true);
@@ -2472,6 +2583,132 @@ export default function Shop() {
           countries={countries}
         />
       )}
+
+      {/* ── MODAL: CAMBIO DE PAÍS NO AUTORIZADO PARA CLIENTE B2B ── */}
+      {showCountryBlockedModal && clientUser && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(7, 21, 36, 0.75)',
+          backdropFilter: 'blur(8px)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '20px',
+            maxWidth: '540px',
+            width: '100%',
+            padding: '30px',
+            boxShadow: '0 25px 60px rgba(0,0,0,0.3)',
+            border: '1px solid #e2e8f0',
+            textAlign: 'center',
+            animation: 'fadeIn 0.2s ease-out'
+          }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '50%',
+              background: '#FEF3C7',
+              color: '#D97706',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px',
+              fontSize: '30px'
+            }}>
+              🔒
+            </div>
+
+            <h3 style={{ margin: '0 0 8px', fontSize: '1.3rem', fontWeight: '900', color: '#0F172A' }}>
+              Cambio de Tienda no Autorizado
+            </h3>
+
+            <div style={{
+              background: '#F8FAFC',
+              border: '1px solid #E2E8F0',
+              borderRadius: '12px',
+              padding: '12px 16px',
+              margin: '16px 0',
+              textAlign: 'left',
+              fontSize: '12.5px',
+              color: '#334155'
+            }}>
+              <div style={{ fontWeight: '800', color: '#0F172A', marginBottom: '3px' }}>
+                🏢 {clientUser.razon_social || clientUser.empresa || clientUser.name}
+              </div>
+              <div style={{ color: '#64748B', fontSize: '11.5px' }}>
+                {clientUser.cuit || clientUser.numero_nit ? `CUIT: ${clientUser.cuit || clientUser.numero_nit} · ` : ''}
+                Tienda asignada: <strong>{userCountryObj.flag} {userCountryObj.name}</strong>
+              </div>
+            </div>
+
+            <p style={{ fontSize: '13px', color: '#475569', lineHeight: 1.5, margin: '0 0 24px' }}>
+              Esta tienda opera de forma exclusiva para <strong>{userCountryObj.name}</strong> bajo su reglamentación fiscal, impositiva (IVA 21%) y despachos desde depósitos nacionales.
+              <br /><br />
+              Tu cuenta corporativa no está autorizada para operar en la tienda de <strong>{attemptedCountry?.flag} {attemptedCountry?.name}</strong>. Para ingresar a ese mercado, debes cerrar sesión e identificarte con una cuenta corporativa habilitada en ese país.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setShowCountryBlockedModal(false)}
+                style={{
+                  width: '100%',
+                  background: '#0FA4DE',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '12px',
+                  fontWeight: '800',
+                  fontSize: '13.5px',
+                  cursor: 'pointer',
+                  boxShadow: '0 4px 14px rgba(15, 164, 222, 0.3)'
+                }}
+              >
+                Permanecer en Tienda {userCountryObj.flag} {userCountryObj.name}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  const targetCode = attemptedCountry?.code || 'AR';
+                  handleLogout();
+                  setShowCountryBlockedModal(false);
+                  setSelectedCountryCode(targetCode);
+                  try {
+                    localStorage.setItem('dacas_selected_country', targetCode);
+                    window.dispatchEvent(new CustomEvent('dacas_country_changed', { detail: { country: targetCode } }));
+                  } catch {}
+                  fetchProducts(targetCode);
+                  setAuthMode('login');
+                  setAuthModalOpen(true);
+                }}
+                style={{
+                  width: '100%',
+                  background: '#F1F5F9',
+                  color: '#475569',
+                  border: '1px solid #CBD5E1',
+                  borderRadius: '10px',
+                  padding: '10px',
+                  fontWeight: '700',
+                  fontSize: '12.5px',
+                  cursor: 'pointer'
+                }}
+              >
+                Cerrar Sesión e Ingresar con cuenta de {attemptedCountry?.flag} {attemptedCountry?.name}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* ── BOTÓN DE AYUDA DESPLEGABLE ESTILO MAC (EXCLUSIVO CLIENTES LOGUEADOS) ── */}
       {clientUser && (
         <ShopMacHelpHub
@@ -3615,12 +3852,16 @@ function ShopMacHelpHub({ clientUser, generalSettings, onSelectProduct, navigate
 }
 
 /* ── Product Card Component ── */
-function ProductCard({ product, clientUser, onOpenAuth, onSelectProduct, onAddToCart, justAdded }) {
+function ProductCard({ product, clientUser, onOpenAuth, onSelectProduct, onAddToCart, justAdded, selectedCountryCode, selectedCountryObj }) {
   const [hovered, setHovered] = useState(false);
-  const images = Array.isArray(product.images) && product.images.length > 0
-    ? product.images
-    : (product.image_url ? [product.image_url] : []);
-  const mainImage = images[0] || product.image_url;
+  const activeCountryCode = selectedCountryCode || (() => {
+    try { return localStorage.getItem('dacas_selected_country') || 'AR'; } catch { return 'AR'; }
+  })();
+  const activeCountryObj = selectedCountryObj || DACAS_COUNTRIES.find((c) => c.code === activeCountryCode) || DACAS_COUNTRIES[1] || { flag: '🇦🇷', name: 'Argentina' };
+  const mainImage = product.image_url || (Array.isArray(product.images) && product.images[0]) || '';
+  const images = (Array.isArray(product.images) && product.images.length > 0)
+    ? (mainImage && !product.images.includes(mainImage) ? [mainImage, ...product.images] : product.images)
+    : (mainImage ? [mainImage] : []);
   const isLocked = !clientUser || product.is_locked || product.price === null || product.price === undefined;
 
   return (
@@ -3704,20 +3945,28 @@ function ProductCard({ product, clientUser, onOpenAuth, onSelectProduct, onAddTo
           </span>
         )}
 
-        {/* Stock warning */}
-        {product.stock !== undefined && product.stock > 0 && product.stock <= 10 && (
+        {/* Stock country badge */}
+        {product.stock !== undefined && (
           <span style={{
             position: 'absolute',
             top: '12px',
             right: '12px',
-            background: 'rgba(239, 68, 68, 0.95)',
+            background: product.stock > 0 ? (product.stock <= 10 ? 'rgba(234, 88, 12, 0.95)' : 'rgba(16, 185, 129, 0.95)') : 'rgba(239, 68, 68, 0.95)',
             color: '#fff',
             fontSize: '10px',
             fontWeight: '800',
-            padding: '4px 10px',
-            borderRadius: '999px'
+            padding: '4px 9px',
+            borderRadius: '999px',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '4px'
           }}>
-            ¡Últimos {product.stock}!
+            {product.stock > 0 ? (
+              <span>{activeCountryObj.flag} Stock {activeCountryCode}: {product.stock} un.</span>
+            ) : (
+              <span>{activeCountryObj.flag} Sin stock en {activeCountryObj.name}</span>
+            )}
           </span>
         )}
       </div>
@@ -3881,9 +4130,10 @@ function ProductCard({ product, clientUser, onOpenAuth, onSelectProduct, onAddTo
 
 /* ─── POP-UP MODAL WITH INTERACTIVE PHOTO CAROUSEL & DETAILS ─── */
 function ProductDetailModal({ product, clientUser, onOpenAuth, onClose, onAddToCart }) {
-  const images = Array.isArray(product.images) && product.images.length > 0
-    ? product.images
-    : (product.image_url ? [product.image_url] : []);
+  const mainImage = product.image_url || (Array.isArray(product.images) && product.images[0]) || '';
+  const images = (Array.isArray(product.images) && product.images.length > 0)
+    ? (mainImage && !product.images.includes(mainImage) ? [mainImage, ...product.images] : product.images)
+    : (mainImage ? [mainImage] : []);
 
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [quantity, setQuantity] = useState(1);
@@ -4888,6 +5138,14 @@ function AuthModal({
         </div>
       </div>
     </div>
+  );
+}
+
+export default function Shop(props) {
+  return (
+    <ShopErrorBoundary>
+      <ShopMain {...props} />
+    </ShopErrorBoundary>
   );
 }
 

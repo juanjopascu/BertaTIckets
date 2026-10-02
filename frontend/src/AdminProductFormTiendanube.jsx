@@ -294,20 +294,25 @@ export default function AdminProductFormTiendanube({
     }
 
     try {
+      const token = localStorage.getItem('token') || localStorage.getItem('dacas_token') || sessionStorage.getItem('token');
+      const sessionId = sessionStorage.getItem('sessionId') || localStorage.getItem('sessionId');
+      const headers = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (sessionId) headers['x-session-id'] = sessionId;
+
       const res = await fetch(`${apiBaseUrl}/api/ecommerce/upload`, {
         method: 'POST',
+        headers,
         body: formData
       });
       const data = await res.json();
       if (data.success && Array.isArray(data.urls)) {
         setImages(prev => [...prev, ...data.urls]);
       } else {
-        const mockUrls = Array.from(files).map(f => URL.createObjectURL(f));
-        setImages(prev => [...prev, ...mockUrls]);
+        alert(data.error || 'Error al subir imagen al servidor');
       }
-    } catch {
-      const mockUrls = Array.from(files).map(f => URL.createObjectURL(f));
-      setImages(prev => [...prev, ...mockUrls]);
+    } catch (err) {
+      alert('Error de conexión al subir la imagen: ' + err.message);
     } finally {
       setIsUploading(false);
     }
@@ -405,6 +410,7 @@ export default function AdminProductFormTiendanube({
       variants,
       image_url: images.length > 0 ? images[0] : '',
       secondary_images: images.slice(1),
+      images: images,
       video_url: videoUrl.trim()
     };
 

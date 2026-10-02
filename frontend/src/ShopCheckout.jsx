@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BrandingVectorIcon from './BrandingVectorIcon';
 
@@ -86,10 +86,35 @@ const DEFAULT_CHECKOUT_METHODS = {
   terms_conditions_text: 'Acepto las condiciones comerciales de DACAS B2B, términos de garantía oficial de fabricante de 12/36 meses y la emisión de la orden de compra con carácter vinculante para reserva de stock.'
 };
 
-export default function ShopCheckout() {
+function ShopCheckoutContent() {
   const navigate = useNavigate();
 
-  // ── Checkout Methods (configurable from Admin) ──
+  const DACAS_COUNTRIES_LIST = [
+    { code: 'AR', name: 'Argentina', flag: '🇦🇷', id: 2 },
+    { code: 'CL', name: 'Chile', flag: '🇨🇱', id: 4 },
+    { code: 'CO', name: 'Colombia', flag: '🇨🇴', id: 5 },
+    { code: 'MX', name: 'México', flag: '🇲🇽', id: 8 },
+    { code: 'US', name: 'Estados Unidos', flag: '🇺🇸', id: 1 },
+    { code: 'UY', name: 'Uruguay', flag: '🇺🇾', id: 12 },
+    { code: 'PE', name: 'Perú', flag: '🇵🇪', id: 10 },
+    { code: 'BO', name: 'Bolivia', flag: '🇧🇴', id: 3 },
+    { code: 'CR', name: 'Costa Rica', flag: '🇨🇷', id: 6 },
+    { code: 'EC', name: 'Ecuador', flag: '🇪🇨', id: 7 },
+    { code: 'PY', name: 'Paraguay', flag: '🇵🇾', id: 9 },
+    { code: 'DO', name: 'República Dominicana', flag: '🇩🇴', id: 11 }
+  ];
+
+  const [selectedCountryCode, setSelectedCountryCode] = useState(() => {
+    try {
+      return localStorage.getItem('dacas_selected_country') || 'AR';
+    } catch {
+      return 'AR';
+    }
+  });
+
+  const selectedCountryObj = DACAS_COUNTRIES_LIST.find(c => c.code === selectedCountryCode) || DACAS_COUNTRIES_LIST[0];
+
+  // ── Checkout Methods (configurable per Country) ──
   const [checkoutMethods, setCheckoutMethods] = useState(() => {
     try {
       const saved = localStorage.getItem('dacas_checkout_methods');
@@ -108,7 +133,7 @@ export default function ShopCheckout() {
   };
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/ecommerce/settings/checkout-methods`)
+    fetch(`${API_BASE_URL}/api/ecommerce/settings/checkout-methods?country=${selectedCountryCode}`)
       .then(r => r.json())
       .then(data => {
         if (data && (data.shipping || data.payment)) {
@@ -128,6 +153,16 @@ export default function ShopCheckout() {
         }
       })
       .catch(() => {});
+  }, [selectedCountryCode]);
+
+  useEffect(() => {
+    const handleCountryEvt = (e) => {
+      if (e.detail?.country) {
+        setSelectedCountryCode(e.detail.country);
+      }
+    };
+    window.addEventListener('dacas_country_changed', handleCountryEvt);
+    return () => window.removeEventListener('dacas_country_changed', handleCountryEvt);
   }, []);
 
   // ── Cart State synced with localStorage ──
@@ -172,14 +207,6 @@ export default function ShopCheckout() {
 
   // ── Coupon / Promotional Code State ──
   const [couponInput, setCouponInput] = useState('');
-  const [appliedCoupon, setAppliedCoupon] = useState(null);
-  const [couponLoading, setCouponLoading] = useState(false);
-  const [couponError, setCouponError] = useState('');
-  const [couponSuccess, setCouponSuccess] = useState('');
-
-  const discountAmount = appliedCoupon ? (parseFloat(appliedCoupon.discount_amount) || 0) : 0;
-  const finalOrderTotal = Math.max(0, cartTotal - discountAmount);
-
   // Helper to retrieve active user from any storage key
   const getActiveUser = () => {
     try {
@@ -198,6 +225,101 @@ export default function ShopCheckout() {
   // ── Auth State synced with localStorage ──
   const [shopUser, setShopUser] = useState(() => getActiveUser());
   const [shopToken, setShopToken] = useState(() => localStorage.getItem('dacas_client_token') || localStorage.getItem('shop_token') || localStorage.getItem('token') || null);
+
+  const userCountryCode = (
+    shopUser?.country_code ||
+    (shopUser?.country_id === 4 ? 'CL' : shopUser?.country_id === 5 ? 'CO' : 'AR') ||
+    'AR'
+  ).toUpperCase();
+  const userCountryObj = DACAS_COUNTRIES_LIST.find(c => c.code === userCountryCode) || DACAS_COUNTRIES_LIST[0];
+
+  const [appliedCoupon, setAppliedCoupon] = useState(null);
+  const [couponLoading, setCouponLoading] = useState(false);
+  const [couponError, setCouponError] = useState('');
+  const [couponSuccess, setCouponSuccess] = useState('');
+
+  const discountAmount = appliedCoupon ? (parseFloat(appliedCoupon.discount_amount) || 0) : 0;
+  const netCommercialSubtotal = Math.max(0, cartTotal - discountAmount);
+
+  // ── Percepciones IIBB (Solo para Clientes de Argentina) ──
+  const isArgentinaClient = (
+    (shopUser && (shopUser.country_id === 2 || shopUser.country_code === 'AR' || shopUser.pais === 'Argentina')) ||
+    userCountryCode === 'AR' ||
+    selectedCountryCode === 'AR'
+  );
+
+  const userPercepciones = useMemo(() => {
+    if (!isArgentinaClient) return null;
+    let raw = shopUser?.percepciones;
+    if (typeof raw === 'string') {
+      try { raw = JSON.parse(raw); } catch { raw = null; }
+    }
+    if (!raw && isArgentinaClient) {
+      // Default idéntico al ERP de referencia para clientes de Argentina
+      raw = {
+        caba: { enabled: true, alicuota: 1.5, vigencia: '2026-10-01' },
+        bsas: { enabled: false, alicuota: 0.0, vigencia: '2026-10-01' },
+        salta: { enabled: false, alicuota: 0.0, vigencia: '2019-08-01' },
+        misiones: { enabled: false, alicuota: 0.0, vigencia: '2023-05-01' },
+        tucuman: { enabled: false, alicuota: 0.0, coef: 0.0, vigencia: '2025-06-01' }
+      };
+    }
+    return raw;
+  }, [shopUser, isArgentinaClient]);
+
+  const activePercepcionesList = useMemo(() => {
+    if (!userPercepciones || !isArgentinaClient) return [];
+    const list = [];
+    const labels = {
+      caba: 'CABA',
+      bsas: 'Bs. As. (ARBA)',
+      salta: 'Salta',
+      misiones: 'Misiones',
+      tucuman: 'Tucumán'
+    };
+
+    for (const [key, p] of Object.entries(userPercepciones)) {
+      if (p && p.enabled) {
+        const alicuota = parseFloat(p.alicuota) || 0;
+        if (alicuota > 0) {
+          const coef = (key === 'tucuman' && p.coef && parseFloat(p.coef) > 0) ? parseFloat(p.coef) : 1;
+          const taxableBase = netCommercialSubtotal * coef;
+          const amount = parseFloat(((taxableBase * alicuota) / 100).toFixed(2));
+          list.push({
+            key,
+            label: labels[key] || key.toUpperCase(),
+            jurisdiccion: key.toUpperCase(),
+            alicuota,
+            coef: coef !== 1 ? coef : undefined,
+            vigencia: p.vigencia,
+            amount
+          });
+        }
+      }
+    }
+    return list;
+  }, [userPercepciones, isArgentinaClient, netCommercialSubtotal]);
+
+  const percepcionesTotal = useMemo(() => {
+    return activePercepcionesList.reduce((acc, p) => acc + p.amount, 0);
+  }, [activePercepcionesList]);
+
+  const finalOrderTotal = netCommercialSubtotal + percepcionesTotal;
+
+  const [showCountryBlockedModal, setShowCountryBlockedModal] = useState(false);
+
+  // Sincronizar y forzar el país de la cuenta registrada si el cliente está logueado
+  useEffect(() => {
+    if (shopUser && userCountryCode) {
+      if (selectedCountryCode !== userCountryCode) {
+        setSelectedCountryCode(userCountryCode);
+        try {
+          localStorage.setItem('dacas_selected_country', userCountryCode);
+          window.dispatchEvent(new CustomEvent('dacas_country_changed', { detail: { country: userCountryCode } }));
+        } catch {}
+      }
+    }
+  }, [shopUser, userCountryCode, selectedCountryCode]);
 
   // Onboarding Steps: 'cart' (1) | 'billing' (2) | 'shipping' (3) | 'payment' (4) | 'success' (5)
   const [step, setStep] = useState('cart');
@@ -637,6 +759,8 @@ export default function ShopCheckout() {
       const activeToken = shopToken || localStorage.getItem('dacas_client_token');
       const orderPayload = {
         items: cart.map(i => ({ id: i.id, quantity: i.qty, qty: i.qty })),
+        country_id: selectedCountryObj?.id || 2,
+        country_code: selectedCountryCode || 'AR',
         payment_method: paymentMethodLabel,
         shipping_method: shippingMethod === 'hub' ? 'Retiro en Depósito Central' : shippingMethod === 'expreso' ? 'Expreso Transporte' : 'Envío Express a Domicilio',
         shipping_address: formattedAddress,
@@ -645,16 +769,19 @@ export default function ShopCheckout() {
         delivery_notes: shipping.instrucciones || '',
         notes: `Horario: ${shipping.horario_entrega}. Receptor: ${shipping.contacto_recepcion} (${shipping.telefono_recepcion})`,
         coupon_code: appliedCoupon ? appliedCoupon.code : null,
-        end_user: (endUser.nombre && endUser.nombre.trim()) ? endUser : null
+        end_user: (endUser.nombre && endUser.nombre.trim()) ? endUser : null,
+        percepciones_total: percepcionesTotal.toFixed(2),
+        percepciones_applied: activePercepcionesList
       };
 
-      if (activeToken) {
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (activeToken) {
+          headers['Authorization'] = `Bearer ${activeToken}`;
+        }
         const res = await fetch(`${API_BASE_URL}/api/ecommerce/client/orders`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${activeToken}`,
-          },
+          headers,
           body: JSON.stringify(orderPayload),
         });
         const data = await res.json();
@@ -664,6 +791,8 @@ export default function ShopCheckout() {
           setStep('success');
           return;
         }
+      } catch (backendErr) {
+        console.warn('Backend call failed, using simulated fallback:', backendErr);
       }
 
       // Offline / Simulated Fallback
@@ -673,6 +802,8 @@ export default function ShopCheckout() {
         total: finalOrderTotal.toFixed(2),
         subtotal: cartTotal.toFixed(2),
         discount_applied: discountAmount.toFixed(2),
+        percepciones_total: percepcionesTotal.toFixed(2),
+        percepciones_applied: activePercepcionesList,
         coupon_code: appliedCoupon ? appliedCoupon.code : null,
         status: 'procesando',
         payment_method: paymentMethodLabel,
@@ -849,6 +980,88 @@ export default function ShopCheckout() {
         </div>
       </div>
 
+      {/* ── Active Country Scope Banner ── */}
+      <div className="no-print" style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', padding: '10px 24px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ fontSize: '22px', lineHeight: 1 }}>{selectedCountryObj.flag}</span>
+            <div>
+              <div style={{ fontWeight: '800', color: '#0f172a', fontSize: '13px' }}>
+                Operando bajo normativa y logística de {selectedCountryObj.name}
+              </div>
+              <div style={{ color: '#64748b', fontSize: '11.5px' }}>
+                Depósitos centrales, fletes y métodos de pago bancarios locales en {selectedCountryObj.name}
+              </div>
+            </div>
+          </div>
+          {shopUser ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: '#EFF6FF',
+                border: '1.5px solid #0FA4DE',
+                padding: '6px 14px',
+                borderRadius: '8px',
+                color: '#0369A1',
+                fontSize: '12px',
+                fontWeight: '800'
+              }}>
+                <span>🔒 Tienda Asignada: {selectedCountryObj.flag} {selectedCountryObj.name}</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowCountryBlockedModal(true)}
+                style={{
+                  background: '#FFFFFF',
+                  border: '1px solid #CBD5E1',
+                  color: '#64748B',
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  fontSize: '11.5px',
+                  fontWeight: '600',
+                  cursor: 'pointer'
+                }}
+                title="Tu cuenta B2B está autorizada exclusivamente para comprar en Argentina"
+              >
+                ¿Comprar en otro país? 🌐
+              </button>
+            </div>
+          ) : (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '11px', color: '#475569', fontWeight: '750', textTransform: 'uppercase' }}>Cambiar País:</span>
+              <select
+                value={selectedCountryCode}
+                onChange={(e) => {
+                  const newCode = e.target.value;
+                  setSelectedCountryCode(newCode);
+                  try {
+                    localStorage.setItem('dacas_selected_country', newCode);
+                    window.dispatchEvent(new CustomEvent('dacas_country_changed', { detail: { country: newCode } }));
+                  } catch {}
+                }}
+                style={{
+                  padding: '5px 12px',
+                  borderRadius: '8px',
+                  border: '1.5px solid #0fa4de',
+                  background: '#ffffff',
+                  color: '#0f172a',
+                  fontSize: '12.5px',
+                  fontWeight: '700',
+                  cursor: 'pointer',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.06)'
+                }}
+              >
+                {DACAS_COUNTRIES_LIST.map(c => (
+                  <option key={c.code} value={c.code}>{c.flag} {c.name}</option>
+                ))}
+              </select>
+            </div>
+          )}
+        </div>
+      </div>
+
       {/* ── Main Content Container ── */}
       <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '32px 24px' }}>
 
@@ -997,8 +1210,15 @@ export default function ShopCheckout() {
                 </div>
 
                 <div style={{ background: '#F8FAFC', padding: '14px 20px', borderRadius: '12px', textAlign: 'right', border: '1px solid #E2E8F0' }}>
-                  <div style={{ fontSize: '12px', color: '#64748B', marginBottom: '4px' }}>Subtotal B2B: <strong>${createdOrder.subtotal || createdOrder.total} USD</strong></div>
-                  <div style={{ fontSize: '12px', color: '#10B981', marginBottom: '8px' }}>Descuentos aplicados: <strong>-${createdOrder.discount_applied || '0.00'} USD</strong></div>
+                  <div style={{ fontSize: '12px', color: '#64748B', marginBottom: '4px' }}>Subtotal Neto B2B: <strong>${createdOrder.subtotal || createdOrder.total} USD</strong></div>
+                  {parseFloat(createdOrder.discount_applied || 0) > 0 && (
+                    <div style={{ fontSize: '12px', color: '#10B981', marginBottom: '4px' }}>Descuentos aplicados: <strong>-${createdOrder.discount_applied} USD</strong></div>
+                  )}
+                  {parseFloat(createdOrder.percepciones_total || 0) > 0 && (
+                    <div style={{ fontSize: '12px', color: '#D97706', marginBottom: '4px' }}>
+                      Percepciones IIBB: <strong>+${parseFloat(createdOrder.percepciones_total).toFixed(2)} USD</strong>
+                    </div>
+                  )}
                   <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#071524', borderTop: '1.5px solid #E2E8F0', paddingTop: '8px' }}>
                     Total Final: <span style={{ color: '#0fa4de' }}>${parseFloat(createdOrder.total).toFixed(2)} USD</span>
                   </div>
@@ -2308,6 +2528,60 @@ export default function ShopCheckout() {
                     );
                   })()}
 
+                  {/* Liquidación Impositiva & Percepciones IIBB (Argentina) */}
+                  {isArgentinaClient && (
+                    <div style={{ background: '#F8FAFC', border: '1.5px solid #CBD5E1', borderRadius: '16px', padding: '18px 20px', marginBottom: '24px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                        <div style={{ fontWeight: '800', fontSize: '13.5px', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>🏛️</span>
+                          <span>Liquidación Impositiva & Percepciones IIBB (Argentina)</span>
+                        </div>
+                        <span style={{ fontSize: '11px', background: '#E0F2FE', color: '#0369A1', padding: '3px 8px', borderRadius: '6px', fontWeight: '800' }}>
+                          Régimen: {shopUser?.iibb_tipo || 'C.M.'} • Sede: {shopUser?.iibb_jurisdiccion || '901 - Capital Federal'}
+                        </span>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', fontSize: '12px', color: '#475569', marginBottom: '14px', background: '#FFFFFF', padding: '12px 14px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                        <div>CUIT / NIT: <strong style={{ color: '#0F172A' }}>{billing.cuit || shopUser?.cuit || shopUser?.numero_nit || '30-12345678-9'}</strong></div>
+                        <div>Nro Inscripción IIBB: <strong style={{ color: '#0F172A' }}>{shopUser?.iibb_numero || shopUser?.cuit || '9017223280'}</strong></div>
+                        <div>Base Imponible Neta: <strong style={{ color: '#0F172A' }}>${netCommercialSubtotal.toFixed(2)} USD</strong></div>
+                      </div>
+
+                      {/* Lista de Percepciones Calculadas sobre Valor Neto */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        {activePercepcionesList.length === 0 ? (
+                          <div style={{ fontSize: '12px', color: '#16A34A', display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', background: '#DCFCE7', borderRadius: '8px' }}>
+                            <span>✓</span> Cliente sin percepciones activas de Ingresos Brutos (Alícuota 0.00% o Exento).
+                          </div>
+                        ) : (
+                          activePercepcionesList.map((p, idx) => (
+                            <div key={idx} style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              background: '#FFFBEB',
+                              border: '1px solid #FEF3C7',
+                              padding: '10px 14px',
+                              borderRadius: '10px',
+                              fontSize: '12.5px'
+                            }}>
+                              <div>
+                                <span style={{ fontWeight: '800', color: '#92400E' }}>Percepción IIBB {p.label}:</span>
+                                <span style={{ color: '#B45309', marginLeft: '6px', fontSize: '11.5px' }}>
+                                  Alícuota: <strong>{p.alicuota.toFixed(4)}%</strong> {p.coef ? `(Coef: ${p.coef})` : ''} sobre valor neto
+                                </span>
+                                {p.vigencia && <span style={{ color: '#94A3B8', fontSize: '11px', marginLeft: '8px' }}>(Vto: {p.vigencia})</span>}
+                              </div>
+                              <span style={{ fontWeight: '900', color: '#B45309', fontSize: '13.5px' }}>
+                                +${p.amount.toFixed(2)} USD
+                              </span>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Terms & Conditions Box */}
                   <div style={{ background: '#F8FAFC', padding: '16px 20px', borderRadius: '14px', border: '1px solid #E2E8F0', marginBottom: '24px' }}>
                     <label style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', cursor: 'pointer' }}>
@@ -2465,7 +2739,7 @@ export default function ShopCheckout() {
                 {/* Calculations */}
                 <div style={{ borderTop: '1.5px solid #F1F5F9', paddingTop: '14px' }}>
                   <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '13px', color: '#64748B', marginBottom: '6px' }}>
-                    <span>Subtotal de ítems:</span>
+                    <span>Subtotal Neto:</span>
                     <span style={{ fontWeight: '700', color: '#071524' }}>${cartTotal.toFixed(2)} USD</span>
                   </div>
 
@@ -2475,6 +2749,20 @@ export default function ShopCheckout() {
                         <span>Descuento ({appliedCoupon?.code || 'Cupón'}):</span>
                       </span>
                       <span style={{ fontWeight: '800' }}>-${discountAmount.toFixed(2)} USD</span>
+                    </div>
+                  )}
+
+                  {isArgentinaClient && activePercepcionesList.length > 0 && (
+                    <div style={{ margin: '8px 0', padding: '8px 10px', background: '#FFFBEB', borderRadius: '10px', border: '1px solid #FEF3C7' }}>
+                      <div style={{ fontSize: '11px', fontWeight: '800', color: '#92400E', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                        Percepciones IIBB (Base Neta):
+                      </div>
+                      {activePercepcionesList.map((p, idx) => (
+                        <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#B45309', marginBottom: '3px' }}>
+                          <span>Perc. {p.label} ({p.alicuota.toFixed(2)}%):</span>
+                          <span style={{ fontWeight: '800' }}>+${p.amount.toFixed(2)} USD</span>
+                        </div>
+                      ))}
                     </div>
                   )}
 
@@ -2551,6 +2839,201 @@ export default function ShopCheckout() {
         </div>
       )}
 
+      {/* ── Country Blocked / Switch Account Modal ── */}
+      {showCountryBlockedModal && shopUser && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(7, 21, 36, 0.75)',
+          backdropFilter: 'blur(6px)',
+          zIndex: 9999,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          padding: '20px'
+        }}>
+          <div style={{
+            background: '#ffffff',
+            borderRadius: '20px',
+            maxWidth: '520px',
+            width: '100%',
+            padding: '28px',
+            boxShadow: '0 20px 50px rgba(0,0,0,0.25)',
+            border: '1px solid #e2e8f0',
+            textAlign: 'center'
+          }}>
+            <div style={{
+              width: '60px',
+              height: '60px',
+              borderRadius: '50%',
+              background: '#FEF3C7',
+              color: '#D97706',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              margin: '0 auto 16px',
+              fontSize: '28px'
+            }}>
+              🔒
+            </div>
+
+            <h3 style={{ margin: '0 0 8px', fontSize: '1.25rem', fontWeight: '900', color: '#0F172A' }}>
+              Cambio de País no permitido para esta cuenta
+            </h3>
+
+            <div style={{
+              background: '#F8FAFC',
+              border: '1px solid #E2E8F0',
+              borderRadius: '12px',
+              padding: '12px 16px',
+              margin: '16px 0',
+              textAlign: 'left',
+              fontSize: '12.5px',
+              color: '#334155'
+            }}>
+              <div style={{ fontWeight: '800', color: '#0F172A', marginBottom: '4px' }}>
+                🏢 {shopUser.empresa || shopUser.razon_social || shopUser.name}
+              </div>
+              <div style={{ color: '#64748B', fontSize: '11.5px' }}>
+                {shopUser.cuit || shopUser.numero_nit ? `CUIT/NIT: ${shopUser.cuit || shopUser.numero_nit} · ` : ''}
+                País de registro: <strong>{userCountryObj.flag} {userCountryObj.name}</strong>
+              </div>
+            </div>
+
+            <p style={{ fontSize: '13px', color: '#475569', lineHeight: 1.5, margin: '0 0 24px' }}>
+              Tu cuenta corporativa está registrada bajo la normativa fiscal, aduanera y comercial de <strong>{userCountryObj.name}</strong>. Por reglamentación B2B, no es posible emitir pedidos en la tienda de otro país con este usuario.
+              <br /><br />
+              Para comprar en otro país, debes <strong>cerrar tu sesión actual</strong> e ingresar con una cuenta corporativa habilitada en ese país.
+            </p>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => setShowCountryBlockedModal(false)}
+                style={{
+                  width: '100%',
+                  background: '#0FA4DE',
+                  color: '#ffffff',
+                  border: 'none',
+                  borderRadius: '10px',
+                  padding: '12px',
+                  fontWeight: '800',
+                  fontSize: '13.5px',
+                  cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(15, 164, 222, 0.3)'
+                }}
+              >
+                Permanecer en Tienda {userCountryObj.flag} {userCountryObj.name}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => {
+                  localStorage.removeItem('dacas_client_user');
+                  localStorage.removeItem('dacas_client_token');
+                  localStorage.removeItem('shop_user');
+                  localStorage.removeItem('shop_token');
+                  setShopUser(null);
+                  setShopToken(null);
+                  setShowCountryBlockedModal(false);
+                  navigate('/shop');
+                }}
+                style={{
+                  width: '100%',
+                  background: '#F1F5F9',
+                  color: '#475569',
+                  border: '1px solid #CBD5E1',
+                  borderRadius: '10px',
+                  padding: '10px',
+                  fontWeight: '700',
+                  fontSize: '12.5px',
+                  cursor: 'pointer'
+                }}
+              >
+                Cerrar Sesión e Ingresar con otra cuenta
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
+  );
+}
+
+class CheckoutErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("Checkout error caught by boundary:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', background: '#F8FAFC', padding: '24px', textAlign: 'center', fontFamily: 'sans-serif' }}>
+          <div style={{ width: '64px', height: '64px', borderRadius: '16px', background: '#EFF6FF', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '16px', fontSize: '32px' }}>
+            🛒
+          </div>
+          <h2 style={{ color: '#0F172A', margin: '0 0 8px', fontSize: '1.4rem', fontWeight: 800 }}>
+            Hubo un detalle al cargar el Checkout
+          </h2>
+          <p style={{ color: '#64748B', maxWidth: '480px', margin: '0 0 20px', fontSize: '14px' }}>
+            No te preocupes, los productos de tu carrito se encuentran guardados.
+          </p>
+          <div style={{ display: 'flex', gap: '12px' }}>
+            <button
+              onClick={() => {
+                this.setState({ hasError: false });
+                window.location.reload();
+              }}
+              style={{
+                background: '#0FA4DE',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '12px 24px',
+                fontWeight: 800,
+                fontSize: '14px',
+                cursor: 'pointer'
+              }}
+            >
+              Reintentar 🔄
+            </button>
+            <button
+              onClick={() => window.location.href = '/shop'}
+              style={{
+                background: '#F1F5F9',
+                color: '#334155',
+                border: '1px solid #CBD5E1',
+                borderRadius: '12px',
+                padding: '12px 24px',
+                fontWeight: 700,
+                fontSize: '14px',
+                cursor: 'pointer'
+              }}
+            >
+              Volver a la Tienda
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+export default function ShopCheckout(props) {
+  return (
+    <CheckoutErrorBoundary>
+      <ShopCheckoutContent {...props} />
+    </CheckoutErrorBoundary>
   );
 }

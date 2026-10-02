@@ -84,6 +84,10 @@ CREATE TABLE IF NOT EXISTS ecommerce_products (
     price DECIMAL(10, 2) NOT NULL,
     promotional_price DECIMAL(10, 2),
     stock INTEGER NOT NULL DEFAULT 0,
+    weight VARCHAR(50),
+    depth VARCHAR(50),
+    width VARCHAR(50),
+    height VARCHAR(50),
     image_url VARCHAR(255),
     secondary_images JSONB,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP

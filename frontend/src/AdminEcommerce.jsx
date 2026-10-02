@@ -219,23 +219,47 @@ const DEFAULT_CHECKOUT_METHODS = {
 };
 
 const DACAS_COUNTRIES_LIST = [
-  { code: 'US', name: 'Estados Unidos', flag: '🇺🇸' },
-  { code: 'AR', name: 'Argentina', flag: '🇦🇷' },
-  { code: 'BO', name: 'Bolivia', flag: '🇧🇴' },
-  { code: 'CL', name: 'Chile', flag: '🇨🇱' },
-  { code: 'CO', name: 'Colombia', flag: '🇨🇴' },
-  { code: 'CR', name: 'Costa Rica', flag: '🇨🇷' },
-  { code: 'EC', name: 'Ecuador', flag: '🇪🇨' },
-  { code: 'MX', name: 'México', flag: '🇲🇽' },
-  { code: 'PY', name: 'Paraguay', flag: '🇵🇾' },
-  { code: 'PE', name: 'Perú', flag: '🇵🇪' },
-  { code: 'DO', name: 'República Dominicana', flag: '🇩🇴' },
-  { code: 'UY', name: 'Uruguay', flag: '🇺🇾' }
+  { code: 'AR', name: 'Argentina', flag: '🇦🇷', id: 2 },
+  { code: 'CL', name: 'Chile', flag: '🇨🇱', id: 4 },
+  { code: 'CO', name: 'Colombia', flag: '🇨🇴', id: 5 },
+  { code: 'MX', name: 'México', flag: '🇲🇽', id: 8 },
+  { code: 'US', name: 'Estados Unidos', flag: '🇺🇸', id: 1 },
+  { code: 'UY', name: 'Uruguay', flag: '🇺🇾', id: 12 },
+  { code: 'PE', name: 'Perú', flag: '🇵🇪', id: 10 },
+  { code: 'BO', name: 'Bolivia', flag: '🇧🇴', id: 3 },
+  { code: 'CR', name: 'Costa Rica', flag: '🇨🇷', id: 6 },
+  { code: 'EC', name: 'Ecuador', flag: '🇪🇨', id: 7 },
+  { code: 'PY', name: 'Paraguay', flag: '🇵🇾', id: 9 },
+  { code: 'DO', name: 'República Dominicana', flag: '🇩🇴', id: 11 }
 ];
 
 function AdminEcommerce({ embedded = false }) {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('products');
+
+  // ── Primary Key / Country Scope Pivot ──
+  const [selectedCountryScope, setSelectedCountryScope] = useState(() => {
+    try {
+      return localStorage.getItem('dacas_admin_country_scope') || 'AR';
+    } catch {
+      return 'AR';
+    }
+  });
+
+  const activeCountryObj = selectedCountryScope === 'all'
+    ? { code: 'all', name: 'Todos los Países', flag: '🌐', id: null }
+    : (DACAS_COUNTRIES_LIST.find(c => c.code === selectedCountryScope) || DACAS_COUNTRIES_LIST[0]);
+
+  const handleCountryScopeChange = (code) => {
+    setSelectedCountryScope(code);
+    try {
+      localStorage.setItem('dacas_admin_country_scope', code);
+      if (code !== 'all') {
+        localStorage.setItem('dacas_selected_country', code);
+        window.dispatchEvent(new CustomEvent('dacas_country_changed', { detail: { country: code } }));
+      }
+    } catch {}
+  };
 
   const [products, setProducts] = useState([]);
   const [orders, setOrders] = useState([]);
@@ -280,7 +304,28 @@ function AdminEcommerce({ embedded = false }) {
     }
   };
 
-  const filteredOrders = orders.filter(o => {
+  // ── Primary Key / Country Scope Partitioning ──
+  const countryScopedUsers = users.filter(u => {
+    if (selectedCountryScope === 'all') return true;
+    const userCountryCode = (u.country_code || '').toUpperCase();
+    const userCountryId = Number(u.country_id);
+    const userCountryName = (u.country_name || '').toLowerCase();
+    return (activeCountryObj.code && userCountryCode === activeCountryObj.code) ||
+           (activeCountryObj.id && userCountryId === activeCountryObj.id) ||
+           (activeCountryObj.name && userCountryName.includes(activeCountryObj.name.toLowerCase()));
+  });
+
+  const countryScopedOrders = orders.filter(o => {
+    if (selectedCountryScope === 'all') return true;
+    const oCountryId = Number(o.country_id);
+    const oCountryCode = (o.country_code || '').toUpperCase();
+    const oCountryName = (o.country_name || '').toLowerCase();
+    return (activeCountryObj.id && oCountryId === activeCountryObj.id) ||
+           (activeCountryObj.code && oCountryCode === activeCountryObj.code) ||
+           (activeCountryObj.name && oCountryName.includes(activeCountryObj.name.toLowerCase()));
+  });
+
+  const filteredOrders = countryScopedOrders.filter(o => {
     const q = (orderSearch || '').toLowerCase();
     const matchSearch = !orderSearch ||
       (String(o.id).includes(q)) ||
@@ -339,10 +384,34 @@ function AdminEcommerce({ embedded = false }) {
     nombre_compras: '', telefono_compras: '', email_compras: '',
     nombre_pagos: '', telefono_pagos: '', email_pagos: '',
     nombre_admin: '', telefono_admin: '', email_admin: '',
-    email_factura_electronica: '', email_contacto_compras: '', email_cotizaciones_automaticas: ''
+    email_factura_electronica: '', email_contacto_compras: '', email_cotizaciones_automaticas: '',
+    iibb_jurisdiccion: '901 - Capital Federal',
+    iibb_tipo: 'C.M.',
+    iibb_numero: '',
+    iibb_codigo_aceptacion: false,
+    percepciones: {
+      caba: { enabled: true, alicuota: 1.5, vigencia: '2026-10-01' },
+      bsas: { enabled: false, alicuota: 0.0, vigencia: '2026-10-01' },
+      salta: { enabled: false, alicuota: 0.0, vigencia: '2019-08-01' },
+      misiones: { enabled: false, alicuota: 0.0, vigencia: '2023-05-01' },
+      tucuman: { enabled: false, alicuota: 0.0, coef: 0.0, vigencia: '2025-06-01' }
+    }
   };
   const [userForm, setUserForm] = useState(initialUserForm);
   const [userFormSection, setUserFormSection] = useState(1);
+
+  const handlePercepcionChange = (provKey, field, val) => {
+    setUserForm(prev => ({
+      ...prev,
+      percepciones: {
+        ...(prev.percepciones || {}),
+        [provKey]: {
+          ...(prev.percepciones?.[provKey] || {}),
+          [field]: val
+        }
+      }
+    }));
+  };
 
   // RULES & COUPONS Form
   const [showRuleForm, setShowRuleForm] = useState(false);
@@ -789,13 +858,14 @@ function AdminEcommerce({ embedded = false }) {
     }
   };
 
-  const fetchCheckoutMethods = async () => {
+  const fetchCheckoutMethods = async (countryCode) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/checkout-methods`);
+      const code = countryCode || (selectedCountryScope !== 'all' ? selectedCountryScope : 'AR');
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/checkout-methods?country=${code}`);
       if (res.ok) {
         const data = await res.json();
         setCheckoutMethods(data);
-        localStorage.setItem('dacas_checkout_methods', JSON.stringify(data));
+        localStorage.setItem(`dacas_checkout_methods_${code}`, JSON.stringify(data));
       }
     } catch (err) {
       console.error('Error fetching checkout methods:', err);
@@ -806,8 +876,9 @@ function AdminEcommerce({ embedded = false }) {
     setIsSavingCheckout(true);
     setCheckoutSaveSuccess(false);
     try {
-      localStorage.setItem('dacas_checkout_methods', JSON.stringify(checkoutMethods));
-      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/checkout-methods`, {
+      const code = selectedCountryScope !== 'all' ? selectedCountryScope : 'AR';
+      localStorage.setItem(`dacas_checkout_methods_${code}`, JSON.stringify(checkoutMethods));
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/checkout-methods?country=${code}`, {
         method: 'PUT',
         headers: getAuthHeader(),
         body: JSON.stringify(checkoutMethods)
@@ -825,17 +896,18 @@ function AdminEcommerce({ embedded = false }) {
   };
 
   const handleResetCheckoutMethods = async () => {
-    if (!window.confirm('¿Deseas restablecer los métodos de envío y formas de pago a los valores originales por defecto?')) return;
+    const code = selectedCountryScope !== 'all' ? selectedCountryScope : 'AR';
+    if (!window.confirm(`¿Deseas restablecer los métodos de envío y formas de pago para ${activeCountryObj.name || code} a los valores oficiales por defecto?`)) return;
     setIsSavingCheckout(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/checkout-methods/reset`, {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/checkout-methods/reset?country=${code}`, {
         method: 'POST',
         headers: getAuthHeader()
       });
       const data = await res.json();
       if (res.ok && data.config) {
         setCheckoutMethods(data.config);
-        localStorage.setItem('dacas_checkout_methods', JSON.stringify(data.config));
+        localStorage.setItem(`dacas_checkout_methods_${code}`, JSON.stringify(data.config));
         setCheckoutSaveSuccess(true);
         setTimeout(() => setCheckoutSaveSuccess(false), 3000);
       }
@@ -1134,9 +1206,13 @@ function AdminEcommerce({ embedded = false }) {
     setEditingBrandModal(null);
   };
 
-  const fetchProducts = async () => {
+  const fetchProducts = async (countryCode) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/ecommerce/products`);
+      const code = countryCode !== undefined ? countryCode : selectedCountryScope;
+      const url = code && code !== 'all'
+        ? `${API_BASE_URL}/api/ecommerce/products?country=${code}`
+        : `${API_BASE_URL}/api/ecommerce/products`;
+      const res = await fetch(url);
       const data = await res.json();
       setProducts(Array.isArray(data) && data.length > 0 ? data : MOCK_PRODUCTS);
     } catch {
@@ -1199,7 +1275,7 @@ function AdminEcommerce({ embedded = false }) {
     const method = editingProduct ? 'PUT' : 'POST';
     const res = await fetch(url, {
       method,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
     });
     if (!res.ok) throw new Error('Error al guardar el producto');
@@ -1414,6 +1490,11 @@ function AdminEcommerce({ embedded = false }) {
         email_factura_electronica: comp.email_factura_electronica || '',
         email_contacto_compras: comp.email_contacto_compras || '',
         email_cotizaciones_automaticas: comp.email_cotizaciones_automaticas || '',
+        iibb_jurisdiccion: comp.iibb_jurisdiccion || initialUserForm.iibb_jurisdiccion,
+        iibb_tipo: comp.iibb_tipo || initialUserForm.iibb_tipo,
+        iibb_numero: comp.iibb_numero || comp.numero_nit || '',
+        iibb_codigo_aceptacion: comp.iibb_codigo_aceptacion !== undefined ? comp.iibb_codigo_aceptacion : initialUserForm.iibb_codigo_aceptacion,
+        percepciones: comp.percepciones || initialUserForm.percepciones,
         cargo: 'Encargado de Compras'
       });
     }
@@ -1423,7 +1504,11 @@ function AdminEcommerce({ embedded = false }) {
 
   // ── User / Customer Methods ──
   const resetUserForm = () => {
-    setUserForm(initialUserForm);
+    setUserForm({
+      ...initialUserForm,
+      country_id: activeCountryObj?.id || 2,
+      report_to_country_id: activeCountryObj?.id || 2
+    });
     setEditingUser(null);
     setShowUserForm(false);
     setUserFormSection(1);
@@ -1526,6 +1611,15 @@ function AdminEcommerce({ embedded = false }) {
         const data = await res.json();
         const safeData = { ...initialUserForm, ...data, password: '' };
         if (safeData.fecha_limite_facturacion) safeData.fecha_limite_facturacion = safeData.fecha_limite_facturacion.split('T')[0];
+        let percs = data.percepciones;
+        if (typeof percs === 'string') {
+          try { percs = JSON.parse(percs); } catch (_) { percs = null; }
+        }
+        safeData.percepciones = percs || initialUserForm.percepciones;
+        safeData.iibb_jurisdiccion = data.iibb_jurisdiccion || initialUserForm.iibb_jurisdiccion;
+        safeData.iibb_tipo = data.iibb_tipo || initialUserForm.iibb_tipo;
+        safeData.iibb_numero = data.iibb_numero || data.numero_nit || '';
+        safeData.iibb_codigo_aceptacion = data.iibb_codigo_aceptacion !== undefined ? data.iibb_codigo_aceptacion : initialUserForm.iibb_codigo_aceptacion;
         setUserForm(safeData);
         setEditingUser(u);
         setUserCreateMode('existing_company');
@@ -1653,13 +1747,14 @@ function AdminEcommerce({ embedded = false }) {
   const translateRuleType = (t) => ({ discount: 'Descuento', tax: 'Impuesto', shipping: 'Envío', nationalization: 'Nacionalización' }[t] || t);
   const translateValueType = (t) => ({ percentage: '% Porcentaje', fixed: '$ Fijo' }[t] || t);
 
-  // ─────────────────────── REPORTING CALCULATIONS ───────────────────────
-  const totalRevenue = orders.filter(o => o.status === 'paid' || o.status === 'completed')
+  // ─────────────────────── REPORTING CALCULATIONS (SCOPED BY COUNTRY) ───────────────────────
+  const activeOrdersForStats = countryScopedOrders;
+  const totalRevenue = activeOrdersForStats.filter(o => o.status === 'paid' || o.status === 'completed')
     .reduce((acc, o) => acc + parseFloat(o.total || 0), 0);
-  const totalOrders = orders.length;
-  const paidOrders = orders.filter(o => o.status === 'paid' || o.status === 'completed').length;
-  const pendingOrders = orders.filter(o => o.status === 'pending').length;
-  const cancelledOrders = orders.filter(o => o.status === 'cancelled').length;
+  const totalOrders = activeOrdersForStats.length;
+  const paidOrders = activeOrdersForStats.filter(o => o.status === 'paid' || o.status === 'completed').length;
+  const pendingOrders = activeOrdersForStats.filter(o => o.status === 'pending' || o.status === 'procesando').length;
+  const cancelledOrders = activeOrdersForStats.filter(o => o.status === 'cancelled').length;
   const conversionRate = totalOrders > 0 ? ((paidOrders / totalOrders) * 100).toFixed(1) : 0;
   const avgOrderValue = paidOrders > 0 ? (totalRevenue / paidOrders).toFixed(2) : 0;
   const lowStockProducts = products.filter(p => p.stock <= 15).length;
@@ -1677,7 +1772,7 @@ function AdminEcommerce({ embedded = false }) {
       const key = d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
       map[key] = { day: key, ingresos: 0, ordenes: 0 };
     }
-    orders.forEach(o => {
+    activeOrdersForStats.forEach(o => {
       if (!o.created_at) return;
       const d = new Date(o.created_at);
       const key = d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
@@ -1739,14 +1834,29 @@ function AdminEcommerce({ embedded = false }) {
 
   const exportProductsCSV = () => {
     downloadCSV(
-      products.map(p => [p.id, p.name, p.brand || '', p.category || 'General', p.sku || '', `$${p.price}`, p.promotional_price ? `$${p.promotional_price}` : '', p.stock, p.description || '', p.image_url || '']),
-      ['ID', 'Nombre', 'Marca', 'Categoria', 'SKU', 'Precio_USD', 'Precio_Promo_USD', 'Stock', 'Descripcion', 'URL_Imagen'],
+      products.map(p => [
+        p.id,
+        p.name,
+        p.brand || '',
+        p.category || 'General',
+        p.sku || '',
+        `$${p.price}`,
+        p.promotional_price ? `$${p.promotional_price}` : '',
+        p.stock,
+        p.weight || '',
+        p.depth || p.length || '',
+        p.width || '',
+        p.height || '',
+        p.description || '',
+        p.image_url || ''
+      ]),
+      ['ID', 'Nombre', 'Marca', 'Categoria', 'SKU', 'Precio_USD', 'Precio_Promo_USD', 'Stock', 'Peso_KG', 'Largo_CM', 'Ancho_CM', 'Altura_CM', 'Descripcion', 'URL_Imagen'],
       'productos_catalogo_dacas.csv'
     );
   };
 
   const downloadSampleCSV = () => {
-    const headers = ['Nombre', 'Marca', 'Categoria', 'SKU', 'Precio_USD', 'Precio_Promo_USD', 'Stock', 'Descripcion', 'URL_Imagen'];
+    const headers = ['Nombre', 'Marca', 'Categoria', 'SKU', 'Precio_USD', 'Precio_Promo_USD', 'Stock', 'Peso_KG', 'Largo_CM', 'Ancho_CM', 'Altura_CM', 'Descripcion', 'URL_Imagen'];
     const sampleRows = [
       [
         'Fortinet FortiGate 60F NGFW',
@@ -1756,6 +1866,10 @@ function AdminEcommerce({ embedded = false }) {
         '890.00',
         '845.00',
         '45',
+        '0.90',
+        '21.6',
+        '16.0',
+        '3.8',
         'Firewall empresarial de última generación con procesador SOC4, SD-WAN seguro y antivirus',
         'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1000'
       ],
@@ -1767,6 +1881,10 @@ function AdminEcommerce({ embedded = false }) {
         '480.00',
         '449.00',
         '22',
+        '2.80',
+        '44.3',
+        '22.4',
+        '4.4',
         'Switch administrable de 24 puertos Gigabit PoE+ dual 802.3af/at con 4 uplinks fijos 10G SFP+',
         'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000'
       ],
@@ -1778,6 +1896,10 @@ function AdminEcommerce({ embedded = false }) {
         '195.00',
         '',
         '35',
+        '0.50',
+        '16.0',
+        '16.0',
+        '3.7',
         'Access Point Wi-Fi 6 MU-MIMO para alta densidad de clientes y gestión centralizada en la nube',
         'https://images.unsplash.com/photo-1563770660941-20978e870e26?q=80&w=1000'
       ],
@@ -1789,6 +1911,10 @@ function AdminEcommerce({ embedded = false }) {
         '480.00',
         '',
         '28',
+        '2.80',
+        '44.3',
+        '22.4',
+        '4.4',
         'Switch de 24 puertos Gigabit PoE dual 802.3af/at con 4 puertos SFP+ de 10Gbps',
         'https://images.unsplash.com/photo-1520869562399-e772f342b00a?q=80&w=1000'
       ]
@@ -1867,6 +1993,10 @@ function AdminEcommerce({ embedded = false }) {
       else if (h.includes('promo') || h.includes('oferta') || h.includes('descuento')) headerMap.promotional_price = idx;
       else if (h.includes('precio') || h.includes('price') || h.includes('costo') || h.includes('valor')) headerMap.price = idx;
       else if (h.includes('stock') || h.includes('cantidad') || h.includes('qty') || h.includes('inventario')) headerMap.stock = idx;
+      else if (h.includes('peso') || h.includes('weight') || h.includes('kg')) headerMap.weight = idx;
+      else if (h.includes('largo') || h.includes('profundidad') || h.includes('length') || h.includes('depth') || h.includes('longitud')) headerMap.depth = idx;
+      else if (h.includes('ancho') || h.includes('width')) headerMap.width = idx;
+      else if (h.includes('altura') || h.includes('alto') || h.includes('height')) headerMap.height = idx;
       else if (h.includes('desc') || h.includes('detalle')) headerMap.description = idx;
       else if (h.includes('imagen') || h.includes('image') || h.includes('foto') || h.includes('url')) headerMap.image_url = idx;
     });
@@ -1897,6 +2027,16 @@ function AdminEcommerce({ embedded = false }) {
         : null;
       const stock = parseInt(rawStock, 10) || 0;
 
+      const rawWeight = headerMap.weight !== undefined ? (r[headerMap.weight] || '') : '';
+      const rawDepth = headerMap.depth !== undefined ? (r[headerMap.depth] || '') : '';
+      const rawWidth = headerMap.width !== undefined ? (r[headerMap.width] || '') : '';
+      const rawHeight = headerMap.height !== undefined ? (r[headerMap.height] || '') : '';
+
+      const weight = rawWeight ? String(rawWeight).replace(',', '.').replace(/[^0-9.]/g, '').trim() : '';
+      const depth = rawDepth ? String(rawDepth).replace(',', '.').replace(/[^0-9.]/g, '').trim() : '';
+      const width = rawWidth ? String(rawWidth).replace(',', '.').replace(/[^0-9.]/g, '').trim() : '';
+      const height = rawHeight ? String(rawHeight).replace(',', '.').replace(/[^0-9.]/g, '').trim() : '';
+
       parsedItems.push({
         id_temp: i,
         name,
@@ -1906,6 +2046,10 @@ function AdminEcommerce({ embedded = false }) {
         price,
         promotional_price,
         stock,
+        weight,
+        depth,
+        width,
+        height,
         description,
         image_url,
         isValid: Boolean(name && !isNaN(parseFloat(price)))
@@ -1949,7 +2093,7 @@ function AdminEcommerce({ embedded = false }) {
     try {
       const res = await fetch(`${API_BASE_URL}/api/ecommerce/admin/products/bulk-upload`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
         body: JSON.stringify({
           products: bulkData,
           mode: bulkMode
@@ -2222,6 +2366,118 @@ function AdminEcommerce({ embedded = false }) {
       )}
 
       <main className={embedded ? "crm-main-embedded" : "crm-main"} style={embedded ? { width: '100%', maxWidth: '100%', padding: 0, margin: 0 } : {}}>
+        {/* ── Executive Primary Key / Country Scope Bar ── */}
+        <div style={{
+          background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
+          borderRadius: '16px',
+          border: '1px solid #cbd5e1',
+          padding: '14px 20px',
+          marginBottom: '18px',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.04)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '14px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
+            <div style={{
+              width: '44px',
+              height: '44px',
+              borderRadius: '12px',
+              background: '#e0f2fe',
+              border: '1.5px solid #0fa4de',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '24px',
+              flexShrink: 0
+            }}>
+              {activeCountryObj.flag || '🌎'}
+            </div>
+            <div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                <strong style={{ fontSize: '15px', color: '#0f172a', fontWeight: '800' }}>
+                  Scope Activo: {activeCountryObj.name}
+                </strong>
+                <span style={{
+                  background: 'linear-gradient(135deg, #0fa4de, #0284c7)',
+                  color: '#ffffff',
+                  borderRadius: '999px',
+                  fontSize: '10px',
+                  fontWeight: '800',
+                  padding: '2px 9px',
+                  letterSpacing: '0.04em'
+                }}>
+                  PRIMARY KEY E-COMMERCE
+                </span>
+              </div>
+              <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
+                Filtrando clientes mayoristas, stock de productos, pedidos y métodos locales para <strong>{activeCountryObj.name}</strong>.
+              </div>
+            </div>
+          </div>
+
+          {/* Country Switcher Pills */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', maxWidth: '100%', padding: '2px 0' }}>
+            <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', marginRight: '4px' }}>
+              Seleccionar País:
+            </span>
+            {DACAS_COUNTRIES_LIST.map(c => {
+              const isSelected = selectedCountryScope === c.code;
+              return (
+                <button
+                  key={c.code}
+                  type="button"
+                  onClick={() => handleCountryScopeChange(c.code)}
+                  style={{
+                    padding: '6px 12px',
+                    borderRadius: '8px',
+                    border: isSelected ? '1.5px solid #0fa4de' : '1px solid #cbd5e1',
+                    background: isSelected ? '#0fa4de' : '#ffffff',
+                    color: isSelected ? '#ffffff' : '#334155',
+                    fontWeight: isSelected ? '800' : '600',
+                    fontSize: '12px',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    boxShadow: isSelected ? '0 2px 8px rgba(15, 164, 222, 0.35)' : 'none',
+                    transform: isSelected ? 'scale(1.05)' : 'none',
+                    transition: 'all 0.15s ease'
+                  }}
+                  title={`Filtrar ecommerce por ${c.name}`}
+                >
+                  <span style={{ fontSize: '15px', lineHeight: 1 }}>{c.flag}</span>
+                  <span>{c.code}</span>
+                </button>
+              );
+            })}
+            <button
+              type="button"
+              onClick={() => handleCountryScopeChange('all')}
+              style={{
+                padding: '6px 12px',
+                borderRadius: '8px',
+                border: selectedCountryScope === 'all' ? '1.5px solid #0fa4de' : '1px solid #cbd5e1',
+                background: selectedCountryScope === 'all' ? '#0fa4de' : '#ffffff',
+                color: selectedCountryScope === 'all' ? '#ffffff' : '#64748b',
+                fontWeight: selectedCountryScope === 'all' ? '800' : '600',
+                fontSize: '12px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                transition: 'all 0.15s ease'
+              }}
+              title="Ver datos de todos los países"
+            >
+              <span>🌐</span>
+              <span>Todos</span>
+            </button>
+          </div>
+        </div>
+
         <div className="tab-buttons">
           <button 
             type="button"
@@ -2493,7 +2749,7 @@ function AdminEcommerce({ embedded = false }) {
                       <th>Producto / SKU</th>
                       <th>Categoría</th>
                       <th style={{ textAlign: 'right' }}>Precio</th>
-                      <th style={{ textAlign: 'center' }}>Stock</th>
+                      <th style={{ textAlign: 'center' }}>Stock {selectedCountryScope !== 'all' ? `${activeCountryObj.flag} ${activeCountryObj.code}` : 'Global'}</th>
                       <th style={{ textAlign: 'center' }}>Acciones</th>
                     </tr>
                   </thead>
@@ -2506,7 +2762,7 @@ function AdminEcommerce({ embedded = false }) {
                         <tr key={p.id}>
                           <td style={{ width: '48px', textAlign: 'center' }}>
                             <img
-                              src={(p.images && p.images[0]) || p.image_url || 'https://placehold.co/50x50/f1f5f9/94a3b8?text=Foto'}
+                              src={p.image_url || (p.images && p.images[0]) || 'https://placehold.co/50x50/f1f5f9/94a3b8?text=Foto'}
                               alt={p.name}
                               style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-color)' }}
                               onError={(e) => { e.target.src = 'https://placehold.co/50x50/f1f5f9/94a3b8?text=Foto'; }}
@@ -2530,6 +2786,11 @@ function AdminEcommerce({ embedded = false }) {
                                   borderRadius: '4px'
                                 }}>
                                   {p.badge}
+                                </span>
+                              )}
+                              {(p.weight || p.depth || p.width || p.height) && (
+                                <span style={{ fontSize: '0.74rem', color: '#64748b', display: 'inline-flex', alignItems: 'center', gap: '3px' }} title={`Peso: ${p.weight || '—'} kg | Largo: ${p.depth || '—'} cm | Ancho: ${p.width || '—'} cm | Alto: ${p.height || '—'} cm`}>
+                                  📦 {p.weight ? `${p.weight} kg` : ''}{(p.weight && (p.depth || p.width || p.height)) ? ' • ' : ''}{(p.depth || p.width || p.height) ? `${p.depth || '0'}x${p.width || '0'}x${p.height || '0'} cm` : ''}
                                 </span>
                               )}
                             </div>
@@ -2581,8 +2842,13 @@ function AdminEcommerce({ embedded = false }) {
                               color: p.stock > 10 ? '#16a34a' : p.stock > 0 ? '#d97706' : '#dc2626',
                               display: 'inline-block'
                             }}>
-                              {p.stock ?? 0} u.
+                              {selectedCountryScope !== 'all' ? `${activeCountryObj.flag} ` : ''}{p.stock ?? 0} u.
                             </span>
+                            {selectedCountryScope !== 'all' && p.total_stock !== undefined && (
+                              <div style={{ fontSize: '9.5px', color: '#94a3b8', marginTop: '2px' }} title={`Stock local en ${activeCountryObj.name}: ${p.stock ?? 0} u. | Total Regional: ${p.total_stock} u.`}>
+                                (Total: {p.total_stock} u.)
+                              </div>
+                            )}
                           </td>
                           <td style={{ textAlign: 'center' }}>
                             <div style={{ display: 'flex', justifyContent: 'center', gap: '6px' }}>
@@ -3440,14 +3706,53 @@ function AdminEcommerce({ embedded = false }) {
               </button>
             </div>
 
+            {/* Country Scope Notice */}
+            {selectedCountryScope !== 'all' && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: 'linear-gradient(135deg, rgba(15, 164, 222, 0.08) 0%, rgba(2, 132, 199, 0.04) 100%)',
+                border: '1px solid rgba(15, 164, 222, 0.25)',
+                padding: '10px 16px',
+                borderRadius: '10px',
+                marginBottom: '16px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '18px' }}>{activeCountryObj.flag || '🇦🇷'}</span>
+                  <span style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a' }}>
+                    Clientes radicados en {activeCountryObj.name}
+                  </span>
+                  <span style={{ fontSize: '12px', color: '#64748b' }}>
+                    — Mostrando únicamente cuentas mayoristas de {activeCountryObj.name} ({countryScopedUsers.length} clientes encontrados)
+                  </span>
+                </div>
+                <button 
+                  onClick={() => handleCountryScopeChange('all')}
+                  style={{
+                    background: '#ffffff',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '6px',
+                    padding: '4px 10px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    color: '#475569',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Ver Todos los Países 🌐
+                </button>
+              </div>
+            )}
+
             {/* Barra de Filtros por Estado y Buscador de Clientes */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
               <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                 {[
-                  { key: 'all', label: 'Todos los Clientes', icon: null, count: users.length },
-                  { key: 'pendiente', label: 'Solicitudes Pendientes', icon: <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#eab308', display: 'inline-block' }}></span>, count: users.filter(u => u.status === 'pendiente').length, highlight: true },
-                  { key: 'activo', label: 'Clientes Activos', icon: <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }}></span>, count: users.filter(u => (u.status || 'activo') === 'activo').length },
-                  { key: 'inactivo', label: 'Inactivos', icon: <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', display: 'inline-block' }}></span>, count: users.filter(u => u.status === 'inactivo').length }
+                  { key: 'all', label: 'Todos los Clientes', icon: null, count: countryScopedUsers.length },
+                  { key: 'pendiente', label: 'Solicitudes Pendientes', icon: <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#eab308', display: 'inline-block' }}></span>, count: countryScopedUsers.filter(u => u.status === 'pendiente').length, highlight: true },
+                  { key: 'activo', label: 'Clientes Activos', icon: <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }}></span>, count: countryScopedUsers.filter(u => (u.status || 'activo') === 'activo').length },
+                  { key: 'inactivo', label: 'Inactivos', icon: <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ef4444', display: 'inline-block' }}></span>, count: countryScopedUsers.filter(u => u.status === 'inactivo').length }
                 ].map(f => (
                   <button
                     key={f.key}
@@ -3626,6 +3931,11 @@ function AdminEcommerce({ embedded = false }) {
                   <div className={`step ${userFormSection === 2 ? 'active' : ''}`} onClick={() => setUserFormSection(2)}>2. Ship To / Fiscal</div>
                   <div className={`step ${userFormSection === 3 ? 'active' : ''}`} onClick={() => setUserFormSection(3)}>3. Contactos Empresa</div>
                   <div className={`step ${userFormSection === 4 ? 'active' : ''}`} onClick={() => setUserFormSection(4)}>4. Mails Notificaciones</div>
+                  {(!userForm.country_id || parseInt(userForm.country_id) === 2 || String(userForm.country_id).toLowerCase() === 'ar' || userForm.country_id === '') && (
+                    <div className={`step ${userFormSection === 5 ? 'active' : ''}`} onClick={() => setUserFormSection(5)} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>🇦🇷</span> 5. Perc/Ret IIBB
+                    </div>
+                  )}
                 </div>
 
                 <form onSubmit={handleUserSubmit} className="crm-form">
@@ -3823,6 +4133,443 @@ function AdminEcommerce({ embedded = false }) {
                     </div>
                   )}
 
+                  {/* SECCION 5: PERCEPCIONES / RETENCIONES IIBB (ARGENTINA) */}
+                  {userFormSection === 5 && (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                      {/* Banner Informativo */}
+                      <div style={{
+                        background: 'linear-gradient(135deg, rgba(15, 164, 222, 0.08) 0%, rgba(2, 132, 199, 0.03) 100%)',
+                        border: '1px solid rgba(15, 164, 222, 0.25)',
+                        borderRadius: '12px',
+                        padding: '14px 18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '12px',
+                        flexWrap: 'wrap'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span style={{ fontSize: '24px' }}>🏛️</span>
+                          <div>
+                            <div style={{ fontWeight: '800', fontSize: '13.5px', color: '#0369a1' }}>
+                              Solapa de Perc/Ret IIBB (Ingresos Brutos - Argentina)
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#64748b' }}>
+                              Las percepciones activas se calcularán automáticamente sobre el <strong>valor neto de productos</strong> al momento del Checkout/Pago.
+                            </div>
+                          </div>
+                        </div>
+                        <span style={{
+                          background: '#e0f2fe',
+                          color: '#0369a1',
+                          padding: '4px 10px',
+                          borderRadius: '8px',
+                          fontSize: '11px',
+                          fontWeight: '800',
+                          letterSpacing: '0.04em'
+                        }}>
+                          ARGENTINA EXCLUSIVO
+                        </span>
+                      </div>
+
+                      {/* Top Row: Jurisdicción & Nro Inscripcion IIBB */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                        {/* Box 1: Jurisdicción */}
+                        <div style={{
+                          border: '1.5px solid #cbd5e1',
+                          borderRadius: '10px',
+                          padding: '14px 16px',
+                          background: '#ffffff',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+                        }}>
+                          <label style={{ fontSize: '12px', fontWeight: '800', color: '#1e293b', marginBottom: '8px', display: 'block' }}>
+                            Jurisdicción
+                          </label>
+                          <select
+                            value={userForm.iibb_jurisdiccion || '901 - Capital Federal'}
+                            onChange={e => setUserForm({ ...userForm, iibb_jurisdiccion: e.target.value })}
+                            style={{
+                              width: '100%',
+                              padding: '9px 12px',
+                              borderRadius: '8px',
+                              border: '1.5px solid #cbd5e1',
+                              fontSize: '13px',
+                              fontWeight: '600',
+                              color: '#0f172a',
+                              background: '#f8fafc'
+                            }}
+                          >
+                            <option value="901 - Capital Federal">901 - Capital Federal</option>
+                            <option value="902 - Buenos Aires">902 - Buenos Aires</option>
+                            <option value="903 - Catamarca">903 - Catamarca</option>
+                            <option value="904 - Córdoba">904 - Córdoba</option>
+                            <option value="905 - Corrientes">905 - Corrientes</option>
+                            <option value="906 - Chaco">906 - Chaco</option>
+                            <option value="907 - Chubut">907 - Chubut</option>
+                            <option value="908 - Entre Ríos">908 - Entre Ríos</option>
+                            <option value="909 - Formosa">909 - Formosa</option>
+                            <option value="910 - Jujuy">910 - Jujuy</option>
+                            <option value="911 - La Pampa">911 - La Pampa</option>
+                            <option value="912 - La Rioja">912 - La Rioja</option>
+                            <option value="913 - Mendoza">913 - Mendoza</option>
+                            <option value="914 - Misiones">914 - Misiones</option>
+                            <option value="915 - Neuquén">915 - Neuquén</option>
+                            <option value="916 - Río Negro">916 - Río Negro</option>
+                            <option value="917 - Salta">917 - Salta</option>
+                            <option value="918 - San Juan">918 - San Juan</option>
+                            <option value="919 - San Luis">919 - San Luis</option>
+                            <option value="920 - Santa Cruz">920 - Santa Cruz</option>
+                            <option value="921 - Santa Fe">921 - Santa Fe</option>
+                            <option value="922 - Santiago del Estero">922 - Santiago del Estero</option>
+                            <option value="924 - Tucumán">924 - Tucumán</option>
+                            <option value="900 - Convenio Multilateral">900 - Convenio Multilateral</option>
+                          </select>
+                        </div>
+
+                        {/* Box 2: Nro Inscripcion IIBB */}
+                        <div style={{
+                          border: '1.5px solid #cbd5e1',
+                          borderRadius: '10px',
+                          padding: '14px 16px',
+                          background: '#ffffff',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+                        }}>
+                          <label style={{ fontSize: '12px', fontWeight: '800', color: '#1e293b', marginBottom: '8px', display: 'block' }}>
+                            Nro Inscripcion IIBB
+                          </label>
+                          <div style={{ display: 'grid', gridTemplateColumns: '110px 1fr', gap: '8px' }}>
+                            <select
+                              value={userForm.iibb_tipo || 'C.M.'}
+                              onChange={e => setUserForm({ ...userForm, iibb_tipo: e.target.value })}
+                              style={{
+                                padding: '9px 10px',
+                                borderRadius: '8px',
+                                border: '1.5px solid #cbd5e1',
+                                fontSize: '13px',
+                                fontWeight: '700',
+                                color: '#0f172a',
+                                background: '#f8fafc'
+                              }}
+                            >
+                              <option value="C.M.">C.M.</option>
+                              <option value="Local">Local</option>
+                              <option value="Exento">Exento</option>
+                              <option value="No Inscripto">No Inscripto</option>
+                            </select>
+                            <input
+                              type="text"
+                              placeholder="Ej: 9017223280"
+                              value={userForm.iibb_numero || ''}
+                              onChange={e => setUserForm({ ...userForm, iibb_numero: e.target.value })}
+                              style={{
+                                padding: '9px 12px',
+                                borderRadius: '8px',
+                                border: '1.5px solid #cbd5e1',
+                                fontSize: '13px',
+                                fontWeight: '600',
+                                color: '#0f172a'
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Percepciones Grid: 5 Boxes matching ERP Reference Image */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '16px' }}>
+                        {/* 1. Perc CABA */}
+                        <div style={{
+                          border: '1.5px solid #cbd5e1',
+                          borderRadius: '10px',
+                          padding: '14px 16px',
+                          background: userForm.percepciones?.caba?.enabled ? 'rgba(15, 164, 222, 0.04)' : '#ffffff',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+                        }}>
+                          <div style={{ fontSize: '12px', fontWeight: '800', color: '#1e293b', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span>Perc CABA</span>
+                            {userForm.percepciones?.caba?.enabled && <span style={{ fontSize: '11px', color: '#0284c7', fontWeight: '700' }}>Activa</span>}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '700', color: '#0f172a', cursor: 'pointer', whiteSpace: 'nowrap', minWidth: '70px' }}>
+                              <input
+                                type="checkbox"
+                                checked={!!userForm.percepciones?.caba?.enabled}
+                                onChange={e => handlePercepcionChange('caba', 'enabled', e.target.checked)}
+                                style={{ width: '16px', height: '16px', accentColor: '#0fa4de', cursor: 'pointer' }}
+                              />
+                              <span>CABA</span>
+                            </label>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <input
+                                type="number"
+                                step="0.0001"
+                                min="0"
+                                placeholder="1,5000"
+                                value={userForm.percepciones?.caba?.alicuota !== undefined ? userForm.percepciones?.caba?.alicuota : 1.5}
+                                onChange={e => handlePercepcionChange('caba', 'alicuota', parseFloat(e.target.value) || 0)}
+                                style={{ width: '75px', padding: '7px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12.5px', fontWeight: '700', textAlign: 'right', background: '#ffffff' }}
+                              />
+                              <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '700' }}>%</span>
+                            </div>
+                            <input
+                              type="date"
+                              value={userForm.percepciones?.caba?.vigencia || '2026-10-01'}
+                              onChange={e => handlePercepcionChange('caba', 'vigencia', e.target.value)}
+                              style={{ width: '135px', padding: '7px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px', color: '#334155', background: '#ffffff', marginLeft: 'auto' }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* 2. Perc Salta */}
+                        <div style={{
+                          border: '1.5px solid #cbd5e1',
+                          borderRadius: '10px',
+                          padding: '14px 16px',
+                          background: userForm.percepciones?.salta?.enabled ? 'rgba(15, 164, 222, 0.04)' : '#ffffff',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+                        }}>
+                          <div style={{ fontSize: '12px', fontWeight: '800', color: '#1e293b', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span>Perc Salta</span>
+                            {userForm.percepciones?.salta?.enabled && <span style={{ fontSize: '11px', color: '#0284c7', fontWeight: '700' }}>Activa</span>}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '700', color: '#0f172a', cursor: 'pointer', whiteSpace: 'nowrap', minWidth: '70px' }}>
+                              <input
+                                type="checkbox"
+                                checked={!!userForm.percepciones?.salta?.enabled}
+                                onChange={e => handlePercepcionChange('salta', 'enabled', e.target.checked)}
+                                style={{ width: '16px', height: '16px', accentColor: '#0fa4de', cursor: 'pointer' }}
+                              />
+                              <span>Salta</span>
+                            </label>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <input
+                                type="number"
+                                step="0.0001"
+                                min="0"
+                                placeholder="0,0000"
+                                value={userForm.percepciones?.salta?.alicuota !== undefined ? userForm.percepciones?.salta?.alicuota : 0}
+                                onChange={e => handlePercepcionChange('salta', 'alicuota', parseFloat(e.target.value) || 0)}
+                                style={{ width: '75px', padding: '7px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12.5px', fontWeight: '700', textAlign: 'right', background: '#ffffff' }}
+                              />
+                              <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '700' }}>%</span>
+                            </div>
+                            <input
+                              type="date"
+                              value={userForm.percepciones?.salta?.vigencia || '2019-08-01'}
+                              onChange={e => handlePercepcionChange('salta', 'vigencia', e.target.value)}
+                              style={{ width: '135px', padding: '7px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px', color: '#334155', background: '#ffffff', marginLeft: 'auto' }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* 3. Perc Bs As */}
+                        <div style={{
+                          border: '1.5px solid #cbd5e1',
+                          borderRadius: '10px',
+                          padding: '14px 16px',
+                          background: userForm.percepciones?.bsas?.enabled ? 'rgba(15, 164, 222, 0.04)' : '#ffffff',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+                        }}>
+                          <div style={{ fontSize: '12px', fontWeight: '800', color: '#1e293b', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span>Perc Bs As</span>
+                            {userForm.percepciones?.bsas?.enabled && <span style={{ fontSize: '11px', color: '#0284c7', fontWeight: '700' }}>Activa</span>}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '700', color: '#0f172a', cursor: 'pointer', whiteSpace: 'nowrap', minWidth: '70px' }}>
+                              <input
+                                type="checkbox"
+                                checked={!!userForm.percepciones?.bsas?.enabled}
+                                onChange={e => handlePercepcionChange('bsas', 'enabled', e.target.checked)}
+                                style={{ width: '16px', height: '16px', accentColor: '#0fa4de', cursor: 'pointer' }}
+                              />
+                              <span>BsAs</span>
+                            </label>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <input
+                                type="number"
+                                step="0.0001"
+                                min="0"
+                                placeholder="0,0000"
+                                value={userForm.percepciones?.bsas?.alicuota !== undefined ? userForm.percepciones?.bsas?.alicuota : 0}
+                                onChange={e => handlePercepcionChange('bsas', 'alicuota', parseFloat(e.target.value) || 0)}
+                                style={{ width: '75px', padding: '7px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12.5px', fontWeight: '700', textAlign: 'right', background: '#ffffff' }}
+                              />
+                              <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '700' }}>%</span>
+                            </div>
+                            <input
+                              type="date"
+                              value={userForm.percepciones?.bsas?.vigencia || '2026-10-01'}
+                              onChange={e => handlePercepcionChange('bsas', 'vigencia', e.target.value)}
+                              style={{ width: '135px', padding: '7px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px', color: '#334155', background: '#ffffff', marginLeft: 'auto' }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* 4. Perc Misiones */}
+                        <div style={{
+                          border: '1.5px solid #cbd5e1',
+                          borderRadius: '10px',
+                          padding: '14px 16px',
+                          background: userForm.percepciones?.misiones?.enabled ? 'rgba(15, 164, 222, 0.04)' : '#ffffff',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+                        }}>
+                          <div style={{ fontSize: '12px', fontWeight: '800', color: '#1e293b', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span>Perc Misiones</span>
+                            {userForm.percepciones?.misiones?.enabled && <span style={{ fontSize: '11px', color: '#0284c7', fontWeight: '700' }}>Activa</span>}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                            <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '700', color: '#0f172a', cursor: 'pointer', whiteSpace: 'nowrap', minWidth: '70px' }}>
+                              <input
+                                type="checkbox"
+                                checked={!!userForm.percepciones?.misiones?.enabled}
+                                onChange={e => handlePercepcionChange('misiones', 'enabled', e.target.checked)}
+                                style={{ width: '16px', height: '16px', accentColor: '#0fa4de', cursor: 'pointer' }}
+                              />
+                              <span>Misiones</span>
+                            </label>
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                              <input
+                                type="number"
+                                step="0.0001"
+                                min="0"
+                                placeholder="0,000"
+                                value={userForm.percepciones?.misiones?.alicuota !== undefined ? userForm.percepciones?.misiones?.alicuota : 0}
+                                onChange={e => handlePercepcionChange('misiones', 'alicuota', parseFloat(e.target.value) || 0)}
+                                style={{ width: '75px', padding: '7px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12.5px', fontWeight: '700', textAlign: 'right', background: '#ffffff' }}
+                              />
+                              <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '700' }}>%</span>
+                            </div>
+                            <input
+                              type="date"
+                              value={userForm.percepciones?.misiones?.vigencia || '2023-05-01'}
+                              onChange={e => handlePercepcionChange('misiones', 'vigencia', e.target.value)}
+                              style={{ width: '135px', padding: '7px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px', color: '#334155', background: '#ffffff', marginLeft: 'auto' }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* 5. Perc Tucuman */}
+                        <div style={{
+                          border: '1.5px solid #cbd5e1',
+                          borderRadius: '10px',
+                          padding: '14px 16px',
+                          background: userForm.percepciones?.tucuman?.enabled ? 'rgba(15, 164, 222, 0.04)' : '#ffffff',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+                          gridColumn: '1 / -1'
+                        }}>
+                          <div style={{ fontSize: '12px', fontWeight: '800', color: '#1e293b', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span>Perc Tucuman</span>
+                            {userForm.percepciones?.tucuman?.enabled && <span style={{ fontSize: '11px', color: '#0284c7', fontWeight: '700' }}>Activa</span>}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '700', color: '#0f172a', cursor: 'pointer', whiteSpace: 'nowrap' }}>
+                              <input
+                                type="checkbox"
+                                checked={!!userForm.percepciones?.tucuman?.enabled}
+                                onChange={e => handlePercepcionChange('tucuman', 'enabled', e.target.checked)}
+                                style={{ width: '16px', height: '16px', accentColor: '#0fa4de', cursor: 'pointer' }}
+                              />
+                              <span>Tucuman</span>
+                            </label>
+                            
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontSize: '12px', fontWeight: '800', color: '#0f172a' }}>Coef</span>
+                              <input
+                                type="number"
+                                step="0.0001"
+                                min="0"
+                                placeholder="0,0000"
+                                value={userForm.percepciones?.tucuman?.coef !== undefined ? userForm.percepciones?.tucuman?.coef : 0}
+                                onChange={e => handlePercepcionChange('tucuman', 'coef', parseFloat(e.target.value) || 0)}
+                                style={{ width: '80px', padding: '7px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12.5px', fontWeight: '700', textAlign: 'right' }}
+                              />
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontSize: '12px', color: '#64748b' }}>Alícuota:</span>
+                              <input
+                                type="number"
+                                step="0.0001"
+                                min="0"
+                                placeholder="0,0000"
+                                value={userForm.percepciones?.tucuman?.alicuota !== undefined ? userForm.percepciones?.tucuman?.alicuota : 0}
+                                onChange={e => handlePercepcionChange('tucuman', 'alicuota', parseFloat(e.target.value) || 0)}
+                                style={{ width: '80px', padding: '7px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12.5px', fontWeight: '700', textAlign: 'right' }}
+                              />
+                              <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>%</span>
+                            </div>
+
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: '160px' }}>
+                              <span style={{ fontSize: '12px', color: '#64748b' }}>Vigencia:</span>
+                              <input
+                                type="date"
+                                value={userForm.percepciones?.tucuman?.vigencia || '2025-06-01'}
+                                onChange={e => handlePercepcionChange('tucuman', 'vigencia', e.target.value)}
+                                style={{ width: '100%', padding: '7px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px', color: '#334155' }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Divider */}
+                      <hr style={{ border: 'none', borderTop: '1.5px solid #cbd5e1', margin: '4px 0' }} />
+
+                      {/* Checkbox Codigo de Aceptacion */}
+                      <div style={{ padding: '4px 2px' }}>
+                        <label style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', fontSize: '13.5px', fontWeight: '800', color: '#0f172a', cursor: 'pointer' }}>
+                          <input
+                            type="checkbox"
+                            checked={!!userForm.iibb_codigo_aceptacion}
+                            onChange={e => setUserForm({ ...userForm, iibb_codigo_aceptacion: e.target.checked })}
+                            style={{ width: '18px', height: '18px', accentColor: '#0fa4de', cursor: 'pointer' }}
+                          />
+                          <span>Codigo de Aceptacion</span>
+                        </label>
+                      </div>
+
+                      {/* Previsualizador de Impacto Impositivo */}
+                      {(() => {
+                        const exampleNet = 1000;
+                        const activeList = [];
+                        const percs = userForm.percepciones || {};
+                        for (const [key, p] of Object.entries(percs)) {
+                          if (p?.enabled && parseFloat(p.alicuota) > 0) {
+                            const ali = parseFloat(p.alicuota);
+                            const coef = (key === 'tucuman' && parseFloat(p.coef) > 0) ? parseFloat(p.coef) : 1;
+                            const amount = (exampleNet * coef * ali) / 100;
+                            activeList.push({ name: key.toUpperCase(), ali, amount, coef });
+                          }
+                        }
+                        const totalPerc = activeList.reduce((acc, x) => acc + x.amount, 0);
+
+                        return (
+                          <div style={{ background: '#f8fafc', border: '1px dashed #0284c7', borderRadius: '12px', padding: '14px 18px', fontSize: '12px', color: '#334155' }}>
+                            <div style={{ fontWeight: '800', color: '#0284c7', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span>💡</span> Simulación sobre compra neta de $1,000.00 USD:
+                            </div>
+                            {activeList.length === 0 ? (
+                              <div style={{ color: '#64748b', fontStyle: 'italic' }}>No hay percepciones activas con alícuota mayor a 0%. Este cliente no pagará percepciones adicionales.</div>
+                            ) : (
+                              <div>
+                                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                                  {activeList.map(x => (
+                                    <span key={x.name} style={{ background: '#e0f2fe', color: '#0369a1', padding: '4px 10px', borderRadius: '6px', fontWeight: '700' }}>
+                                      {x.name} ({x.ali}%): +${x.amount.toFixed(2)} USD
+                                    </span>
+                                  ))}
+                                </div>
+                                <div style={{ fontWeight: '800', color: '#0f172a' }}>
+                                  Total final a liquidar en Checkout: ${(exampleNet + totalPerc).toFixed(2)} USD (Neto: $1,000.00 + Percepciones: ${totalPerc.toFixed(2)})
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })()}
+                    </div>
+                  )}
+
                   <div style={{ display: 'flex', gap: '10px', marginTop: '24px', borderTop: '1px solid var(--border-color)', paddingTop: '20px' }}>
                     <button type="submit" className="btn-submit">{editingUser ? 'Actualizar Usuario' : (userCreateMode === 'existing_company' ? 'Crear y Habilitar Usuario para esta Empresa' : 'Guardar y Habilitar Empresa B2B')}</button>
                     <button type="button" className="btn-delete" onClick={resetUserForm}>Cancelar</button>
@@ -3846,7 +4593,7 @@ function AdminEcommerce({ embedded = false }) {
                 </tr>
               </thead>
               <tbody>
-                {users
+                {countryScopedUsers
                   .filter(u => {
                     if (userFilterStatus === 'pendiente') return u.status === 'pendiente';
                     if (userFilterStatus === 'activo') return (u.status || 'activo') === 'activo';
@@ -4227,11 +4974,50 @@ function AdminEcommerce({ embedded = false }) {
               </div>
             </div>
 
+            {/* Country Scope Notice for Orders */}
+            {selectedCountryScope !== 'all' && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                background: 'linear-gradient(135deg, rgba(15, 164, 222, 0.08) 0%, rgba(2, 132, 199, 0.04) 100%)',
+                border: '1px solid rgba(15, 164, 222, 0.25)',
+                padding: '10px 16px',
+                borderRadius: '10px',
+                marginBottom: '14px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '18px' }}>{activeCountryObj.flag || '🇦🇷'}</span>
+                  <span style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a' }}>
+                    Órdenes radicadas en {activeCountryObj.name}
+                  </span>
+                  <span style={{ fontSize: '12px', color: '#64748b' }}>
+                    — Mostrando métricas y facturación exclusiva para {activeCountryObj.name} ({countryScopedOrders.length} pedidos)
+                  </span>
+                </div>
+                <button 
+                  onClick={() => handleCountryScopeChange('all')}
+                  style={{
+                    background: '#ffffff',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '6px',
+                    padding: '4px 10px',
+                    fontSize: '11px',
+                    fontWeight: '600',
+                    color: '#475569',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Ver Todas las Órdenes 🌐
+                </button>
+              </div>
+            )}
+
             {/* Quick KPI Chips for Orders - Compact High-Density */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '8px', marginBottom: '14px' }}>
               <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '10px', padding: '8px 12px' }}>
                 <div style={{ fontSize: '10.5px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase' }}>Total Órdenes</div>
-                <div style={{ fontSize: '18px', fontWeight: '800', color: '#071524', marginTop: '1px' }}>{orders.length}</div>
+                <div style={{ fontSize: '18px', fontWeight: '800', color: '#071524', marginTop: '1px' }}>{countryScopedOrders.length}</div>
               </div>
               <div style={{ background: '#F0FDF4', border: '1px solid #BBF7D0', borderRadius: '10px', padding: '8px 12px' }}>
                 <div style={{ fontSize: '10.5px', color: '#166534', fontWeight: '700', textTransform: 'uppercase' }}>Total Facturado</div>
@@ -4242,19 +5028,19 @@ function AdminEcommerce({ embedded = false }) {
               <div style={{ background: '#FEFCE8', border: '1px solid #FEF08A', borderRadius: '10px', padding: '8px 12px' }}>
                 <div style={{ fontSize: '10.5px', color: '#854D0E', fontWeight: '700', textTransform: 'uppercase' }}>En Preparación</div>
                 <div style={{ fontSize: '18px', fontWeight: '800', color: '#CA8A04', marginTop: '1px' }}>
-                  {orders.filter(o => o.status === 'procesando' || o.status === 'pending').length}
+                  {countryScopedOrders.filter(o => o.status === 'procesando' || o.status === 'pending').length}
                 </div>
               </div>
               <div style={{ background: '#F0F9FF', border: '1px solid #BAE6FD', borderRadius: '10px', padding: '8px 12px' }}>
                 <div style={{ fontSize: '10.5px', color: '#075985', fontWeight: '700', textTransform: 'uppercase' }}>En Despacho / Camino</div>
                 <div style={{ fontSize: '18px', fontWeight: '800', color: '#0284C7', marginTop: '1px' }}>
-                  {orders.filter(o => o.status === 'en_camino' || o.status === 'shipped').length}
+                  {countryScopedOrders.filter(o => o.status === 'en_camino' || o.status === 'shipped').length}
                 </div>
               </div>
               <div style={{ background: '#FAF5FF', border: '1px solid #E9D5FF', borderRadius: '10px', padding: '8px 12px' }}>
                 <div style={{ fontSize: '10.5px', color: '#6B21A8', fontWeight: '700', textTransform: 'uppercase' }}>Entregadas</div>
                 <div style={{ fontSize: '18px', fontWeight: '800', color: '#9333EA', marginTop: '1px' }}>
-                  {orders.filter(o => o.status === 'entregado' || o.status === 'completed').length}
+                  {countryScopedOrders.filter(o => o.status === 'entregado' || o.status === 'completed').length}
                 </div>
               </div>
             </div>
@@ -4644,11 +5430,11 @@ function AdminEcommerce({ embedded = false }) {
                     textTransform: 'uppercase',
                     letterSpacing: '0.04em'
                   }}>
-                    Checkout B2B
+                    {activeCountryObj.flag} {activeCountryObj.name}
                   </span>
                 </div>
                 <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted, #64748B)', maxWidth: '700px' }}>
-                  Habilitá, deshabilitá o personalizá los métodos de despacho (Paso 3) y opciones de pago corporativo (Paso 4) disponibles en el carro de compras.
+                  Configuración para <strong>{activeCountryObj.name} ({activeCountryObj.code})</strong>. Habilitá, deshabilitá o personalizá los métodos de despacho locales (HUBs, Expresos) y opciones de pago corporativo (CBU/Alias, E-Cheqs diferidos, CC o Stripe) para las operaciones de este país.
                 </p>
               </div>
 
@@ -9066,6 +9852,78 @@ function AdminEcommerce({ embedded = false }) {
                 </div>
               </div>
 
+              {/* Card: Percepciones y Retenciones IIBB (Argentina) */}
+              {((selectedUser.country_id === 2 || selectedUser.country_name === 'Argentina' || !selectedUser.country_id) && (
+                <div style={{ background: '#FFFFFF', padding: '20px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', marginBottom: '20px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>🏛️</span> Percepciones & Retenciones IIBB (Argentina)
+                    </div>
+                    <span style={{ background: '#e0f2fe', color: '#0369a1', fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '6px' }}>
+                      Jurisdicción: {selectedUser.iibb_jurisdiccion || '901 - Capital Federal'}
+                    </span>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '14px', fontSize: '12.5px' }}>
+                    <div style={{ background: '#f8fafc', padding: '10px 14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                      <span style={{ color: '#64748b', fontSize: '11px', display: 'block' }}>Inscripción IIBB:</span>
+                      <strong style={{ color: '#0f172a' }}>{selectedUser.iibb_tipo || 'C.M.'} — {selectedUser.iibb_numero || selectedUser.numero_nit || '—'}</strong>
+                    </div>
+                    <div style={{ background: '#f8fafc', padding: '10px 14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                      <span style={{ color: '#64748b', fontSize: '11px', display: 'block' }}>Código de Aceptación:</span>
+                      <strong style={{ color: selectedUser.iibb_codigo_aceptacion ? '#16a34a' : '#94a3b8' }}>
+                        {selectedUser.iibb_codigo_aceptacion ? '✓ Aceptado / Homologado' : '✗ No informado'}
+                      </strong>
+                    </div>
+                  </div>
+
+                  {/* Listado de Percepciones configuradas */}
+                  {(() => {
+                    let percs = selectedUser.percepciones;
+                    if (typeof percs === 'string') {
+                      try { percs = JSON.parse(percs); } catch (_) { percs = null; }
+                    }
+                    if (!percs) return <div style={{ fontSize: '12px', color: '#94a3b8', fontStyle: 'italic' }}>Sin percepciones configuradas.</div>;
+
+                    const provs = [
+                      { key: 'caba', name: 'CABA', ...percs.caba },
+                      { key: 'bsas', name: 'Bs. As. (ARBA)', ...percs.bsas },
+                      { key: 'salta', name: 'Salta', ...percs.salta },
+                      { key: 'misiones', name: 'Misiones', ...percs.misiones },
+                      { key: 'tucuman', name: 'Tucumán', ...percs.tucuman },
+                    ];
+
+                    return (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '10px' }}>
+                        {provs.map(p => {
+                          const isActive = p.enabled && parseFloat(p.alicuota) > 0;
+                          return (
+                            <div key={p.key} style={{
+                              padding: '10px 12px',
+                              borderRadius: '8px',
+                              border: isActive ? '1.5px solid #0284c7' : '1px solid #e2e8f0',
+                              background: isActive ? '#f0f9ff' : '#ffffff'
+                            }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                <strong style={{ fontSize: '12px', color: '#0f172a' }}>{p.name}</strong>
+                                <span style={{ fontSize: '10px', fontWeight: '800', color: isActive ? '#0284c7' : '#94a3b8' }}>
+                                  {isActive ? 'ACTIVA' : 'INACTIVA'}
+                                </span>
+                              </div>
+                              <div style={{ fontSize: '14px', fontWeight: '800', color: isActive ? '#0369a1' : '#64748b' }}>
+                                {parseFloat(p.alicuota || 0).toFixed(4)}%
+                              </div>
+                              {p.coef ? <div style={{ fontSize: '10.5px', color: '#64748b' }}>Coef: {p.coef}</div> : null}
+                              {p.vigencia ? <div style={{ fontSize: '10px', color: '#94a3b8' }}>Vto: {p.vigencia}</div> : null}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+                </div>
+              ))}
+
               {/* Grid 3: Contactos Designados */}
               <div style={{ marginBottom: '20px' }}>
                 <div style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -9586,6 +10444,8 @@ function AdminEcommerce({ embedded = false }) {
                             <th>Precio (USD)</th>
                             <th>Promo (USD)</th>
                             <th>Stock</th>
+                            <th>Peso (kg)</th>
+                            <th>Dimensiones (cm)</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -9610,6 +10470,8 @@ function AdminEcommerce({ embedded = false }) {
                               <td><strong>${item.price}</strong></td>
                               <td>{item.promotional_price ? <span style={{ color: '#10B981', fontWeight: '700' }}>${item.promotional_price}</span> : '—'}</td>
                               <td><strong style={{ color: item.stock > 0 ? '#166534' : '#DC2626' }}>{item.stock}</strong></td>
+                              <td>{item.weight ? `${item.weight} kg` : '—'}</td>
+                              <td>{(item.depth || item.width || item.height) ? `${item.depth || '0'} x ${item.width || '0'} x ${item.height || '0'}` : '—'}</td>
                             </tr>
                           ))}
                         </tbody>

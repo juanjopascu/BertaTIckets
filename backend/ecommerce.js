@@ -88,6 +88,10 @@ rawPool.connect()
         ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS sku VARCHAR(100);
         ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS promotional_price DECIMAL(10, 2);
         ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS secondary_images JSONB;
+        ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS weight VARCHAR(50);
+        ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS depth VARCHAR(50);
+        ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS width VARCHAR(50);
+        ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS height VARCHAR(50);
       `);
     } catch (_) {}
     client.release();
@@ -209,93 +213,351 @@ const DEFAULT_VISUAL_SETTINGS = {
   }
 };
 
-// --- DEFAULT CHECKOUT METHODS (SHIPPING & PAYMENT) ---
-const DEFAULT_CHECKOUT_METHODS = {
-  shipping: [
-    {
-      id: 'express',
-      enabled: true,
-      title: 'Envío Express a Domicilio',
-      subtitle: 'Despacho a Planta / Oficina',
-      badge: 'Recomendado',
-      icon: '🚚',
-      priceText: 'Bonificado (B2B)',
-      description: 'Envío directo puerta a puerta a la dirección declarada de la empresa.'
-    },
-    {
-      id: 'hub',
-      enabled: true,
-      title: 'Retiro en HUB DACAS',
-      subtitle: 'Depósito Central (Sin Cargo)',
-      badge: 'Gratis',
-      icon: '🏢',
-      priceText: 'Sin cargo',
-      description: 'Retiro por depósito central o centro logístico DACAS en el país.'
-    },
-    {
-      id: 'expreso',
-      enabled: true,
-      title: 'Expreso / Transporte Propio',
-      subtitle: 'Despacho a receptoría de expreso',
-      badge: 'Interior',
-      icon: '🚛',
-      priceText: 'A cargo del cliente',
-      description: 'Despacho hacia la receptoría o transporte que el integrador contrate.'
-    }
-  ],
-  payment: [
-    {
-      id: 'cuenta_corriente',
-      enabled: true,
-      title: 'Cuenta Corriente Comercial B2B DACAS',
-      subtitle: 'Pago diferido contra factura y límite crediticio asignado a tu empresa.',
-      badge: 'Crédito Aprobado',
-      icon: '🏦',
-      terms: ['30_dias', '60_dias'],
-      terms_label: 'Plazo de Facturación:',
-      instrucciones: 'Sujeto a verificación de línea crediticia aprobada en DACAS.'
-    },
-    {
-      id: 'transferencia',
-      enabled: true,
-      title: 'Transferencia Bancaria Directa (CBU / SWIFT)',
-      subtitle: 'Se emitirá la Factura Proforma con cuentas en BBVA / Banco Santander para depósito en USD o ARS al tipo de cambio oficial.',
-      badge: 'Inmediato',
-      icon: '💸',
-      banco: 'Banco Santander / BBVA Argentina',
-      titular: 'DACAS S.A.',
-      cuit: '30-68942158-9',
-      cbu: '0720123920000001234567',
-      alias: 'DACAS.PAGOS.B2B',
-      swift: 'BAPROARBAXXX',
-      tipo_cuenta: 'Cuenta Corriente Especial en USD / ARS',
-      instrucciones: 'Una vez efectuada la transferencia, adjuntá el comprobante a cobranzas@dacas.com indicando tu número de orden.'
-    },
-    {
-      id: 'tarjeta',
-      enabled: true,
-      title: 'Tarjeta Corporativa / Débito (Stripe Secure)',
-      subtitle: 'Procesamiento online seguro e inmediato con Visa, Mastercard, American Express B2B.',
-      badge: 'Online',
-      icon: '💳',
-      gateway: 'Stripe SSL 256-bit',
-      instrucciones: 'Transacción encriptada y protegida bajo normativa PCI-DSS Nivel 1.'
-    },
-    {
-      id: 'echeq',
-      enabled: true,
-      title: 'Cheque de Pago Diferido / E-Cheq',
-      subtitle: 'Endoso y recepción de cheques electrónicos interbancarios COELSA.',
-      badge: 'Financiamiento',
-      icon: '📑',
-      cuit_receptor: '30-68942158-9',
-      banco_receptor: 'Banco Santander',
-      plazos_admitidos: '30 y 60 días fecha factura',
-      instrucciones: 'Emitir o endosar el E-Cheq a favor de DACAS S.A. (CUIT 30-68942158-9) mediante homebanking.'
-    }
-  ],
-  terms_conditions_text: 'Acepto las condiciones comerciales de DACAS B2B, términos de garantía oficial de fabricante de 12/36 meses y la emisión de la orden de compra con carácter vinculante para reserva de stock.'
+// --- CHECKOUT METHODS (SHIPPING & PAYMENT) PER COUNTRY ---
+const COUNTRY_CHECKOUT_METHODS = {
+  AR: {
+    country_code: 'AR',
+    country_name: 'Argentina',
+    shipping: [
+      {
+        id: 'hub_ar',
+        enabled: true,
+        title: 'Retiro en HUB Central DACAS Buenos Aires',
+        subtitle: 'Depósito Central Barracas / CABA (Sin Cargo)',
+        badge: 'Gratis',
+        icon: '🏢',
+        priceText: 'Sin cargo',
+        description: 'Retiro inmediato por depósito central DACAS en Barracas / CABA con orden de compra aprobada.'
+      },
+      {
+        id: 'express_ar',
+        enabled: true,
+        title: 'Envío Express CABA & Gran Buenos Aires',
+        subtitle: 'Despacho puerta a puerta a planta / oficina',
+        badge: 'Recomendado',
+        icon: '🚚',
+        priceText: 'Bonificado (B2B)',
+        description: 'Despacho logístico prioritario en 24/48hs a la dirección declarada de la empresa.'
+      },
+      {
+        id: 'expreso_ar',
+        enabled: true,
+        title: 'Expreso al Interior de Argentina',
+        subtitle: 'Despacho a receptoría de expreso (Villa Soldati / CTC / Transporte)',
+        badge: 'Interior del País',
+        icon: '🚛',
+        priceText: 'A cargo del cliente',
+        description: 'Despacho sin cargo hacia la receptoría o transporte que el integrador contrate en CABA/GBA (Andreani, Cruz del Sur, La Sevillanita, Expreso Brio, etc.).'
+      }
+    ],
+    payment: [
+      {
+        id: 'transferencia_ar',
+        enabled: true,
+        title: 'Transferencia Bancaria Directa (CBU / Alias / CUIT)',
+        subtitle: 'Se emitirá Factura Electrónica A con cuentas en Banco Santander y BBVA Argentina en USD oficial BNA o ARS.',
+        badge: 'Inmediato (Factura A)',
+        icon: '💸',
+        banco: 'Banco Santander / BBVA Argentina',
+        titular: 'DACAS S.A.',
+        cuit: '30-68942158-9',
+        cbu: '0720123920000001234567',
+        alias: 'DACAS.PAGOS.B2B',
+        swift: 'BAPROARBAXXX',
+        tipo_cuenta: 'Cuenta Corriente Especial en USD / ARS',
+        instrucciones: 'Una vez efectuada la transferencia, adjuntá el comprobante a cobranzas.ar@dacas.com indicando tu número de orden.'
+      },
+      {
+        id: 'echeq_ar',
+        enabled: true,
+        title: 'Cheque de Pago Diferido / E-Cheq (COELSA Argentina)',
+        subtitle: 'Endoso y recepción de cheques electrónicos interbancarios COELSA a 30 y 60 días.',
+        badge: 'Financiamiento 30/60d',
+        icon: '📑',
+        cuit_receptor: '30-68942158-9',
+        banco_receptor: 'Banco Santander Argentina',
+        plazos_admitidos: '30 y 60 días fecha factura',
+        instrucciones: 'Emitir o endosar el E-Cheq a favor de DACAS S.A. (CUIT 30-68942158-9) mediante homebanking en Argentina.'
+      },
+      {
+        id: 'cuenta_corriente_ar',
+        enabled: true,
+        title: 'Cuenta Corriente Comercial B2B DACAS Argentina',
+        subtitle: 'Pago diferido contra factura y límite crediticio asignado a tu empresa.',
+        badge: 'Crédito Aprobado',
+        icon: '🏦',
+        terms: ['30_dias', '60_dias'],
+        terms_label: 'Plazo de Facturación:',
+        instrucciones: 'Sujeto a verificación de línea crediticia aprobada en DACAS Argentina.'
+      },
+      {
+        id: 'tarjeta_ar',
+        enabled: true,
+        title: 'Tarjeta Corporativa / Débito (Stripe Secure)',
+        subtitle: 'Procesamiento online seguro e inmediato con Visa, Mastercard, American Express B2B.',
+        badge: 'Online Inmediato',
+        icon: '💳',
+        gateway: 'Stripe SSL 256-bit',
+        instrucciones: 'Transacción encriptada y protegida bajo normativa PCI-DSS Nivel 1.'
+      }
+    ],
+    terms_conditions_text: 'Acepto las condiciones comerciales de DACAS Argentina S.A., términos de garantía oficial de fabricante de 12/36 meses y la emisión de la orden de compra con carácter vinculante para reserva de stock.'
+  },
+  CL: {
+    country_code: 'CL',
+    country_name: 'Chile',
+    shipping: [
+      {
+        id: 'hub_cl',
+        enabled: true,
+        title: 'Retiro en HUB DACAS Santiago',
+        subtitle: 'Centro de Distribución Pudahuel / ENEA (Sin Cargo)',
+        badge: 'Gratis',
+        icon: '🏢',
+        priceText: 'Sin cargo',
+        description: 'Retiro en centro logístico DACAS Chile en Santiago.'
+      },
+      {
+        id: 'express_cl',
+        enabled: true,
+        title: 'Despacho Región Metropolitana',
+        subtitle: 'Entrega puerta a puerta en Santiago',
+        badge: 'Recomendado',
+        icon: '🚚',
+        priceText: 'Tarifa B2B',
+        description: 'Entrega en 24/48 horas en toda la Región Metropolitana.'
+      },
+      {
+        id: 'expreso_cl',
+        enabled: true,
+        title: 'Despacho a Regiones (Chile)',
+        subtitle: 'Transportes Starken / Chilexpress / Cruz del Sur',
+        badge: 'Regiones',
+        icon: '🚛',
+        priceText: 'Por pagar',
+        description: 'Despacho hacia receptoría de courier o transporte a regiones de Chile.'
+      }
+    ],
+    payment: [
+      {
+        id: 'transferencia_cl',
+        enabled: true,
+        title: 'Transferencia Bancaria Local (Banco de Chile / BCI)',
+        subtitle: 'Cuentas corrientes en CLP y USD al tipo de cambio observado con Factura Electrónica SII.',
+        badge: 'Inmediato',
+        icon: '💸',
+        banco: 'Banco de Chile / BCI',
+        titular: 'DACAS Chile SpA',
+        rut: '76.432.109-8',
+        cuenta: '00-123-45678-9',
+        tipo_cuenta: 'Cuenta Corriente',
+        instrucciones: 'Enviar comprobante a cobranzas.cl@dacas.com indicando N° de pedido.'
+      },
+      {
+        id: 'cuenta_corriente_cl',
+        enabled: true,
+        title: 'Línea de Crédito Comercial DACAS Chile',
+        subtitle: 'Pago a 30 días contra Factura Electrónica SII.',
+        badge: 'Crédito B2B',
+        icon: '🏦',
+        terms: ['30_dias'],
+        instrucciones: 'Válido para clientes con línea aprobada en Chile.'
+      },
+      {
+        id: 'tarjeta_cl',
+        enabled: true,
+        title: 'Webpay Plus / Tarjeta Corporativa',
+        subtitle: 'Pago online seguro con tarjetas de crédito y débito.',
+        badge: 'Online',
+        icon: '💳',
+        instrucciones: 'Transacción segura a través de Webpay Plus / Stripe.'
+      }
+    ],
+    terms_conditions_text: 'Acepto las condiciones comerciales de DACAS Chile SpA y términos de garantía oficial.'
+  },
+  CO: {
+    country_code: 'CO',
+    country_name: 'Colombia',
+    shipping: [
+      {
+        id: 'hub_co',
+        enabled: true,
+        title: 'Retiro en HUB DACAS Bogotá',
+        subtitle: 'Centro Logístico Zona Franca Bogotá',
+        badge: 'Gratis',
+        icon: '🏢',
+        priceText: 'Sin cargo',
+        description: 'Retiro directo en bodega DACAS Bogotá.'
+      },
+      {
+        id: 'express_co',
+        enabled: true,
+        title: 'Despacho Urbano Bogotá D.C.',
+        subtitle: 'Entrega empresarial 24/48hs',
+        badge: 'Recomendado',
+        icon: '🚚',
+        priceText: 'Tarifa B2B',
+        description: 'Despacho a oficinas y plantas en Bogotá.'
+      },
+      {
+        id: 'expreso_co',
+        enabled: true,
+        title: 'Envíos Nacionales Colombia',
+        subtitle: 'Servientrega / Coordinadora Mercantil',
+        badge: 'Nacional',
+        icon: '🚛',
+        priceText: 'A convenir',
+        description: 'Despacho a Medellín, Cali, Barranquilla y demás ciudades de Colombia.'
+      }
+    ],
+    payment: [
+      {
+        id: 'transferencia_co',
+        enabled: true,
+        title: 'Transferencia Bancolombia / PSE',
+        subtitle: 'Consignación en Cuenta Corriente en COP o USD con Factura Electrónica DIAN.',
+        badge: 'Inmediato',
+        icon: '💸',
+        banco: 'Bancolombia',
+        titular: 'DACAS Colombia S.A.S.',
+        nit: '901.345.678-1',
+        cuenta: '210-987654-32',
+        tipo_cuenta: 'Cuenta Corriente',
+        instrucciones: 'Enviar comprobante a cobranzas.co@dacas.com.'
+      },
+      {
+        id: 'cuenta_corriente_co',
+        enabled: true,
+        title: 'Crédito Directo DACAS Colombia',
+        subtitle: 'Condición de pago 30 días contra aprobación de cupo.',
+        badge: 'Crédito B2B',
+        icon: '🏦',
+        terms: ['30_dias'],
+        instrucciones: 'Sujeto a verificación crediticia.'
+      },
+      {
+        id: 'tarjeta_co',
+        enabled: true,
+        title: 'Tarjeta de Crédito Corporativa / PSE',
+        subtitle: 'Pago online seguro.',
+        badge: 'Online',
+        icon: '💳',
+        instrucciones: 'Acreditación inmediata.'
+      }
+    ],
+    terms_conditions_text: 'Acepto las condiciones comerciales de DACAS Colombia S.A.S. y términos de garantía oficial.'
+  },
+  US: {
+    country_code: 'US',
+    country_name: 'Estados Unidos',
+    shipping: [
+      {
+        id: 'hub_us',
+        enabled: true,
+        title: 'Pickup at DACAS Miami HUB',
+        subtitle: 'Doral Distribution Center (Free)',
+        badge: 'Free',
+        icon: '🏢',
+        priceText: 'Free',
+        description: 'Will call pickup at DACAS Logistics Center in Miami / Doral, FL.'
+      },
+      {
+        id: 'express_us',
+        enabled: true,
+        title: 'Domestic Commercial Ground',
+        subtitle: 'FedEx / UPS Commercial',
+        badge: 'Recommended',
+        icon: '🚚',
+        priceText: 'Standard B2B Rate',
+        description: 'Direct delivery to commercial address across the US.'
+      },
+      {
+        id: 'freight_us',
+        enabled: true,
+        title: 'Freight Forwarder Warehouse',
+        subtitle: 'Delivery to Miami Export Forwarder',
+        badge: 'Export',
+        icon: '🚛',
+        priceText: 'Local Delivery Rate',
+        description: 'Delivery to your assigned export freight forwarder in South Florida.'
+      }
+    ],
+    payment: [
+      {
+        id: 'wire_us',
+        enabled: true,
+        title: 'Domestic / International Wire & ACH',
+        subtitle: 'Direct wire transfer to DACAS US Commercial Account.',
+        badge: 'Wire / ACH',
+        icon: '💸',
+        banco: 'JPMorgan Chase Bank, N.A.',
+        titular: 'DACAS International LLC',
+        routing: '021000021',
+        account: '987654321',
+        swift: 'CHASUS33',
+        instructions: 'Please send payment confirmation to payments.us@dacas.com.'
+      },
+      {
+        id: 'terms_us',
+        enabled: true,
+        title: 'Commercial Net 30 Terms',
+        subtitle: 'Deferred payment for pre-approved corporate accounts.',
+        badge: 'Credit Line',
+        icon: '🏦',
+        terms: ['net_30'],
+        instructions: 'Subject to active DACAS US credit line verification.'
+      },
+      {
+        id: 'card_us',
+        enabled: true,
+        title: 'Corporate Credit Card (Stripe)',
+        subtitle: 'Visa, Mastercard, AMEX corporate cards.',
+        badge: 'Instant',
+        icon: '💳',
+        instructions: 'Secure online checkout.'
+      }
+    ],
+    terms_conditions_text: 'I accept DACAS International LLC B2B terms and manufacturer warranty terms.'
+  }
 };
+
+const DEFAULT_CHECKOUT_METHODS = COUNTRY_CHECKOUT_METHODS.AR;
+
+function resolveCountry(identifier) {
+  if (!identifier) {
+    if (typeof inMem !== 'undefined' && Array.isArray(inMem.countries)) {
+      return inMem.countries.find(c => c.code === 'AR') || inMem.countries[1] || { id: 2, code: 'AR', name: 'Argentina' };
+    }
+    return { id: 2, code: 'AR', name: 'Argentina' };
+  }
+  const str = String(identifier).trim().toUpperCase();
+  const num = parseInt(identifier, 10);
+  if (typeof inMem !== 'undefined' && Array.isArray(inMem.countries)) {
+    const found = inMem.countries.find(c => 
+      (!isNaN(num) && c.id === num) || 
+      c.code.toUpperCase() === str || 
+      c.name.toUpperCase() === str
+    );
+    if (found) return found;
+  }
+  if (str === 'AR' || str === 'ARGENTINA' || num === 2) return { id: 2, code: 'AR', name: 'Argentina' };
+  if (str === 'CL' || str === 'CHILE' || num === 4) return { id: 4, code: 'CL', name: 'Chile' };
+  if (str === 'CO' || str === 'COLOMBIA' || num === 5) return { id: 5, code: 'CO', name: 'Colombia' };
+  if (str === 'MX' || str === 'MEXICO' || str === 'MÉXICO' || num === 8) return { id: 8, code: 'MX', name: 'México' };
+  if (str === 'US' || str === 'USA' || str === 'ESTADOS UNIDOS' || num === 1) return { id: 1, code: 'US', name: 'Estados Unidos' };
+  if (str === 'UY' || str === 'URUGUAY' || num === 12) return { id: 12, code: 'UY', name: 'Uruguay' };
+  if (str === 'PE' || str === 'PERU' || str === 'PERÚ' || num === 10) return { id: 10, code: 'PE', name: 'Perú' };
+  return { id: 2, code: 'AR', name: 'Argentina' };
+}
+
+function getCheckoutMethodsForCountry(countryCodeOrId) {
+  const c = resolveCountry(countryCodeOrId);
+  const code = c ? c.code.toUpperCase() : 'AR';
+  if (COUNTRY_CHECKOUT_METHODS[code]) {
+    return COUNTRY_CHECKOUT_METHODS[code];
+  }
+  return COUNTRY_CHECKOUT_METHODS.AR || DEFAULT_CHECKOUT_METHODS;
+}
 
 // --- DEFAULT APLI INTEGRATION SETTINGS & LOGS ---
 const DEFAULT_APLI_CONFIG = {
@@ -451,6 +713,33 @@ const DEFAULT_N8N_BOT_LOGS = [
 ];
 
 // --- IN-MEMORY DATABASE FALLBACK STORE ---
+const PRODUCTS_FILE = path.join(__dirname, 'ecommerce_products.json');
+
+function saveProductsToFile() {
+  try {
+    if (typeof inMem !== 'undefined' && inMem && Array.isArray(inMem.products)) {
+      fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(inMem.products, null, 2), 'utf-8');
+    }
+  } catch (err) {
+    console.error('Error guardando ecommerce_products.json:', err);
+  }
+}
+
+function loadProductsFromFile(defaultProducts) {
+  try {
+    if (fs.existsSync(PRODUCTS_FILE)) {
+      const data = fs.readFileSync(PRODUCTS_FILE, 'utf-8');
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.error('Error cargando ecommerce_products.json:', err);
+  }
+  return defaultProducts;
+}
+
 const inMem = {
   visualSettings: JSON.parse(JSON.stringify(DEFAULT_VISUAL_SETTINGS)),
   checkoutMethods: JSON.parse(JSON.stringify(DEFAULT_CHECKOUT_METHODS)),
@@ -472,7 +761,9 @@ const inMem = {
       direccion_legal: 'Av. Corrientes 1234, Piso 8',
       direccion_entrega: 'Av. del Libertador 4500, Depósito 2',
       ciudad: 'Buenos Aires',
-      country_id: 1,
+      country_id: 2,
+      country_code: 'AR',
+      country_name: 'Argentina',
       status: 'activo',
       avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?q=80&w=400&auto=format&fit=crop',
       nombre_compras: 'Laura Gómez',
@@ -485,6 +776,17 @@ const inMem = {
       tipo_iva: 'IVA Responsable Inscripto',
       tipo_factura: 'Factura A (Responsable Inscripto)',
       email_factura_electronica: 'facturacion@empresademo.com.ar',
+      iibb_jurisdiccion: '901 - Capital Federal',
+      iibb_tipo: 'C.M.',
+      iibb_numero: '9017223280',
+      iibb_codigo_aceptacion: true,
+      percepciones: {
+        caba: { enabled: true, alicuota: 1.5, vigencia: '2026-10-01' },
+        bsas: { enabled: false, alicuota: 0.0, vigencia: '2026-10-01' },
+        salta: { enabled: false, alicuota: 0.0, vigencia: '2019-08-01' },
+        misiones: { enabled: false, alicuota: 0.0, vigencia: '2023-05-01' },
+        tucuman: { enabled: false, alicuota: 0.0, coef: 0.0, vigencia: '2025-06-01' }
+      },
       created_at: new Date().toISOString()
     },
     {
@@ -498,9 +800,22 @@ const inMem = {
       phone: '+54 11 5555-8899',
       numero_nit: '30-71458922-4',
       ciudad: 'Buenos Aires',
-      country_id: 1,
+      country_id: 2,
+      country_code: 'AR',
+      country_name: 'Argentina',
       status: 'pendiente',
       avatar_url: null,
+      iibb_jurisdiccion: '902 - Buenos Aires',
+      iibb_tipo: 'C.M.',
+      iibb_numero: '30714589224',
+      iibb_codigo_aceptacion: false,
+      percepciones: {
+        caba: { enabled: false, alicuota: 0.0, vigencia: '2026-10-01' },
+        bsas: { enabled: true, alicuota: 1.75, vigencia: '2026-10-01' },
+        salta: { enabled: false, alicuota: 0.0, vigencia: '2019-08-01' },
+        misiones: { enabled: false, alicuota: 0.0, vigencia: '2023-05-01' },
+        tucuman: { enabled: false, alicuota: 0.0, coef: 0.0, vigencia: '2025-06-01' }
+      },
       created_at: new Date(Date.now() - 3600000).toISOString()
     },
     {
@@ -516,10 +831,151 @@ const inMem = {
       direccion_legal: 'Av. Corrientes 1234, Piso 8',
       direccion_entrega: 'Av. del Libertador 4500, Depósito 2',
       ciudad: 'Buenos Aires',
-      country_id: 1,
+      country_id: 2,
+      country_code: 'AR',
+      country_name: 'Argentina',
       status: 'activo',
       avatar_url: null,
+      iibb_jurisdiccion: '901 - Capital Federal',
+      iibb_tipo: 'C.M.',
+      iibb_numero: '9017223280',
+      iibb_codigo_aceptacion: true,
+      percepciones: {
+        caba: { enabled: true, alicuota: 1.5, vigencia: '2026-10-01' },
+        bsas: { enabled: false, alicuota: 0.0, vigencia: '2026-10-01' },
+        salta: { enabled: false, alicuota: 0.0, vigencia: '2019-08-01' },
+        misiones: { enabled: false, alicuota: 0.0, vigencia: '2023-05-01' },
+        tucuman: { enabled: false, alicuota: 0.0, coef: 0.0, vigencia: '2025-06-01' }
+      },
       created_at: new Date(Date.now() - 7200000).toISOString()
+    },
+    {
+      id: 4,
+      name: 'Ing. Gustavo Morales',
+      email: 'gmorales@cuyotel.com.ar',
+      password_hash: bcrypt.hashSync('password123', 10),
+      razon_social: 'Cuyo Telecomunicaciones S.A.',
+      cargo: 'Gerente de Infraestructura',
+      tipo_cliente: 'Proveedor de Internet (ISP / WISP)',
+      phone: '+54 261 420-9900',
+      numero_nit: '30-65432198-7',
+      direccion_legal: 'San Martín 1050, Piso 3',
+      direccion_entrega: 'Carril Rodríguez Peña 2400',
+      ciudad: 'Mendoza',
+      country_id: 2,
+      country_code: 'AR',
+      country_name: 'Argentina',
+      status: 'activo',
+      avatar_url: null,
+      cuit: '30-65432198-7',
+      tipo_iva: 'IVA Responsable Inscripto',
+      tipo_factura: 'Factura A',
+      iibb_jurisdiccion: '913 - Mendoza',
+      iibb_tipo: 'C.M.',
+      iibb_numero: '30654321987',
+      iibb_codigo_aceptacion: false,
+      percepciones: {
+        caba: { enabled: false, alicuota: 0.0, vigencia: '2026-10-01' },
+        bsas: { enabled: false, alicuota: 0.0, vigencia: '2026-10-01' },
+        salta: { enabled: false, alicuota: 0.0, vigencia: '2019-08-01' },
+        misiones: { enabled: false, alicuota: 0.0, vigencia: '2023-05-01' },
+        tucuman: { enabled: false, alicuota: 0.0, coef: 0.0, vigencia: '2025-06-01' }
+      },
+      created_at: new Date(Date.now() - 86400000 * 4).toISOString()
+    },
+    {
+      id: 5,
+      name: 'Marcos Benítez',
+      email: 'marcos@cordobaconect.com.ar',
+      password_hash: bcrypt.hashSync('password123', 10),
+      razon_social: 'Córdoba Integradores IT S.R.L.',
+      cargo: 'Socio Gerente',
+      tipo_cliente: 'Integrador IT / Reseller',
+      phone: '+54 351 512-3400',
+      numero_nit: '30-71987654-2',
+      direccion_legal: 'Av. Colón 2100',
+      direccion_entrega: 'Av. Circunvalación Sur Km 12',
+      ciudad: 'Córdoba',
+      country_id: 2,
+      country_code: 'AR',
+      country_name: 'Argentina',
+      status: 'activo',
+      avatar_url: null,
+      cuit: '30-71987654-2',
+      tipo_iva: 'IVA Responsable Inscripto',
+      tipo_factura: 'Factura A',
+      iibb_jurisdiccion: '904 - Córdoba',
+      iibb_tipo: 'C.M.',
+      iibb_numero: '30719876542',
+      iibb_codigo_aceptacion: true,
+      percepciones: {
+        caba: { enabled: true, alicuota: 1.5, vigencia: '2026-10-01' },
+        bsas: { enabled: false, alicuota: 0.0, vigencia: '2026-10-01' },
+        salta: { enabled: false, alicuota: 0.0, vigencia: '2019-08-01' },
+        misiones: { enabled: false, alicuota: 0.0, vigencia: '2023-05-01' },
+        tucuman: { enabled: false, alicuota: 0.0, coef: 0.0, vigencia: '2025-06-01' }
+      },
+      created_at: new Date(Date.now() - 86400000 * 7).toISOString()
+    },
+    {
+      id: 6,
+      name: 'Sebastián Valenzuela',
+      email: 'svalenzuela@andesdata.cl',
+      password_hash: bcrypt.hashSync('password123', 10),
+      razon_social: 'Andes Datacenter SpA',
+      cargo: 'Chief Technology Officer',
+      tipo_cliente: 'Integrador IT / Reseller',
+      phone: '+56 2 2345 6789',
+      numero_nit: '76.432.109-8',
+      direccion_legal: 'Av. Providencia 1760, Of. 902',
+      direccion_entrega: 'Av. Américo Vespucio Norte 2200',
+      ciudad: 'Santiago',
+      country_id: 4,
+      country_code: 'CL',
+      country_name: 'Chile',
+      status: 'activo',
+      avatar_url: null,
+      created_at: new Date(Date.now() - 86400000 * 3).toISOString()
+    },
+    {
+      id: 7,
+      name: 'Alejandro Restrepo',
+      email: 'arestrepo@cibernet.com.co',
+      password_hash: bcrypt.hashSync('password123', 10),
+      razon_social: 'Cibernet Colombia S.A.S.',
+      cargo: 'Director de Seguridad IT',
+      tipo_cliente: 'Integrador IT / Reseller',
+      phone: '+57 1 789 0123',
+      numero_nit: '901.345.678-1',
+      direccion_legal: 'Cra. 7 # 71-21, Torre B',
+      direccion_entrega: 'Calle 26 # 69D-91',
+      ciudad: 'Bogotá',
+      country_id: 5,
+      country_code: 'CO',
+      country_name: 'Colombia',
+      status: 'activo',
+      avatar_url: null,
+      created_at: new Date(Date.now() - 86400000 * 6).toISOString()
+    },
+    {
+      id: 8,
+      name: 'Rodrigo Garza',
+      email: 'rgarza@telecomnorte.com.mx',
+      password_hash: bcrypt.hashSync('password123', 10),
+      razon_social: 'Telecomunicaciones del Norte S.A. de C.V.',
+      cargo: 'Gerente General',
+      tipo_cliente: 'Integrador IT / Reseller',
+      phone: '+52 81 8345 6789',
+      numero_nit: 'TNO120415-8K2',
+      direccion_legal: 'Av. Constitución 2050 Pte.',
+      direccion_entrega: 'Parque Industrial Monterrey Lote 14',
+      ciudad: 'Monterrey',
+      country_id: 8,
+      country_code: 'MX',
+      country_name: 'México',
+      status: 'activo',
+      avatar_url: null,
+      created_at: new Date(Date.now() - 86400000 * 5).toISOString()
     }
   ],
   change_requests: [
@@ -636,7 +1092,7 @@ const inMem = {
     { id: 11, code: 'DO', name: 'República Dominicana', tax_rate: '18.00', shipping_cost: '22.00', nationalization_cost: '0.00', discount_rate: '0.00' },
     { id: 12, code: 'UY', name: 'Uruguay', tax_rate: '22.00', shipping_cost: '20.00', nationalization_cost: '0.00', discount_rate: '0.00' }
   ],
-  products: [
+  products: loadProductsFromFile([
     {
       id: 1,
       name: 'Fortinet FortiGate 60F - Next Generation Firewall',
@@ -729,14 +1185,37 @@ const inMem = {
       ],
       created_at: new Date().toISOString()
     }
-  ],
+  ]),
   product_stock: [
-    { id: 1, product_id: 1, country_id: 1, stock: 30 },
-    { id: 2, product_id: 1, country_id: 2, stock: 15 },
-    { id: 3, product_id: 2, country_id: 1, stock: 12 },
-    { id: 4, product_id: 3, country_id: 1, stock: 25 },
-    { id: 5, product_id: 4, country_id: 1, stock: 20 },
-    { id: 6, product_id: 5, country_id: 1, stock: 40 }
+    // Producto 1 (Fortinet 60F)
+    { id: 1, product_id: 1, country_id: 2, stock: 24 }, // Argentina
+    { id: 2, product_id: 1, country_id: 4, stock: 10 }, // Chile
+    { id: 3, product_id: 1, country_id: 5, stock: 14 }, // Colombia
+    { id: 4, product_id: 1, country_id: 8, stock: 20 }, // México
+    { id: 5, product_id: 1, country_id: 1, stock: 35 }, // US
+    // Producto 2 (Switch MikroTik 24P)
+    { id: 6, product_id: 2, country_id: 2, stock: 18 }, // Argentina
+    { id: 7, product_id: 2, country_id: 4, stock: 8 },  // Chile
+    { id: 8, product_id: 2, country_id: 5, stock: 12 }, // Colombia
+    { id: 9, product_id: 2, country_id: 8, stock: 15 }, // México
+    { id: 10, product_id: 2, country_id: 1, stock: 25 },
+    // Producto 3 (Aruba AP22)
+    { id: 11, product_id: 3, country_id: 2, stock: 40 }, // Argentina
+    { id: 12, product_id: 3, country_id: 4, stock: 15 }, // Chile
+    { id: 13, product_id: 3, country_id: 5, stock: 22 }, // Colombia
+    { id: 14, product_id: 3, country_id: 8, stock: 30 }, // México
+    // Producto 4 (UPS Vertiv Liebert GXT5 3kVA)
+    { id: 15, product_id: 4, country_id: 2, stock: 12 }, // Argentina
+    { id: 16, product_id: 4, country_id: 4, stock: 5 },  // Chile
+    { id: 17, product_id: 4, country_id: 5, stock: 8 },  // Colombia
+    // Producto 5 (Avaya Collaboration Bar B109)
+    { id: 18, product_id: 5, country_id: 2, stock: 14 }, // Argentina
+    { id: 19, product_id: 5, country_id: 4, stock: 6 },  // Chile
+    { id: 20, product_id: 5, country_id: 5, stock: 9 },  // Colombia
+    // Producto 6 (Licencia FortiGuard Enterprise)
+    { id: 21, product_id: 6, country_id: 2, stock: 999 }, // Argentina
+    { id: 22, product_id: 6, country_id: 4, stock: 999 }, // Chile
+    { id: 23, product_id: 6, country_id: 5, stock: 999 }  // Colombia
   ],
   pricing_rules: [
     {
@@ -747,7 +1226,7 @@ const inMem = {
       value_type: 'percentage',
       value: '18.00',
       tipo_cliente: 'Integrador IT / Reseller',
-      country_id: 1,
+      country_id: 2,
       brand: 'Fortinet',
       product_id: null,
       user_id: null,
@@ -807,7 +1286,7 @@ const inMem = {
       value_type: 'percentage',
       value: '10.00',
       tipo_cliente: null,
-      country_id: 1,
+      country_id: 2,
       brand: null,
       product_id: null,
       user_id: null,
@@ -864,7 +1343,7 @@ const inMem = {
     {
       id: 1042,
       user_id: 1,
-      country_id: 1,
+      country_id: 2,
       total: '2470.00',
       subtotal: '2130.00',
       tax_applied: '447.30',
@@ -881,7 +1360,7 @@ const inMem = {
     {
       id: 1049,
       user_id: 1,
-      country_id: 1,
+      country_id: 2,
       total: '1530.00',
       subtotal: '1360.00',
       tax_applied: '285.60',
@@ -896,8 +1375,8 @@ const inMem = {
     },
     {
       id: 1055,
-      user_id: 1,
-      country_id: 1,
+      user_id: 4,
+      country_id: 2,
       total: '756.50',
       subtotal: '890.00',
       tax_applied: '0.00',
@@ -906,9 +1385,41 @@ const inMem = {
       discount_applied: '133.50',
       status: 'procesando',
       payment_method: 'Transferencia B2B Bancaria (Factura A)',
-      shipping_address: 'Av. del Libertador 4500, Depósito 2, Buenos Aires',
-      tracking_number: 'DACAS-LOG-PENDING',
+      shipping_address: 'Carril Rodríguez Peña 2400, Mendoza',
+      tracking_number: 'DACAS-LOG-AR-99402',
       created_at: new Date(Date.now() - 3600000 * 3).toISOString()
+    },
+    {
+      id: 1060,
+      user_id: 6,
+      country_id: 4,
+      total: '1980.00',
+      subtotal: '1750.00',
+      tax_applied: '332.50',
+      shipping_applied: '18.00',
+      nationalization_applied: '0.00',
+      discount_applied: '120.50',
+      status: 'en_camino',
+      payment_method: 'Transferencia Bancaria Local (Banco de Chile)',
+      shipping_address: 'Av. Américo Vespucio Norte 2200, Santiago, Chile',
+      tracking_number: 'DACAS-LOG-CL-77120',
+      created_at: new Date(Date.now() - 86400000 * 2).toISOString()
+    },
+    {
+      id: 1065,
+      user_id: 7,
+      country_id: 5,
+      total: '2840.00',
+      subtotal: '2450.00',
+      tax_applied: '465.50',
+      shipping_applied: '18.00',
+      nationalization_applied: '0.00',
+      discount_applied: '93.50',
+      status: 'entregado',
+      payment_method: 'Transferencia Bancolombia / PSE',
+      shipping_address: 'Calle 26 # 69D-91, Bogotá, Colombia',
+      tracking_number: 'DACAS-LOG-CO-55102',
+      created_at: new Date(Date.now() - 86400000 * 4).toISOString()
     }
   ],
   order_items: [
@@ -1090,8 +1601,8 @@ function executeInMemoryQuery(sql, params = []) {
         email_cotizaciones_automaticas: params[32], address: params[33], company: params[34],
         status: params[35] !== undefined && typeof params[35] === 'string' && ['activo', 'pendiente', 'inactivo'].includes(params[35]) ? params[35] : inMem.users[idx].status
       };
-      if (params.length >= 37) { // includes password
-        inMem.users[idx].password_hash = params[35];
+      if (/password_hash\s*=\s*\$/i.test(norm)) {
+        inMem.users[idx].password_hash = params[params.length - 2];
       }
       return { rows: [inMem.users[idx]] };
     }
@@ -1333,11 +1844,15 @@ function executeInMemoryQuery(sql, params = []) {
       categories: pData.categories || [pData.category || 'General'],
       variants: pData.variants || [],
       image_url: pData.image_url || '',
-      secondary_images: pData.secondary_images || [],
+      secondary_images: Array.isArray(pData.secondary_images) ? pData.secondary_images : [],
+      images: Array.isArray(pData.images) && pData.images.length > 0
+        ? pData.images
+        : [pData.image_url, ...(Array.isArray(pData.secondary_images) ? pData.secondary_images : [])].filter(Boolean),
       video_url: pData.video_url || '',
       created_at: new Date().toISOString()
     };
     inMem.products.push(newProd);
+    saveProductsToFile();
     return { rows: [newProd] };
   }
 
@@ -1365,13 +1880,24 @@ function executeInMemoryQuery(sql, params = []) {
 
     const idx = inMem.products.findIndex(p => p.id === id);
     if (idx !== -1) {
+      const current = inMem.products[idx];
+      const mainImg = pData.image_url !== undefined ? pData.image_url : (current.image_url || '');
+      const secImgs = Array.isArray(pData.secondary_images) ? pData.secondary_images : (current.secondary_images || []);
+      const allImgs = Array.isArray(pData.images) && pData.images.length > 0
+        ? pData.images
+        : [mainImg, ...secImgs].filter(Boolean);
+
       inMem.products[idx] = {
-        ...inMem.products[idx],
+        ...current,
         ...pData,
         id,
-        price: String(pData.price || inMem.products[idx].price || '0.00'),
-        stock: pData.stock_type === 'infinite' ? 9999 : (pData.stock !== undefined ? parseInt(pData.stock) : inMem.products[idx].stock)
+        image_url: mainImg,
+        secondary_images: secImgs,
+        images: allImgs,
+        price: String(pData.price || current.price || '0.00'),
+        stock: pData.stock_type === 'infinite' ? 9999 : (pData.stock !== undefined ? parseInt(pData.stock) : current.stock)
       };
+      saveProductsToFile();
       return { rows: [inMem.products[idx]] };
     }
     return { rows: [] };
@@ -1382,6 +1908,7 @@ function executeInMemoryQuery(sql, params = []) {
     const idx = inMem.products.findIndex(p => p.id === id);
     if (idx !== -1) {
       const deleted = inMem.products.splice(idx, 1)[0];
+      saveProductsToFile();
       return { rows: [deleted] };
     }
     return { rows: [] };
@@ -1746,6 +2273,10 @@ router.post('/auth/login', async (req, res) => {
       safeUser.cuit = safeUser.numero_nit || safeUser.cuit || '30-12345678-9';
       safeUser.tipo_iva = safeUser.tipo_iva || 'IVA Responsable Inscripto';
       safeUser.tipo_factura = safeUser.tipo_factura || 'Factura A (Responsable Inscripto)';
+      const targetCountry = resolveCountry(safeUser.country_code || safeUser.country_id || safeUser.country_name || 'AR') || { id: 2, code: 'AR', name: 'Argentina' };
+      safeUser.country_id = targetCountry.id;
+      safeUser.country_code = targetCountry.code;
+      safeUser.country_name = targetCountry.name;
 
       res.json({ 
         token: accessToken, 
@@ -1905,15 +2436,55 @@ router.get('/products', async (req, res) => {
       } catch (_) {}
     }
 
+    // Determine target country (primary key scope)
+    const countryParam = req.query.country || req.query.country_code || req.query.country_id || (user ? user.country_id : 'AR');
+    const targetCountry = resolveCountry(countryParam);
+
     const result = await pool.query('SELECT * FROM ecommerce_products ORDER BY id ASC');
     const rulesRes = await pool.query('SELECT * FROM ecommerce_pricing_rules WHERE is_active = true');
     const allRules = rulesRes.rows;
 
     const formatted = result.rows.map(p => {
-      const pricing = calculateCustomProductPrice(p, user, allRules);
+      // Find stock in the selected country
+      let localStock = p.stock !== undefined ? parseInt(p.stock, 10) : 0;
+      if (typeof inMem !== 'undefined' && Array.isArray(inMem.product_stock)) {
+        const cStock = inMem.product_stock.find(s => s.product_id === p.id && s.country_id === targetCountry.id);
+        if (cStock && cStock.stock !== undefined) {
+          localStock = parseInt(cStock.stock, 10);
+        }
+      }
+
+      // Contextual pricing rule application with country scope
+      const contextualUser = user
+        ? { ...user, country_id: targetCountry.id }
+        : { country_id: targetCountry.id, tipo_cliente: 'Integrador IT / Reseller' };
+      const pricing = calculateCustomProductPrice(p, contextualUser, allRules);
+
+      const mainImg = p.image_url || (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : '');
+      const secImgs = Array.isArray(p.secondary_images) ? p.secondary_images : [];
+      let combinedImages = [];
+      if (mainImg) combinedImages.push(mainImg);
+      secImgs.forEach(img => {
+        if (img && !combinedImages.includes(img)) combinedImages.push(img);
+      });
+      if (combinedImages.length === 0 && Array.isArray(p.images) && p.images.length > 0) {
+        combinedImages = p.images;
+      }
       return {
         ...p,
-        ...pricing
+        ...pricing,
+        stock: localStock,
+        country_stock: localStock,
+        total_stock: p.stock,
+        selected_country: {
+          id: targetCountry.id,
+          code: targetCountry.code,
+          name: targetCountry.name,
+          tax_rate: targetCountry.tax_rate,
+          shipping_cost: targetCountry.shipping_cost
+        },
+        image_url: mainImg,
+        images: combinedImages
       };
     });
 
@@ -1944,12 +2515,25 @@ router.get('/products/:id', async (req, res) => {
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Product not found' });
     }
+    const prod = result.rows[0];
     const rulesRes = await pool.query('SELECT * FROM ecommerce_pricing_rules WHERE is_active = true');
-    const pricing = calculateCustomProductPrice(result.rows[0], user, rulesRes.rows);
+    const pricing = calculateCustomProductPrice(prod, user, rulesRes.rows);
+    const mainImg = prod.image_url || (Array.isArray(prod.images) && prod.images.length > 0 ? prod.images[0] : '');
+    const secImgs = Array.isArray(prod.secondary_images) ? prod.secondary_images : [];
+    let combinedImages = [];
+    if (mainImg) combinedImages.push(mainImg);
+    secImgs.forEach(img => {
+      if (img && !combinedImages.includes(img)) combinedImages.push(img);
+    });
+    if (combinedImages.length === 0 && Array.isArray(prod.images) && prod.images.length > 0) {
+      combinedImages = prod.images;
+    }
 
     res.json({
-      ...result.rows[0],
-      ...pricing
+      ...prod,
+      ...pricing,
+      image_url: mainImg,
+      images: combinedImages
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -2119,12 +2703,30 @@ router.post('/create-payment-intent', authenticateToken, async (req, res) => {
     );
     const orderId = orderResult.rows[0].id;
 
-    // Insert Order Items
+    // Insert Order Items & decrement product stock
     for (let oi of orderItems) {
       await pool.query(
         'INSERT INTO ecommerce_order_items (order_id, product_id, quantity, price_at_purchase) VALUES ($1, $2, $3, $4)',
         [orderId, oi.product_id, oi.quantity, oi.price_at_purchase]
       );
+      if (isPgConnected) {
+        await pool.query('UPDATE ecommerce_products SET stock = GREATEST(0, stock - $1) WHERE id = $2', [oi.quantity, oi.product_id]);
+        if (country_id) {
+          await pool.query('UPDATE ecommerce_product_stock SET stock = GREATEST(0, stock - $1) WHERE product_id = $2 AND country_id = $3', [oi.quantity, oi.product_id, country_id]);
+        }
+      } else {
+        const prod = inMem.products.find(p => p.id === oi.product_id);
+        if (prod && prod.stock_type !== 'infinite') {
+          prod.stock = Math.max(0, (parseInt(prod.stock, 10) || 0) - oi.quantity);
+        }
+        if (country_id) {
+          const cStock = inMem.product_stock.find(s => s.product_id === oi.product_id && s.country_id === country_id);
+          if (cStock) cStock.stock = Math.max(0, (parseInt(cStock.stock, 10) || 0) - oi.quantity);
+        }
+      }
+    }
+    if (!isPgConnected) {
+      saveProductsToFile();
     }
 
     res.json({
@@ -2182,6 +2784,21 @@ router.get('/client/profile', authenticateToken, async (req, res) => {
     user.cuit = user.numero_nit || user.cuit || '30-12345678-9';
     user.tipo_iva = user.tipo_iva || 'IVA Responsable Inscripto';
     user.tipo_factura = user.tipo_factura || 'Factura A (Responsable Inscripto)';
+
+    // Asegurar estructura de IIBB y percepciones para clientes de Argentina
+    if ((user.country_id === 2 || user.country_name === 'Argentina' || !user.country_id) && !user.percepciones) {
+      user.iibb_jurisdiccion = user.iibb_jurisdiccion || '901 - Capital Federal';
+      user.iibb_tipo = user.iibb_tipo || 'C.M.';
+      user.iibb_numero = user.iibb_numero || user.numero_nit || '9017223280';
+      user.iibb_codigo_aceptacion = user.iibb_codigo_aceptacion !== undefined ? user.iibb_codigo_aceptacion : true;
+      user.percepciones = {
+        caba: { enabled: true, alicuota: 1.5, vigencia: '2026-10-01' },
+        bsas: { enabled: false, alicuota: 0.0, vigencia: '2026-10-01' },
+        salta: { enabled: false, alicuota: 0.0, vigencia: '2019-08-01' },
+        misiones: { enabled: false, alicuota: 0.0, vigencia: '2023-05-01' },
+        tucuman: { enabled: false, alicuota: 0.0, coef: 0.0, vigencia: '2025-06-01' }
+      };
+    }
 
     // Resumen de órdenes del cliente
     let orders = [];
@@ -3484,7 +4101,53 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
       }
     }
 
-    const totalFinal = Math.max(0, subtotal - totalDiscount);
+    // ── CÁLCULO DE PERCEPCIONES IIBB (ARGENTINA) SOBRE VALOR NETO ──
+    const effectiveCountryId = (user && user.country_id) ? user.country_id : (country_id ? (resolveCountry(country_id)?.id || 2) : 2);
+    const isArgentina = effectiveCountryId === 2 || (user && (user.country_code === 'AR' || user.pais === 'Argentina'));
+
+    let totalPercepciones = 0;
+    const appliedPercepcionesList = [];
+    const netBase = Math.max(0, subtotal - totalDiscount);
+
+    if (isArgentina) {
+      let percs = (user && user.percepciones) ? user.percepciones : null;
+      if (typeof percs === 'string') {
+        try { percs = JSON.parse(percs); } catch (_) { percs = null; }
+      }
+      if (!percs && req.body.percepciones_applied && Array.isArray(req.body.percepciones_applied) && req.body.percepciones_applied.length > 0) {
+        appliedPercepcionesList.push(...req.body.percepciones_applied);
+        totalPercepciones = appliedPercepcionesList.reduce((acc, p) => acc + (parseFloat(p.amount) || 0), 0);
+      } else if (percs) {
+        const labels = {
+          caba: 'CABA',
+          bsas: 'Bs. As. (ARBA)',
+          salta: 'Salta',
+          misiones: 'Misiones',
+          tucuman: 'Tucumán'
+        };
+        for (const [key, p] of Object.entries(percs)) {
+          if (p && p.enabled) {
+            const alicuota = parseFloat(p.alicuota) || 0;
+            if (alicuota > 0) {
+              const coef = (key === 'tucuman' && p.coef && parseFloat(p.coef) > 0) ? parseFloat(p.coef) : 1;
+              const pAmount = parseFloat(((netBase * coef * alicuota) / 100).toFixed(2));
+              totalPercepciones += pAmount;
+              appliedPercepcionesList.push({
+                key,
+                label: labels[key] || key.toUpperCase(),
+                jurisdiccion: key.toUpperCase(),
+                alicuota,
+                coef: coef !== 1 ? coef : undefined,
+                vigencia: p.vigencia,
+                amount: pAmount
+              });
+            }
+          }
+        }
+      }
+    }
+
+    const totalFinal = netBase + totalPercepciones;
     const orderNumber = Math.floor(1000 + Math.random() * 9000);
     const effectivePo = po_number || `OC-${orderNumber}`;
     const effectiveTracking = `DACAS-LOG-AR-${orderNumber}`;
@@ -3492,11 +4155,16 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
     let orderToReturn = null;
 
     if (isPgConnected) {
+      try {
+        await pool.query('ALTER TABLE ecommerce_orders ADD COLUMN IF NOT EXISTS percepciones_total NUMERIC DEFAULT 0;');
+        await pool.query('ALTER TABLE ecommerce_orders ADD COLUMN IF NOT EXISTS percepciones_applied JSONB;');
+      } catch (_) {}
+
       const orderRes = await pool.query(`
         INSERT INTO ecommerce_orders (
           user_id, country_id, total, tax_applied, shipping_applied, nationalization_applied, discount_applied, status
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *
-      `, [userId || 1, country_id || (user ? user.country_id : 1), totalFinal.toFixed(2), 0, 0, 0, totalDiscount.toFixed(2), 'procesando']);
+      `, [userId || 1, country_id || (user ? user.country_id : 1), totalFinal.toFixed(2), totalPercepciones.toFixed(2), 0, 0, totalDiscount.toFixed(2), 'procesando']);
 
       const newOrder = orderRes.rows[0];
 
@@ -3511,6 +4179,9 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
         ...newOrder,
         coupon_code: appliedCoupon ? appliedCoupon.code : null,
         coupon_discount: couponDiscountAmount.toFixed(2),
+        percepciones_total: totalPercepciones.toFixed(2),
+        percepciones_applied: appliedPercepcionesList,
+        net_subtotal: netBase.toFixed(2),
         payment_method: payment_method || 'Cuenta Corriente Corporativa',
         shipping_method: shipping_method || 'Envío a Domicilio / Planta',
         shipping_address: shipping_address || (user ? user.direccion_entrega : 'Dirección registrada'),
@@ -3525,13 +4196,16 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
       const newOrder = {
         id: inMem.nextIds.orders++,
         user_id: userId,
-        country_id: country_id || (user ? user.country_id : 1),
+        country_id: (user && user.country_id) ? user.country_id : (country_id ? (resolveCountry(country_id)?.id || 2) : 2),
         total: totalFinal.toFixed(2),
         subtotal: subtotal.toFixed(2),
+        net_subtotal: netBase.toFixed(2),
         discount_applied: totalDiscount.toFixed(2),
+        percepciones_total: totalPercepciones.toFixed(2),
+        percepciones_applied: appliedPercepcionesList,
         coupon_code: appliedCoupon ? appliedCoupon.code : null,
         coupon_discount: couponDiscountAmount.toFixed(2),
-        tax_applied: '0.00',
+        tax_applied: totalPercepciones.toFixed(2),
         shipping_applied: '0.00',
         nationalization_applied: '0.00',
         status: 'procesando',
@@ -3561,6 +4235,49 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
         ...newOrder,
         items: orderItems
       };
+    }
+
+    // ── DESCONTAR STOCK DE CADA PRODUCTO VENDIDO ──
+    const orderCountryId = (user && user.country_id) ? user.country_id : (country_id ? (resolveCountry(country_id)?.id || 2) : 2);
+    for (let oi of orderItems) {
+      if (isPgConnected) {
+        await pool.query('UPDATE ecommerce_products SET stock = GREATEST(0, stock - $1) WHERE id = $2', [oi.quantity, oi.product_id]);
+        if (orderCountryId) {
+          await pool.query('UPDATE ecommerce_product_stock SET stock = GREATEST(0, stock - $1) WHERE product_id = $2 AND country_id = $3', [oi.quantity, oi.product_id, orderCountryId]);
+        }
+      } else {
+        const prodToUpdate = inMem.products.find(p => p.id === oi.product_id);
+        if (prodToUpdate) {
+          if (prodToUpdate.stock_type !== 'infinite') {
+            const curStock = parseInt(prodToUpdate.stock, 10) || 0;
+            prodToUpdate.stock = Math.max(0, curStock - oi.quantity);
+          }
+        }
+        if (orderCountryId) {
+          const cStock = inMem.product_stock.find(s => s.product_id === oi.product_id && s.country_id === orderCountryId);
+          if (cStock) {
+            cStock.stock = Math.max(0, (parseInt(cStock.stock, 10) || 0) - oi.quantity);
+          }
+        }
+        // Sincronizar automáticamente con ERP
+        try {
+          if (prodToUpdate) {
+            erpDatabaseService.syncProductStockFromEcommerce({
+              productId: prodToUpdate.id,
+              sku: prodToUpdate.sku,
+              name: prodToUpdate.name,
+              stock: prodToUpdate.stock,
+              price: prodToUpdate.price,
+              category: prodToUpdate.category,
+              brand: prodToUpdate.brand,
+              countryCode: 'AR'
+            });
+          }
+        } catch (_) {}
+      }
+    }
+    if (!isPgConnected) {
+      saveProductsToFile();
     }
 
     registrarLog({
@@ -4077,6 +4794,10 @@ router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, asyn
       const sku = String(item.sku || item.SKU || item.codigo || item.Código || '').trim();
       const description = String(item.description || item.descripcion || item.Descripción || '').trim();
       const image_url = String(item.image_url || item.imagen || item.Imagen || item.foto || '').trim();
+      const weight = item.weight !== undefined ? String(item.weight).replace(',', '.').replace(/[^0-9.]/g, '').trim() : (item.peso !== undefined ? String(item.peso).replace(',', '.').replace(/[^0-9.]/g, '').trim() : '');
+      const depth = item.depth !== undefined ? String(item.depth).replace(',', '.').replace(/[^0-9.]/g, '').trim() : (item.largo !== undefined ? String(item.largo).replace(',', '.').replace(/[^0-9.]/g, '').trim() : (item.profundidad !== undefined ? String(item.profundidad).replace(',', '.').replace(/[^0-9.]/g, '').trim() : ''));
+      const width = item.width !== undefined ? String(item.width).replace(',', '.').replace(/[^0-9.]/g, '').trim() : (item.ancho !== undefined ? String(item.ancho).replace(',', '.').replace(/[^0-9.]/g, '').trim() : '');
+      const height = item.height !== undefined ? String(item.height).replace(',', '.').replace(/[^0-9.]/g, '').trim() : (item.altura !== undefined ? String(item.altura).replace(',', '.').replace(/[^0-9.]/g, '').trim() : (item.alto !== undefined ? String(item.alto).replace(',', '.').replace(/[^0-9.]/g, '').trim() : ''));
 
       if (isPgConnected) {
         let existing = null;
@@ -4092,16 +4813,17 @@ router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, asyn
         if (existing && mode === 'upsert') {
           await pool.query(
             `UPDATE ecommerce_products 
-             SET name = $1, brand = $2, category = $3, sku = $4, description = $5, price = $6, promotional_price = $7, stock = $8, image_url = COALESCE(NULLIF($9, ''), image_url) 
-             WHERE id = $10`,
-            [name, brand, category, sku, description, price, promotional_price, stock, image_url, existing.id]
+             SET name = $1, brand = $2, category = $3, sku = $4, description = $5, price = $6, promotional_price = $7, stock = $8, image_url = COALESCE(NULLIF($9, ''), image_url),
+                 weight = COALESCE(NULLIF($10, ''), weight), depth = COALESCE(NULLIF($11, ''), depth), width = COALESCE(NULLIF($12, ''), width), height = COALESCE(NULLIF($13, ''), height)
+             WHERE id = $14`,
+            [name, brand, category, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height, existing.id]
           );
           updatedCount++;
         } else {
           await pool.query(
-            `INSERT INTO ecommerce_products (name, brand, category, sku, description, price, promotional_price, stock, image_url) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)`,
-            [name, brand, category, sku, description, price, promotional_price, stock, image_url]
+            `INSERT INTO ecommerce_products (name, brand, category, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
+            [name, brand, category, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height]
           );
           createdCount++;
         }
@@ -4124,6 +4846,10 @@ router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, asyn
           existing.price = price;
           existing.promotional_price = promotional_price;
           existing.stock = stock;
+          if (weight !== '') existing.weight = weight;
+          if (depth !== '') existing.depth = depth;
+          if (width !== '') existing.width = width;
+          if (height !== '') existing.height = height;
           if (image_url) {
             existing.image_url = image_url;
             if (!existing.images || existing.images.length === 0) existing.images = [image_url];
@@ -4142,6 +4868,10 @@ router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, asyn
             price,
             promotional_price,
             stock,
+            weight: weight || '',
+            depth: depth || '',
+            width: width || '',
+            height: height || '',
             image_url: image_url || defaultImg,
             images: image_url ? [image_url] : [defaultImg],
             created_at: new Date().toISOString()
@@ -4162,6 +4892,10 @@ router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, asyn
           });
         } catch (_) {}
       }
+    }
+
+    if (!isPgConnected) {
+      saveProductsToFile();
     }
 
     res.json({
@@ -4242,16 +4976,24 @@ router.delete('/admin/products/:id', authenticateToken, requireAdmin, async (req
   }
 });
 
-router.get('/admin/orders', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/admin/orders', optionalAuthToken, async (req, res) => {
   try {
+    const { country, country_id } = req.query;
     const result = await pool.query(`
-      SELECT o.*, u.name as user_name, u.email as user_email, c.name as country_name 
+      SELECT o.*, u.name as user_name, u.email as user_email, c.name as country_name, c.code as country_code 
       FROM ecommerce_orders o 
       LEFT JOIN ecommerce_users u ON o.user_id = u.id 
       LEFT JOIN ecommerce_countries c ON o.country_id = c.id
       ORDER BY o.created_at DESC
     `);
-    res.json(result.rows);
+    let orders = result.rows || [];
+    if (country || country_id) {
+      const target = resolveCountry(country || country_id);
+      if (target) {
+        orders = orders.filter(o => o.country_id === target.id || (o.country_name && o.country_name.toLowerCase().includes(target.name.toLowerCase())));
+      }
+    }
+    res.json(orders);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -4369,19 +5111,28 @@ router.post('/admin/products/:id/stock', authenticateToken, requireAdmin, async 
 });
 
 // Admin Users (Customers) - Sanitized against password_hash exposure
-router.get('/admin/users', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/admin/users', optionalAuthToken, async (req, res) => {
   try {
+    const { country, country_id } = req.query;
     const result = await pool.query(`
-      SELECT u.*, c.name as country_name
+      SELECT u.*, c.name as country_name, c.code as country_code
       FROM ecommerce_users u
       LEFT JOIN ecommerce_countries c ON u.country_id = c.id
       ORDER BY u.created_at DESC
     `);
-    const users = (result.rows || []).map(u => {
+    let users = (result.rows || []).map(u => {
       const sanitized = { ...u };
       delete sanitized.password_hash;
       return sanitized;
     });
+
+    if (country || country_id) {
+      const target = resolveCountry(country || country_id);
+      if (target) {
+        users = users.filter(u => u.country_id === target.id || (u.country_name && u.country_name.toLowerCase().includes(target.name.toLowerCase())));
+      }
+    }
+
     res.json(users);
   } catch (error) {
     res.status(500).json({ error: error.message });
@@ -4415,6 +5166,23 @@ router.post('/admin/users', authenticateToken, requireAdmin, async (req, res) =>
     ];
     
     const result = await pool.query(query, values);
+    const createdUser = result.rows[0];
+    if (createdUser) {
+      const idx = inMem.users.findIndex(u => u.id === createdUser.id || u.email === data.email);
+      if (idx !== -1) {
+        inMem.users[idx].iibb_jurisdiccion = data.iibb_jurisdiccion || '901 - Capital Federal';
+        inMem.users[idx].iibb_tipo = data.iibb_tipo || 'C.M.';
+        inMem.users[idx].iibb_numero = data.iibb_numero || data.numero_nit || '';
+        inMem.users[idx].iibb_codigo_aceptacion = !!data.iibb_codigo_aceptacion;
+        inMem.users[idx].percepciones = data.percepciones || {
+          caba: { enabled: true, alicuota: 1.5, vigencia: '2026-10-01' },
+          bsas: { enabled: false, alicuota: 0.0, vigencia: '2026-10-01' },
+          salta: { enabled: false, alicuota: 0.0, vigencia: '2019-08-01' },
+          misiones: { enabled: false, alicuota: 0.0, vigencia: '2023-05-01' },
+          tucuman: { enabled: false, alicuota: 0.0, coef: 0.0, vigencia: '2025-06-01' }
+        };
+      }
+    }
     res.status(201).json(result.rows[0]);
   } catch (error) {
     if (error.code === '23505') return res.status(400).json({ error: 'Email already exists' });
@@ -4438,6 +5206,21 @@ router.get('/admin/users/:id', authenticateToken, requireAdmin, async (req, res)
     
     const userClean = { ...userResult.rows[0] };
     delete userClean.password_hash;
+
+    // Asegurar estructura de IIBB y percepciones para clientes de Argentina
+    if ((userClean.country_id === 2 || userClean.country_name === 'Argentina' || !userClean.country_id) && !userClean.percepciones) {
+      userClean.iibb_jurisdiccion = userClean.iibb_jurisdiccion || '901 - Capital Federal';
+      userClean.iibb_tipo = userClean.iibb_tipo || 'C.M.';
+      userClean.iibb_numero = userClean.iibb_numero || userClean.numero_nit || '9017223280';
+      userClean.iibb_codigo_aceptacion = userClean.iibb_codigo_aceptacion !== undefined ? userClean.iibb_codigo_aceptacion : true;
+      userClean.percepciones = {
+        caba: { enabled: true, alicuota: 1.5, vigencia: '2026-10-01' },
+        bsas: { enabled: false, alicuota: 0.0, vigencia: '2026-10-01' },
+        salta: { enabled: false, alicuota: 0.0, vigencia: '2019-08-01' },
+        misiones: { enabled: false, alicuota: 0.0, vigencia: '2023-05-01' },
+        tucuman: { enabled: false, alicuota: 0.0, coef: 0.0, vigencia: '2025-06-01' }
+      };
+    }
 
     // Buscar todos los usuarios asociados a la misma empresa / razón social o CUIT
     const companyName = userClean.razon_social || userClean.company || '';
@@ -4502,6 +5285,17 @@ router.put('/admin/users/:id', authenticateToken, requireAdmin, async (req, res)
     }
 
     const result = await pool.query(query, values);
+
+    // Actualizar campos de percepciones IIBB en memoria y en resultado
+    const idx = inMem.users.findIndex(u => u.id === parseInt(id));
+    if (idx !== -1) {
+      if (data.iibb_jurisdiccion !== undefined) inMem.users[idx].iibb_jurisdiccion = data.iibb_jurisdiccion;
+      if (data.iibb_tipo !== undefined) inMem.users[idx].iibb_tipo = data.iibb_tipo;
+      if (data.iibb_numero !== undefined) inMem.users[idx].iibb_numero = data.iibb_numero;
+      if (data.iibb_codigo_aceptacion !== undefined) inMem.users[idx].iibb_codigo_aceptacion = data.iibb_codigo_aceptacion;
+      if (data.percepciones !== undefined) inMem.users[idx].percepciones = data.percepciones;
+    }
+
     registrarLog({
       origen: 'ecommerce',
       tipo: 'INFO',
@@ -4664,9 +5458,14 @@ router.post('/settings/visual/reset', authenticateToken, requireAdmin, async (re
   }
 });
 
-// ── Checkout Methods (Shipping & Payment) Settings API ──
+// ── Checkout Methods (Shipping & Payment) Settings API per Country ──
 router.get('/settings/checkout-methods', async (req, res) => {
   try {
+    const countryParam = req.query.country || req.query.country_code || req.query.country_id || 'AR';
+    const targetCountry = resolveCountry(countryParam);
+    const countryCode = targetCountry ? targetCountry.code.toUpperCase() : 'AR';
+    const countryMethods = getCheckoutMethodsForCountry(countryCode);
+
     if (isPgConnected) {
       await pool.query(`
         CREATE TABLE IF NOT EXISTS ecommerce_checkout_settings (
@@ -4677,13 +5476,27 @@ router.get('/settings/checkout-methods', async (req, res) => {
       `);
       const row = await pool.query('SELECT config FROM ecommerce_checkout_settings WHERE id = 1');
       if (row.rows.length > 0 && row.rows[0].config) {
-        return res.json(row.rows[0].config);
+        const stored = row.rows[0].config;
+        if (stored[countryCode]) {
+          return res.json({
+            ...stored[countryCode],
+            active_country: { id: targetCountry.id, code: targetCountry.code, name: targetCountry.name }
+          });
+        }
       }
     }
-    return res.json(inMem.checkoutMethods || DEFAULT_CHECKOUT_METHODS);
+
+    return res.json({
+      ...countryMethods,
+      active_country: {
+        id: targetCountry.id,
+        code: targetCountry.code,
+        name: targetCountry.name
+      }
+    });
   } catch (error) {
     console.error('Error fetching checkout methods settings:', error);
-    return res.json(inMem.checkoutMethods || DEFAULT_CHECKOUT_METHODS);
+    return res.json(getCheckoutMethodsForCountry('AR'));
   }
 });
 
@@ -4694,7 +5507,15 @@ router.put('/settings/checkout-methods', optionalAuthToken, async (req, res) => 
       return res.status(400).json({ error: 'Configuración de métodos inválida' });
     }
 
-    inMem.checkoutMethods = { ...DEFAULT_CHECKOUT_METHODS, ...updated };
+    const countryParam = req.query.country || req.query.country_code || req.body.country || 'AR';
+    const targetCountry = resolveCountry(countryParam);
+    const countryCode = targetCountry ? targetCountry.code.toUpperCase() : 'AR';
+
+    if (!COUNTRY_CHECKOUT_METHODS[countryCode]) {
+      COUNTRY_CHECKOUT_METHODS[countryCode] = JSON.parse(JSON.stringify(DEFAULT_CHECKOUT_METHODS));
+    }
+    COUNTRY_CHECKOUT_METHODS[countryCode] = { ...COUNTRY_CHECKOUT_METHODS[countryCode], ...updated };
+    inMem.checkoutMethods = COUNTRY_CHECKOUT_METHODS[countryCode];
 
     if (isPgConnected) {
       await pool.query(`
@@ -4708,13 +5529,14 @@ router.put('/settings/checkout-methods', optionalAuthToken, async (req, res) => 
         INSERT INTO ecommerce_checkout_settings (id, config, updated_at)
         VALUES (1, $1, CURRENT_TIMESTAMP)
         ON CONFLICT (id) DO UPDATE SET config = $1, updated_at = CURRENT_TIMESTAMP
-      `, [JSON.stringify(inMem.checkoutMethods)]);
+      `, [JSON.stringify(COUNTRY_CHECKOUT_METHODS)]);
     }
 
     res.json({
       success: true,
-      message: 'Métodos de envío y formas de pago guardados exitosamente',
-      config: inMem.checkoutMethods
+      message: `Métodos de envío y formas de pago para ${targetCountry ? targetCountry.name : countryCode} guardados exitosamente`,
+      country: countryCode,
+      config: COUNTRY_CHECKOUT_METHODS[countryCode]
     });
   } catch (error) {
     console.error('Error updating checkout methods:', error);
@@ -4724,20 +5546,26 @@ router.put('/settings/checkout-methods', optionalAuthToken, async (req, res) => 
 
 router.post('/settings/checkout-methods/reset', optionalAuthToken, async (req, res) => {
   try {
-    inMem.checkoutMethods = JSON.parse(JSON.stringify(DEFAULT_CHECKOUT_METHODS));
+    const countryParam = req.query.country || req.query.country_code || 'AR';
+    const targetCountry = resolveCountry(countryParam);
+    const countryCode = targetCountry ? targetCountry.code.toUpperCase() : 'AR';
+
+    COUNTRY_CHECKOUT_METHODS[countryCode] = JSON.parse(JSON.stringify(DEFAULT_CHECKOUT_METHODS));
+    inMem.checkoutMethods = COUNTRY_CHECKOUT_METHODS[countryCode];
 
     if (isPgConnected) {
       await pool.query(`
         INSERT INTO ecommerce_checkout_settings (id, config, updated_at)
         VALUES (1, $1, CURRENT_TIMESTAMP)
         ON CONFLICT (id) DO UPDATE SET config = $1, updated_at = CURRENT_TIMESTAMP
-      `, [JSON.stringify(DEFAULT_CHECKOUT_METHODS)]);
+      `, [JSON.stringify(COUNTRY_CHECKOUT_METHODS)]);
     }
 
     res.json({
       success: true,
-      message: 'Métodos de envío y pago restablecidos a los valores por defecto',
-      config: inMem.checkoutMethods
+      message: `Métodos de envío y pago para ${targetCountry ? targetCountry.name : countryCode} restablecidos`,
+      country: countryCode,
+      config: COUNTRY_CHECKOUT_METHODS[countryCode]
     });
   } catch (error) {
     res.status(500).json({ error: error.message });
