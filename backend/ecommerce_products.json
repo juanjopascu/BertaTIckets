@@ -28,7 +28,13 @@
     "discount_percent": null,
     "applied_rule": null,
     "is_locked": true,
-    "secondary_images": []
+    "secondary_images": [],
+    "highlights": "24 Puertos Gigabit Ethernet 10/100/1000 Mbps\nSalida PoE+ 802.3af/at y PoE pasivo de 24V con detección automática\n4 Puertos 10G SFP+ para enlaces ascendentes de fibra óptica\nFuente de poder redundante dual integrada\nSistema operativo dual: RouterOS o SwitchOS",
+    "warranty": "12 Meses con RMA y diagnóstico técnico DACAS",
+    "datasheet_url": "https://i.mt.lv/cdn/product_files/CRS328-24P-4SplusRM_180315.pdf",
+    "condition": "Nuevo Sellado",
+    "related_ids": [3],
+    "related_skus": ["R4W02A-AP22"]
   },
   {
     "id": 3,
@@ -59,7 +65,13 @@
     "is_locked": true,
     "secondary_images": [],
     "is_featured": true,
-    "badge": "DESTACADO"
+    "badge": "DESTACADO",
+    "highlights": "Tecnología Wi-Fi 6 (802.11ax) MU-MIMO 2x2:2\nVelocidad combinada de hasta 1.774 Gbps\nGestión centralizada en la nube mediante Aruba Instant On App o portal web\nMalla Wi-Fi (Smart Mesh) integrada sin cableado adicional\nAlimentación PoE 802.3af o fuente externa de 12V",
+    "warranty": "24 Meses con soporte oficial y garantía de hardware",
+    "datasheet_url": "https://www.arubainstanton.com/files/DS_AIO_AP22_es.pdf",
+    "condition": "Nuevo Sellado",
+    "related_ids": [2],
+    "related_skus": ["CRS328-24P-4S"]
   },
   {
     "id": 4,

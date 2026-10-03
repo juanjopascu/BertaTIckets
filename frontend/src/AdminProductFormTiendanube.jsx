@@ -11,6 +11,7 @@ const OFFICIAL_CATEGORIES = [
 
 export default function AdminProductFormTiendanube({
   product,
+  allProducts = [],
   onSave,
   onCancel,
   apiBaseUrl,
@@ -26,6 +27,7 @@ export default function AdminProductFormTiendanube({
   // 1. Basic Info
   const [name, setName] = useState(product?.name || '');
   const [descriptionHtml, setDescriptionHtml] = useState(product?.description || '');
+  const [highlights, setHighlights] = useState(product?.highlights || '');
   
   // 2. Media
   const [images, setImages] = useState(() => {
@@ -59,6 +61,24 @@ export default function AdminProductFormTiendanube({
   const [barcode, setBarcode] = useState(product?.barcode || '');
   const [brand, setBrand] = useState(product?.brand || '');
   const [isFeatured, setIsFeatured] = useState(Boolean(product?.is_featured || product?.isFeatured || product?.featured || product?.badge === 'DESTACADO'));
+
+  // 5.5 Garantía, Ficha Técnica y Condición
+  const [warranty, setWarranty] = useState(product?.warranty || '12 Meses con RMA y Soporte DACAS');
+  const [datasheetUrl, setDatasheetUrl] = useState(product?.datasheet_url || product?.datasheetUrl || '');
+  const [condition, setCondition] = useState(product?.condition || 'Nuevo Sellado');
+
+  // 5.6 Productos Relacionados
+  const [relatedIds, setRelatedIds] = useState(() => {
+    if (Array.isArray(product?.related_ids) && product.related_ids.length > 0) {
+      return product.related_ids;
+    }
+    if (Array.isArray(product?.related_skus) && product.related_skus.length > 0 && Array.isArray(allProducts)) {
+      return allProducts.filter(p => product.related_skus.includes(p.sku)).map(p => p.id);
+    }
+    return [];
+  });
+  const [relatedSearch, setRelatedSearch] = useState('');
+  const [showRelatedDropdown, setShowRelatedDropdown] = useState(false);
 
   // 6. Weight and Dimensions
   const [weight, setWeight] = useState(product?.weight || '');
@@ -418,6 +438,12 @@ export default function AdminProductFormTiendanube({
       gender: gender,
       categories: categories.length > 0 ? categories : ['General'],
       category: categories[0] || 'General',
+      highlights: highlights.trim(),
+      warranty: warranty.trim(),
+      datasheet_url: datasheetUrl.trim(),
+      condition: condition.trim(),
+      related_ids: relatedIds,
+      related_skus: allProducts.filter(p => relatedIds.includes(p.id)).map(p => p.sku).filter(Boolean),
       variants,
       image_url: images.length > 0 ? images[0] : '',
       secondary_images: images.slice(1),
@@ -752,6 +778,35 @@ export default function AdminProductFormTiendanube({
               <span>p</span>
             </div>
           </div>
+        </div>
+
+        {/* ══════════════════════════════════════════════════ */}
+        {/* CARD 1.5: CARACTERÍSTICAS DESTACADAS (BULLET POINTS) */}
+        {/* ══════════════════════════════════════════════════ */}
+        <div style={cardStyle}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <h2 style={{ ...cardTitleStyle, margin: 0 }}>Características destacadas (Bullet Points)</h2>
+            <span style={{ fontSize: '0.8rem', color: '#64748B' }}>Hoja de producto</span>
+          </div>
+          <p style={{ fontSize: '0.82rem', color: '#64748b', marginTop: 0, marginBottom: '14px' }}>
+            Ingresa los puntos clave de ingeniería o venta técnica (uno por línea o separados por |). Se mostrarán en la caja <strong>"Características Destacadas"</strong> con tildes de verificación en la tienda. Si lo dejas vacío, no se inventará ningún texto ficticio.
+          </p>
+          <textarea
+            value={highlights}
+            onChange={(e) => setHighlights(e.target.value)}
+            placeholder={`Ejemplo:\nTecnología Wi-Fi 6 MU-MIMO 2x2:2 de alta densidad\nGestión centralizada en la nube sin costo de licencias\nAlimentación PoE 802.3af o fuente de 12V\nSoporta hasta 75 clientes concurrentes`}
+            rows={5}
+            style={{
+              width: '100%',
+              padding: '12px 14px',
+              borderRadius: '8px',
+              border: '1px solid #d1d5db',
+              fontSize: '0.9rem',
+              lineHeight: 1.5,
+              fontFamily: 'inherit',
+              boxSizing: 'border-box'
+            }}
+          />
         </div>
 
         {/* ══════════════════════════════════════════════════ */}
@@ -1206,6 +1261,57 @@ export default function AdminProductFormTiendanube({
         </div>
 
         {/* ══════════════════════════════════════════════════ */}
+        {/* CARD 6.6: GARANTÍA, FICHA TÉCNICA Y CONDICIÓN */}
+        {/* ══════════════════════════════════════════════════ */}
+        <div style={cardStyle}>
+          <h2 style={cardTitleStyle}>Garantía oficial, Ficha Técnica y Condición</h2>
+          <p style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '-6px', marginBottom: '16px' }}>
+            Configura los datos oficiales de posventa, estado físico y documentación descargable para la hoja de producto.
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '16px' }}>
+            <div>
+              <label style={labelStyle}>Garantía Oficial DACAS</label>
+              <input
+                type="text"
+                value={warranty}
+                onChange={(e) => setWarranty(e.target.value)}
+                placeholder="Ej: 12 Meses con RMA y Soporte DACAS"
+                style={inputStyle}
+              />
+            </div>
+
+            <div>
+              <label style={labelStyle}>Condición del Equipo</label>
+              <select
+                value={condition}
+                onChange={(e) => setCondition(e.target.value)}
+                style={inputStyle}
+              >
+                <option value="Nuevo Sellado">Nuevo Sellado</option>
+                <option value="Certificado de Fábrica">Certificado de Fábrica</option>
+                <option value="Reacondicionado Certificado">Reacondicionado Certificado</option>
+                <option value="Open Box / Exhibición">Open Box / Exhibición</option>
+              </select>
+            </div>
+
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={labelStyle}>Enlace a Ficha Técnica / Datasheet Oficial (PDF o URL externa)</label>
+              <input
+                type="url"
+                value={datasheetUrl}
+                onChange={(e) => setDatasheetUrl(e.target.value)}
+                placeholder="https://fabricante.com/datasheets/modelo-especificaciones.pdf"
+                style={inputStyle}
+              />
+              <span style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '4px', display: 'block' }}>
+                Si colocas una URL, los clientes podrán hacer clic en <strong>"↓ Descargar Ficha Técnica Oficial (PDF)"</strong> en la pestaña de descargas del producto.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* ══════════════════════════════════════════════════ */}
         {/* CARD 7: PESO Y DIMENSIONES */}
         {/* ══════════════════════════════════════════════════ */}
         <div style={cardStyle}>
@@ -1551,6 +1657,231 @@ export default function AdminProductFormTiendanube({
               >
                 <BrandingVectorIcon name="x" size={13} color="#4b5563" />
               </button>
+            </div>
+          )}
+        </div>
+
+        {/* ══════════════════════════════════════════════════ */}
+        {/* CARD 11: PRODUCTOS RELACIONADOS (SELECCIÓN MANUAL) */}
+        {/* ══════════════════════════════════════════════════ */}
+        <div style={cardStyle}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <h2 style={{ ...cardTitleStyle, margin: 0 }}>Productos Relacionados (Cross-selling y Accesorios)</h2>
+            <span style={{
+              background: '#ECFDF5',
+              color: '#059669',
+              border: '1px solid #A7F3D0',
+              fontSize: '0.75rem',
+              fontWeight: '700',
+              padding: '2px 8px',
+              borderRadius: '999px'
+            }}>
+              {relatedIds.length} seleccionados
+            </span>
+          </div>
+          <p style={{ fontSize: '0.82rem', color: '#64748b', marginTop: 0, marginBottom: '16px' }}>
+            Elige los productos específicos que deben mostrarse en el carrusel <strong>"Productos Relacionados"</strong> en la hoja de este producto (por ejemplo: cables, switches PoE, transceivers SFP+, soportes, fuentes o licencias compatibles).
+          </p>
+
+          {/* Search to add related product */}
+          <div style={{ position: 'relative', marginBottom: '16px' }}>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <input
+                type="text"
+                value={relatedSearch}
+                onChange={(e) => {
+                  setRelatedSearch(e.target.value);
+                  setShowRelatedDropdown(true);
+                }}
+                onFocus={() => setShowRelatedDropdown(true)}
+                placeholder="Buscar por Nombre, SKU o Marca para vincular..."
+                style={{
+                  ...inputStyle,
+                  flex: 1
+                }}
+              />
+              {relatedSearch && (
+                <button
+                  type="button"
+                  onClick={() => { setRelatedSearch(''); setShowRelatedDropdown(false); }}
+                  style={{
+                    background: '#f1f5f9',
+                    border: '1px solid #cbd5e1',
+                    borderRadius: '8px',
+                    padding: '0 12px',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    color: '#64748b'
+                  }}
+                >
+                  Limpiar
+                </button>
+              )}
+            </div>
+
+            {/* Dropdown list of catalog matches */}
+            {showRelatedDropdown && relatedSearch.trim().length > 0 && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                left: 0,
+                right: 0,
+                zIndex: 100,
+                background: '#ffffff',
+                border: '1.5px solid #0fa4de',
+                borderRadius: '10px',
+                boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
+                maxHeight: '260px',
+                overflowY: 'auto',
+                marginTop: '4px'
+              }}>
+                {allProducts
+                  .filter(p => {
+                    if (product && p.id === product.id) return false;
+                    if (relatedIds.includes(p.id)) return false;
+                    const q = relatedSearch.toLowerCase();
+                    return (
+                      (p.name && p.name.toLowerCase().includes(q)) ||
+                      (p.sku && p.sku.toLowerCase().includes(q)) ||
+                      (p.brand && p.brand.toLowerCase().includes(q))
+                    );
+                  })
+                  .slice(0, 15)
+                  .map(p => (
+                    <div
+                      key={p.id}
+                      onClick={() => {
+                        setRelatedIds(prev => [...prev, p.id]);
+                        setRelatedSearch('');
+                        setShowRelatedDropdown(false);
+                      }}
+                      style={{
+                        padding: '10px 14px',
+                        borderBottom: '1px solid #f1f5f9',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        cursor: 'pointer',
+                        transition: 'background 0.15s'
+                      }}
+                      onMouseEnter={(e) => e.currentTarget.style.background = '#f0f9ff'}
+                      onMouseLeave={(e) => e.currentTarget.style.background = '#ffffff'}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <img
+                          src={p.image_url || 'https://placehold.co/40x40/f1f5f9/94a3b8?text=Foto'}
+                          alt={p.name}
+                          style={{ width: '36px', height: '36px', objectFit: 'contain', borderRadius: '6px', border: '1px solid #e2e8f0', background: '#fff' }}
+                        />
+                        <div>
+                          <div style={{ fontSize: '12.5px', fontWeight: '700', color: '#0f172a' }}>{p.name}</div>
+                          <div style={{ fontSize: '11px', color: '#64748b' }}>
+                            <span style={{ fontFamily: 'monospace', fontWeight: '700', color: '#0284c7' }}>{p.sku || 'S/SKU'}</span> • {p.brand || 'DACAS'}
+                          </div>
+                        </div>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '12px', fontWeight: '800', color: '#071524' }}>${Number(p.price || 0).toFixed(2)}</span>
+                        <span style={{ background: '#0fa4de', color: '#fff', fontSize: '11px', fontWeight: '700', padding: '3px 8px', borderRadius: '6px' }}>
+                          + Agregar
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                {allProducts.filter(p => {
+                  if (product && p.id === product.id) return false;
+                  if (relatedIds.includes(p.id)) return false;
+                  const q = relatedSearch.toLowerCase();
+                  return (
+                    (p.name && p.name.toLowerCase().includes(q)) ||
+                    (p.sku && p.sku.toLowerCase().includes(q)) ||
+                    (p.brand && p.brand.toLowerCase().includes(q))
+                  );
+                }).length === 0 && (
+                  <div style={{ padding: '14px', textAlign: 'center', color: '#94a3b8', fontSize: '12px' }}>
+                    No se encontraron productos disponibles con ese criterio de búsqueda.
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Selected related products list */}
+          {relatedIds.length > 0 ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '10px' }}>
+              {relatedIds.map(rId => {
+                const rel = allProducts.find(p => p.id === rId);
+                if (!rel) {
+                  return (
+                    <div key={rId} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: '#f8fafc', borderRadius: '8px', border: '1px solid #e2e8f0', fontSize: '12px' }}>
+                      <span>ID #{rId} (no cargado en memoria)</span>
+                      <button
+                        type="button"
+                        onClick={() => setRelatedIds(prev => prev.filter(x => x !== rId))}
+                        style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontWeight: '700' }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                }
+                return (
+                  <div
+                    key={rel.id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '8px 12px',
+                      background: '#ffffff',
+                      borderRadius: '10px',
+                      border: '1.5px solid #e2e8f0',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.04)'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                      <img
+                        src={rel.image_url || 'https://placehold.co/40x40/f1f5f9/94a3b8?text=Foto'}
+                        alt={rel.name}
+                        style={{ width: '38px', height: '38px', objectFit: 'contain', borderRadius: '6px', border: '1px solid #e2e8f0', flexShrink: 0 }}
+                      />
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontSize: '12px', fontWeight: '700', color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={rel.name}>
+                          {rel.name}
+                        </div>
+                        <div style={{ fontSize: '10.5px', color: '#64748b' }}>
+                          <span style={{ fontFamily: 'monospace', fontWeight: '700', color: '#0284c7' }}>{rel.sku || 'S/SKU'}</span> • ${Number(rel.price || 0).toFixed(2)} USD
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setRelatedIds(prev => prev.filter(x => x !== rel.id))}
+                      title="Quitar de relacionados"
+                      style={{
+                        background: '#fee2e2',
+                        color: '#dc2626',
+                        border: 'none',
+                        borderRadius: '6px',
+                        width: '26px',
+                        height: '26px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        cursor: 'pointer',
+                        flexShrink: 0,
+                        marginLeft: '8px'
+                      }}
+                    >
+                      <BrandingVectorIcon name="x" size={13} color="#dc2626" />
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div style={{ padding: '16px', background: '#f8fafc', borderRadius: '10px', border: '1px dashed #cbd5e1', textAlign: 'center', color: '#64748b', fontSize: '12px' }}>
+              Ningún producto relacionado asignado. (Si no seleccionas ninguno, se sugerirán automáticamente productos de la misma categoría o marca).
             </div>
           )}
         </div>

@@ -90,6 +90,12 @@ CREATE TABLE IF NOT EXISTS ecommerce_products (
     height VARCHAR(50),
     image_url VARCHAR(255),
     secondary_images JSONB,
+    highlights TEXT,
+    warranty VARCHAR(150) DEFAULT '12 Meses con RMA y Soporte DACAS',
+    datasheet_url VARCHAR(255),
+    condition VARCHAR(100) DEFAULT 'Nuevo Sellado',
+    related_ids JSONB,
+    related_skus JSONB,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

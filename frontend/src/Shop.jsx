@@ -6049,9 +6049,26 @@ function ProductDetailPageView({
     return catKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
-  // Productos Relacionados: misma categoría o misma marca (excluyendo el actual)
+  // Productos Relacionados: Selección manual del administrador o fallback por categoría/marca
   const relatedProducts = useMemo(() => {
     if (!allProducts || allProducts.length === 0 || !product) return [];
+
+    // 1. Si el administrador seleccionó productos relacionados específicos para este equipo:
+    if (Array.isArray(product.related_ids) && product.related_ids.length > 0) {
+      const manualMatches = product.related_ids
+        .map(id => allProducts.find(p => p.id === id || String(p.id) === String(id)))
+        .filter(Boolean);
+      if (manualMatches.length > 0) return manualMatches;
+    }
+
+    if (Array.isArray(product.related_skus) && product.related_skus.length > 0) {
+      const skuMatches = product.related_skus
+        .map(s => allProducts.find(p => p.sku && p.sku.toLowerCase() === String(s).toLowerCase()))
+        .filter(Boolean);
+      if (skuMatches.length > 0) return skuMatches;
+    }
+
+    // 2. Fallback dinámico por misma categoría o marca
     const others = allProducts.filter(p => p.id !== product.id);
     const sameCat = others.filter(p => p.category && product.category && String(p.category).toLowerCase() === String(product.category).toLowerCase());
     const sameBrand = others.filter(p => p.brand && product.brand && String(p.brand).toLowerCase() === String(product.brand).toLowerCase());
@@ -6575,39 +6592,44 @@ function ProductDetailPageView({
               <span style={{ color: '#CBD5E1' }}>•</span>
               <span style={{ color: '#059669', fontWeight: '750' }}>✓ Certificado de fábrica</span>
               <span style={{ color: '#CBD5E1' }}>•</span>
-              <span>Condición: <strong>Nuevo Sellado</strong></span>
+              <span>Condición: <strong>{product.condition || 'Nuevo Sellado'}</strong></span>
             </div>
 
-            {/* Puntos Clave de Ingeniería / Bullet Points */}
-            <div style={{
-              background: '#F8FAFC',
-              borderRadius: '12px',
-              border: '1px solid #E2E8F0',
-              padding: '12px 16px',
-              marginBottom: '16px'
-            }}>
-              <div style={{ fontSize: '11.5px', fontWeight: '800', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '8px' }}>
-                Características Destacadas
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12.5px', color: '#334155', lineHeight: 1.45 }}>
-                <div style={{ display: 'flex', alignItems: 'start', gap: '8px' }}>
-                  <span style={{ color: '#0fa4de', fontWeight: 'bold' }}>✓</span>
-                  <span><strong>Audio OmniSound® 360°:</strong> Captura Full Duplex con cancelación acústica de eco y filtro de ruido.</span>
+            {/* Puntos Clave de Ingeniería / Bullet Points Configurados */}
+            {(() => {
+              let bulletList = [];
+              if (Array.isArray(product.highlights)) {
+                bulletList = product.highlights.filter(Boolean);
+              } else if (typeof product.highlights === 'string' && product.highlights.trim()) {
+                bulletList = product.highlights.split(/\r?\n|\|/).map(s => s.trim()).filter(Boolean);
+              } else if (Array.isArray(product.features)) {
+                bulletList = product.features.filter(Boolean);
+              }
+
+              if (bulletList.length === 0) return null;
+
+              return (
+                <div style={{
+                  background: '#F8FAFC',
+                  borderRadius: '12px',
+                  border: '1px solid #E2E8F0',
+                  padding: '12px 16px',
+                  marginBottom: '16px'
+                }}>
+                  <div style={{ fontSize: '11.5px', fontWeight: '800', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '8px' }}>
+                    Características Destacadas
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12.5px', color: '#334155', lineHeight: 1.45 }}>
+                    {bulletList.map((bullet, idx) => (
+                      <div key={idx} style={{ display: 'flex', alignItems: 'start', gap: '8px' }}>
+                        <span style={{ color: '#0fa4de', fontWeight: 'bold' }}>✓</span>
+                        <span>{bullet}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'start', gap: '8px' }}>
-                  <span style={{ color: '#0fa4de', fontWeight: 'bold' }}>✓</span>
-                  <span><strong>Conectividad Dual:</strong> Bluetooth con NFC instantáneo y puerto USB Plug & Play para PC/Mac.</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'start', gap: '8px' }}>
-                  <span style={{ color: '#0fa4de', fontWeight: 'bold' }}>✓</span>
-                  <span><strong>Salas Huddle & Móvil:</strong> Optimizado para reuniones de hasta 6 personas y trabajo híbrido.</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'start', gap: '8px' }}>
-                  <span style={{ color: '#0fa4de', fontWeight: 'bold' }}>✓</span>
-                  <span><strong>Compatibilidad Total:</strong> Certificado para Microsoft Teams, Zoom, Webex, Meet y Avaya Spaces.</span>
-                </div>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Tarjeta Comercial B2B de Precio */}
             <div style={{
@@ -6926,7 +6948,7 @@ function ProductDetailPageView({
         {activeTab === 'specs' && (
           <div>
             <div style={{ marginBottom: '16px', fontSize: '13px', color: '#64748B' }}>
-              Especificaciones oficiales provistas por el fabricante y verificadas por el laboratorio técnico de DACAS:
+              Especificaciones y parámetros técnicos oficiales provistos por el fabricante y registrados en el catálogo de DACAS:
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(310px, 1fr))', gap: '12px' }}>
               {[
@@ -6934,17 +6956,13 @@ function ProductDetailPageView({
                 { label: 'Marca / Fabricante', val: product.brand || 'DACAS Oficial' },
                 { label: 'Part Number / SKU', val: product.sku || 'N/A' },
                 { label: 'Categoría de Solución', val: getCategoryLabel(product.category) },
-                { label: 'Tecnología de Audio', val: 'OmniSound® Full Duplex 360° con supresión de eco' },
-                { label: 'Cobertura Acústica', val: 'Salas huddle de hasta 6 participantes / 30 m²' },
-                { label: 'Conectividad Inalámbrica', val: 'Bluetooth 4.0 con perfil A2DP y emparejamiento NFC' },
-                { label: 'Conectividad Cableada', val: 'Puerto USB Micro-B y jack de 3.5mm para auriculares' },
-                { label: 'Batería y Autonomía', val: 'Batería Li-Ion recargable (hasta 12h de conversación)' },
-                { label: 'Peso del Equipo', val: product.weight ? `${product.weight} kg` : '0.23 kg' },
-                { label: 'Dimensiones Físicas', val: (product.width && parseFloat(product.width) > 0) ? `${product.depth || 0} x ${product.width} x ${product.height || 0} cm` : '14.5 x 13.5 x 3.2 cm' },
-                { label: 'Plataformas Certificadas', val: 'Microsoft Teams, Zoom, Webex, Google Meet, Avaya Spaces' },
-                { label: 'Garantía Oficial', val: '12 meses con cobertura técnica y RMA local DACAS' },
-                { label: 'Disponibilidad Logística', val: product.stock > 0 ? `${product.stock} un. en stock local inmediato` : 'Bajo pedido con entrega prioritaria' }
-              ].map((row, idx) => (
+                product.barcode ? { label: 'Código de Barras / EAN', val: product.barcode } : null,
+                product.condition ? { label: 'Condición del Equipo', val: product.condition } : { label: 'Condición del Equipo', val: 'Nuevo Sellado' },
+                (product.weight && parseFloat(product.weight) > 0) ? { label: 'Peso del Equipo', val: `${product.weight} kg` } : null,
+                (product.width && parseFloat(product.width) > 0) ? { label: 'Dimensiones Físicas', val: `${product.depth || 0} × ${product.width || 0} × ${product.height || 0} cm` } : null,
+                { label: 'Garantía Oficial', val: product.warranty || '12 meses con cobertura técnica y RMA local DACAS' },
+                { label: 'Disponibilidad Logística', val: product.stock > 0 ? `${product.stock} un. en stock local (${activeCountryObj.name})` : 'Bajo pedido con entrega prioritaria' }
+              ].filter(Boolean).map((row, idx) => (
                 <div key={idx} style={{
                   padding: '12px 16px',
                   background: idx % 2 === 0 ? '#F8FAFC' : '#FFFFFF',
@@ -6965,72 +6983,91 @@ function ProductDetailPageView({
 
         {/* CONTENIDO PESTAÑA 3: Descargas & Datasheet */}
         {activeTab === 'downloads' && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '16px' }}>
-            {[
-              {
-                title: 'Ficha Técnica Oficial (Datasheet)',
-                desc: 'Especificaciones completas de hardware, diagramas de conexión y tablas de compatibilidad.',
-                format: 'PDF · 1.8 MB',
-                icon: 'file-text'
-              },
-              {
-                title: 'Guía de Inicio Rápido (Quick Start)',
-                desc: 'Manual de puesta en marcha rápida, configuración de Bluetooth/NFC y atajos táctiles.',
-                format: 'PDF · 850 KB',
-                icon: 'book-open'
-              },
-              {
-                title: 'Manual de Configuración de Audio UC',
-                desc: 'Optimización para Microsoft Teams, Zoom Rooms y salas de conferencias híbridas.',
-                format: 'PDF · 2.4 MB',
-                icon: 'settings'
-              }
-            ].map((doc, idx) => (
-              <div
-                key={idx}
-                style={{
-                  padding: '18px 20px',
-                  borderRadius: '14px',
-                  border: '1px solid #E2E8F0',
-                  background: '#F8FAFC',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  justifyContent: 'space-between',
-                  gap: '12px'
-                }}
-              >
-                <div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
-                    <span style={{ fontSize: '20px' }}>📄</span>
-                    <span style={{ fontSize: '14px', fontWeight: '800', color: '#071524' }}>{doc.title}</span>
+          <div>
+            {product.datasheet_url ? (
+              <div style={{
+                maxWidth: '680px',
+                padding: '22px 24px',
+                borderRadius: '14px',
+                border: '1.5px solid #BAE6FD',
+                background: 'linear-gradient(135deg, #F0F9FF 0%, #FFFFFF 100%)',
+                boxShadow: '0 4px 14px rgba(15,164,222,0.06)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '16px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                  <span style={{ fontSize: '32px' }}>📄</span>
+                  <div>
+                    <div style={{ fontSize: '15px', fontWeight: '850', color: '#071524' }}>
+                      Ficha Técnica Oficial (Datasheet)
+                    </div>
+                    <div style={{ fontSize: '12.5px', color: '#64748B', marginTop: '3px' }}>
+                      Especificaciones completas de hardware, diagramas y compatibilidad de {product.brand || 'DACAS'}.
+                    </div>
                   </div>
-                  <p style={{ margin: 0, fontSize: '12.5px', color: '#64748B', lineHeight: 1.5 }}>
-                    {doc.desc}
-                  </p>
                 </div>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '10px', borderTop: '1px solid #E2E8F0' }}>
-                  <span style={{ fontSize: '11px', fontWeight: '750', color: '#94A3B8' }}>{doc.format}</span>
-                  <a
-                    href="#descargar"
-                    onClick={(e) => { e.preventDefault(); alert(`Descarga iniciada: ${doc.title}`); }}
-                    style={{
-                      background: '#0fa4de',
-                      color: '#FFFFFF',
-                      padding: '5px 12px',
-                      borderRadius: '6px',
-                      fontSize: '11.5px',
-                      fontWeight: '750',
-                      textDecoration: 'none',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '4px'
-                    }}
-                  >
-                    <span>↓ Descargar</span>
-                  </a>
-                </div>
+                <a
+                  href={product.datasheet_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    background: '#0fa4de',
+                    color: '#FFFFFF',
+                    padding: '10px 18px',
+                    borderRadius: '8px',
+                    fontSize: '12.5px',
+                    fontWeight: '800',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 2px 6px rgba(15,164,222,0.25)'
+                  }}
+                >
+                  <span>↓ Descargar Ficha Técnica (PDF)</span>
+                  <span>↗</span>
+                </a>
               </div>
-            ))}
+            ) : (
+              <div style={{
+                maxWidth: '700px',
+                padding: '24px',
+                borderRadius: '14px',
+                border: '1px dashed #CBD5E1',
+                background: '#F8FAFC',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '28px', marginBottom: '8px' }}>📋</div>
+                <div style={{ fontSize: '14px', fontWeight: '800', color: '#0F172A', marginBottom: '4px' }}>
+                  Documentación Técnica y Datasheets Oficiales
+                </div>
+                <p style={{ margin: '0 0 14px', fontSize: '12.5px', color: '#64748B', lineHeight: 1.55 }}>
+                  La documentación técnica oficial y diagrama de arquitectura de este equipo (SKU: <strong>{product.sku || 'N/A'}</strong>) están disponibles a solicitud de nuestros canales y partners autorizados.
+                </p>
+                <a
+                  href={`https://wa.me/5491141103300?text=${encodeURIComponent(`Hola DACAS, requiero el datasheet técnico oficial para el equipo ${product.name} (SKU: ${product.sku || ''})`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    background: '#25D366',
+                    color: '#FFFFFF',
+                    padding: '8px 16px',
+                    borderRadius: '8px',
+                    fontSize: '12px',
+                    fontWeight: '750',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  <span>💬 Solicitar Datasheet por WhatsApp</span>
+                </a>
+              </div>
+            )}
           </div>
         )}
 

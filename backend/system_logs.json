@@ -1,5 +1,138 @@
 [
   {
+    "id": 291,
+    "timestamp": "2026-10-03T19:20:43.584Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Aruba Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22 (SKU: R4W02A-AP22, Cat: networking, USD $195.00).",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 3,
+      "productName": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
+      "sku": "R4W02A-AP22",
+      "brand": "Aruba",
+      "price": "195.00",
+      "category": "networking",
+      "timestamp": "2026-10-03T19:20:43.584Z"
+    }
+  },
+  {
+    "id": 290,
+    "timestamp": "2026-10-03T19:18:43.592Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"admin@dacas.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {
+      "emailIntentado": "admin@dacas.com"
+    }
+  },
+  {
+    "id": 289,
+    "timestamp": "2026-10-03T19:17:13.276Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"admin@dacas.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {
+      "emailIntentado": "admin@dacas.com"
+    }
+  },
+  {
+    "id": 288,
+    "timestamp": "2026-10-03T18:49:15.283Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Fortinet Firewall NGFW Fortinet FortiGate 60F - Stock Santiago (SKU: FG-60F-BDL-950-CL, Cat: security, USD $890.00).",
+    "usuario": {
+      "nombre": "Sebastián Valenzuela",
+      "email": "svalenzuela@andesdata.cl",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 101,
+      "productName": "Firewall NGFW Fortinet FortiGate 60F - Stock Santiago",
+      "sku": "FG-60F-BDL-950-CL",
+      "brand": "Fortinet",
+      "price": "890.00",
+      "category": "security",
+      "timestamp": "2026-10-03T18:49:15.280Z"
+    }
+  },
+  {
+    "id": 287,
+    "timestamp": "2026-10-03T18:43:49.546Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $195,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Sebastián Valenzuela",
+      "email": "svalenzuela@andesdata.cl",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791053029546",
+      "itemsCount": 1,
+      "total": 195,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Aruba Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22 ($195.00)",
+      "items": [
+        {
+          "id": 3,
+          "name": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
+          "brand": "Aruba",
+          "sku": "R4W02A-AP22",
+          "qty": 1,
+          "price": 195,
+          "subtotal": 195
+        }
+      ],
+      "timestamp": "2026-10-03T18:43:49.546Z"
+    }
+  },
+  {
+    "id": 286,
+    "timestamp": "2026-10-03T18:43:24.472Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "01354c3523ec7880e4193fc1472023fecd22d3dbea4f2a494b14216e5ffe5a96"
+    }
+  },
+  {
     "id": 285,
     "timestamp": "2026-10-03T00:28:21.790Z",
     "origen": "ecommerce",

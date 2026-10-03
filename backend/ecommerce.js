@@ -94,6 +94,12 @@ rawPool.connect()
         ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS height VARCHAR(50);
         ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS is_featured BOOLEAN DEFAULT FALSE;
         ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS badge VARCHAR(50);
+        ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS highlights TEXT;
+        ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS warranty VARCHAR(150);
+        ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS datasheet_url VARCHAR(255);
+        ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS condition VARCHAR(100) DEFAULT 'Nuevo Sellado';
+        ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS related_ids JSONB;
+        ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS related_skus JSONB;
       `);
     } catch (_) {}
     client.release();
@@ -5224,6 +5230,16 @@ router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, asyn
       const width = item.width !== undefined ? String(item.width).replace(',', '.').replace(/[^0-9.]/g, '').trim() : (item.ancho !== undefined ? String(item.ancho).replace(',', '.').replace(/[^0-9.]/g, '').trim() : '');
       const height = item.height !== undefined ? String(item.height).replace(',', '.').replace(/[^0-9.]/g, '').trim() : (item.altura !== undefined ? String(item.altura).replace(',', '.').replace(/[^0-9.]/g, '').trim() : (item.alto !== undefined ? String(item.alto).replace(',', '.').replace(/[^0-9.]/g, '').trim() : ''));
 
+      const highlights = String(item.highlights || item.caracteristicas_destacadas || item.Caracteristicas_Destacadas || item.puntos_clave || '').trim();
+      const warranty = String(item.warranty || item.garantia || item.Garantia || '12 Meses con RMA y Soporte DACAS').trim();
+      const datasheet_url = String(item.datasheet_url || item.ficha_tecnica_url || item.Ficha_Tecnica_URL || item.ficha_tecnica || item.Datasheet || '').trim();
+      const condition = String(item.condition || item.condicion || item.Condicion || 'Nuevo Sellado').trim();
+      
+      const rawRelated = item.related_skus || item.skus_relacionados || item.SKUs_Relacionados || item.productos_relacionados || item.Productos_Relacionados || [];
+      const related_skus = Array.isArray(rawRelated) 
+        ? rawRelated 
+        : (typeof rawRelated === 'string' && rawRelated.trim() ? rawRelated.split(/[,;|]/).map(s => s.trim()).filter(Boolean) : []);
+
       if (isPgConnected) {
         let existing = null;
         if (sku) {
@@ -5239,16 +5255,19 @@ router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, asyn
           await pool.query(
             `UPDATE ecommerce_products 
              SET name = $1, brand = $2, category = $3, sku = $4, description = $5, price = $6, promotional_price = $7, stock = $8, image_url = COALESCE(NULLIF($9, ''), image_url),
-                 weight = COALESCE(NULLIF($10, ''), weight), depth = COALESCE(NULLIF($11, ''), depth), width = COALESCE(NULLIF($12, ''), width), height = COALESCE(NULLIF($13, ''), height)
-             WHERE id = $14`,
-            [name, brand, category, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height, existing.id]
+                 weight = COALESCE(NULLIF($10, ''), weight), depth = COALESCE(NULLIF($11, ''), depth), width = COALESCE(NULLIF($12, ''), width), height = COALESCE(NULLIF($13, ''), height),
+                 highlights = COALESCE(NULLIF($14, ''), highlights), warranty = COALESCE(NULLIF($15, ''), warranty),
+                 datasheet_url = COALESCE(NULLIF($16, ''), datasheet_url), condition = COALESCE(NULLIF($17, ''), condition),
+                 related_skus = $18
+             WHERE id = $19`,
+            [name, brand, category, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height, highlights, warranty, datasheet_url, condition, JSON.stringify(related_skus), existing.id]
           );
           updatedCount++;
         } else {
           await pool.query(
-            `INSERT INTO ecommerce_products (name, brand, category, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)`,
-            [name, brand, category, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height]
+            `INSERT INTO ecommerce_products (name, brand, category, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height, highlights, warranty, datasheet_url, condition, related_skus) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`,
+            [name, brand, category, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height, highlights, warranty, datasheet_url, condition, JSON.stringify(related_skus)]
           );
           createdCount++;
         }
@@ -5275,6 +5294,17 @@ router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, asyn
           if (depth !== '') existing.depth = depth;
           if (width !== '') existing.width = width;
           if (height !== '') existing.height = height;
+          if (highlights) existing.highlights = highlights;
+          if (warranty) existing.warranty = warranty;
+          if (datasheet_url) existing.datasheet_url = datasheet_url;
+          if (condition) existing.condition = condition;
+          if (related_skus.length > 0) {
+            existing.related_skus = related_skus;
+            existing.related_ids = related_skus.map(rSku => {
+              const found = inMem.products.find(p => p.sku && p.sku.toLowerCase() === rSku.toLowerCase());
+              return found ? found.id : null;
+            }).filter(Boolean);
+          }
           if (image_url) {
             existing.image_url = image_url;
             if (!existing.images || existing.images.length === 0) existing.images = [image_url];
@@ -5297,6 +5327,15 @@ router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, asyn
             depth: depth || '',
             width: width || '',
             height: height || '',
+            highlights: highlights || '',
+            warranty: warranty || '12 Meses con RMA y Soporte DACAS',
+            datasheet_url: datasheet_url || '',
+            condition: condition || 'Nuevo Sellado',
+            related_skus: related_skus,
+            related_ids: related_skus.map(rSku => {
+              const found = inMem.products.find(p => p.sku && p.sku.toLowerCase() === rSku.toLowerCase());
+              return found ? found.id : null;
+            }).filter(Boolean),
             image_url: image_url || defaultImg,
             images: image_url ? [image_url] : [defaultImg],
             created_at: new Date().toISOString()
@@ -5342,10 +5381,24 @@ router.put('/admin/products/:id', authenticateToken, requireAdmin, async (req, r
     const { id } = req.params;
     let result;
     if (isPgConnected) {
-      const { name, description, price, stock, image_url } = req.body;
+      const {
+        name, description, price, stock, image_url, brand, category, sku, promotional_price,
+        weight, depth, width, height, highlights, warranty, datasheet_url, condition, related_ids, related_skus
+      } = req.body;
       result = await pool.query(
-        'UPDATE ecommerce_products SET name = $1, description = $2, price = $3, stock = $4, image_url = $5 WHERE id = $6 RETURNING *',
-        [name, description, price, stock, image_url, id]
+        `UPDATE ecommerce_products 
+         SET name = $1, description = $2, price = $3, stock = $4, image_url = $5,
+             brand = $6, category = $7, sku = $8, promotional_price = $9, weight = $10,
+             depth = $11, width = $12, height = $13, highlights = $14, warranty = $15,
+             datasheet_url = $16, condition = $17, related_ids = $18, related_skus = $19
+         WHERE id = $20 RETURNING *`,
+        [
+          name, description, price, stock, image_url,
+          brand, category, sku, promotional_price, weight,
+          depth, width, height, highlights, warranty,
+          datasheet_url, condition, JSON.stringify(related_ids || []), JSON.stringify(related_skus || []),
+          id
+        ]
       );
     } else {
       result = await pool.query('UPDATE ecommerce_products', [req.body, id]);
