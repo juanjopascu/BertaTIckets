@@ -1,5 +1,2627 @@
 [
   {
+    "id": 283,
+    "timestamp": "2026-10-03T00:00:27.859Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"admin@dacas.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {
+      "emailIntentado": "admin@dacas.com"
+    }
+  },
+  {
+    "id": 282,
+    "timestamp": "2026-10-02T23:58:57.687Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "bc0ab18037d89c1bbd93ae2b45c09917366660881e7f576f83a54debed865499"
+    }
+  },
+  {
+    "id": 281,
+    "timestamp": "2026-10-02T23:53:58.298Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"admin@dacas.com.ar\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {
+      "emailIntentado": "admin@dacas.com.ar"
+    }
+  },
+  {
+    "id": 280,
+    "timestamp": "2026-10-02T23:43:32.344Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"admin@dacas.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {
+      "emailIntentado": "admin@dacas.com"
+    }
+  },
+  {
+    "id": 279,
+    "timestamp": "2026-10-02T20:23:45.085Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "cc868f201dc43247f0ec89f691f5ef9fae0546a469627dd7544060fb6d41da70"
+    }
+  },
+  {
+    "id": 278,
+    "timestamp": "2026-10-02T20:07:52.893Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Aruba Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22 (SKU: R4W02A-AP22, Cat: networking, USD $195.00).",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 3,
+      "productName": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
+      "sku": "R4W02A-AP22",
+      "brand": "Aruba",
+      "price": "195.00",
+      "category": "networking",
+      "timestamp": "2026-10-02T20:07:52.893Z"
+    }
+  },
+  {
+    "id": 277,
+    "timestamp": "2026-10-02T20:06:27.752Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router (SKU: CRS328-24P-4S, Cat: networking, USD $480.00).",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 2,
+      "productName": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+      "sku": "CRS328-24P-4S",
+      "brand": "MikroTik",
+      "price": "480.00",
+      "category": "networking",
+      "timestamp": "2026-10-02T20:06:27.751Z"
+    }
+  },
+  {
+    "id": 276,
+    "timestamp": "2026-10-02T20:06:18.302Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: AudioCodes Zapatilla De 6 ejes, con tensión (SKU: zpa5, Cat: networking, USD $1000.00).",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 7,
+      "productName": "Zapatilla De 6 ejes, con tensión",
+      "sku": "zpa5",
+      "brand": "AudioCodes",
+      "price": "1000.00",
+      "category": "networking",
+      "timestamp": "2026-10-02T20:06:18.301Z"
+    }
+  },
+  {
+    "id": 275,
+    "timestamp": "2026-10-02T19:57:29.140Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $195,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Sebastián Valenzuela",
+      "email": "svalenzuela@andesdata.cl",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790971049139",
+      "itemsCount": 1,
+      "total": 195,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Aruba Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22 ($195.00)",
+      "items": [
+        {
+          "id": 3,
+          "name": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
+          "brand": "Aruba",
+          "sku": "R4W02A-AP22",
+          "qty": 1,
+          "price": 195,
+          "subtotal": 195
+        }
+      ],
+      "timestamp": "2026-10-02T19:57:29.139Z"
+    }
+  },
+  {
+    "id": 274,
+    "timestamp": "2026-10-02T19:44:01.023Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Aruba Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22 (SKU: R4W02A-AP22, Cat: networking, USD $195.00).",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 3,
+      "productName": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
+      "sku": "R4W02A-AP22",
+      "brand": "Aruba",
+      "price": "195.00",
+      "category": "networking",
+      "timestamp": "2026-10-02T19:44:01.023Z"
+    }
+  },
+  {
+    "id": 273,
+    "timestamp": "2026-10-02T19:43:42.410Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 272,
+    "timestamp": "2026-10-02T19:42:50.817Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Vertiv Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA (SKU: GXT5-3000IRT2UXLE, Cat: infraestructura, USD $2150.00).",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 4,
+      "productName": "Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA",
+      "sku": "GXT5-3000IRT2UXLE",
+      "brand": "Vertiv",
+      "price": "2150.00",
+      "category": "infraestructura",
+      "timestamp": "2026-10-02T19:42:50.817Z"
+    }
+  },
+  {
+    "id": 271,
+    "timestamp": "2026-10-02T19:42:37.349Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $195,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790970157349",
+      "itemsCount": 1,
+      "total": 195,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Aruba Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22 ($195.00)",
+      "items": [
+        {
+          "id": 3,
+          "name": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
+          "brand": "Aruba",
+          "sku": "R4W02A-AP22",
+          "qty": 1,
+          "price": 195,
+          "subtotal": 195
+        }
+      ],
+      "timestamp": "2026-10-02T19:42:37.349Z"
+    }
+  },
+  {
+    "id": 270,
+    "timestamp": "2026-10-02T19:38:57.298Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "dc66cf90dfa23a2d9cd4856b3fc3050de71637df128bd0e711ce723d948fd600"
+    }
+  },
+  {
+    "id": 269,
+    "timestamp": "2026-10-02T19:35:05.213Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #6 (\"Sebastián Valenzuela\" / svalenzuela@andesdata.cl) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "6",
+      "razon_social": "Andes Datacenter SpA",
+      "email": "svalenzuela@andesdata.cl"
+    }
+  },
+  {
+    "id": 268,
+    "timestamp": "2026-10-02T19:33:56.798Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "363fb6e5ea7d9e0d6206bc5f754070e6a38f5492d241971e7d90bf40a6b3b9f0"
+    }
+  },
+  {
+    "id": 267,
+    "timestamp": "2026-10-02T19:30:20.963Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ECOMMERCE_PRODUCTO_CREADO",
+    "descripcion": "Producto \"Zapatilla De 6 ejes, con tensión\" creado en catálogo (zpa5)",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 7,
+      "name": "Zapatilla De 6 ejes, con tensión",
+      "price": "1000",
+      "stock": 10
+    }
+  },
+  {
+    "id": 266,
+    "timestamp": "2026-10-02T19:28:31.225Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "ECOMMERCE_PRODUCTO_ELIMINADO",
+    "descripcion": "Producto #1 (\"Fortinet FortiGate 60F - Next Generation Firewall\") eliminado del catálogo",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": "1"
+    }
+  },
+  {
+    "id": 265,
+    "timestamp": "2026-10-02T19:27:26.114Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #1 marcado como DESTACADO ⭐ por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 1,
+      "is_featured": true
+    }
+  },
+  {
+    "id": 264,
+    "timestamp": "2026-10-02T19:27:25.302Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #1 marcado como NORMAL por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 1,
+      "is_featured": false
+    }
+  },
+  {
+    "id": 263,
+    "timestamp": "2026-10-02T19:01:19.745Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Fortinet Fortinet FortiGate 60F - Next Generation Firewall (SKU: FG-60F-BDL-950-12, Cat: security, USD $598.44).",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 1,
+      "productName": "Fortinet FortiGate 60F - Next Generation Firewall",
+      "sku": "FG-60F-BDL-950-12",
+      "brand": "Fortinet",
+      "price": "598.44",
+      "category": "security",
+      "timestamp": "2026-10-02T19:01:19.745Z"
+    }
+  },
+  {
+    "id": 262,
+    "timestamp": "2026-10-02T19:01:00.250Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Vertiv Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA (SKU: GXT5-3000IRT2UXLE, Cat: infraestructura, USD $2150.00).",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 4,
+      "productName": "Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA",
+      "sku": "GXT5-3000IRT2UXLE",
+      "brand": "Vertiv",
+      "price": "2150.00",
+      "category": "infraestructura",
+      "timestamp": "2026-10-02T19:01:00.250Z"
+    }
+  },
+  {
+    "id": 261,
+    "timestamp": "2026-10-02T18:59:43.317Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Aruba Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22 (SKU: R4W02A-AP22, Cat: networking, USD $195.00).",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 3,
+      "productName": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
+      "sku": "R4W02A-AP22",
+      "brand": "Aruba",
+      "price": "195.00",
+      "category": "networking",
+      "timestamp": "2026-10-02T18:59:43.317Z"
+    }
+  },
+  {
+    "id": 260,
+    "timestamp": "2026-10-02T18:58:52.065Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1057 registrado por \"Empresa Demo S.A.\" por USD $499.20.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1057,
+      "total": "499.20",
+      "payment_method": "E-Cheq / Cheque de Pago Diferido",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 259,
+    "timestamp": "2026-10-02T18:54:14.790Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Aruba Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22 (SKU: R4W02A-AP22, Cat: networking, USD $195.00).",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 3,
+      "productName": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
+      "sku": "R4W02A-AP22",
+      "brand": "Aruba",
+      "price": "195.00",
+      "category": "networking",
+      "timestamp": "2026-10-02T18:54:14.790Z"
+    }
+  },
+  {
+    "id": 258,
+    "timestamp": "2026-10-02T18:54:09.797Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Aruba Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22 (SKU: R4W02A-AP22, Cat: networking, USD $195.00).",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 3,
+      "productName": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
+      "sku": "R4W02A-AP22",
+      "brand": "Aruba",
+      "price": "195.00",
+      "category": "networking",
+      "timestamp": "2026-10-02T18:54:09.797Z"
+    }
+  },
+  {
+    "id": 257,
+    "timestamp": "2026-10-02T18:47:43.335Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 256,
+    "timestamp": "2026-10-02T18:46:04.380Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #6 marcado como DESTACADO ⭐ por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 6,
+      "is_featured": true
+    }
+  },
+  {
+    "id": 255,
+    "timestamp": "2026-10-02T18:46:03.797Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #5 marcado como DESTACADO ⭐ por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 5,
+      "is_featured": true
+    }
+  },
+  {
+    "id": 254,
+    "timestamp": "2026-10-02T18:46:03.113Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #4 marcado como DESTACADO ⭐ por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 4,
+      "is_featured": true
+    }
+  },
+  {
+    "id": 253,
+    "timestamp": "2026-10-02T18:46:01.962Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #3 marcado como DESTACADO ⭐ por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 3,
+      "is_featured": true
+    }
+  },
+  {
+    "id": 252,
+    "timestamp": "2026-10-02T18:46:01.212Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #2 marcado como DESTACADO ⭐ por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 2,
+      "is_featured": true
+    }
+  },
+  {
+    "id": 251,
+    "timestamp": "2026-10-02T18:46:00.330Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #1 marcado como DESTACADO ⭐ por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 1,
+      "is_featured": true
+    }
+  },
+  {
+    "id": 250,
+    "timestamp": "2026-10-02T18:43:53.475Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Avaya Sistema de Videoconferencia Avaya Collaboration Bar B109 (SKU: AVAYA-B109-CONF, Cat: comunicaciones_unificadas, USD $680.00).",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 5,
+      "productName": "Sistema de Videoconferencia Avaya Collaboration Bar B109",
+      "sku": "AVAYA-B109-CONF",
+      "brand": "Avaya",
+      "price": "680.00",
+      "category": "comunicaciones_unificadas",
+      "timestamp": "2026-10-02T18:43:53.475Z"
+    }
+  },
+  {
+    "id": 249,
+    "timestamp": "2026-10-02T18:43:26.216Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Fortinet Licencia Anual FortiGuard Enterprise Protection Bundle (SKU: LIC-FG-ENT-1Y, Cat: security, USD $278.80).",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 6,
+      "productName": "Licencia Anual FortiGuard Enterprise Protection Bundle",
+      "sku": "LIC-FG-ENT-1Y",
+      "brand": "Fortinet",
+      "price": "278.80",
+      "category": "security",
+      "timestamp": "2026-10-02T18:43:26.215Z"
+    }
+  },
+  {
+    "id": 248,
+    "timestamp": "2026-10-02T18:36:00.328Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Fortinet Fortinet FortiGate 60F - Next Generation Firewall (SKU: FG-60F-BDL-950-12, Cat: security, USD $598.44).",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 1,
+      "productName": "Fortinet FortiGate 60F - Next Generation Firewall",
+      "sku": "FG-60F-BDL-950-12",
+      "brand": "Fortinet",
+      "price": "598.44",
+      "category": "security",
+      "timestamp": "2026-10-02T18:36:00.328Z"
+    }
+  },
+  {
+    "id": 247,
+    "timestamp": "2026-10-02T18:27:46.018Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Aruba Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22 (SKU: R4W02A-AP22, Cat: networking, USD $195.00).",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 3,
+      "productName": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
+      "sku": "R4W02A-AP22",
+      "brand": "Aruba",
+      "price": "195.00",
+      "category": "networking",
+      "timestamp": "2026-10-02T18:27:46.015Z"
+    }
+  },
+  {
+    "id": 246,
+    "timestamp": "2026-10-02T18:20:02.694Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "1ac2bfe9add69b6037c3eb6b91beb3c46587d34e0041d0d3482767dea89fd3e0"
+    }
+  },
+  {
+    "id": 245,
+    "timestamp": "2026-10-02T18:16:54.516Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1056 registrado por \"Empresa Demo S.A.\" por USD $753.74.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1056,
+      "total": "753.74",
+      "payment_method": "E-Cheq / Cheque de Pago Diferido",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 244,
+    "timestamp": "2026-10-02T18:14:23.599Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $598,44 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790964863599",
+      "itemsCount": 1,
+      "total": 598.44,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($598.44)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 598.44,
+          "subtotal": 598.44
+        }
+      ],
+      "timestamp": "2026-10-02T18:14:23.599Z"
+    }
+  },
+  {
+    "id": 243,
+    "timestamp": "2026-10-02T18:10:44.951Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #1 marcado como NORMAL por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 1,
+      "is_featured": false
+    }
+  },
+  {
+    "id": 242,
+    "timestamp": "2026-10-02T18:10:44.168Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #1 marcado como DESTACADO ⭐ por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 1,
+      "is_featured": true
+    }
+  },
+  {
+    "id": 241,
+    "timestamp": "2026-10-02T18:10:36.292Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #5 marcado como NORMAL por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 5,
+      "is_featured": false
+    }
+  },
+  {
+    "id": 240,
+    "timestamp": "2026-10-02T18:10:35.542Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #4 marcado como NORMAL por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 4,
+      "is_featured": false
+    }
+  },
+  {
+    "id": 239,
+    "timestamp": "2026-10-02T18:10:34.433Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #2 marcado como NORMAL por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 2,
+      "is_featured": false
+    }
+  },
+  {
+    "id": 238,
+    "timestamp": "2026-10-02T18:10:33.625Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #1 marcado como NORMAL por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 1,
+      "is_featured": false
+    }
+  },
+  {
+    "id": 237,
+    "timestamp": "2026-10-02T18:04:17.559Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Fortinet Fortinet FortiGate 60F - Next Generation Firewall (SKU: FG-60F-BDL-950-12, Cat: security, USD $598.44).",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 1,
+      "productName": "Fortinet FortiGate 60F - Next Generation Firewall",
+      "sku": "FG-60F-BDL-950-12",
+      "brand": "Fortinet",
+      "price": "598.44",
+      "category": "security",
+      "timestamp": "2026-10-02T18:04:17.559Z"
+    }
+  },
+  {
+    "id": 236,
+    "timestamp": "2026-10-02T18:04:10.733Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Fortinet Fortinet FortiGate 60F - Next Generation Firewall (SKU: FG-60F-BDL-950-12, Cat: security, USD $598.44).",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 1,
+      "productName": "Fortinet FortiGate 60F - Next Generation Firewall",
+      "sku": "FG-60F-BDL-950-12",
+      "brand": "Fortinet",
+      "price": "598.44",
+      "category": "security",
+      "timestamp": "2026-10-02T18:04:10.733Z"
+    }
+  },
+  {
+    "id": 235,
+    "timestamp": "2026-10-02T18:03:44.872Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 234,
+    "timestamp": "2026-10-02T18:02:36.693Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #3 marcado como NORMAL por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 3,
+      "is_featured": false
+    }
+  },
+  {
+    "id": 233,
+    "timestamp": "2026-10-02T18:02:36.151Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #3 marcado como DESTACADO ⭐ por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 3,
+      "is_featured": true
+    }
+  },
+  {
+    "id": 232,
+    "timestamp": "2026-10-02T17:48:42.531Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790963322531",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T17:48:42.531Z"
+    }
+  },
+  {
+    "id": 231,
+    "timestamp": "2026-10-02T17:48:26.512Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_ACTUALIZADO",
+    "descripcion": "Producto #5 (\"Sistema de Videoconferencia Avaya Collaboration Bar B109\") modificado por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": "5",
+      "name": "Sistema de Videoconferencia Avaya Collaboration Bar B109",
+      "price": "680.00",
+      "stock": 14
+    }
+  },
+  {
+    "id": 230,
+    "timestamp": "2026-10-02T17:47:34.355Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790963254355",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T17:47:34.355Z"
+    }
+  },
+  {
+    "id": 229,
+    "timestamp": "2026-10-02T17:45:47.535Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "9df0990864dc3f4eae0a14d057155d4dd5867fbd222d76e0e460b64792a34088"
+    }
+  },
+  {
+    "id": 228,
+    "timestamp": "2026-10-02T17:44:46.113Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790963086112",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T17:44:46.112Z"
+    }
+  },
+  {
+    "id": 227,
+    "timestamp": "2026-10-02T17:44:36.696Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router (SKU: CRS328-24P-4S, Cat: networking, USD $480.00).",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 2,
+      "productName": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+      "sku": "CRS328-24P-4S",
+      "brand": "MikroTik",
+      "price": "480.00",
+      "category": "networking",
+      "timestamp": "2026-10-02T17:44:36.696Z"
+    }
+  },
+  {
+    "id": 226,
+    "timestamp": "2026-10-02T17:44:13.919Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790963053919",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T17:44:13.919Z"
+    }
+  },
+  {
+    "id": 225,
+    "timestamp": "2026-10-02T17:43:22.224Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #1 marcado como DESTACADO ⭐ por admin@dacas.com",
+    "usuario": {
+      "nombre": "admin@dacas.com",
+      "email": "admin@dacas.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 1,
+      "is_featured": true
+    }
+  },
+  {
+    "id": 224,
+    "timestamp": "2026-10-02T17:43:22.204Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #1 marcado como NORMAL por admin@dacas.com",
+    "usuario": {
+      "nombre": "admin@dacas.com",
+      "email": "admin@dacas.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 1,
+      "is_featured": false
+    }
+  },
+  {
+    "id": 223,
+    "timestamp": "2026-10-02T16:41:00.553Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790959260553",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T16:41:00.553Z"
+    }
+  },
+  {
+    "id": 222,
+    "timestamp": "2026-10-02T16:37:42.315Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: F5 Fortinet FortiGate 60F - Next Generation Firewall (SKU: FG-60F-BDL-950-12, Cat: security, USD $729.80).",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 1,
+      "productName": "Fortinet FortiGate 60F - Next Generation Firewall",
+      "sku": "FG-60F-BDL-950-12",
+      "brand": "F5",
+      "price": "729.80",
+      "category": "security",
+      "timestamp": "2026-10-02T16:37:42.315Z"
+    }
+  },
+  {
+    "id": 221,
+    "timestamp": "2026-10-02T16:35:39.178Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790958939178",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T16:35:39.178Z"
+    }
+  },
+  {
+    "id": 220,
+    "timestamp": "2026-10-02T16:35:35.250Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: F5 Fortinet FortiGate 60F - Next Generation Firewall (SKU: FG-60F-BDL-950-12, Cat: security, USD $729.80).",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 1,
+      "productName": "Fortinet FortiGate 60F - Next Generation Firewall",
+      "sku": "FG-60F-BDL-950-12",
+      "brand": "F5",
+      "price": "729.80",
+      "category": "security",
+      "timestamp": "2026-10-02T16:35:35.250Z"
+    }
+  },
+  {
+    "id": 219,
+    "timestamp": "2026-10-02T16:33:29.044Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790958809044",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T16:33:29.044Z"
+    }
+  },
+  {
+    "id": 218,
+    "timestamp": "2026-10-02T16:32:47.855Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790958767855",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T16:32:47.855Z"
+    }
+  },
+  {
+    "id": 217,
+    "timestamp": "2026-10-02T16:32:07.505Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790958727505",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T16:32:07.505Z"
+    }
+  },
+  {
+    "id": 216,
+    "timestamp": "2026-10-02T16:31:40.118Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790958700118",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T16:31:40.118Z"
+    }
+  },
+  {
+    "id": 215,
+    "timestamp": "2026-10-02T16:28:37.422Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "e5e0ff6313683af940ac8f077761ec30899b349048595ab1166ad187a3c23dad"
+    }
+  },
+  {
+    "id": 214,
+    "timestamp": "2026-10-02T16:01:51.194Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "bc75815f580ca2d441bac6334e228d0678898ddde79d9d4350c645478d4075e3"
+    }
+  },
+  {
+    "id": 213,
+    "timestamp": "2026-10-02T15:59:35.674Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790956775674",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T15:59:35.674Z"
+    }
+  },
+  {
+    "id": 212,
+    "timestamp": "2026-10-02T15:45:33.448Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790955933448",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T15:45:33.448Z"
+    }
+  },
+  {
+    "id": 211,
+    "timestamp": "2026-10-02T15:44:34.410Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790955874410",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T15:44:34.410Z"
+    }
+  },
+  {
+    "id": 210,
+    "timestamp": "2026-10-02T15:42:56.615Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "750639eaf1280802fea2c1aca1974094b257226b837fc6e2c8263807c667ba12"
+    }
+  },
+  {
+    "id": 209,
+    "timestamp": "2026-10-02T15:42:21.711Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790955741711",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T15:42:21.711Z"
+    }
+  },
+  {
+    "id": 208,
+    "timestamp": "2026-10-02T15:41:51.047Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790955711047",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T15:41:51.047Z"
+    }
+  },
+  {
+    "id": 207,
+    "timestamp": "2026-10-02T15:41:34.803Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790955694803",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T15:41:34.803Z"
+    }
+  },
+  {
+    "id": 206,
+    "timestamp": "2026-10-02T15:40:59.889Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790955659889",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T15:40:59.889Z"
+    }
+  },
+  {
+    "id": 205,
+    "timestamp": "2026-10-02T15:39:57.279Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790955597279",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T15:39:57.279Z"
+    }
+  },
+  {
+    "id": 204,
+    "timestamp": "2026-10-02T15:39:34.050Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790955574050",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T15:39:34.050Z"
+    }
+  },
+  {
+    "id": 203,
+    "timestamp": "2026-10-02T15:39:16.258Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790955556257",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T15:39:16.258Z"
+    }
+  },
+  {
+    "id": 202,
+    "timestamp": "2026-10-02T15:15:51.371Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790954151371",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T15:15:51.371Z"
+    }
+  },
+  {
+    "id": 201,
+    "timestamp": "2026-10-02T15:15:39.242Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "65f8afd734042086a851182b4bf86027e173d97474b6b6a1094ef780459b51da"
+    }
+  },
+  {
+    "id": 200,
+    "timestamp": "2026-10-02T15:11:17.303Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790953877303",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T15:11:17.303Z"
+    }
+  },
+  {
+    "id": 199,
+    "timestamp": "2026-10-02T15:11:17.297Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790953877297",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T15:11:17.297Z"
+    }
+  },
+  {
+    "id": 198,
+    "timestamp": "2026-10-02T15:10:56.780Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790953856780",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T15:10:56.780Z"
+    }
+  },
+  {
+    "id": 197,
+    "timestamp": "2026-10-02T15:10:56.757Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790953856757",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T15:10:56.757Z"
+    }
+  },
+  {
+    "id": 196,
+    "timestamp": "2026-10-02T15:10:29.228Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790953829228",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T15:10:29.228Z"
+    }
+  },
+  {
+    "id": 195,
+    "timestamp": "2026-10-02T15:10:29.222Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790953829221",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T15:10:29.221Z"
+    }
+  },
+  {
+    "id": 194,
+    "timestamp": "2026-10-02T14:25:21.390Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: F5 Fortinet FortiGate 60F - Next Generation Firewall (SKU: FG-60F-BDL-950-12, Cat: security, USD $729.80).",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 1,
+      "productName": "Fortinet FortiGate 60F - Next Generation Firewall",
+      "sku": "FG-60F-BDL-950-12",
+      "brand": "F5",
+      "price": "729.80",
+      "category": "security",
+      "timestamp": "2026-10-02T14:25:21.390Z"
+    }
+  },
+  {
+    "id": 193,
+    "timestamp": "2026-10-02T14:25:00.214Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790951100214",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T14:25:00.214Z"
+    }
+  },
+  {
+    "id": 192,
+    "timestamp": "2026-10-02T14:24:00.028Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790951040028",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T14:24:00.028Z"
+    }
+  },
+  {
+    "id": 191,
+    "timestamp": "2026-10-02T14:21:13.200Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790950873199",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T14:21:13.199Z"
+    }
+  },
+  {
+    "id": 190,
+    "timestamp": "2026-10-02T14:16:13.191Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790950573191",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T14:16:13.191Z"
+    }
+  },
+  {
+    "id": 189,
+    "timestamp": "2026-10-02T14:02:03.441Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790949723440",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T14:02:03.440Z"
+    }
+  },
+  {
+    "id": 188,
+    "timestamp": "2026-10-02T14:02:03.424Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790949723424",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T14:02:03.424Z"
+    }
+  },
+  {
+    "id": 187,
+    "timestamp": "2026-10-02T14:01:12.902Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790949672902",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T14:01:12.902Z"
+    }
+  },
+  {
+    "id": 186,
+    "timestamp": "2026-10-02T14:01:12.886Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790949672886",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T14:01:12.886Z"
+    }
+  },
+  {
+    "id": 185,
+    "timestamp": "2026-10-02T13:51:23.862Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790949083862",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T13:51:23.862Z"
+    }
+  },
+  {
+    "id": 184,
+    "timestamp": "2026-10-02T13:49:42.406Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $729,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790948982405",
+      "itemsCount": 1,
+      "total": 729.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Fortinet FortiGate 60F - Next Generation Firewall ($729.80)",
+      "items": [
+        {
+          "id": 1,
+          "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+          "brand": "Fortinet",
+          "sku": "FG-60F-BDL-950-12",
+          "qty": 1,
+          "price": 729.8,
+          "subtotal": 729.8
+        }
+      ],
+      "timestamp": "2026-10-02T13:49:42.405Z"
+    }
+  },
+  {
+    "id": 183,
+    "timestamp": "2026-10-02T13:49:18.840Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_ACTUALIZADO",
+    "descripcion": "Producto #1 (\"Fortinet FortiGate 60F - Next Generation Firewall\") modificado por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": "1",
+      "name": "Fortinet FortiGate 60F - Next Generation Firewall",
+      "price": "729.80",
+      "stock": 20
+    }
+  },
+  {
     "id": 182,
     "timestamp": "2026-10-02T12:43:36.260Z",
     "origen": "ecommerce",

@@ -1,0 +1,1836 @@
+{
+  "AR": {
+    "announcement": {
+      "enabled": true,
+      "text": "🇦🇷 DACAS Argentina: Distribución Oficial, Stock Inmediato y Soporte Certificado en Buenos Aires e Interior",
+      "badgeText": "DACAS ARGENTINA",
+      "link": "#paises"
+    },
+    "general": {
+      "shopTitle": "DACAS Argentina B2B Shop",
+      "shopSubtitle": "Plataforma Corporativa de Soluciones IT, Ciberseguridad & Conectividad Enterprise para Argentina",
+      "showCountryBar": true,
+      "contactPhone": "+54 11 4110-3300",
+      "contactEmail": "ventas@dacas.com.ar",
+      "whatsappNumber": "+5491141103300",
+      "headerBadge": "DISTRIBUIDOR OFICIAL ARGENTINA",
+      "primaryColor": "#0fa4de"
+    },
+    "heroSlides": [
+      {
+        "id": 0,
+        "badge": "DACAS ARGENTINA 🇦🇷",
+        "badgeIcon": "🇦🇷",
+        "titleLine1": "Distribución Mayorista Oficial",
+        "titleLine2": "En Toda la Argentina",
+        "titleColor": "#0fa4de",
+        "desc": "Más de 25 años abasteciendo a los integradores líderes de Argentina con las mejores soluciones de ciberseguridad, networking y centros de datos con facturación local.",
+        "primaryBtn": {
+          "text": "Explorar Catálogo AR",
+          "cat": "all"
+        },
+        "secondaryBtn": {
+          "text": "Nuestros Países",
+          "cat": "all"
+        },
+        "type": "metrics",
+        "metrics": [
+          {
+            "value": "+25 Años",
+            "label": "Liderando en Argentina"
+          },
+          {
+            "value": "Stock Local",
+            "label": "Depósito Buenos Aires"
+          },
+          {
+            "value": "24/7",
+            "label": "Garantía Oficial DACAS"
+          }
+        ]
+      },
+      {
+        "id": 1,
+        "badge": "CIBERSEGURIDAD EN ARGENTINA",
+        "badgeIcon": "🛡️",
+        "titleLine1": "Firewalls Fortinet & IA",
+        "titleLine2": "Protección Avanzada para Empresas",
+        "titleColor": "#0fa4de",
+        "desc": "Next-Gen Firewalls FortiGate y suscripciones oficiales FortiGuard con entrega inmediata y soporte de ingenieros certificados en el país.",
+        "primaryBtn": {
+          "text": "Ver Seguridad",
+          "cat": "security"
+        },
+        "secondaryBtn": {
+          "text": "Ver Catálogo",
+          "cat": "all"
+        },
+        "type": "metrics",
+        "metrics": [
+          {
+            "value": "1.4 Gbps",
+            "label": "Rendimiento IPS Real"
+          },
+          {
+            "value": "99.99%",
+            "label": "Disponibilidad Uptime"
+          },
+          {
+            "value": "Zero-Day",
+            "label": "Protección con IA"
+          }
+        ]
+      }
+    ],
+    "categories": [
+      {
+        "key": "networking",
+        "name": "Networking",
+        "icon": "🌐",
+        "desc": "Conmutación L2/L3, Routing Core, Wi-Fi 6 y Conectividad Cloud",
+        "enabled": true
+      },
+      {
+        "key": "infraestructura",
+        "name": "Infraestructura",
+        "icon": "⚡",
+        "desc": "Energía Crítica UPS, Gabinetes Racks 42U y Cableado Estructurado",
+        "enabled": true
+      },
+      {
+        "key": "comunicaciones_unificadas",
+        "name": "Comunicaciones Unificadas",
+        "icon": "📞",
+        "desc": "Telefonía IP Corporativa, AudioCodes Teams & Salas Colaborativas Avaya",
+        "enabled": true
+      },
+      {
+        "key": "security",
+        "name": "Seguridad & Ciberseguridad",
+        "icon": "🛡️",
+        "desc": "Next-Gen Firewalls, Sandboxing IA y Protección de Datos",
+        "enabled": true
+      }
+    ],
+    "categoryBrands": {
+      "comunicaciones_unificadas": [
+        "audiocodes",
+        "avaya"
+      ],
+      "security": [
+        "fortinet",
+        "sophos",
+        "sonicwall",
+        "barracuda"
+      ],
+      "infraestructura": [
+        "vertiv",
+        "panduit",
+        "commscope",
+        "eaton"
+      ],
+      "networking": [
+        "mikrotik",
+        "aruba",
+        "commscope"
+      ]
+    },
+    "brandBanners": [
+      {
+        "id": "brand_banner_ar_1",
+        "brand": "Fortinet",
+        "title": "Fortinet Security Fabric Argentina",
+        "subtitle": "Firewalls NGFW FortiGate y protección perimetral con soporte oficial local",
+        "badge": "CIBERSEGURIDAD AR",
+        "accentColor": "#EE3124",
+        "buttonText": "Explorar Fortinet",
+        "imageUrl": "",
+        "targetCategory": "security",
+        "enabled": true
+      },
+      {
+        "id": "brand_banner_ar_2",
+        "brand": "Vertiv",
+        "title": "Vertiv Energía Crítica",
+        "subtitle": "UPS Liebert doble conversión para infraestructura y servidores en Argentina",
+        "badge": "ENERGÍA CRÍTICA",
+        "accentColor": "#38bdf8",
+        "buttonText": "Ver Soluciones Vertiv",
+        "imageUrl": "",
+        "targetCategory": "infraestructura",
+        "enabled": true
+      },
+      {
+        "id": "brand_banner_ar_3",
+        "brand": "MikroTik",
+        "title": "MikroTik Routing & Switches",
+        "subtitle": "Equipamiento de fibra óptica y PoE con stock inmediato en Buenos Aires",
+        "badge": "NETWORKING AR",
+        "accentColor": "#10b981",
+        "buttonText": "Ver Equipos MikroTik",
+        "imageUrl": "",
+        "targetCategory": "networking",
+        "enabled": true
+      }
+    ],
+    "homeCarousels": {
+      "featured": {
+        "enabled": true,
+        "title": "🔥 Productos Destacados Argentina",
+        "subtitle": "Equipamiento disponible para despacho inmediato desde el centro de distribución en Buenos Aires",
+        "productIds": [
+          2,
+          3,
+          4,
+          5
+        ]
+      },
+      "custom": {
+        "enabled": true,
+        "title": "⚡ Oportunidades & Ofertas IT",
+        "subtitle": "Soluciones corporativas seleccionadas con precios mayoristas para canales argentinos",
+        "productIds": [
+          6,
+          7
+        ]
+      }
+    }
+  },
+  "CL": {
+    "announcement": {
+      "enabled": true,
+      "text": "🇨🇱 DACAS Chile: Cobertura Nacional y Distribución Mayorista Oficial en Santiago y Regiones",
+      "badgeText": "DACAS CHILE",
+      "link": "#paises"
+    },
+    "general": {
+      "shopTitle": "DACAS Chile B2B Shop",
+      "shopSubtitle": "Plataforma Mayorista para Canales e Integradores IT en Chile",
+      "showCountryBar": true,
+      "contactPhone": "+56 2 2940-2000",
+      "contactEmail": "ventas@dacas.cl",
+      "whatsappNumber": "+569229402000",
+      "headerBadge": "DISTRIBUIDOR OFICIAL CHILE",
+      "primaryColor": "#0284c7"
+    },
+    "heroSlides": [
+      {
+        "id": 0,
+        "badge": "DACAS CHILE 🇨🇱",
+        "badgeIcon": "🇨🇱",
+        "titleLine1": "Tecnología Corporativa en Chile",
+        "titleLine2": "Despacho Directo en Santiago",
+        "titleColor": "#0284c7",
+        "desc": "Centro de distribución oficial para el mercado chileno. Stock de Fortinet, Aruba, Panduit y MikroTik para proyectos corporativos y licitaciones.",
+        "primaryBtn": {
+          "text": "Explorar Catálogo Chile",
+          "cat": "all"
+        },
+        "secondaryBtn": {
+          "text": "Consultar Stock Local",
+          "cat": "all"
+        },
+        "type": "metrics",
+        "metrics": [
+          {
+            "value": "Chile Hub",
+            "label": "Despacho Rápido"
+          },
+          {
+            "value": "100%",
+            "label": "Garantía en Chile"
+          },
+          {
+            "value": "CLP / USD",
+            "label": "Facturación Flexible"
+          }
+        ]
+      },
+      {
+        "id": 1,
+        "badge": "NETWORKING CORPORATIVO CHILE",
+        "badgeIcon": "🌐",
+        "titleLine1": "Switches Aruba CX Enterprise",
+        "titleLine2": "Conectividad Cloud & PoE+",
+        "titleColor": "#0284c7",
+        "desc": "Línea completa Aruba CX 6100 y 6200 con gestión unificada en la nube para empresas e instituciones de Chile.",
+        "primaryBtn": {
+          "text": "Ver Networking",
+          "cat": "networking"
+        },
+        "secondaryBtn": {
+          "text": "Contactar Especialista",
+          "cat": "networking"
+        },
+        "type": "metrics",
+        "metrics": [
+          {
+            "value": "370W PoE+",
+            "label": "Alimentación Robusta"
+          },
+          {
+            "value": "10G SFP+",
+            "label": "Uplinks Ópticos"
+          },
+          {
+            "value": "Nube",
+            "label": "Gestión Aruba Central"
+          }
+        ]
+      }
+    ],
+    "categories": [
+      {
+        "key": "networking",
+        "name": "Networking",
+        "icon": "🌐",
+        "desc": "Switches Aruba, MikroTik y conectividad empresarial",
+        "enabled": true
+      },
+      {
+        "key": "infraestructura",
+        "name": "Infraestructura",
+        "icon": "⚡",
+        "desc": "Racks Panduit y energía para centros de datos",
+        "enabled": true
+      },
+      {
+        "key": "security",
+        "name": "Seguridad & Ciberseguridad",
+        "icon": "🛡️",
+        "desc": "Firewalls Fortinet FortiGate y licencias enterprise",
+        "enabled": true
+      },
+      {
+        "key": "comunicaciones_unificadas",
+        "name": "Comunicaciones Unificadas",
+        "icon": "📞",
+        "desc": "Salas de reuniones inteligentes y telefonía IP",
+        "enabled": true
+      }
+    ],
+    "categoryBrands": {
+      "security": [
+        "fortinet",
+        "sophos"
+      ],
+      "networking": [
+        "aruba",
+        "mikrotik"
+      ],
+      "infraestructura": [
+        "panduit",
+        "vertiv"
+      ]
+    },
+    "brandBanners": [
+      {
+        "id": "brand_banner_cl_1",
+        "brand": "Fortinet",
+        "title": "Fortinet FortiGate Chile",
+        "subtitle": "Firewalls NGFW líderes del mercado chileno con entrega inmediata en Santiago",
+        "badge": "STOCK EN CHILE",
+        "accentColor": "#EE3124",
+        "buttonText": "Ver Equipos Fortinet",
+        "imageUrl": "",
+        "targetCategory": "security",
+        "enabled": true
+      },
+      {
+        "id": "brand_banner_cl_2",
+        "brand": "Aruba",
+        "title": "Aruba Networks Chile",
+        "subtitle": "Switches corporativos y Access Points Wi-Fi 6 con soporte oficial local",
+        "badge": "NETWORKING LÍDER",
+        "accentColor": "#ff8300",
+        "buttonText": "Ver Soluciones Aruba",
+        "imageUrl": "",
+        "targetCategory": "networking",
+        "enabled": true
+      }
+    ],
+    "homeCarousels": {
+      "featured": {
+        "enabled": true,
+        "title": "🇨🇱 Catálogo Exclusivo Chile",
+        "subtitle": "Productos con inventario físico en nuestra bodega de Santiago de Chile",
+        "productIds": [
+          101,
+          102,
+          103
+        ]
+      },
+      "custom": {
+        "enabled": true,
+        "title": "🚀 Novedades para Canales de Chile",
+        "subtitle": "Precios especiales y cotizaciones mayoristas en USD",
+        "productIds": [
+          101,
+          102
+        ]
+      }
+    }
+  },
+  "CO": {
+    "announcement": {
+      "enabled": true,
+      "text": "🇨🇴 DACAS Colombia: Distribución Mayorista Oficial en Bogotá, Medellín, Cali y Costa",
+      "badgeText": "DACAS COLOMBIA",
+      "link": "#paises"
+    },
+    "general": {
+      "shopTitle": "DACAS Colombia B2B Shop",
+      "shopSubtitle": "Plataforma de Soluciones de Telecomunicaciones & Ciberseguridad para Colombia",
+      "showCountryBar": true,
+      "contactPhone": "+57 1 744-8000",
+      "contactEmail": "ventas@dacas.com.co",
+      "whatsappNumber": "+5717448000",
+      "headerBadge": "DISTRIBUIDOR OFICIAL COLOMBIA",
+      "primaryColor": "#10b981"
+    },
+    "heroSlides": [
+      {
+        "id": 0,
+        "badge": "DACAS COLOMBIA 🇨🇴",
+        "badgeIcon": "🇨🇴",
+        "titleLine1": "Soluciones Enterprise en Colombia",
+        "titleLine2": "Comunicaciones Unificadas & Seguridad",
+        "titleColor": "#10b981",
+        "desc": "Distribución oficial en Colombia de AudioCodes, SonicWall, Fortinet y Vertiv. Despachos rápidos a toda la geografía colombiana.",
+        "primaryBtn": {
+          "text": "Explorar Catálogo Colombia",
+          "cat": "all"
+        },
+        "secondaryBtn": {
+          "text": "Ver Soluciones de Voz",
+          "cat": "comunicaciones_unificadas"
+        },
+        "type": "metrics",
+        "metrics": [
+          {
+            "value": "Bogotá DC",
+            "label": "Bodega Principal"
+          },
+          {
+            "value": "SBC Teams",
+            "label": "Voz Certificada"
+          },
+          {
+            "value": "Soporte",
+            "label": "Ingeniería Local"
+          }
+        ]
+      }
+    ],
+    "categories": [
+      {
+        "key": "comunicaciones_unificadas",
+        "name": "Comunicaciones Unificadas",
+        "icon": "📞",
+        "desc": "AudioCodes Mediant, telefonía IP y salas Teams",
+        "enabled": true
+      },
+      {
+        "key": "security",
+        "name": "Seguridad & Ciberseguridad",
+        "icon": "🛡️",
+        "desc": "SonicWall y Fortinet para protección corporativa",
+        "enabled": true
+      },
+      {
+        "key": "networking",
+        "name": "Networking",
+        "icon": "🌐",
+        "desc": "Switches y routers empresariales",
+        "enabled": true
+      }
+    ],
+    "categoryBrands": {
+      "comunicaciones_unificadas": [
+        "audiocodes",
+        "avaya"
+      ],
+      "security": [
+        "sonicwall",
+        "fortinet"
+      ]
+    },
+    "brandBanners": [
+      {
+        "id": "brand_banner_co_1",
+        "brand": "AudioCodes",
+        "title": "AudioCodes Mediant SBC Colombia",
+        "subtitle": "Conexión a operadores locales de telefonía y Microsoft Teams Direct Routing",
+        "badge": "VOZ ENTERPRISE",
+        "accentColor": "#0284c7",
+        "buttonText": "Ver AudioCodes",
+        "imageUrl": "",
+        "targetCategory": "comunicaciones_unificadas",
+        "enabled": true
+      }
+    ],
+    "homeCarousels": {
+      "featured": {
+        "enabled": true,
+        "title": "🇨🇴 Catálogo Destacado Colombia",
+        "subtitle": "Soluciones disponibles para despachos nacionales en Colombia",
+        "productIds": [
+          201,
+          202
+        ]
+      }
+    }
+  },
+  "MX": {
+    "announcement": {
+      "enabled": true,
+      "text": "🇲🇽 DACAS México: Distribución Mayorista Especializada en CDMX, Guadalajara y Monterrey",
+      "badgeText": "DACAS MÉXICO",
+      "link": "#paises"
+    },
+    "general": {
+      "shopTitle": "DACAS México B2B Shop",
+      "shopSubtitle": "Soluciones de Infraestructura Crítica, Climatización y Conectividad en México",
+      "showCountryBar": true,
+      "contactPhone": "+52 55 5000-8800",
+      "contactEmail": "ventas@dacas.com.mx",
+      "whatsappNumber": "+525550008800",
+      "headerBadge": "DISTRIBUIDOR OFICIAL MÉXICO",
+      "primaryColor": "#d97706"
+    },
+    "heroSlides": [
+      {
+        "id": 0,
+        "badge": "DACAS MÉXICO 🇲🇽",
+        "badgeIcon": "🇲🇽",
+        "titleLine1": "Infraestructura Crítica en México",
+        "titleLine2": "Centros de Datos & Edge Computing",
+        "titleColor": "#d97706",
+        "desc": "Soluciones Vertiv de climatización in-row, UPS de alta eficiencia y conectividad industrial MikroTik en México.",
+        "primaryBtn": {
+          "text": "Explorar Catálogo México",
+          "cat": "all"
+        },
+        "secondaryBtn": {
+          "text": "Ver Infraestructura",
+          "cat": "infraestructura"
+        },
+        "type": "metrics",
+        "metrics": [
+          {
+            "value": "CDMX",
+            "label": "Centro Logístico"
+          },
+          {
+            "value": "Vertiv",
+            "label": "Climatización y Energía"
+          },
+          {
+            "value": "Soporte",
+            "label": "Garantía México"
+          }
+        ]
+      }
+    ],
+    "categories": [
+      {
+        "key": "infraestructura",
+        "name": "Infraestructura",
+        "icon": "⚡",
+        "desc": "Climatización de precisión Vertiv Liebert y energía crítica",
+        "enabled": true
+      },
+      {
+        "key": "networking",
+        "name": "Networking",
+        "icon": "🌐",
+        "desc": "Equipos MikroTik para WISPs e industrias",
+        "enabled": true
+      },
+      {
+        "key": "security",
+        "name": "Seguridad & Ciberseguridad",
+        "icon": "🛡️",
+        "desc": "Protección perimetral avanzada",
+        "enabled": true
+      }
+    ],
+    "categoryBrands": {
+      "infraestructura": [
+        "vertiv",
+        "panduit"
+      ],
+      "networking": [
+        "mikrotik"
+      ]
+    },
+    "brandBanners": [
+      {
+        "id": "brand_banner_mx_1",
+        "brand": "Vertiv",
+        "title": "Vertiv Climatización Crítica México",
+        "subtitle": "Equipos Liebert CRV para centros de cómputo en México",
+        "badge": "DATA CENTER MX",
+        "accentColor": "#FF4500",
+        "buttonText": "Ver Soluciones Vertiv",
+        "imageUrl": "",
+        "targetCategory": "infraestructura",
+        "enabled": true
+      }
+    ],
+    "homeCarousels": {
+      "featured": {
+        "enabled": true,
+        "title": "🇲🇽 Productos Disponibles en México",
+        "subtitle": "Inventario local con facturación en México (CFDI)",
+        "productIds": [
+          301,
+          302
+        ]
+      }
+    }
+  },
+  "UY": {
+    "announcement": {
+      "enabled": true,
+      "text": "🇺🇾 DACAS Uruguay: Distribución Mayorista y Logística en Montevideo y Zona Franca",
+      "badgeText": "DACAS URUGUAY",
+      "link": "#paises"
+    },
+    "general": {
+      "shopTitle": "DACAS Uruguay B2B Shop",
+      "shopSubtitle": "Soluciones IT Corporativas para el mercado uruguayo",
+      "showCountryBar": true,
+      "contactPhone": "+598 2900-1122",
+      "contactEmail": "ventas@dacas.com.uy",
+      "whatsappNumber": "+59829001122",
+      "headerBadge": "DISTRIBUIDOR OFICIAL URUGUAY",
+      "primaryColor": "#0284c7"
+    },
+    "heroSlides": [
+      {
+        "id": 0,
+        "badge": "DACAS URUGUAY 🇺🇾",
+        "badgeIcon": "🇺🇾",
+        "titleLine1": "Networking y Core en Uruguay",
+        "titleLine2": "MikroTik & Infraestructura",
+        "titleColor": "#0284c7",
+        "desc": "Stock local de equipamiento MikroTik, routers de alta capacidad y conectividad para telecomunicaciones en Uruguay.",
+        "primaryBtn": {
+          "text": "Ver Catálogo Uruguay",
+          "cat": "all"
+        },
+        "secondaryBtn": {
+          "text": "Consultar Stock",
+          "cat": "all"
+        },
+        "type": "metrics",
+        "metrics": [
+          {
+            "value": "Montevideo",
+            "label": "Entrega Inmediata"
+          },
+          {
+            "value": "MikroTik",
+            "label": "RouterOS Certificado"
+          }
+        ]
+      }
+    ],
+    "categories": [
+      {
+        "key": "networking",
+        "name": "Networking",
+        "icon": "🌐",
+        "desc": "Routers MikroTik Cloud Core y Switches",
+        "enabled": true
+      }
+    ],
+    "categoryBrands": {
+      "networking": [
+        "mikrotik"
+      ]
+    },
+    "brandBanners": [],
+    "homeCarousels": {
+      "featured": {
+        "enabled": true,
+        "title": "🇺🇾 Equipos en Uruguay",
+        "subtitle": "Stock disponible en Montevideo",
+        "productIds": [
+          401
+        ]
+      }
+    }
+  },
+  "US": {
+    "announcement": {
+      "enabled": true,
+      "text": "DACAS Estados Unidos: Distribución Mayorista Oficial y Soporte Certificado en Estados Unidos",
+      "badgeText": "DACAS US",
+      "link": "#paises"
+    },
+    "general": {
+      "shopTitle": "DACAS Estados Unidos B2B Shop",
+      "shopSubtitle": "Plataforma Corporativa de Soluciones IT & Ciberseguridad para Estados Unidos",
+      "showCountryBar": true,
+      "contactPhone": "+54 11 4110-3300",
+      "contactEmail": "ventas@dacas.com",
+      "whatsappNumber": "+5491141103300",
+      "headerBadge": "DISTRIBUIDOR OFICIAL MAYORISTA",
+      "primaryColor": "#0fa4de"
+    },
+    "heroSlides": [
+      {
+        "id": 0,
+        "badge": "RED DACAS ESTADOS UNIDOS",
+        "badgeIcon": "🌎",
+        "titleLine1": "Distribución Mayorista Oficial",
+        "titleLine2": "En Estados Unidos",
+        "titleColor": "#0fa4de",
+        "desc": "Conectando a los principales fabricantes de IT con los integradores de Estados Unidos. Stock local y soporte técnico certificado.",
+        "primaryBtn": {
+          "text": "Explorar Catálogo",
+          "cat": "all"
+        },
+        "secondaryBtn": {
+          "text": "Nuestros Países",
+          "cat": "all"
+        },
+        "type": "metrics",
+        "metrics": [
+          {
+            "value": "+25 Años",
+            "label": "Liderando el Mercado IT"
+          },
+          {
+            "value": "12 Países",
+            "label": "Cobertura Regional"
+          },
+          {
+            "value": "24/7",
+            "label": "Soporte y Garantía Oficial"
+          }
+        ],
+        "stats": [
+          {
+            "key": "exp",
+            "target": 25,
+            "suffix": "+ Años",
+            "label": "Liderando el Mercado IT"
+          },
+          {
+            "key": "part",
+            "target": 100,
+            "suffix": "%",
+            "label": "Partners Certificados"
+          },
+          {
+            "key": "cov",
+            "target": 24,
+            "suffix": "/7",
+            "label": "Soporte y Garantía Oficial"
+          }
+        ]
+      },
+      {
+        "id": 1,
+        "badge": "CIBERSEGURIDAD AVANZADA",
+        "badgeIcon": "🛡️",
+        "titleLine1": "Next-Gen Firewalls & IA",
+        "titleLine2": "Protección Integral Fortinet",
+        "titleColor": "#0fa4de",
+        "desc": "Soluciones perimetrales y de centro de datos con tecnología ASIC y suscripciones FortiGuard Enterprise con entrega inmediata.",
+        "primaryBtn": {
+          "text": "Ver Seguridad",
+          "cat": "security"
+        },
+        "secondaryBtn": {
+          "text": "Ver Catálogo Completo",
+          "cat": "all"
+        },
+        "type": "metrics",
+        "metrics": [
+          {
+            "value": "1.4 Gbps",
+            "label": "Rendimiento IPS Real"
+          },
+          {
+            "value": "99.99%",
+            "label": "Disponibilidad Uptime"
+          },
+          {
+            "value": "Zero-Day",
+            "label": "Protección con IA"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "badge": "INFRAESTRUCTURA & ENERGÍA CRÍTICA",
+        "badgeIcon": "⚡",
+        "titleLine1": "Sistemas UPS Online Vertiv & Eaton",
+        "titleLine2": "& Racks de Alta Densidad Panduit",
+        "titleColor": "#38bdf8",
+        "desc": "Protección de energía crítica doble conversión, gabinetes acústicos y cableado estructurado certificado CommScope para salas de servidores y centros de datos.",
+        "primaryBtn": {
+          "text": "Ver Infraestructura",
+          "cat": "infraestructura"
+        },
+        "secondaryBtn": {
+          "text": "Consultar Stock",
+          "cat": "infraestructura"
+        },
+        "type": "metrics",
+        "metrics": [
+          {
+            "value": "3kVA - 20kVA",
+            "label": "Potencia Doble Conversión"
+          },
+          {
+            "value": "Factor 1.0",
+            "label": "Eficiencia Energética"
+          },
+          {
+            "value": "Vertiv/Panduit",
+            "label": "Garantía Oficial DACAS"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "badge": "COMUNICACIONES UNIFICADAS & COLABORACIÓN",
+        "badgeIcon": "📞",
+        "titleLine1": "Telefonía IP AudioCodes Teams",
+        "titleLine2": "& Colaboración Corporativa Avaya",
+        "titleColor": "#10b981",
+        "desc": "Soluciones enterprise de audio y videoconferencia HD certificadas para Microsoft Teams y Zoom, con audio de alta fidelidad y conmutación SIP.",
+        "primaryBtn": {
+          "text": "Ver Comunicaciones Unificadas",
+          "cat": "comunicaciones_unificadas"
+        },
+        "secondaryBtn": {
+          "text": "Explorar Modelos",
+          "cat": "comunicaciones_unificadas"
+        },
+        "type": "metrics",
+        "metrics": [
+          {
+            "value": "Audio HD",
+            "label": "Resolución Óptica y Voz"
+          },
+          {
+            "value": "Avaya Bar",
+            "label": "Salas Inteligentes"
+          },
+          {
+            "value": "Teams/Zoom",
+            "label": "Certificación Oficial"
+          }
+        ]
+      }
+    ],
+    "categories": [
+      {
+        "key": "networking",
+        "name": "Networking",
+        "icon": "🌐",
+        "desc": "Conmutación L2/L3, Routing Core, Wi-Fi 6 y Conectividad Cloud",
+        "enabled": true
+      },
+      {
+        "key": "infraestructura",
+        "name": "Infraestructura",
+        "icon": "⚡",
+        "desc": "Energía Crítica UPS, Gabinetes Racks 42U y Cableado Estructurado",
+        "enabled": true
+      },
+      {
+        "key": "comunicaciones_unificadas",
+        "name": "Comunicaciones Unificadas",
+        "icon": "📞",
+        "desc": "Telefonía IP Corporativa, AudioCodes Teams & Salas Colaborativas Avaya",
+        "enabled": true
+      },
+      {
+        "key": "security",
+        "name": "Seguridad & Ciberseguridad",
+        "icon": "🛡️",
+        "desc": "Next-Gen Firewalls, Sandboxing IA y Protección de Datos",
+        "enabled": true
+      }
+    ],
+    "categoryBrands": {
+      "comunicaciones_unificadas": [
+        "audiocodes",
+        "avaya"
+      ],
+      "security": [
+        "algosec",
+        "barracuda",
+        "fortinet",
+        "f5",
+        "imperva",
+        "hitachi vantara",
+        "infoblox",
+        "nsfocus",
+        "radware",
+        "silver peak",
+        "sophos",
+        "sonicwall",
+        "veracode",
+        "vicarius",
+        "viewtinet"
+      ],
+      "infraestructura": [
+        "avocent",
+        "commscope",
+        "commscope netconnect",
+        "commscope systimax",
+        "eaton",
+        "gabitel",
+        "panduit",
+        "siemon",
+        "vertiv",
+        "tz"
+      ],
+      "networking": [
+        "mikrotik",
+        "aruba",
+        "infoblox",
+        "silver peak",
+        "commscope"
+      ]
+    },
+    "brandBanners": [
+      {
+        "id": "brand_banner_1",
+        "brand": "Fortinet",
+        "title": "Fortinet Security Fabric",
+        "subtitle": "Firewalls NGFW FortiGate y protección perimetral con procesamiento SOC4",
+        "badge": "CIBERSEGURIDAD LÍDER",
+        "accentColor": "#EE3124",
+        "buttonText": "Explorar Fortinet",
+        "imageUrl": "",
+        "targetCategory": "security",
+        "enabled": true
+      },
+      {
+        "id": "brand_banner_2",
+        "brand": "Vertiv",
+        "title": "Vertiv Critical Power",
+        "subtitle": "Sistemas UPS Online doble conversión y racks de alta densidad para Data Centers",
+        "badge": "ENERGÍA CRÍTICA",
+        "accentColor": "#38bdf8",
+        "buttonText": "Ver Soluciones Vertiv",
+        "imageUrl": "",
+        "targetCategory": "infraestructura",
+        "enabled": true
+      },
+      {
+        "id": "brand_banner_3",
+        "brand": "MikroTik",
+        "title": "MikroTik Routing & Core",
+        "subtitle": "Switches gestionables Gigabit PoE+ y routers para enlaces de fibra óptica de alto tráfico",
+        "badge": "NETWORKING ENTERPRISE",
+        "accentColor": "#10b981",
+        "buttonText": "Ver Equipos MikroTik",
+        "imageUrl": "",
+        "targetCategory": "networking",
+        "enabled": true
+      }
+    ],
+    "homeCarousels": {
+      "featured": {
+        "enabled": true,
+        "title": "🔥 Productos Destacados",
+        "subtitle": "Equipamiento de alta demanda con entrega inmediata y garantía oficial DACAS",
+        "productIds": []
+      },
+      "custom": {
+        "enabled": true,
+        "title": "⚡ Oportunidades & Novedades IT",
+        "subtitle": "Soluciones corporativas seleccionadas con precios mayoristas especiales para canales",
+        "productIds": []
+      }
+    },
+    "brandCustomInfo": {
+      "fortinet": {
+        "name": "Fortinet",
+        "logo": "",
+        "tagline": "Seguridad de Red Convergente y Firewalls NGFW FortiGate",
+        "color": "#EE3124"
+      },
+      "avaya": {
+        "name": "Avaya",
+        "logo": "",
+        "tagline": "Líder en Contact Center y Comunicaciones Unificadas",
+        "color": "#CC0000"
+      },
+      "vertiv": {
+        "name": "Vertiv",
+        "logo": "",
+        "tagline": "Climatización Crítica Liebert, UPS y Micro-Datacenters",
+        "color": "#FF4500"
+      },
+      "mikrotik": {
+        "name": "MikroTik",
+        "logo": "",
+        "tagline": "Routers, Switches de alta capacidad y RouterOS",
+        "color": "#D8232A"
+      },
+      "aruba": {
+        "name": "Aruba",
+        "logo": "",
+        "tagline": "Puntos de Acceso Wi-Fi 6 y Switching Corporativo Cloud",
+        "color": "#FF8300"
+      },
+      "f5": {
+        "name": "F5 Networks",
+        "logo": "",
+        "tagline": "Seguridad y Entrega Multi-Cloud de Aplicaciones & DDoS",
+        "color": "#E2231A"
+      },
+      "algosec": {
+        "name": "AlgoSec",
+        "logo": "",
+        "tagline": "Automatización de Seguridad y Políticas de Firewall",
+        "color": "#0084C7"
+      },
+      "audiocodes": {
+        "name": "AudioCodes",
+        "logo": "",
+        "tagline": "Gateways de Voz, SBCs y Teléfonos IP Teams",
+        "color": "#005596"
+      },
+      "barracuda": {
+        "name": "Barracuda Networks",
+        "logo": "",
+        "tagline": "Seguridad de Email, WAF y Respaldo en la Nube",
+        "color": "#006699"
+      },
+      "imperva": {
+        "name": "Imperva",
+        "logo": "",
+        "tagline": "Protección Integral de Datos, APIs y WAF Avanzado",
+        "color": "#001E62"
+      },
+      "sophos": {
+        "name": "Sophos",
+        "logo": "",
+        "tagline": "Ciberseguridad Sincronizada, Intercept X Endpoint y XGS",
+        "color": "#00549A"
+      },
+      "sonicwall": {
+        "name": "SonicWall",
+        "logo": "",
+        "tagline": "Firewalls de Nueva Generación TZ / NSa y Acceso Seguro",
+        "color": "#F37023"
+      },
+      "eaton": {
+        "name": "Eaton",
+        "logo": "",
+        "tagline": "Sistemas UPS, PDUs y Protección de Energía Crítica",
+        "color": "#005EB8"
+      },
+      "panduit": {
+        "name": "Panduit",
+        "logo": "",
+        "tagline": "Cableado Estructurado, Canalización y Datacenter Solutions",
+        "color": "#005A9C"
+      },
+      "commscope": {
+        "name": "CommScope",
+        "logo": "",
+        "tagline": "Infraestructura Integral de Redes Ópticas y Cableado",
+        "color": "#005596"
+      },
+      "microsoft": {
+        "name": "Microsoft",
+        "logo": "",
+        "tagline": "Licenciamiento Corporativo CSP, Windows Server y M365",
+        "color": "#00A4EF"
+      }
+    }
+  },
+  "PE": {
+    "announcement": {
+      "enabled": true,
+      "text": "DACAS Perú: Distribución Mayorista Oficial y Soporte Certificado en Perú",
+      "badgeText": "DACAS PE",
+      "link": "#paises"
+    },
+    "general": {
+      "shopTitle": "DACAS Perú B2B Shop",
+      "shopSubtitle": "Plataforma Corporativa de Soluciones IT & Ciberseguridad para Perú",
+      "showCountryBar": true,
+      "contactPhone": "+54 11 4110-3300",
+      "contactEmail": "ventas@dacas.com",
+      "whatsappNumber": "+5491141103300",
+      "headerBadge": "DISTRIBUIDOR OFICIAL MAYORISTA",
+      "primaryColor": "#0fa4de"
+    },
+    "heroSlides": [
+      {
+        "id": 0,
+        "badge": "RED DACAS PERÚ",
+        "badgeIcon": "🌎",
+        "titleLine1": "Distribución Mayorista Oficial",
+        "titleLine2": "En Perú",
+        "titleColor": "#0fa4de",
+        "desc": "Conectando a los principales fabricantes de IT con los integradores de Perú. Stock local y soporte técnico certificado.",
+        "primaryBtn": {
+          "text": "Explorar Catálogo",
+          "cat": "all"
+        },
+        "secondaryBtn": {
+          "text": "Nuestros Países",
+          "cat": "all"
+        },
+        "type": "metrics",
+        "metrics": [
+          {
+            "value": "+25 Años",
+            "label": "Liderando el Mercado IT"
+          },
+          {
+            "value": "12 Países",
+            "label": "Cobertura Regional"
+          },
+          {
+            "value": "24/7",
+            "label": "Soporte y Garantía Oficial"
+          }
+        ],
+        "stats": [
+          {
+            "key": "exp",
+            "target": 25,
+            "suffix": "+ Años",
+            "label": "Liderando el Mercado IT"
+          },
+          {
+            "key": "part",
+            "target": 100,
+            "suffix": "%",
+            "label": "Partners Certificados"
+          },
+          {
+            "key": "cov",
+            "target": 24,
+            "suffix": "/7",
+            "label": "Soporte y Garantía Oficial"
+          }
+        ]
+      },
+      {
+        "id": 1,
+        "badge": "CIBERSEGURIDAD AVANZADA",
+        "badgeIcon": "🛡️",
+        "titleLine1": "Next-Gen Firewalls & IA",
+        "titleLine2": "Protección Integral Fortinet",
+        "titleColor": "#0fa4de",
+        "desc": "Soluciones perimetrales y de centro de datos con tecnología ASIC y suscripciones FortiGuard Enterprise con entrega inmediata.",
+        "primaryBtn": {
+          "text": "Ver Seguridad",
+          "cat": "security"
+        },
+        "secondaryBtn": {
+          "text": "Ver Catálogo Completo",
+          "cat": "all"
+        },
+        "type": "metrics",
+        "metrics": [
+          {
+            "value": "1.4 Gbps",
+            "label": "Rendimiento IPS Real"
+          },
+          {
+            "value": "99.99%",
+            "label": "Disponibilidad Uptime"
+          },
+          {
+            "value": "Zero-Day",
+            "label": "Protección con IA"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "badge": "INFRAESTRUCTURA & ENERGÍA CRÍTICA",
+        "badgeIcon": "⚡",
+        "titleLine1": "Sistemas UPS Online Vertiv & Eaton",
+        "titleLine2": "& Racks de Alta Densidad Panduit",
+        "titleColor": "#38bdf8",
+        "desc": "Protección de energía crítica doble conversión, gabinetes acústicos y cableado estructurado certificado CommScope para salas de servidores y centros de datos.",
+        "primaryBtn": {
+          "text": "Ver Infraestructura",
+          "cat": "infraestructura"
+        },
+        "secondaryBtn": {
+          "text": "Consultar Stock",
+          "cat": "infraestructura"
+        },
+        "type": "metrics",
+        "metrics": [
+          {
+            "value": "3kVA - 20kVA",
+            "label": "Potencia Doble Conversión"
+          },
+          {
+            "value": "Factor 1.0",
+            "label": "Eficiencia Energética"
+          },
+          {
+            "value": "Vertiv/Panduit",
+            "label": "Garantía Oficial DACAS"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "badge": "COMUNICACIONES UNIFICADAS & COLABORACIÓN",
+        "badgeIcon": "📞",
+        "titleLine1": "Telefonía IP AudioCodes Teams",
+        "titleLine2": "& Colaboración Corporativa Avaya",
+        "titleColor": "#10b981",
+        "desc": "Soluciones enterprise de audio y videoconferencia HD certificadas para Microsoft Teams y Zoom, con audio de alta fidelidad y conmutación SIP.",
+        "primaryBtn": {
+          "text": "Ver Comunicaciones Unificadas",
+          "cat": "comunicaciones_unificadas"
+        },
+        "secondaryBtn": {
+          "text": "Explorar Modelos",
+          "cat": "comunicaciones_unificadas"
+        },
+        "type": "metrics",
+        "metrics": [
+          {
+            "value": "Audio HD",
+            "label": "Resolución Óptica y Voz"
+          },
+          {
+            "value": "Avaya Bar",
+            "label": "Salas Inteligentes"
+          },
+          {
+            "value": "Teams/Zoom",
+            "label": "Certificación Oficial"
+          }
+        ]
+      }
+    ],
+    "categories": [
+      {
+        "key": "networking",
+        "name": "Networking",
+        "icon": "🌐",
+        "desc": "Conmutación L2/L3, Routing Core, Wi-Fi 6 y Conectividad Cloud",
+        "enabled": true
+      },
+      {
+        "key": "infraestructura",
+        "name": "Infraestructura",
+        "icon": "⚡",
+        "desc": "Energía Crítica UPS, Gabinetes Racks 42U y Cableado Estructurado",
+        "enabled": true
+      },
+      {
+        "key": "comunicaciones_unificadas",
+        "name": "Comunicaciones Unificadas",
+        "icon": "📞",
+        "desc": "Telefonía IP Corporativa, AudioCodes Teams & Salas Colaborativas Avaya",
+        "enabled": true
+      },
+      {
+        "key": "security",
+        "name": "Seguridad & Ciberseguridad",
+        "icon": "🛡️",
+        "desc": "Next-Gen Firewalls, Sandboxing IA y Protección de Datos",
+        "enabled": true
+      }
+    ],
+    "categoryBrands": {
+      "comunicaciones_unificadas": [
+        "audiocodes",
+        "avaya"
+      ],
+      "security": [
+        "algosec",
+        "barracuda",
+        "fortinet",
+        "f5",
+        "imperva",
+        "hitachi vantara",
+        "infoblox",
+        "nsfocus",
+        "radware",
+        "silver peak",
+        "sophos",
+        "sonicwall",
+        "veracode",
+        "vicarius",
+        "viewtinet"
+      ],
+      "infraestructura": [
+        "avocent",
+        "commscope",
+        "commscope netconnect",
+        "commscope systimax",
+        "eaton",
+        "gabitel",
+        "panduit",
+        "siemon",
+        "vertiv",
+        "tz"
+      ],
+      "networking": [
+        "mikrotik",
+        "aruba",
+        "infoblox",
+        "silver peak",
+        "commscope"
+      ]
+    },
+    "brandBanners": [
+      {
+        "id": "brand_banner_1",
+        "brand": "Fortinet",
+        "title": "Fortinet Security Fabric",
+        "subtitle": "Firewalls NGFW FortiGate y protección perimetral con procesamiento SOC4",
+        "badge": "CIBERSEGURIDAD LÍDER",
+        "accentColor": "#EE3124",
+        "buttonText": "Explorar Fortinet",
+        "imageUrl": "",
+        "targetCategory": "security",
+        "enabled": true
+      },
+      {
+        "id": "brand_banner_2",
+        "brand": "Vertiv",
+        "title": "Vertiv Critical Power",
+        "subtitle": "Sistemas UPS Online doble conversión y racks de alta densidad para Data Centers",
+        "badge": "ENERGÍA CRÍTICA",
+        "accentColor": "#38bdf8",
+        "buttonText": "Ver Soluciones Vertiv",
+        "imageUrl": "",
+        "targetCategory": "infraestructura",
+        "enabled": true
+      },
+      {
+        "id": "brand_banner_3",
+        "brand": "MikroTik",
+        "title": "MikroTik Routing & Core",
+        "subtitle": "Switches gestionables Gigabit PoE+ y routers para enlaces de fibra óptica de alto tráfico",
+        "badge": "NETWORKING ENTERPRISE",
+        "accentColor": "#10b981",
+        "buttonText": "Ver Equipos MikroTik",
+        "imageUrl": "",
+        "targetCategory": "networking",
+        "enabled": true
+      }
+    ],
+    "homeCarousels": {
+      "featured": {
+        "enabled": true,
+        "title": "🔥 Productos Destacados",
+        "subtitle": "Equipamiento de alta demanda con entrega inmediata y garantía oficial DACAS",
+        "productIds": []
+      },
+      "custom": {
+        "enabled": true,
+        "title": "⚡ Oportunidades & Novedades IT",
+        "subtitle": "Soluciones corporativas seleccionadas con precios mayoristas especiales para canales",
+        "productIds": []
+      }
+    },
+    "brandCustomInfo": {
+      "fortinet": {
+        "name": "Fortinet",
+        "logo": "",
+        "tagline": "Seguridad de Red Convergente y Firewalls NGFW FortiGate",
+        "color": "#EE3124"
+      },
+      "avaya": {
+        "name": "Avaya",
+        "logo": "",
+        "tagline": "Líder en Contact Center y Comunicaciones Unificadas",
+        "color": "#CC0000"
+      },
+      "vertiv": {
+        "name": "Vertiv",
+        "logo": "",
+        "tagline": "Climatización Crítica Liebert, UPS y Micro-Datacenters",
+        "color": "#FF4500"
+      },
+      "mikrotik": {
+        "name": "MikroTik",
+        "logo": "",
+        "tagline": "Routers, Switches de alta capacidad y RouterOS",
+        "color": "#D8232A"
+      },
+      "aruba": {
+        "name": "Aruba",
+        "logo": "",
+        "tagline": "Puntos de Acceso Wi-Fi 6 y Switching Corporativo Cloud",
+        "color": "#FF8300"
+      },
+      "f5": {
+        "name": "F5 Networks",
+        "logo": "",
+        "tagline": "Seguridad y Entrega Multi-Cloud de Aplicaciones & DDoS",
+        "color": "#E2231A"
+      },
+      "algosec": {
+        "name": "AlgoSec",
+        "logo": "",
+        "tagline": "Automatización de Seguridad y Políticas de Firewall",
+        "color": "#0084C7"
+      },
+      "audiocodes": {
+        "name": "AudioCodes",
+        "logo": "",
+        "tagline": "Gateways de Voz, SBCs y Teléfonos IP Teams",
+        "color": "#005596"
+      },
+      "barracuda": {
+        "name": "Barracuda Networks",
+        "logo": "",
+        "tagline": "Seguridad de Email, WAF y Respaldo en la Nube",
+        "color": "#006699"
+      },
+      "imperva": {
+        "name": "Imperva",
+        "logo": "",
+        "tagline": "Protección Integral de Datos, APIs y WAF Avanzado",
+        "color": "#001E62"
+      },
+      "sophos": {
+        "name": "Sophos",
+        "logo": "",
+        "tagline": "Ciberseguridad Sincronizada, Intercept X Endpoint y XGS",
+        "color": "#00549A"
+      },
+      "sonicwall": {
+        "name": "SonicWall",
+        "logo": "",
+        "tagline": "Firewalls de Nueva Generación TZ / NSa y Acceso Seguro",
+        "color": "#F37023"
+      },
+      "eaton": {
+        "name": "Eaton",
+        "logo": "",
+        "tagline": "Sistemas UPS, PDUs y Protección de Energía Crítica",
+        "color": "#005EB8"
+      },
+      "panduit": {
+        "name": "Panduit",
+        "logo": "",
+        "tagline": "Cableado Estructurado, Canalización y Datacenter Solutions",
+        "color": "#005A9C"
+      },
+      "commscope": {
+        "name": "CommScope",
+        "logo": "",
+        "tagline": "Infraestructura Integral de Redes Ópticas y Cableado",
+        "color": "#005596"
+      },
+      "microsoft": {
+        "name": "Microsoft",
+        "logo": "",
+        "tagline": "Licenciamiento Corporativo CSP, Windows Server y M365",
+        "color": "#00A4EF"
+      }
+    }
+  },
+  "BO": {
+    "announcement": {
+      "enabled": true,
+      "text": "DACAS Bolivia: Distribución Mayorista Oficial y Soporte Certificado en Bolivia",
+      "badgeText": "DACAS BO",
+      "link": "#paises"
+    },
+    "general": {
+      "shopTitle": "DACAS Bolivia B2B Shop",
+      "shopSubtitle": "Plataforma Corporativa de Soluciones IT & Ciberseguridad para Bolivia",
+      "showCountryBar": true,
+      "contactPhone": "+54 11 4110-3300",
+      "contactEmail": "ventas@dacas.com",
+      "whatsappNumber": "+5491141103300",
+      "headerBadge": "DISTRIBUIDOR OFICIAL MAYORISTA",
+      "primaryColor": "#0fa4de"
+    },
+    "heroSlides": [
+      {
+        "id": 0,
+        "badge": "RED DACAS BOLIVIA",
+        "badgeIcon": "🌎",
+        "titleLine1": "Distribución Mayorista Oficial",
+        "titleLine2": "En Bolivia",
+        "titleColor": "#0fa4de",
+        "desc": "Conectando a los principales fabricantes de IT con los integradores de Bolivia. Stock local y soporte técnico certificado.",
+        "primaryBtn": {
+          "text": "Explorar Catálogo",
+          "cat": "all"
+        },
+        "secondaryBtn": {
+          "text": "Nuestros Países",
+          "cat": "all"
+        },
+        "type": "metrics",
+        "metrics": [
+          {
+            "value": "+25 Años",
+            "label": "Liderando el Mercado IT"
+          },
+          {
+            "value": "12 Países",
+            "label": "Cobertura Regional"
+          },
+          {
+            "value": "24/7",
+            "label": "Soporte y Garantía Oficial"
+          }
+        ],
+        "stats": [
+          {
+            "key": "exp",
+            "target": 25,
+            "suffix": "+ Años",
+            "label": "Liderando el Mercado IT"
+          },
+          {
+            "key": "part",
+            "target": 100,
+            "suffix": "%",
+            "label": "Partners Certificados"
+          },
+          {
+            "key": "cov",
+            "target": 24,
+            "suffix": "/7",
+            "label": "Soporte y Garantía Oficial"
+          }
+        ]
+      },
+      {
+        "id": 1,
+        "badge": "CIBERSEGURIDAD AVANZADA",
+        "badgeIcon": "🛡️",
+        "titleLine1": "Next-Gen Firewalls & IA",
+        "titleLine2": "Protección Integral Fortinet",
+        "titleColor": "#0fa4de",
+        "desc": "Soluciones perimetrales y de centro de datos con tecnología ASIC y suscripciones FortiGuard Enterprise con entrega inmediata.",
+        "primaryBtn": {
+          "text": "Ver Seguridad",
+          "cat": "security"
+        },
+        "secondaryBtn": {
+          "text": "Ver Catálogo Completo",
+          "cat": "all"
+        },
+        "type": "metrics",
+        "metrics": [
+          {
+            "value": "1.4 Gbps",
+            "label": "Rendimiento IPS Real"
+          },
+          {
+            "value": "99.99%",
+            "label": "Disponibilidad Uptime"
+          },
+          {
+            "value": "Zero-Day",
+            "label": "Protección con IA"
+          }
+        ]
+      },
+      {
+        "id": 2,
+        "badge": "INFRAESTRUCTURA & ENERGÍA CRÍTICA",
+        "badgeIcon": "⚡",
+        "titleLine1": "Sistemas UPS Online Vertiv & Eaton",
+        "titleLine2": "& Racks de Alta Densidad Panduit",
+        "titleColor": "#38bdf8",
+        "desc": "Protección de energía crítica doble conversión, gabinetes acústicos y cableado estructurado certificado CommScope para salas de servidores y centros de datos.",
+        "primaryBtn": {
+          "text": "Ver Infraestructura",
+          "cat": "infraestructura"
+        },
+        "secondaryBtn": {
+          "text": "Consultar Stock",
+          "cat": "infraestructura"
+        },
+        "type": "metrics",
+        "metrics": [
+          {
+            "value": "3kVA - 20kVA",
+            "label": "Potencia Doble Conversión"
+          },
+          {
+            "value": "Factor 1.0",
+            "label": "Eficiencia Energética"
+          },
+          {
+            "value": "Vertiv/Panduit",
+            "label": "Garantía Oficial DACAS"
+          }
+        ]
+      },
+      {
+        "id": 3,
+        "badge": "COMUNICACIONES UNIFICADAS & COLABORACIÓN",
+        "badgeIcon": "📞",
+        "titleLine1": "Telefonía IP AudioCodes Teams",
+        "titleLine2": "& Colaboración Corporativa Avaya",
+        "titleColor": "#10b981",
+        "desc": "Soluciones enterprise de audio y videoconferencia HD certificadas para Microsoft Teams y Zoom, con audio de alta fidelidad y conmutación SIP.",
+        "primaryBtn": {
+          "text": "Ver Comunicaciones Unificadas",
+          "cat": "comunicaciones_unificadas"
+        },
+        "secondaryBtn": {
+          "text": "Explorar Modelos",
+          "cat": "comunicaciones_unificadas"
+        },
+        "type": "metrics",
+        "metrics": [
+          {
+            "value": "Audio HD",
+            "label": "Resolución Óptica y Voz"
+          },
+          {
+            "value": "Avaya Bar",
+            "label": "Salas Inteligentes"
+          },
+          {
+            "value": "Teams/Zoom",
+            "label": "Certificación Oficial"
+          }
+        ]
+      }
+    ],
+    "categories": [
+      {
+        "key": "networking",
+        "name": "Networking",
+        "icon": "🌐",
+        "desc": "Conmutación L2/L3, Routing Core, Wi-Fi 6 y Conectividad Cloud",
+        "enabled": true
+      },
+      {
+        "key": "infraestructura",
+        "name": "Infraestructura",
+        "icon": "⚡",
+        "desc": "Energía Crítica UPS, Gabinetes Racks 42U y Cableado Estructurado",
+        "enabled": true
+      },
+      {
+        "key": "comunicaciones_unificadas",
+        "name": "Comunicaciones Unificadas",
+        "icon": "📞",
+        "desc": "Telefonía IP Corporativa, AudioCodes Teams & Salas Colaborativas Avaya",
+        "enabled": true
+      },
+      {
+        "key": "security",
+        "name": "Seguridad & Ciberseguridad",
+        "icon": "🛡️",
+        "desc": "Next-Gen Firewalls, Sandboxing IA y Protección de Datos",
+        "enabled": true
+      }
+    ],
+    "categoryBrands": {
+      "comunicaciones_unificadas": [
+        "audiocodes",
+        "avaya"
+      ],
+      "security": [
+        "algosec",
+        "barracuda",
+        "fortinet",
+        "f5",
+        "imperva",
+        "hitachi vantara",
+        "infoblox",
+        "nsfocus",
+        "radware",
+        "silver peak",
+        "sophos",
+        "sonicwall",
+        "veracode",
+        "vicarius",
+        "viewtinet"
+      ],
+      "infraestructura": [
+        "avocent",
+        "commscope",
+        "commscope netconnect",
+        "commscope systimax",
+        "eaton",
+        "gabitel",
+        "panduit",
+        "siemon",
+        "vertiv",
+        "tz"
+      ],
+      "networking": [
+        "mikrotik",
+        "aruba",
+        "infoblox",
+        "silver peak",
+        "commscope"
+      ]
+    },
+    "brandBanners": [
+      {
+        "id": "brand_banner_1",
+        "brand": "Fortinet",
+        "title": "Fortinet Security Fabric",
+        "subtitle": "Firewalls NGFW FortiGate y protección perimetral con procesamiento SOC4",
+        "badge": "CIBERSEGURIDAD LÍDER",
+        "accentColor": "#EE3124",
+        "buttonText": "Explorar Fortinet",
+        "imageUrl": "",
+        "targetCategory": "security",
+        "enabled": true
+      },
+      {
+        "id": "brand_banner_2",
+        "brand": "Vertiv",
+        "title": "Vertiv Critical Power",
+        "subtitle": "Sistemas UPS Online doble conversión y racks de alta densidad para Data Centers",
+        "badge": "ENERGÍA CRÍTICA",
+        "accentColor": "#38bdf8",
+        "buttonText": "Ver Soluciones Vertiv",
+        "imageUrl": "",
+        "targetCategory": "infraestructura",
+        "enabled": true
+      },
+      {
+        "id": "brand_banner_3",
+        "brand": "MikroTik",
+        "title": "MikroTik Routing & Core",
+        "subtitle": "Switches gestionables Gigabit PoE+ y routers para enlaces de fibra óptica de alto tráfico",
+        "badge": "NETWORKING ENTERPRISE",
+        "accentColor": "#10b981",
+        "buttonText": "Ver Equipos MikroTik",
+        "imageUrl": "",
+        "targetCategory": "networking",
+        "enabled": true
+      }
+    ],
+    "homeCarousels": {
+      "featured": {
+        "enabled": true,
+        "title": "🔥 Productos Destacados",
+        "subtitle": "Equipamiento de alta demanda con entrega inmediata y garantía oficial DACAS",
+        "productIds": []
+      },
+      "custom": {
+        "enabled": true,
+        "title": "⚡ Oportunidades & Novedades IT",
+        "subtitle": "Soluciones corporativas seleccionadas con precios mayoristas especiales para canales",
+        "productIds": []
+      }
+    },
+    "brandCustomInfo": {
+      "fortinet": {
+        "name": "Fortinet",
+        "logo": "",
+        "tagline": "Seguridad de Red Convergente y Firewalls NGFW FortiGate",
+        "color": "#EE3124"
+      },
+      "avaya": {
+        "name": "Avaya",
+        "logo": "",
+        "tagline": "Líder en Contact Center y Comunicaciones Unificadas",
+        "color": "#CC0000"
+      },
+      "vertiv": {
+        "name": "Vertiv",
+        "logo": "",
+        "tagline": "Climatización Crítica Liebert, UPS y Micro-Datacenters",
+        "color": "#FF4500"
+      },
+      "mikrotik": {
+        "name": "MikroTik",
+        "logo": "",
+        "tagline": "Routers, Switches de alta capacidad y RouterOS",
+        "color": "#D8232A"
+      },
+      "aruba": {
+        "name": "Aruba",
+        "logo": "",
+        "tagline": "Puntos de Acceso Wi-Fi 6 y Switching Corporativo Cloud",
+        "color": "#FF8300"
+      },
+      "f5": {
+        "name": "F5 Networks",
+        "logo": "",
+        "tagline": "Seguridad y Entrega Multi-Cloud de Aplicaciones & DDoS",
+        "color": "#E2231A"
+      },
+      "algosec": {
+        "name": "AlgoSec",
+        "logo": "",
+        "tagline": "Automatización de Seguridad y Políticas de Firewall",
+        "color": "#0084C7"
+      },
+      "audiocodes": {
+        "name": "AudioCodes",
+        "logo": "",
+        "tagline": "Gateways de Voz, SBCs y Teléfonos IP Teams",
+        "color": "#005596"
+      },
+      "barracuda": {
+        "name": "Barracuda Networks",
+        "logo": "",
+        "tagline": "Seguridad de Email, WAF y Respaldo en la Nube",
+        "color": "#006699"
+      },
+      "imperva": {
+        "name": "Imperva",
+        "logo": "",
+        "tagline": "Protección Integral de Datos, APIs y WAF Avanzado",
+        "color": "#001E62"
+      },
+      "sophos": {
+        "name": "Sophos",
+        "logo": "",
+        "tagline": "Ciberseguridad Sincronizada, Intercept X Endpoint y XGS",
+        "color": "#00549A"
+      },
+      "sonicwall": {
+        "name": "SonicWall",
+        "logo": "",
+        "tagline": "Firewalls de Nueva Generación TZ / NSa y Acceso Seguro",
+        "color": "#F37023"
+      },
+      "eaton": {
+        "name": "Eaton",
+        "logo": "",
+        "tagline": "Sistemas UPS, PDUs y Protección de Energía Crítica",
+        "color": "#005EB8"
+      },
+      "panduit": {
+        "name": "Panduit",
+        "logo": "",
+        "tagline": "Cableado Estructurado, Canalización y Datacenter Solutions",
+        "color": "#005A9C"
+      },
+      "commscope": {
+        "name": "CommScope",
+        "logo": "",
+        "tagline": "Infraestructura Integral de Redes Ópticas y Cableado",
+        "color": "#005596"
+      },
+      "microsoft": {
+        "name": "Microsoft",
+        "logo": "",
+        "tagline": "Licenciamiento Corporativo CSP, Windows Server y M365",
+        "color": "#00A4EF"
+      }
+    }
+  }
+}

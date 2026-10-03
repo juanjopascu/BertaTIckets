@@ -247,6 +247,50 @@ export function CategoryIcon({ name, size = 18, color = 'currentColor', style = 
   );
 }
 
+export function BrandLogoImg({ src, alt, name, color = '#0fa4de', size = 38 }) {
+  const [hasError, setHasError] = useState(false);
+
+  useEffect(() => {
+    setHasError(false);
+  }, [src]);
+
+  const letter = (name || alt || 'D').trim().charAt(0).toUpperCase();
+
+  const finalSrc = src && typeof src === 'string' && src.startsWith('/uploads')
+    ? `http://${window.location.hostname}:3001${src}`
+    : src;
+
+  if (!finalSrc || hasError) {
+    return (
+      <span style={{
+        fontSize: `${Math.round(size * 0.52)}px`,
+        fontWeight: '900',
+        color: color || '#0fa4de',
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        userSelect: 'none',
+        lineHeight: 1
+      }}>
+        {letter}
+      </span>
+    );
+  }
+
+  return (
+    <img
+      src={finalSrc}
+      alt={alt || name || 'Marca'}
+      onError={() => setHasError(true)}
+      style={{
+        maxWidth: '100%',
+        maxHeight: '100%',
+        objectFit: 'contain'
+      }}
+    />
+  );
+}
+
 const CATEGORIES = [
   { key: 'all', label: 'Todos los productos', icon: 'all' },
   { key: 'networking', label: 'Networking', icon: 'networking' },
@@ -255,18 +299,18 @@ const CATEGORIES = [
   { key: 'security', label: 'Security', icon: 'security' },
 ];
 
-const BRAND_INFO = {
+export const BRAND_INFO = {
   // ── Comunicaciones Unificadas ──
   'audiocodes': {
     name: 'AudioCodes',
-    logo: null,
+    logo: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 48" fill="none"><rect width="36" height="36" y="6" rx="8" fill="%23005596"/><text x="18" y="29" font-family="sans-serif" font-weight="900" font-size="16" fill="white" text-anchor="middle">AC</text><text x="46" y="30" font-family="sans-serif" font-weight="800" font-size="18" fill="%23005596">AudioCodes</text></svg>',
     tagline: 'Gateways de Voz, SBCs y Teléfonos IP Teams',
     color: '#005596',
     bg: 'linear-gradient(135deg, rgba(0, 85, 150, 0.08) 0%, rgba(0, 85, 150, 0.02) 100%)'
   },
   'avaya': {
     name: 'Avaya',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/4/4e/Avaya_Logo.svg',
+    logo: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 48" fill="none"><rect width="36" height="36" y="6" rx="8" fill="%23CC0000"/><text x="18" y="29" font-family="sans-serif" font-weight="900" font-size="18" fill="white" text-anchor="middle">A</text><text x="46" y="31" font-family="sans-serif" font-weight="900" font-size="22" fill="%23CC0000" letter-spacing="1">AVAYA</text></svg>',
     tagline: 'Líder en Contact Center y Comunicaciones Unificadas',
     color: '#CC0000',
     bg: 'linear-gradient(135deg, rgba(204, 0, 0, 0.08) 0%, rgba(204, 0, 0, 0.02) 100%)'
@@ -275,28 +319,28 @@ const BRAND_INFO = {
   // ── Seguridad - Ciberseguridad ──
   'algosec': {
     name: 'AlgoSec',
-    logo: null,
+    logo: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 48" fill="none"><rect width="36" height="36" y="6" rx="8" fill="%230084C7"/><text x="18" y="29" font-family="sans-serif" font-weight="900" font-size="18" fill="white" text-anchor="middle">A</text><text x="46" y="30" font-family="sans-serif" font-weight="800" font-size="19" fill="%230084C7">AlgoSec</text></svg>',
     tagline: 'Automatización de Seguridad y Políticas de Firewall',
     color: '#0084C7',
     bg: 'linear-gradient(135deg, rgba(0, 132, 199, 0.08) 0%, rgba(0, 132, 199, 0.02) 100%)'
   },
   'barracuda': {
     name: 'Barracuda Networks',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/5/52/Barracuda_Networks_logo.svg',
+    logo: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 48" fill="none"><rect width="36" height="36" y="6" rx="8" fill="%23006699"/><text x="18" y="29" font-family="sans-serif" font-weight="900" font-size="18" fill="white" text-anchor="middle">B</text><text x="46" y="30" font-family="sans-serif" font-weight="800" font-size="18" fill="%23006699">Barracuda</text></svg>',
     tagline: 'Seguridad de Email, WAF y Respaldo en la Nube',
     color: '#006699',
     bg: 'linear-gradient(135deg, rgba(0, 102, 153, 0.08) 0%, rgba(0, 102, 153, 0.02) 100%)'
   },
   'fortinet': {
     name: 'Fortinet',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/6/64/Fortinet_logo.svg',
+    logo: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 48" fill="none"><rect width="36" height="36" y="6" rx="8" fill="%23EE3124"/><text x="18" y="29" font-family="sans-serif" font-weight="900" font-size="18" fill="white" text-anchor="middle">F</text><text x="46" y="31" font-family="sans-serif" font-weight="900" font-size="20" fill="%23071524" letter-spacing="0.5">FORTINET</text></svg>',
     tagline: 'Seguridad de Red Convergente y Firewalls NGFW FortiGate',
     color: '#EE3124',
     bg: 'linear-gradient(135deg, rgba(238, 49, 36, 0.08) 0%, rgba(238, 49, 36, 0.02) 100%)'
   },
   'f5': {
     name: 'F5 Networks',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/2/23/F5_Networks_logo.svg',
+    logo: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 48" fill="none"><circle cx="20" cy="24" r="16" fill="%23E2231A"/><text x="20" y="30" font-family="sans-serif" font-weight="900" font-size="16" fill="white" text-anchor="middle">f5</text><text x="46" y="30" font-family="sans-serif" font-weight="800" font-size="18" fill="%23071524">Networks</text></svg>',
     tagline: 'Seguridad y Entrega Multi-Cloud de Aplicaciones & DDoS',
     color: '#E2231A',
     bg: 'linear-gradient(135deg, rgba(226, 35, 26, 0.08) 0%, rgba(226, 35, 26, 0.02) 100%)'
@@ -310,7 +354,7 @@ const BRAND_INFO = {
   },
   'hitachi vantara': {
     name: 'Hitachi Vantara',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/3/36/Hitachi_Inspire_the_Next_logo.svg',
+    logo: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 48" fill="none"><rect width="36" height="36" y="6" rx="8" fill="%23E8112D"/><text x="18" y="29" font-family="sans-serif" font-weight="900" font-size="18" fill="white" text-anchor="middle">H</text><text x="46" y="25" font-family="sans-serif" font-weight="900" font-size="16" fill="%23E8112D">HITACHI</text><text x="46" y="38" font-family="sans-serif" font-weight="700" font-size="11" fill="%2364748B">Vantara</text></svg>',
     tagline: 'Almacenamiento Seguro e Infraestructura de Datos Críticos',
     color: '#E8112D',
     bg: 'linear-gradient(135deg, rgba(232, 17, 45, 0.08) 0%, rgba(232, 17, 45, 0.02) 100%)'
@@ -345,14 +389,14 @@ const BRAND_INFO = {
   },
   'sophos': {
     name: 'Sophos',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/3/36/Sophos_Logo_2017.svg',
+    logo: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 48" fill="none"><rect width="36" height="36" y="6" rx="8" fill="%2300549A"/><text x="18" y="29" font-family="sans-serif" font-weight="900" font-size="18" fill="white" text-anchor="middle">S</text><text x="46" y="31" font-family="sans-serif" font-weight="900" font-size="20" fill="%2300549A">SOPHOS</text></svg>',
     tagline: 'Ciberseguridad Sincronizada, Intercept X Endpoint y XGS',
     color: '#00549A',
     bg: 'linear-gradient(135deg, rgba(0, 84, 154, 0.08) 0%, rgba(0, 84, 154, 0.02) 100%)'
   },
   'sonicwall': {
     name: 'SonicWall',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/1/18/SonicWall_Logo.svg',
+    logo: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 48" fill="none"><rect width="36" height="36" y="6" rx="8" fill="%23F37023"/><text x="18" y="29" font-family="sans-serif" font-weight="900" font-size="18" fill="white" text-anchor="middle">S</text><text x="46" y="30" font-family="sans-serif" font-weight="800" font-size="18" fill="%23F37023">SonicWall</text></svg>',
     tagline: 'Firewalls de Nueva Generación TZ / NSa y Acceso Seguro',
     color: '#F37023',
     bg: 'linear-gradient(135deg, rgba(243, 112, 35, 0.08) 0%, rgba(243, 112, 35, 0.02) 100%)'
@@ -389,7 +433,7 @@ const BRAND_INFO = {
   },
   'commscope': {
     name: 'CommScope',
-    logo: null,
+    logo: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 48" fill="none"><rect width="36" height="36" y="6" rx="8" fill="%23005596"/><text x="18" y="29" font-family="sans-serif" font-weight="900" font-size="18" fill="white" text-anchor="middle">C</text><text x="46" y="30" font-family="sans-serif" font-weight="800" font-size="17" fill="%23005596">COMMSCOPE</text></svg>',
     tagline: 'Infraestructura Integral de Redes Ópticas y Cableado',
     color: '#005596',
     bg: 'linear-gradient(135deg, rgba(0, 85, 150, 0.08) 0%, rgba(0, 85, 150, 0.02) 100%)'
@@ -410,7 +454,7 @@ const BRAND_INFO = {
   },
   'eaton': {
     name: 'Eaton',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/2/29/Eaton_Corporation_logo.svg',
+    logo: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 48" fill="none"><rect width="36" height="36" y="6" rx="8" fill="%23005EB8"/><text x="18" y="29" font-family="sans-serif" font-weight="900" font-size="18" fill="white" text-anchor="middle">E</text><text x="46" y="31" font-family="sans-serif" font-weight="900" font-size="21" fill="%23005EB8">EATON</text></svg>',
     tagline: 'Sistemas UPS, PDUs y Protección de Energía Crítica',
     color: '#005EB8',
     bg: 'linear-gradient(135deg, rgba(0, 94, 184, 0.08) 0%, rgba(0, 94, 184, 0.02) 100%)'
@@ -424,7 +468,7 @@ const BRAND_INFO = {
   },
   'panduit': {
     name: 'Panduit',
-    logo: null,
+    logo: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 48" fill="none"><rect width="36" height="36" y="6" rx="8" fill="%23005A9C"/><text x="18" y="29" font-family="sans-serif" font-weight="900" font-size="18" fill="white" text-anchor="middle">P</text><text x="46" y="30" font-family="sans-serif" font-weight="800" font-size="19" fill="%23005A9C">Panduit</text></svg>',
     tagline: 'Cableado Estructurado, Canalización y Datacenter Solutions',
     color: '#005A9C',
     bg: 'linear-gradient(135deg, rgba(0, 90, 156, 0.08) 0%, rgba(0, 90, 156, 0.02) 100%)'
@@ -438,7 +482,7 @@ const BRAND_INFO = {
   },
   'vertiv': {
     name: 'Vertiv',
-    logo: null,
+    logo: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 48" fill="none"><rect width="36" height="36" y="6" rx="8" fill="%23FF4500"/><text x="18" y="29" font-family="sans-serif" font-weight="900" font-size="18" fill="white" text-anchor="middle">V</text><text x="46" y="31" font-family="sans-serif" font-weight="900" font-size="21" fill="%230F172A">VERTIV</text></svg>',
     tagline: 'Climatización Crítica Liebert, UPS y Micro-Datacenters',
     color: '#FF4500',
     bg: 'linear-gradient(135deg, rgba(255, 69, 0, 0.08) 0%, rgba(255, 69, 0, 0.02) 100%)'
@@ -454,21 +498,21 @@ const BRAND_INFO = {
   // ── Networking ──
   'mikrotik': {
     name: 'MikroTik',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/5/53/MikroTik_Logo.svg',
+    logo: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 48" fill="none"><rect width="36" height="36" y="6" rx="8" fill="%23D8232A"/><text x="18" y="29" font-family="sans-serif" font-weight="900" font-size="18" fill="white" text-anchor="middle">M</text><text x="46" y="30" font-family="sans-serif" font-weight="900" font-size="19" fill="%231E293B">MikroTik</text></svg>',
     tagline: 'Routers, Switches de alta capacidad y RouterOS',
     color: '#D8232A',
     bg: 'linear-gradient(135deg, rgba(216, 35, 42, 0.08) 0%, rgba(216, 35, 42, 0.02) 100%)'
   },
   'aruba': {
     name: 'Aruba',
-    logo: null,
+    logo: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 160 48" fill="none"><rect width="36" height="36" y="6" rx="8" fill="%23FF8300"/><text x="18" y="29" font-family="sans-serif" font-weight="900" font-size="18" fill="white" text-anchor="middle">A</text><text x="46" y="31" font-family="sans-serif" font-weight="900" font-size="21" fill="%23FF8300">aruba</text></svg>',
     tagline: 'Puntos de Acceso Wi-Fi 6 y Switching Corporativo Cloud',
     color: '#FF8300',
     bg: 'linear-gradient(135deg, rgba(255, 131, 0, 0.08) 0%, rgba(255, 131, 0, 0.02) 100%)'
   },
   'microsoft': {
     name: 'Microsoft',
-    logo: 'https://upload.wikimedia.org/wikipedia/commons/9/96/Microsoft_logo_%282012%29.svg',
+    logo: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 170 48" fill="none"><rect width="36" height="36" y="6" rx="8" fill="%2300A4EF"/><text x="18" y="29" font-family="sans-serif" font-weight="900" font-size="18" fill="white" text-anchor="middle">M</text><text x="46" y="30" font-family="sans-serif" font-weight="700" font-size="18" fill="%23334155">Microsoft</text></svg>',
     tagline: 'Licenciamiento Corporativo CSP, Windows Server y M365',
     color: '#00A4EF',
     bg: 'linear-gradient(135deg, rgba(0, 164, 239, 0.08) 0%, rgba(0, 164, 239, 0.02) 100%)'
@@ -498,8 +542,10 @@ const CATEGORY_BRANDS_MAP = {
   ]
 };
 
+const DISALLOWED_BRANDS = ['cisco', 'poly', 'ubiquiti', 'dell', 'dell technologies'];
+
 /* ─── Animated Number Counter for Slide 0 (Efecto animado de números) ─── */
-function AnimatedHeroStats({ active }) {
+function AnimatedHeroStats({ active, metrics }) {
   const [count25, setCount25] = useState(0);
   const [count100, setCount100] = useState(0);
   const [count24, setCount24] = useState(0);
@@ -555,17 +601,35 @@ function AnimatedHeroStats({ active }) {
     };
   }, [active]);
 
-  const stats = [
-    { value: `+${count25} Años`, label: 'Liderazgo Regional' },
-    { value: `${count100}% Oficial`, label: 'Garantía de Fábrica' },
-    { value: `${count24}/7`, label: 'Soporte Técnico' }
-  ];
+  const stats = useMemo(() => {
+    if (Array.isArray(metrics) && metrics.length >= 3 && (metrics[0]?.value || metrics[1]?.value || metrics[2]?.value)) {
+      return [
+        {
+          value: count25 > 0 && metrics[0]?.value?.includes('25') ? `+${count25} Años` : (metrics[0]?.value || `+${count25} Años`),
+          label: metrics[0]?.label || 'Liderazgo Regional'
+        },
+        {
+          value: count100 > 0 && metrics[1]?.value?.includes('100') ? `${count100}% Oficial` : (metrics[1]?.value || `${count100}% Oficial`),
+          label: metrics[1]?.label || 'Garantía de Fábrica'
+        },
+        {
+          value: count24 > 0 && metrics[2]?.value?.includes('24') ? `${count24}/7` : (metrics[2]?.value || `${count24}/7`),
+          label: metrics[2]?.label || 'Soporte Técnico'
+        }
+      ];
+    }
+    return [
+      { value: `+${count25} Años`, label: 'Liderazgo Regional' },
+      { value: `${count100}% Oficial`, label: 'Garantía de Fábrica' },
+      { value: `${count24}/7`, label: 'Soporte Técnico' }
+    ];
+  }, [metrics, count25, count100, count24]);
 
   return (
     <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
       {stats.map((stat, idx) => (
         <div
-          key={stat.label}
+          key={stat.label || idx}
           style={{
             textAlign: 'center',
             background: 'rgba(15, 39, 66, 0.75)',
@@ -605,15 +669,20 @@ function AnimatedHeroStats({ active }) {
 const HERO_SLIDES = [
   {
     id: 0,
-    badge: 'DISTRIBUIDOR MAYORISTA DE VALOR AGREGADO',
-    badgeIcon: 'shield',
-    titleLine1: 'Equipamiento IT, Redes',
-    titleLine2: '& Ciberseguridad Enterprise',
+    badge: 'RED REGIONAL DACAS',
+    badgeIcon: 'globe',
+    titleLine1: 'Distribución Mayorista Oficial',
+    titleLine2: 'En 12 Países de América',
     titleColor: '#0fa4de',
-    desc: 'Hardware empresarial de alta disponibilidad, licencias oficiales y soluciones completas para integradores y canales con respaldo técnico oficial.',
-    primaryBtn: { text: 'Ver Networking & Switches', cat: 'networking' },
-    secondaryBtn: { text: 'Security & Firewalls', cat: 'security' },
-    type: 'animated_stats'
+    desc: 'Más de 25 años conectando a los principales fabricantes mundiales de ciberseguridad, networking, infraestructura y comunicaciones unificadas con integradores de toda la región.',
+    primaryBtn: { text: 'Explorar Catálogo', cat: 'all' },
+    secondaryBtn: { text: 'Nuestros Países', cat: 'all' },
+    type: 'metrics',
+    metrics: [
+      { value: '+25 Años', label: 'Liderando el Mercado IT' },
+      { value: '12 Países', label: 'Cobertura Regional' },
+      { value: '24/7', label: 'Soporte y Garantía Oficial' }
+    ]
   },
   {
     id: 1,
@@ -718,6 +787,711 @@ class ShopErrorBoundary extends React.Component {
   }
 }
 
+/* ── Product Carousel Component for Home View ── */
+function ProductCarousel({
+  title,
+  subtitle,
+  badge,
+  badgeColor = '#0fa4de',
+  icon = 'star',
+  products = [],
+  clientUser,
+  selectedCountryCode,
+  selectedCountryObj,
+  onSelectProduct,
+  onAddToCart,
+  justAddedId,
+  onOpenAuth,
+  onViewAll
+}) {
+  const scrollRef = useRef(null);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const handleScroll = (dir) => {
+    if (scrollRef.current) {
+      const amount = dir === 'left' ? -317 : 317;
+      scrollRef.current.scrollBy({ left: amount, behavior: 'smooth' });
+    }
+  };
+
+  // Carrusel dinámico: si tiene más de 4 productos, se va desplazando automáticamente
+  useEffect(() => {
+    if (!products || products.length <= 4 || isHovered) return;
+
+    const interval = setInterval(() => {
+      if (scrollRef.current) {
+        const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+        // Si llegó cerca del final, vuelve al inicio para bucle continuo
+        if (scrollLeft + clientWidth >= scrollWidth - 15) {
+          scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          scrollRef.current.scrollBy({ left: 317, behavior: 'smooth' });
+        }
+      }
+    }, 3500);
+
+    return () => clearInterval(interval);
+  }, [products, isHovered]);
+
+  if (!products || products.length === 0) return null;
+
+  const isDynamic = products.length > 4;
+
+  return (
+    <section style={{ margin: '36px 0 46px' }}>
+      {/* Header */}
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: '20px', flexWrap: 'wrap', gap: '16px' }}>
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' }}>
+            {badge && (
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                background: `${badgeColor}18`,
+                color: badgeColor,
+                border: `1px solid ${badgeColor}33`,
+                fontSize: '11px',
+                fontWeight: '800',
+                padding: '4px 12px',
+                borderRadius: '999px',
+                letterSpacing: '0.05em'
+              }}>
+                <BrandingVectorIcon name={icon} size={12} color={badgeColor} />
+                <span>{badge}</span>
+              </div>
+            )}
+            {isDynamic && (
+              <div style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '5px',
+                fontSize: '11px',
+                fontWeight: '750',
+                color: isHovered ? '#64748B' : '#0fa4de',
+                background: isHovered ? '#F1F5F9' : '#F0F9FF',
+                border: `1px solid ${isHovered ? '#CBD5E1' : '#BAE6FD'}`,
+                padding: '3px 10px',
+                borderRadius: '999px'
+              }}>
+                <span style={{
+                  width: '6px',
+                  height: '6px',
+                  borderRadius: '50%',
+                  background: isHovered ? '#94A3B8' : '#0fa4de',
+                  boxShadow: isHovered ? 'none' : '0 0 6px #0fa4de'
+                }} />
+                <span>{isHovered ? 'Pausado' : 'Dinámico'}</span>
+              </div>
+            )}
+          </div>
+          <h2 style={{ margin: 0, fontSize: '1.6rem', fontWeight: '800', color: '#071524', letterSpacing: '-0.02em' }}>
+            {title}
+          </h2>
+          {subtitle && (
+            <p style={{ margin: '5px 0 0', fontSize: '0.92rem', color: '#64748B' }}>
+              {subtitle}
+            </p>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          {onViewAll && (
+            <button
+              onClick={onViewAll}
+              style={{
+                background: '#FFFFFF',
+                border: '1.5px solid #E2E8F0',
+                color: '#0fa4de',
+                fontWeight: '750',
+                fontSize: '13px',
+                padding: '8px 16px',
+                borderRadius: '999px',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.2s',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.03)'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0fa4de'; e.currentTarget.style.background = '#F0F9FF'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#E2E8F0'; e.currentTarget.style.background = '#FFFFFF'; }}
+            >
+              <span>Ver todos</span>
+              <span>→</span>
+            </button>
+          )}
+          <div style={{ display: 'flex', gap: '6px' }}>
+            <button
+              onClick={() => handleScroll('left')}
+              aria-label="Anterior"
+              style={{
+                width: '38px',
+                height: '38px',
+                borderRadius: '50%',
+                background: '#FFFFFF',
+                border: '1.5px solid #CBD5E1',
+                color: '#071524',
+                fontSize: '18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: '0 2px 5px rgba(0,0,0,0.04)'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0fa4de'; e.currentTarget.style.color = '#0fa4de'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#CBD5E1'; e.currentTarget.style.color = '#071524'; }}
+            >
+              ‹
+            </button>
+            <button
+              onClick={() => handleScroll('right')}
+              aria-label="Siguiente"
+              style={{
+                width: '38px',
+                height: '38px',
+                borderRadius: '50%',
+                background: '#FFFFFF',
+                border: '1.5px solid #CBD5E1',
+                color: '#071524',
+                fontSize: '18px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: '0 2px 5px rgba(0,0,0,0.04)'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0fa4de'; e.currentTarget.style.color = '#0fa4de'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#CBD5E1'; e.currentTarget.style.color = '#071524'; }}
+            >
+              ›
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Horizontal Scroll Track */}
+      <div
+        ref={scrollRef}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        onTouchStart={() => setIsHovered(true)}
+        onTouchEnd={() => setIsHovered(false)}
+        style={{
+          display: 'flex',
+          gap: '22px',
+          overflowX: 'auto',
+          scrollBehavior: 'smooth',
+          padding: '6px 4px 18px',
+          margin: '0 -4px',
+          scrollbarWidth: 'none',
+          msOverflowStyle: 'none'
+        }}
+      >
+        {products.map((product) => (
+          <div key={`carousel-p-${product.id}`} style={{ flex: '0 0 295px', width: '295px', minWidth: '295px', height: '490px' }}>
+            <ProductCard
+              product={product}
+              clientUser={clientUser}
+              selectedCountryCode={selectedCountryCode}
+              selectedCountryObj={selectedCountryObj}
+              onOpenAuth={onOpenAuth}
+              onSelectProduct={() => onSelectProduct(product)}
+              onAddToCart={(e) => {
+                e.stopPropagation();
+                onAddToCart(product, 1);
+              }}
+              justAdded={justAddedId === product.id}
+            />
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+/* ── Brand Promo Banners Component (2 o 3 Banners Promocionales de Marcas) ── */
+function BrandPromoBanners({ banners = [], onBrandClick }) {
+  const activeBanners = useMemo(() => {
+    if (Array.isArray(banners) && banners.length > 0) {
+      const filtered = banners.filter(b => b.enabled !== false);
+      if (filtered.length > 0) return filtered.slice(0, 3);
+    }
+    return [
+      {
+        id: 'fortinet',
+        brand: 'Fortinet',
+        badge: 'CIBERSEGURIDAD LÍDER',
+        title: 'Firewalls Next-Gen FortiGate',
+        subtitle: 'Seguridad convergente de red, SD-WAN y prevención de amenazas por IA',
+        accentColor: '#EE3124',
+        bgGradient: 'linear-gradient(135deg, #180908 0%, #2b1210 50%, #071524 100%)',
+        buttonText: 'Ver Soluciones Fortinet'
+      },
+      {
+        id: 'vertiv',
+        brand: 'Vertiv',
+        badge: 'INFRAESTRUCTURA CRÍTICA',
+        title: 'Sistemas UPS Liebert & Energía',
+        subtitle: 'Continuidad operativa de centros de datos, racks y climatización de precisión',
+        accentColor: '#FF4500',
+        bgGradient: 'linear-gradient(135deg, #1a0d05 0%, #29180c 50%, #071524 100%)',
+        buttonText: 'Ver Soluciones Vertiv'
+      },
+      {
+        id: 'mikrotik',
+        brand: 'MikroTik',
+        badge: 'NETWORKING & ROUTING',
+        title: 'Routers & Switches Carrier 10G/40G',
+        subtitle: 'Máximo rendimiento por puerto, RouterOS y despliegues para ISPs',
+        accentColor: '#00A4EF',
+        bgGradient: 'linear-gradient(135deg, #051929 0%, #0c2538 50%, #071524 100%)',
+        buttonText: 'Ver Soluciones MikroTik'
+      }
+    ];
+  }, [banners]);
+
+  if (activeBanners.length === 0) return null;
+
+  return (
+    <section style={{ margin: '30px 0 46px' }}>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: activeBanners.length === 1 ? '1fr' : activeBanners.length === 2 ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(320px, 1fr))',
+        gap: '22px'
+      }}>
+        {activeBanners.map((banner, idx) => {
+          const accent = banner.accentColor || '#0fa4de';
+          const bg = banner.bgGradient || 'linear-gradient(135deg, #071524 0%, #1e293b 100%)';
+
+          return (
+            <div
+              key={banner.id || idx}
+              onClick={() => onBrandClick(banner.brand)}
+              style={{
+                position: 'relative',
+                background: bg,
+                borderRadius: '24px',
+                padding: '28px 26px',
+                cursor: 'pointer',
+                overflow: 'hidden',
+                border: `1.5px solid ${accent}33`,
+                boxShadow: '0 10px 30px rgba(0,0,0,0.12)',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                minHeight: '215px',
+                transition: 'all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-5px)';
+                e.currentTarget.style.borderColor = accent;
+                e.currentTarget.style.boxShadow = `0 18px 40px rgba(0,0,0,0.22), 0 0 25px ${accent}25`;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'none';
+                e.currentTarget.style.borderColor = `${accent}33`;
+                e.currentTarget.style.boxShadow = '0 10px 30px rgba(0,0,0,0.12)';
+              }}
+            >
+              {/* Glow Accent Background Circle */}
+              <div style={{
+                position: 'absolute',
+                top: '-40px',
+                right: '-40px',
+                width: '180px',
+                height: '180px',
+                borderRadius: '50%',
+                background: `radial-gradient(circle, ${accent}33 0%, transparent 70%)`,
+                pointerEvents: 'none'
+              }} />
+
+              <div>
+                {/* Badge & Brand */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '14px' }}>
+                  <span style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: `${accent}25`,
+                    color: '#ffffff',
+                    border: `1px solid ${accent}55`,
+                    fontSize: '11px',
+                    fontWeight: '800',
+                    padding: '4px 10px',
+                    borderRadius: '999px',
+                    letterSpacing: '0.05em'
+                  }}>
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: accent }} />
+                    {banner.badge || 'PARTNER OFICIAL'}
+                  </span>
+                  <span style={{ color: '#94A3B8', fontSize: '11px', fontWeight: '800', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                    {banner.brand}
+                  </span>
+                </div>
+
+                {/* Title & Subtitle */}
+                <h3 style={{
+                  margin: '0 0 8px',
+                  color: '#ffffff',
+                  fontSize: '1.3rem',
+                  fontWeight: '800',
+                  lineHeight: 1.25,
+                  letterSpacing: '-0.02em'
+                }}>
+                  {banner.title}
+                </h3>
+                <p style={{
+                  margin: 0,
+                  color: '#CBD5E1',
+                  fontSize: '0.86rem',
+                  lineHeight: 1.45,
+                  maxWidth: '380px'
+                }}>
+                  {banner.subtitle}
+                </p>
+              </div>
+
+              {/* Action Button */}
+              <div style={{ marginTop: '22px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  background: accent,
+                  color: '#ffffff',
+                  fontSize: '12.5px',
+                  fontWeight: '800',
+                  padding: '8px 18px',
+                  borderRadius: '999px',
+                  boxShadow: `0 4px 14px ${accent}44`,
+                  transition: 'all 0.2s'
+                }}>
+                  <span>{banner.buttonText || `Explorar ${banner.brand}`}</span>
+                  <span>→</span>
+                </span>
+                <span style={{ fontSize: '11.5px', color: '#94A3B8', fontWeight: '600' }}>
+                  Stock y precios B2B
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+/* ── Brands Directory View Component (Sección Dedicada de Marcas Oficiales) ── */
+function BrandsDirectoryView({
+  products = [],
+  categoryBrandsMap = {},
+  categories = [],
+  brandSearch = '',
+  setBrandSearch,
+  brandCatFilter = 'all',
+  setBrandCatFilter,
+  onSelectBrand,
+  selectedCountryCode,
+  isBrandAllowedInCountry,
+  visualSettings = null
+}) {
+  const brandList = useMemo(() => {
+    const keysSet = new Set(Object.keys(BRAND_INFO));
+    if (visualSettings?.brandCustomInfo) {
+      Object.keys(visualSettings.brandCustomInfo).forEach(k => keysSet.add(k.toLowerCase()));
+    }
+    products.forEach(p => {
+      if (p.brand && !DISALLOWED_BRANDS.includes(p.brand.toLowerCase())) {
+        keysSet.add(p.brand.toLowerCase());
+      }
+    });
+
+    const list = Array.from(keysSet)
+      .filter(k => !DISALLOWED_BRANDS.includes(k.toLowerCase()))
+      .filter(k => isBrandAllowedInCountry(k, brandCatFilter, selectedCountryCode))
+      .map(key => {
+        const info = BRAND_INFO[key] || {
+          name: key.charAt(0).toUpperCase() + key.slice(1),
+          logo: null,
+          tagline: `Soluciones y equipamiento oficial ${key.toUpperCase()}`,
+          color: '#0fa4de',
+          bg: 'linear-gradient(135deg, rgba(15, 164, 222, 0.08) 0%, rgba(15, 164, 222, 0.02) 100%)'
+        };
+
+        const custom = visualSettings?.brandCustomInfo?.[key];
+        const finalName = (custom && custom.name) ? custom.name : (info.name || key);
+        const finalLogo = (custom && custom.logo !== undefined && custom.logo !== '') ? custom.logo : (info.logo || null);
+        const finalTagline = (custom && custom.tagline) ? custom.tagline : info.tagline;
+        const finalColor = (custom && custom.color) ? custom.color : (info.color || '#0fa4de');
+
+        const cats = [];
+        Object.entries(categoryBrandsMap).forEach(([catKey, brands]) => {
+          if (Array.isArray(brands)) {
+            const hasIt = brands.some(item => {
+              const bName = typeof item === 'string' ? item : item?.name;
+              return bName && bName.toLowerCase() === key.toLowerCase();
+            });
+            if (hasIt) cats.push(catKey);
+          }
+        });
+
+        const productCount = products.filter(p => p.brand && p.brand.toLowerCase() === key.toLowerCase()).length;
+
+        return {
+          ...info,
+          key,
+          name: finalName,
+          logo: finalLogo,
+          tagline: finalTagline,
+          color: finalColor,
+          rawName: finalName,
+          categories: cats,
+          productCount
+        };
+      });
+
+    let filtered = list;
+    if (brandCatFilter !== 'all') {
+      filtered = filtered.filter(b => b.categories.includes(brandCatFilter));
+    }
+
+    if (brandSearch.trim()) {
+      const q = brandSearch.toLowerCase().trim();
+      filtered = filtered.filter(b =>
+        b.name.toLowerCase().includes(q) ||
+        b.tagline?.toLowerCase().includes(q) ||
+        b.key.includes(q)
+      );
+    }
+
+    return filtered.sort((a, b) => (b.productCount - a.productCount) || a.name.localeCompare(b.name));
+  }, [products, categoryBrandsMap, brandSearch, brandCatFilter, selectedCountryCode, isBrandAllowedInCountry]);
+
+  return (
+    <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '36px 20px 60px' }}>
+      {/* Header */}
+      <div style={{ marginBottom: '36px', textAlign: 'center' }}>
+        <div style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '8px',
+          background: 'rgba(15, 164, 222, 0.12)',
+          color: '#0fa4de',
+          padding: '6px 16px',
+          borderRadius: '999px',
+          fontSize: '12px',
+          fontWeight: '800',
+          letterSpacing: '0.05em',
+          marginBottom: '14px'
+        }}>
+          <BrandingVectorIcon name="award" size={14} color="#0fa4de" />
+          <span>ALIANZAS & DISTRIBUCIÓN OFICIAL DIRECTA</span>
+        </div>
+        <h1 style={{ margin: '0 0 12px', fontSize: 'clamp(2rem, 3.5vw, 2.5rem)', fontWeight: '900', color: '#071524', letterSpacing: '-0.02em' }}>
+          Marcas & Fabricantes Partners
+        </h1>
+        <p style={{ margin: '0 auto', fontSize: '1rem', color: '#64748B', maxWidth: '720px', lineHeight: 1.6 }}>
+          Accedé al ecosistema de soluciones tecnológicas más robusto del mercado. Cada fabricante cuenta con garantía directa de fábrica, soporte de ingeniería preventa y despacho regional asegurado.
+        </p>
+      </div>
+
+      {/* Filter & Search Bar */}
+      <div style={{
+        background: '#FFFFFF',
+        borderRadius: '20px',
+        padding: '20px 24px',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.04)',
+        border: '1px solid #E2E8F0',
+        marginBottom: '32px',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '16px'
+      }}>
+        {/* Search input */}
+        <div style={{ position: 'relative', width: '100%' }}>
+          <input
+            type="text"
+            value={brandSearch}
+            onChange={(e) => setBrandSearch(e.target.value)}
+            placeholder="Buscar por marca o fabricante (ej: Fortinet, Vertiv, MikroTik, Avaya...)"
+            style={{
+              width: '100%',
+              height: '46px',
+              borderRadius: '12px',
+              border: '1.5px solid #CBD5E1',
+              padding: '0 44px 0 16px',
+              fontSize: '14px',
+              color: '#0F172A',
+              outline: 'none',
+              boxSizing: 'border-box'
+            }}
+          />
+          {brandSearch && (
+            <button
+              onClick={() => setBrandSearch('')}
+              style={{
+                position: 'absolute',
+                right: '12px',
+                top: '50%',
+                transform: 'translateY(-50%)',
+                background: 'none',
+                border: 'none',
+                color: '#94A3B8',
+                fontSize: '18px',
+                cursor: 'pointer',
+                fontWeight: 'bold'
+              }}
+            >
+              ×
+            </button>
+          )}
+        </div>
+
+        {/* Category Pills */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+          <span style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', marginRight: '4px' }}>Área Tecnológica:</span>
+          {[
+            { key: 'all', label: 'Todas las Marcas' },
+            { key: 'security', label: 'Ciberseguridad' },
+            { key: 'networking', label: 'Networking' },
+            { key: 'infraestructura', label: 'Infraestructura' },
+            { key: 'comunicaciones_unificadas', label: 'Comunicaciones Unificadas' }
+          ].map(cat => {
+            const isSel = brandCatFilter === cat.key;
+            return (
+              <button
+                key={cat.key}
+                onClick={() => setBrandCatFilter(cat.key)}
+                style={{
+                  padding: '6px 14px',
+                  borderRadius: '999px',
+                  fontSize: '12.5px',
+                  fontWeight: isSel ? '800' : '600',
+                  border: isSel ? '1.5px solid #0fa4de' : '1px solid #E2E8F0',
+                  background: isSel ? '#0fa4de' : '#F8FAFC',
+                  color: isSel ? '#FFFFFF' : '#475569',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  boxShadow: isSel ? '0 2px 8px rgba(15, 164, 222, 0.3)' : 'none'
+                }}
+              >
+                {cat.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* Grid of Brand Cards */}
+      {brandList.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '60px 0', background: '#FFFFFF', borderRadius: '24px', border: '1px solid #E2E8F0' }}>
+          <div style={{ fontSize: '40px', marginBottom: '12px' }}>🔍</div>
+          <h3 style={{ margin: '0 0 8px', color: '#071524' }}>No encontramos marcas con ese criterio</h3>
+          <p style={{ margin: 0, color: '#64748B' }}>Probá quitando el filtro de búsqueda o cambiando el área tecnológica.</p>
+        </div>
+      ) : (
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '24px' }}>
+          {brandList.map(b => (
+            <div
+              key={b.key}
+              onClick={() => onSelectBrand(b.rawName)}
+              style={{
+                background: '#FFFFFF',
+                borderRadius: '22px',
+                border: '1.5px solid #E2E8F0',
+                padding: '26px',
+                cursor: 'pointer',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'space-between',
+                transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
+                boxShadow: '0 4px 15px rgba(0,0,0,0.03)',
+                position: 'relative'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.transform = 'translateY(-5px)';
+                e.currentTarget.style.borderColor = b.color || '#0fa4de';
+                e.currentTarget.style.boxShadow = `0 14px 34px rgba(0,0,0,0.08), 0 0 0 1px ${b.color || '#0fa4de'}`;
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.transform = 'none';
+                e.currentTarget.style.borderColor = '#E2E8F0';
+                e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.03)';
+              }}
+            >
+              <div>
+                {/* Brand Logo & Product Count Badge */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '18px' }}>
+                  <div style={{
+                    width: '64px',
+                    height: '64px',
+                    borderRadius: '16px',
+                    background: b.bg || 'rgba(15, 164, 222, 0.08)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '8px',
+                    border: '1px solid rgba(0,0,0,0.06)'
+                  }}>
+                    <BrandLogoImg src={b.logo} alt={b.name} name={b.name} color={b.color} size={36} />
+                  </div>
+
+                  <span style={{
+                    background: b.productCount > 0 ? 'rgba(15, 164, 222, 0.1)' : '#F1F5F9',
+                    color: b.productCount > 0 ? (b.color || '#0fa4de') : '#94A3B8',
+                    fontWeight: '800',
+                    fontSize: '11.5px',
+                    padding: '5px 12px',
+                    borderRadius: '999px',
+                    border: `1px solid ${b.productCount > 0 && b.color ? `${b.color}33` : 'rgba(0,0,0,0.06)'}`
+                  }}>
+                    {b.productCount} {b.productCount === 1 ? 'Producto' : 'Productos'}
+                  </span>
+                </div>
+
+                {/* Name & Tagline */}
+                <h3 style={{ margin: '0 0 6px', fontSize: '1.25rem', fontWeight: '800', color: '#071524' }}>
+                  {b.name}
+                </h3>
+                <p style={{ margin: '0 0 20px', fontSize: '0.86rem', color: '#64748B', lineHeight: 1.5 }}>
+                  {b.tagline}
+                </p>
+              </div>
+
+              {/* Action row */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                paddingTop: '16px',
+                borderTop: '1px solid #F1F5F9'
+              }}>
+                <span style={{ fontSize: '11.5px', fontWeight: '700', color: '#94A3B8' }}>
+                  Garantía Directa DACAS
+                </span>
+                <span style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '13px',
+                  fontWeight: '800',
+                  color: b.color || '#0fa4de'
+                }}>
+                  <span>Ver Productos</span>
+                  <span>→</span>
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ShopMain() {
   const navigate = useNavigate();
   const [products, setProducts] = useState([]);
@@ -743,10 +1517,18 @@ function ShopMain() {
   const [visualSettings, setVisualSettings] = useState(null);
 
   const heroSlides = useMemo(() => {
-    if (visualSettings?.heroSlides && Array.isArray(visualSettings.heroSlides) && visualSettings.heroSlides.length > 0) {
-      return visualSettings.heroSlides;
-    }
-    return HERO_SLIDES;
+    const raw = (visualSettings?.heroSlides && Array.isArray(visualSettings.heroSlides) && visualSettings.heroSlides.length > 0)
+      ? visualSettings.heroSlides
+      : HERO_SLIDES;
+    return raw.map((s, idx) => ({
+      ...s,
+      id: s.id !== undefined && s.id !== null ? s.id : idx,
+      metrics: (Array.isArray(s.metrics) && s.metrics.length > 0) ? s.metrics : [
+        { value: '+25 Años', label: 'Liderando el Mercado IT' },
+        { value: '12 Países', label: 'Cobertura Regional' },
+        { value: '24/7', label: 'Soporte y Garantía Oficial' }
+      ]
+    }));
   }, [visualSettings]);
 
   const categories = useMemo(() => {
@@ -802,12 +1584,85 @@ function ShopMain() {
   const [selectedBrand, setSelectedBrand] = useState(null);
   const [addedId, setAddedId] = useState(null);
 
-  // Modal de detalles de producto y carrusel
+  // Vistas principales: 'home' (Principal con carruseles y banners) | 'brands' (Directorio completo de marcas) | 'catalog' (Catálogo paginado)
+  const [activeNavTab, setActiveNavTab] = useState('home');
+  const [catalogPage, setCatalogPage] = useState(1);
+  const [catalogSort, setCatalogSort] = useState('relevance');
+  const [itemsPerPage, setItemsPerPage] = useState(12);
+  const [brandSearch, setBrandSearch] = useState('');
+  const [brandCatFilter, setBrandCatFilter] = useState('all');
+
+  const handleSearchChange = (val) => {
+    setSearch(val);
+    if (val && val.trim()) {
+      setActiveNavTab('catalog');
+      setCatalogPage(1);
+    }
+  };
+
+  const handleGoHome = () => {
+    setActiveNavTab('home');
+    setSearch('');
+    setSelectedBrand(null);
+    setActiveCategory('all');
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('p');
+      window.history.pushState({}, '', url.toString());
+    } catch (_) {}
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleGoBrands = () => {
+    setActiveNavTab('brands');
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('p');
+      window.history.pushState({}, '', url.toString());
+    } catch (_) {}
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleGoCatalog = (category = 'all', brand = null) => {
+    setActiveNavTab('catalog');
+    setActiveCategory(category);
+    setSelectedBrand(brand);
+    setCatalogPage(1);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('p');
+      window.history.pushState({}, '', url.toString());
+    } catch (_) {}
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSelectBrand = (brandName) => {
+    setSelectedBrand(brandName);
+    setActiveCategory('all');
+    setActiveNavTab('catalog');
+    setCatalogPage(1);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('p');
+      window.history.pushState({}, '', url.toString());
+    } catch (_) {}
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Estado y navegación a la Página Dedicada de Producto
   const [selectedProduct, setSelectedProduct] = useState(null);
 
   const handleSelectProduct = (product) => {
     setSelectedProduct(product);
     if (product) {
+      setActiveNavTab('product');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      try {
+        const url = new URL(window.location.href);
+        url.searchParams.set('p', product.id);
+        window.history.pushState({ productId: product.id }, '', url.toString());
+      } catch (_) {}
+
       try {
         const token = localStorage.getItem('dacas_client_token');
         fetch(`${API_BASE_URL}/api/ecommerce/track/product-view`, {
@@ -829,6 +1684,55 @@ function ShopMain() {
       } catch (_) { }
     }
   };
+
+  const handleBackFromProduct = () => {
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('p');
+      window.history.pushState({}, '', url.toString());
+    } catch (_) {}
+    setActiveNavTab('home');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  // Cargar producto automáticamente si viene en URL ?p=ID
+  useEffect(() => {
+    if (!products || products.length === 0) return;
+    try {
+      const url = new URL(window.location.href);
+      const pid = url.searchParams.get('p');
+      if (pid) {
+        const found = products.find(p => String(p.id) === String(pid));
+        if (found) {
+          setSelectedProduct(found);
+          setActiveNavTab('product');
+        }
+      }
+    } catch (_) {}
+  }, [products]);
+
+  // Manejar navegación con botones Atrás y Adelante del navegador
+  useEffect(() => {
+    const handlePopState = () => {
+      try {
+        const url = new URL(window.location.href);
+        const pid = url.searchParams.get('p');
+        if (pid && products && products.length > 0) {
+          const found = products.find(p => String(p.id) === String(pid));
+          if (found) {
+            setSelectedProduct(found);
+            setActiveNavTab('product');
+            return;
+          }
+        }
+        if (activeNavTab === 'product') {
+          setActiveNavTab('home');
+        }
+      } catch (_) {}
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [products, activeNavTab]);
 
 
   // Cliente Auth & Registro B2B
@@ -902,14 +1806,18 @@ function ShopMain() {
   const userMenuRef = useRef(null);
 
   useEffect(() => {
-    fetchProducts();
     fetchCountries();
-    fetchVisualSettings();
   }, []);
 
-  const fetchVisualSettings = async () => {
+  useEffect(() => {
+    fetchProducts(selectedCountryCode);
+    fetchVisualSettings(selectedCountryCode);
+  }, [selectedCountryCode]);
+
+  const fetchVisualSettings = async (targetCountry = selectedCountryCode) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/visual`);
+      const code = targetCountry || selectedCountryCode || 'AR';
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/visual?country=${code}`);
       if (res.ok) {
         const data = await res.json();
         setVisualSettings(data);
@@ -1014,8 +1922,6 @@ function ShopMain() {
   useEffect(() => {
     fetchProducts(selectedCountryCode);
   }, [clientUser, selectedCountryCode]);
-
-  const DISALLOWED_BRANDS = ['cisco', 'poly', 'ubiquiti', 'dell', 'dell technologies'];
 
   const fetchProducts = async (targetCountry = selectedCountryCode) => {
     try {
@@ -1189,10 +2095,15 @@ function ShopMain() {
           color: '#0fa4de',
           bg: 'linear-gradient(135deg, rgba(15, 164, 222, 0.08) 0%, rgba(15, 164, 222, 0.02) 100%)'
         };
+        const custom = visualSettings?.brandCustomInfo?.[brandKey];
+        const finalName = (custom && custom.name) ? custom.name : (info.name || bName);
+        const finalColor = (custom && custom.color) ? custom.color : (info.color || '#0fa4de');
         const count = products.filter((p) => p.brand && p.brand.toLowerCase() === bName.toLowerCase()).length;
         return {
           ...info,
-          rawName: info.name || bName,
+          name: finalName,
+          color: finalColor,
+          rawName: finalName,
           count
         };
       });
@@ -1221,27 +2132,92 @@ function ShopMain() {
         color: '#0fa4de',
         bg: 'linear-gradient(135deg, rgba(15, 164, 222, 0.08) 0%, rgba(15, 164, 222, 0.02) 100%)'
       };
+      const custom = visualSettings?.brandCustomInfo?.[key];
+      const finalName = (custom && custom.name) ? custom.name : (info.name || key);
+      const finalColor = (custom && custom.color) ? custom.color : (info.color || '#0fa4de');
       const count = categoryProducts.filter((p) => p.brand && p.brand.toLowerCase() === (info.name || key).toLowerCase()).length;
       return {
         ...info,
-        rawName: info.name || key,
+        name: finalName,
+        color: finalColor,
+        rawName: finalName,
         count
       };
     });
   }, [activeCategory, categoryProducts, products, categoryBrandsMap, visualSettings, selectedCountryCode]);
 
-  const filtered = products.filter((p) => {
-    if (p.brand && DISALLOWED_BRANDS.includes(p.brand.toLowerCase())) return false;
-    const q = search.toLowerCase();
-    const matchSearch = !search ||
-      (p.name && p.name.toLowerCase().includes(q)) ||
-      (p.description && p.description.toLowerCase().includes(q)) ||
-      (p.sku && p.sku.toLowerCase().includes(q)) ||
-      (p.brand && p.brand.toLowerCase().includes(q));
-    const matchCat = isProductInCat(p, activeCategory);
-    const matchBrand = !selectedBrand || selectedBrand === 'all' || (p.brand && p.brand.toLowerCase() === selectedBrand.toLowerCase());
-    return matchSearch && matchCat && matchBrand;
-  });
+  // Productos para Carrusel 1: Productos Destacados
+  const featuredProducts = useMemo(() => {
+    const config = visualSettings?.homeCarousels?.featured;
+    if (config?.productIds && Array.isArray(config.productIds) && config.productIds.length > 0) {
+      const selected = products.filter(p => config.productIds.includes(p.id));
+      if (selected.length > 0) return selected;
+    }
+    const explicitlyFeatured = products.filter(p => p.is_featured || p.isFeatured || p.featured || p.badge === 'DESTACADO' || p.badge === 'MÁS VENDIDO');
+    if (explicitlyFeatured.length > 0) return explicitlyFeatured;
+    return products.slice(0, 8);
+  }, [products, visualSettings]);
+
+  // Productos para Carrusel 2: Selección Especial DACAS
+  const customCarouselProducts = useMemo(() => {
+    const config = visualSettings?.homeCarousels?.custom;
+    if (config?.productIds && Array.isArray(config.productIds) && config.productIds.length > 0) {
+      const selected = products.filter(p => config.productIds.includes(p.id));
+      if (selected.length > 0) return selected;
+    }
+    const tagged = products.filter(p => p.badge === 'NUEVO' || p.badge === 'ENTERPRISE');
+    if (tagged.length >= 3) return tagged;
+    if (products.length > 4) return products.slice(2, 10);
+    return products;
+  }, [products, visualSettings]);
+
+  // Marcas Oficiales para el Slide / Rail de la Home
+  const featuredBrandKeys = useMemo(() => {
+    const defaultKeys = ['fortinet', 'vertiv', 'mikrotik', 'aruba', 'avaya', 'audiocodes', 'panduit', 'eaton'];
+    const keysSet = new Set(defaultKeys);
+    if (visualSettings?.brandCustomInfo) {
+      Object.keys(visualSettings.brandCustomInfo).forEach(k => {
+        if (k && !DISALLOWED_BRANDS.includes(k.toLowerCase())) {
+          keysSet.add(k.toLowerCase());
+        }
+      });
+    }
+    return Array.from(keysSet).filter(k => isBrandAllowedInCountry(k, 'all', selectedCountryCode));
+  }, [visualSettings, selectedCountryCode, isBrandAllowedInCountry]);
+
+  // Catálogo completo filtrado y ordenado para miles de productos
+  const sortedAndFilteredProducts = useMemo(() => {
+    let list = products.filter((p) => {
+      if (p.brand && DISALLOWED_BRANDS.includes(p.brand.toLowerCase())) return false;
+      const q = search.toLowerCase().trim();
+      const matchSearch = !search ||
+        (p.name && p.name.toLowerCase().includes(q)) ||
+        (p.description && p.description.toLowerCase().includes(q)) ||
+        (p.sku && p.sku.toLowerCase().includes(q)) ||
+        (p.brand && p.brand.toLowerCase().includes(q));
+      const matchCat = isProductInCat(p, activeCategory);
+      const matchBrand = !selectedBrand || selectedBrand === 'all' || (p.brand && p.brand.toLowerCase() === selectedBrand.toLowerCase());
+      return matchSearch && matchCat && matchBrand;
+    });
+
+    if (catalogSort === 'price_asc') {
+      list = [...list].sort((a, b) => ((a.promotional_price || a.price || 0) - (b.promotional_price || b.price || 0)));
+    } else if (catalogSort === 'price_desc') {
+      list = [...list].sort((a, b) => ((b.promotional_price || b.price || 0) - (a.promotional_price || a.price || 0)));
+    } else if (catalogSort === 'name_asc') {
+      list = [...list].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
+    }
+    return list;
+  }, [products, search, activeCategory, selectedBrand, catalogSort]);
+
+  // Compatibilidad hacia atrás con referencias existentes a filtered
+  const filtered = sortedAndFilteredProducts;
+
+  const totalCatalogPages = Math.ceil(sortedAndFilteredProducts.length / itemsPerPage) || 1;
+  const paginatedProducts = useMemo(() => {
+    const start = (catalogPage - 1) * itemsPerPage;
+    return sortedAndFilteredProducts.slice(start, start + itemsPerPage);
+  }, [sortedAndFilteredProducts, catalogPage, itemsPerPage]);
 
   const selectedCountryObj = DACAS_COUNTRIES.find((c) => c.code === selectedCountryCode) || DACAS_COUNTRIES[1];
 
@@ -1337,7 +2313,7 @@ function ShopMain() {
         <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', height: '72px', gap: '24px' }}>
 
           {/* Logo DACAS Shop */}
-          <div onClick={() => navigate('/shop')} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
+          <div onClick={handleGoHome} style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '12px', flexShrink: 0 }}>
             <div style={{
               background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
               color: '#ffffff',
@@ -1362,14 +2338,11 @@ function ShopMain() {
           {/* Botón Home */}
           <button
             type="button"
-            onClick={() => {
-              navigate('/shop');
-              setSearch('');
-              window.scrollTo({ top: 0, behavior: 'smooth' });
-            }}
+            onClick={handleGoHome}
             style={{
-              background: '#F8FAFC',
-              border: '1.5px solid #E2E8F0',
+              background: activeNavTab === 'home' ? '#E0F2FE' : '#F8FAFC',
+              border: '1.5px solid',
+              borderColor: activeNavTab === 'home' ? '#0fa4de' : '#E2E8F0',
               borderRadius: '999px',
               padding: '8px 16px',
               cursor: 'pointer',
@@ -1383,17 +2356,17 @@ function ShopMain() {
               boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
               transition: 'all 0.15s ease'
             }}
-            title="Ir a Home Shop"
+            title="Ir a Inicio"
           >
             <BrandingVectorIcon name="home" size={15} color="#0fa4de" />
-            <span>Home</span>
+            <span>Inicio</span>
           </button>
 
           {/* Search Bar */}
           <form style={{ flex: 1, minWidth: 0, position: 'relative' }} onSubmit={(e) => e.preventDefault()}>
             <input
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => handleSearchChange(e.target.value)}
               type="text"
               placeholder="Buscar productos por modelo, SKU, tecnología, marca..."
               aria-label="Buscar"
@@ -1819,57 +2792,141 @@ function ShopMain() {
         </div>
       </header>
 
-      {/* ── Category Navigation Bar ── */}
+      {/* ── Storefront Navigation Bar ── */}
       <nav style={{ background: '#071524', borderBottom: '1px solid rgba(15, 164, 222, 0.2)', position: 'sticky', top: '72px', zIndex: 99, boxShadow: '0 4px 20px rgba(0,0,0,0.15)' }}>
-        <div style={{ maxWidth: '1320px', width: '100%', margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', minHeight: '52px', gap: '8px', boxSizing: 'border-box' }}>
-          {categories.map((cat) => (
-            <button
-              key={cat.key}
-              onClick={() => handleSelectCategory(cat.key)}
-              style={{
-                flex: 1,
-                minWidth: 0,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                padding: '9px 12px',
-                fontSize: '13.5px',
-                fontWeight: activeCategory === cat.key ? '700' : '600',
-                color: activeCategory === cat.key ? '#FFFFFF' : '#94A3B8',
-                background: activeCategory === cat.key ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : 'rgba(255, 255, 255, 0.03)',
-                border: activeCategory === cat.key ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.06)',
-                borderRadius: '10px',
-                cursor: 'pointer',
-                transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                whiteSpace: 'nowrap',
-                boxShadow: activeCategory === cat.key ? '0 4px 14px rgba(15, 164, 222, 0.35)' : 'none',
-                textAlign: 'center'
-              }}
-              onMouseEnter={(e) => {
-                if (activeCategory !== cat.key) {
-                  e.currentTarget.style.background = 'rgba(15, 164, 222, 0.12)';
-                  e.currentTarget.style.borderColor = 'rgba(15, 164, 222, 0.3)';
-                  e.currentTarget.style.color = '#F1F5F9';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (activeCategory !== cat.key) {
-                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.03)';
-                  e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.06)';
-                  e.currentTarget.style.color = '#94A3B8';
-                }
-              }}
-            >
-              <CategoryIcon name={cat.key || cat.icon} size={16} />
-              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{cat.label || cat.name}</span>
-            </button>
-          ))}
+        <div style={{ maxWidth: '1320px', width: '100%', margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', minHeight: '52px', gap: '8px', boxSizing: 'border-box', overflowX: 'auto' }}>
+          
+          {/* 1. Inicio */}
+          <button
+            onClick={handleGoHome}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '9px 18px',
+              fontSize: '13.5px',
+              fontWeight: activeNavTab === 'home' ? '800' : '600',
+              color: activeNavTab === 'home' ? '#FFFFFF' : '#94A3B8',
+              background: activeNavTab === 'home' ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : 'rgba(255, 255, 255, 0.03)',
+              border: activeNavTab === 'home' ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.06)',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              whiteSpace: 'nowrap',
+              boxShadow: activeNavTab === 'home' ? '0 4px 14px rgba(15, 164, 222, 0.35)' : 'none',
+              flexShrink: 0
+            }}
+          >
+            <BrandingVectorIcon name="home" size={15} color={activeNavTab === 'home' ? '#FFFFFF' : '#94A3B8'} />
+            <span>Inicio</span>
+          </button>
+
+          {/* 2. Marcas Oficiales */}
+          <button
+            onClick={handleGoBrands}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '9px 18px',
+              fontSize: '13.5px',
+              fontWeight: activeNavTab === 'brands' ? '800' : '600',
+              color: activeNavTab === 'brands' ? '#FFFFFF' : '#94A3B8',
+              background: activeNavTab === 'brands' ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : 'rgba(255, 255, 255, 0.03)',
+              border: activeNavTab === 'brands' ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.06)',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              whiteSpace: 'nowrap',
+              boxShadow: activeNavTab === 'brands' ? '0 4px 14px rgba(15, 164, 222, 0.35)' : 'none',
+              flexShrink: 0
+            }}
+          >
+            <BrandingVectorIcon name="award" size={15} color={activeNavTab === 'brands' ? '#FFFFFF' : '#94A3B8'} />
+            <span>Marcas</span>
+            <span style={{
+              background: activeNavTab === 'brands' ? 'rgba(255,255,255,0.25)' : 'rgba(15, 164, 222, 0.2)',
+              color: activeNavTab === 'brands' ? '#FFFFFF' : '#38bdf8',
+              fontSize: '10px',
+              fontWeight: '800',
+              padding: '2px 7px',
+              borderRadius: '999px',
+              marginLeft: '2px'
+            }}>
+              +20
+            </span>
+          </button>
+
+          {/* 3. Catálogo Completo */}
+          <button
+            onClick={() => handleGoCatalog('all', null)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              padding: '9px 18px',
+              fontSize: '13.5px',
+              fontWeight: (activeNavTab === 'catalog' && activeCategory === 'all' && !selectedBrand) ? '800' : '600',
+              color: (activeNavTab === 'catalog' && activeCategory === 'all' && !selectedBrand) ? '#FFFFFF' : '#94A3B8',
+              background: (activeNavTab === 'catalog' && activeCategory === 'all' && !selectedBrand) ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : 'rgba(255, 255, 255, 0.03)',
+              border: (activeNavTab === 'catalog' && activeCategory === 'all' && !selectedBrand) ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.06)',
+              borderRadius: '10px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              whiteSpace: 'nowrap',
+              boxShadow: (activeNavTab === 'catalog' && activeCategory === 'all' && !selectedBrand) ? '0 4px 14px rgba(15, 164, 222, 0.35)' : 'none',
+              flexShrink: 0
+            }}
+          >
+            <CategoryIcon name="all" size={15} color={(activeNavTab === 'catalog' && activeCategory === 'all' && !selectedBrand) ? '#FFFFFF' : '#94A3B8'} />
+            <span>Catálogo</span>
+          </button>
+
+          {/* Separador */}
+          <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.12)', margin: '0 6px', flexShrink: 0 }} />
+
+          {/* Accesos directos a Categorías principales */}
+          {categories.filter(c => c.key !== 'all').map((cat) => {
+            const isSelected = activeNavTab === 'catalog' && activeCategory === cat.key;
+            return (
+              <button
+                key={cat.key}
+                onClick={() => handleGoCatalog(cat.key, null)}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '7px',
+                  padding: '9px 14px',
+                  fontSize: '13px',
+                  fontWeight: isSelected ? '800' : '600',
+                  color: isSelected ? '#FFFFFF' : '#94A3B8',
+                  background: isSelected ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : 'rgba(255, 255, 255, 0.03)',
+                  border: isSelected ? '1px solid #38bdf8' : '1px solid rgba(255, 255, 255, 0.06)',
+                  borderRadius: '10px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  whiteSpace: 'nowrap',
+                  boxShadow: isSelected ? '0 4px 14px rgba(15, 164, 222, 0.35)' : 'none',
+                  flexShrink: 0
+                }}
+              >
+                <CategoryIcon name={cat.key || cat.icon} size={15} color={isSelected ? '#FFFFFF' : '#94A3B8'} />
+                <span>{cat.label || cat.name}</span>
+              </button>
+            );
+          })}
         </div>
       </nav>
 
-      {/* ── Hero Banner Carousel DACAS ── */}
-      {heroSlides.length > 0 && (() => {
+      {/* ── 1. VISTA INICIO (HOME): Hero Slider + Carrusel Destacados + Banners Marcas + Carrusel Especial + Marcas Partners ── */}
+      {activeNavTab === 'home' && (
+        <div>
+          {/* Hero Banner Carousel DACAS */}
+          {heroSlides.length > 0 && (() => {
         const slideIndex = currentHeroSlide >= heroSlides.length ? 0 : currentHeroSlide;
         const currentSlideObj = heroSlides[slideIndex] || heroSlides[0] || HERO_SLIDES[0];
 
@@ -1880,10 +2937,13 @@ function ShopMain() {
             style={{
               background: 'linear-gradient(135deg, #071524 0%, #0f2742 60%, #12354c 100%)',
               color: '#fff',
-              padding: '56px 20px 64px',
+              padding: '30px 20px 42px',
               position: 'relative',
               overflow: 'hidden',
-              minHeight: '340px',
+              height: '420px',
+              minHeight: '420px',
+              maxHeight: '420px',
+              boxSizing: 'border-box',
               display: 'flex',
               alignItems: 'center'
             }}
@@ -1964,7 +3024,7 @@ function ShopMain() {
             )}
 
             {/* Slide Content Container */}
-            <div style={{ maxWidth: '1320px', width: '100%', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '30px', position: 'relative', zIndex: 1, padding: '0 40px' }}>
+            <div style={{ maxWidth: '1320px', width: '100%', height: '100%', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'nowrap', gap: '30px', position: 'relative', zIndex: 1, padding: '0 40px', boxSizing: 'border-box' }}>
 
               {currentSlideObj.type === 'custom_image' && currentSlideObj.imageUrl ? (
                 /* ── Renderizado de Banner Gráfico Completo del Diseñador ── */
@@ -1972,31 +3032,35 @@ function ShopMain() {
                   onClick={() => currentSlideObj.primaryBtn?.cat && handleSelectCategory(currentSlideObj.primaryBtn.cat)}
                   style={{
                     width: '100%',
+                    height: '100%',
                     display: 'flex',
-                    flexDirection: 'column',
                     alignItems: 'center',
                     justifyContent: 'center',
                     cursor: currentSlideObj.primaryBtn?.cat ? 'pointer' : 'default',
-                    transition: 'transform 0.2s ease'
+                    position: 'relative',
+                    overflow: 'hidden',
+                    borderRadius: '18px'
                   }}
-                  onMouseEnter={(e) => { if (currentSlideObj.primaryBtn?.cat) e.currentTarget.style.transform = 'scale(1.005)'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; }}
                 >
                   <img
                     src={currentSlideObj.imageUrl}
                     alt={currentSlideObj.titleLine1 || 'Banner Promocional DACAS'}
                     style={{
-                      maxWidth: '1240px',
                       width: '100%',
-                      maxHeight: '420px',
+                      height: '100%',
+                      maxHeight: '348px',
                       objectFit: 'cover',
+                      objectPosition: 'center',
                       borderRadius: '18px',
                       boxShadow: '0 12px 36px rgba(0,0,0,0.35)',
-                      border: '1px solid rgba(15, 164, 222, 0.25)'
+                      border: '1px solid rgba(15, 164, 222, 0.25)',
+                      transition: 'transform 0.2s ease'
                     }}
+                    onMouseEnter={(e) => { if (currentSlideObj.primaryBtn?.cat) e.currentTarget.style.transform = 'scale(1.005)'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; }}
                   />
                   {currentSlideObj.primaryBtn?.text && (
-                    <div style={{ marginTop: '14px', display: 'flex', gap: '10px' }}>
+                    <div style={{ position: 'absolute', bottom: '18px', right: '24px', zIndex: 2 }}>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -2041,13 +3105,13 @@ function ShopMain() {
                       <BrandingVectorIcon name={currentSlideObj.badgeIcon || 'shield'} size={14} color={currentSlideObj.titleColor || '#38bdf8'} />
                       <span>{currentSlideObj.badge}</span>
                     </div>
-                    <h1 style={{ margin: '0 0 16px', fontSize: 'clamp(2rem, 4vw, 3rem)', fontWeight: '900', letterSpacing: '-0.03em', lineHeight: 1.15 }}>
+                    <h1 style={{ margin: '0 0 12px', fontSize: 'clamp(1.75rem, 3.2vw, 2.5rem)', fontWeight: '900', letterSpacing: '-0.03em', lineHeight: 1.15 }}>
                       {currentSlideObj.titleLine1} <br />
                       <span style={{ color: currentSlideObj.titleColor || '#0fa4de' }}>
                         {currentSlideObj.titleLine2}
                       </span>
                     </h1>
-                    <p style={{ margin: '0 0 28px', color: '#94A3B8', fontSize: '1.05rem', lineHeight: 1.6, maxWidth: '520px' }}>
+                    <p style={{ margin: '0 0 20px', color: '#94A3B8', fontSize: '0.95rem', lineHeight: 1.5, maxWidth: '520px' }}>
                       {currentSlideObj.desc}
                     </p>
                     <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
@@ -2059,9 +3123,9 @@ function ShopMain() {
                             color: '#fff',
                             border: 'none',
                             borderRadius: '999px',
-                            padding: '14px 28px',
+                            padding: '12px 26px',
                             fontWeight: '700',
-                            fontSize: '15px',
+                            fontSize: '14px',
                             cursor: 'pointer',
                             boxShadow: '0 4px 20px rgba(15, 164, 222, 0.4)',
                             transition: 'transform 0.2s'
@@ -2080,9 +3144,9 @@ function ShopMain() {
                             color: '#fff',
                             border: '1px solid rgba(15, 164, 222, 0.3)',
                             borderRadius: '999px',
-                            padding: '14px 28px',
+                            padding: '12px 26px',
                             fontWeight: '600',
-                            fontSize: '15px',
+                            fontSize: '14px',
                             cursor: 'pointer',
                             transition: 'background 0.2s'
                           }}
@@ -2097,9 +3161,9 @@ function ShopMain() {
 
                   {/* Right Visual / Animated Stats */}
                   {currentSlideObj.type === 'animated_stats' ? (
-                    <AnimatedHeroStats active={slideIndex === 0} />
+                    <AnimatedHeroStats active={true} metrics={currentSlideObj.metrics} />
                   ) : (
-                    <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
                       {currentSlideObj.metrics?.map((metric, mIdx) => (
                         <div
                           key={metric.label || mIdx}
@@ -2108,14 +3172,14 @@ function ShopMain() {
                             background: 'rgba(15, 39, 66, 0.75)',
                             backdropFilter: 'blur(12px)',
                             border: '1px solid rgba(15, 164, 222, 0.25)',
-                            borderRadius: '20px',
-                            padding: '24px 28px',
-                            minWidth: '115px',
+                            borderRadius: '16px',
+                            padding: '18px 22px',
+                            minWidth: '110px',
                             boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
                             transition: 'all 0.3s ease'
                           }}
                         >
-                          <div style={{ fontSize: '2.1rem', fontWeight: '900', color: currentSlideObj.titleColor || '#0fa4de' }}>
+                          <div style={{ fontSize: '1.8rem', fontWeight: '900', color: currentSlideObj.titleColor || '#0fa4de' }}>
                             {metric.value}
                           </div>
                           <div style={{ fontSize: '13px', color: '#94A3B8', marginTop: '4px', fontWeight: '600' }}>
@@ -2143,7 +3207,7 @@ function ShopMain() {
               }}>
                 {heroSlides.map((slide, idx) => (
                   <button
-                    key={slide.id || idx}
+                    key={`hero-dot-${slide.id !== undefined && slide.id !== null ? slide.id : idx}`}
                     onClick={() => setCurrentHeroSlide(idx)}
                     aria-label={`Ir al slide ${idx + 1}`}
                     style={{
@@ -2165,324 +3229,457 @@ function ShopMain() {
         );
       })()}
 
-      {/* ── Main Catalog / Brand Selection View ── */}
-      <main style={{ maxWidth: '1320px', margin: '0 auto', padding: '48px 20px 60px' }}>
-        {/* ── PASO 1: SELECCIÓN PREVIA DE MARCA / FABRICANTE (Cuando se selecciona un grupo específico) ── */}
-        {activeCategory !== 'all' && !selectedBrand && !search ? (
-          <div>
-            {/* Breadcrumb y encabezado de paso previo */}
-            <div style={{ marginBottom: '32px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#64748B', marginBottom: '14px' }}>
-                <span onClick={() => { setActiveCategory('all'); setSelectedBrand(null); }} style={{ cursor: 'pointer', color: '#0fa4de', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                  <CategoryIcon name="all" size={14} color="#0fa4de" /> Catálogo
-                </span>
-                <span>/</span>
-                <span style={{ fontWeight: '700', color: '#071524', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                  <CategoryIcon name={currentCategoryObj?.key} size={14} color="#071524" /> {currentCategoryObj?.label}
-                </span>
-                <span>/</span>
-                <span style={{ color: '#94A3B8' }}>Seleccionar Marca</span>
-              </div>
+          {/* Main Home Content Grid */}
+          <main style={{ maxWidth: '1320px', margin: '0 auto', padding: '16px 20px 60px' }}>
+            
+            {/* Carrusel 1: Productos Destacados */}
+            {visualSettings?.homeCarousels?.featured?.enabled !== false && (
+              <ProductCarousel
+                title={visualSettings?.homeCarousels?.featured?.title || "Productos Destacados & Más Vendidos"}
+                subtitle={visualSettings?.homeCarousels?.featured?.subtitle || "Equipamiento enterprise de alta rotación con entrega inmediata"}
+                badge="TOP SELLERS"
+                badgeColor="#0fa4de"
+                icon="star"
+                products={featuredProducts}
+                clientUser={clientUser}
+                selectedCountryCode={selectedCountryCode}
+                selectedCountryObj={selectedCountryObj}
+                onOpenAuth={() => { setAuthMode('login'); setAuthModalOpen(true); }}
+                onSelectProduct={handleSelectProduct}
+                onAddToCart={(p, q) => addToCart(p, q)}
+                justAddedId={addedId}
+                onViewAll={() => handleGoCatalog('all', null)}
+              />
+            )}
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+            {/* Espacio para Banners Promocionales de Marcas (2/3 marcas) */}
+            <BrandPromoBanners
+              banners={visualSettings?.brandBanners}
+              onBrandClick={handleSelectBrand}
+            />
+
+            {/* Carrusel 2: Productos elegidos nosotros (Selección Especial DACAS) */}
+            {visualSettings?.homeCarousels?.custom?.enabled !== false && (
+              <ProductCarousel
+                title={visualSettings?.homeCarousels?.custom?.title || "Selección Especial DACAS & Novedades"}
+                subtitle={visualSettings?.homeCarousels?.custom?.subtitle || "Soluciones tecnológicas recomendadas por nuestro equipo de ingenieros"}
+                badge="SELECCIÓN DACAS"
+                badgeColor="#10b981"
+                icon="shield"
+                products={customCarouselProducts}
+                clientUser={clientUser}
+                selectedCountryCode={selectedCountryCode}
+                selectedCountryObj={selectedCountryObj}
+                onOpenAuth={() => { setAuthMode('login'); setAuthModalOpen(true); }}
+                onSelectProduct={handleSelectProduct}
+                onAddToCart={(p, q) => addToCart(p, q)}
+                justAddedId={addedId}
+                onViewAll={() => handleGoCatalog('all', null)}
+              />
+            )}
+
+            {/* Rail de Marcas Oficiales Destacadas */}
+            <section style={{ margin: '40px 0 20px', background: '#FFFFFF', borderRadius: '24px', padding: '32px 28px', border: '1px solid #E2E8F0', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '22px', flexWrap: 'wrap', gap: '14px' }}>
                 <div>
-                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(15, 164, 222, 0.12)', color: '#0fa4de', padding: '4px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: '800', letterSpacing: '0.05em', marginBottom: '8px' }}>
-                    PASO 1 DE 2 · SELECCIÓN DE FABRICANTE
+                  <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    background: 'rgba(15, 164, 222, 0.1)',
+                    color: '#0fa4de',
+                    fontSize: '11px',
+                    fontWeight: '800',
+                    padding: '4px 12px',
+                    borderRadius: '999px',
+                    letterSpacing: '0.05em',
+                    marginBottom: '8px'
+                  }}>
+                    <BrandingVectorIcon name="award" size={12} color="#0fa4de" />
+                    <span>ALIANZAS & FABRICANTES DIRECTOS</span>
                   </div>
-                  <h2 style={{ margin: '0 0 6px', fontSize: 'clamp(1.5rem, 3vw, 2rem)', fontWeight: '900', color: '#071524', letterSpacing: '-0.02em', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <CategoryIcon name={currentCategoryObj?.key} size={26} color="#0fa4de" />
-                    <span>{currentCategoryObj?.label}</span>
+                  <h2 style={{ margin: 0, fontSize: '1.45rem', fontWeight: '800', color: '#071524' }}>
+                    Marcas Oficiales DACAS
                   </h2>
-                  <p style={{ margin: 0, fontSize: '0.95rem', color: '#64748B', maxWidth: '680px', lineHeight: 1.5 }}>
-                    Selecciona una marca para explorar sus modelos certificados, stock en tiempo real y precios mayoristas oficiales:
+                  <p style={{ margin: '4px 0 0', fontSize: '0.88rem', color: '#64748B' }}>
+                    Distribución oficial regional con garantía de fábrica y soporte certificado.
                   </p>
                 </div>
 
                 <button
-                  onClick={() => setSelectedBrand('all')}
+                  onClick={handleGoBrands}
                   style={{
-                    background: '#FFFFFF',
-                    border: '1px solid #CBD5E1',
-                    borderRadius: '12px',
-                    padding: '10px 18px',
+                    background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                    color: '#ffffff',
+                    border: 'none',
+                    borderRadius: '999px',
+                    padding: '10px 20px',
                     fontSize: '13px',
-                    fontWeight: '700',
-                    color: '#071524',
+                    fontWeight: '800',
                     cursor: 'pointer',
-                    display: 'flex',
+                    display: 'inline-flex',
                     alignItems: 'center',
                     gap: '8px',
-                    boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+                    boxShadow: '0 4px 14px rgba(15, 164, 222, 0.35)',
                     transition: 'all 0.2s'
                   }}
-                  onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0fa4de'; e.currentTarget.style.color = '#0fa4de'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#CBD5E1'; e.currentTarget.style.color = '#071524'; }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
                 >
-                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                    <BrandingVectorIcon name="box" size={14} color="currentColor" />
-                    Ver Todos los Productos ({categoryProducts.length}) →
-                  </span>
+                  <span>Ver todas las marcas (+20)</span>
+                  <span>→</span>
                 </button>
+              </div>
+
+              {/* Grid de Marcas Destacadas */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: '14px' }}>
+                {featuredBrandKeys.map((bKey) => {
+                  const keyLower = (bKey || '').toLowerCase();
+                  const custom = visualSettings?.brandCustomInfo?.[keyLower];
+                  const bInfo = BRAND_INFO[keyLower] || { name: bKey.charAt(0).toUpperCase() + bKey.slice(1), color: '#0fa4de' };
+                  const finalName = (custom && custom.name) ? custom.name : (bInfo.name || bKey);
+                  const finalLogo = (custom && custom.logo !== undefined && custom.logo !== '') ? custom.logo : (bInfo.logo || null);
+                  const finalColor = (custom && custom.color) ? custom.color : (bInfo.color || '#0fa4de');
+
+                  return (
+                    <div
+                      key={keyLower}
+                      onClick={() => handleSelectBrand(finalName)}
+                      style={{
+                        background: '#F8FAFC',
+                        border: '1.5px solid #E2E8F0',
+                        borderRadius: '16px',
+                        padding: '16px 10px',
+                        textAlign: 'center',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '10px',
+                        minHeight: '108px'
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.transform = 'translateY(-4px)';
+                        e.currentTarget.style.borderColor = finalColor;
+                        e.currentTarget.style.boxShadow = `0 8px 20px rgba(0,0,0,0.06), 0 0 0 1px ${finalColor}33`;
+                        e.currentTarget.style.background = '#FFFFFF';
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.transform = 'none';
+                        e.currentTarget.style.borderColor = '#E2E8F0';
+                        e.currentTarget.style.boxShadow = 'none';
+                        e.currentTarget.style.background = '#F8FAFC';
+                      }}
+                    >
+                      <div style={{ height: '42px', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 4px' }}>
+                        <BrandLogoImg src={finalLogo} alt={finalName} name={finalName} color={finalColor} size={36} />
+                      </div>
+                      <span style={{ fontSize: '12px', fontWeight: '800', color: '#334155', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {finalName}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          </main>
+        </div>
+      )}
+
+      {/* ── 2. VISTA MARCAS DEDICADA: Directorio completo con buscador, filtros y tarjetas de fabricantes ── */}
+      {activeNavTab === 'brands' && (
+        <BrandsDirectoryView
+          products={products}
+          categoryBrandsMap={categoryBrandsMap}
+          categories={categories}
+          brandSearch={brandSearch}
+          setBrandSearch={setBrandSearch}
+          brandCatFilter={brandCatFilter}
+          setBrandCatFilter={setBrandCatFilter}
+          onSelectBrand={handleSelectBrand}
+          selectedCountryCode={selectedCountryCode}
+          isBrandAllowedInCountry={isBrandAllowedInCountry}
+          visualSettings={visualSettings}
+        />
+      )}
+
+      {/* ── 3. VISTA CATÁLOGO COMPLETO: Diagramado para Miles de Productos con Filtros, Ordenamiento y Paginación ── */}
+      {activeNavTab === 'catalog' && (
+        <main style={{ maxWidth: '1320px', margin: '0 auto', padding: '36px 20px 60px' }}>
+          
+          {/* Breadcrumbs */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#64748B', marginBottom: '14px', flexWrap: 'wrap' }}>
+            <span onClick={handleGoHome} style={{ cursor: 'pointer', color: '#0fa4de', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+              <BrandingVectorIcon name="home" size={13} color="#0fa4de" /> Inicio
+            </span>
+            <span>/</span>
+            <span
+              onClick={() => { setActiveCategory('all'); setSelectedBrand(null); setCatalogPage(1); }}
+              style={{ cursor: 'pointer', color: activeCategory === 'all' && !selectedBrand ? '#071524' : '#0fa4de', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
+            >
+              Catálogo
+            </span>
+            {activeCategory !== 'all' && (
+              <>
+                <span>/</span>
+                <span
+                  onClick={() => { setSelectedBrand(null); setCatalogPage(1); }}
+                  style={{ cursor: 'pointer', color: !selectedBrand ? '#071524' : '#0fa4de', fontWeight: '700' }}
+                >
+                  {currentCategoryObj?.label}
+                </span>
+              </>
+            )}
+            {selectedBrand && (
+              <>
+                <span>/</span>
+                <span style={{ fontWeight: '800', color: '#071524' }}>
+                  {selectedBrand === 'all' ? 'Todas las Marcas' : selectedBrand}
+                </span>
+              </>
+            )}
+          </div>
+
+          {/* Catalog Top Toolbar: Header, Total Count, Sorting & Items per page */}
+          <div style={{
+            background: '#FFFFFF',
+            borderRadius: '20px',
+            padding: '22px 24px',
+            border: '1px solid #E2E8F0',
+            boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
+            marginBottom: '26px'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+              <div>
+                <h1 style={{ margin: 0, fontSize: '1.65rem', fontWeight: '800', color: '#071524', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                  <span>{selectedBrand && selectedBrand !== 'all' ? `Productos ${selectedBrand}` : currentCategoryObj?.label || 'Catálogo de Soluciones'}</span>
+                  {selectedBrand && selectedBrand !== 'all' && activeCategory !== 'all' && (
+                    <span style={{ fontSize: '1rem', fontWeight: '600', color: '#64748B' }}>
+                      en {currentCategoryObj?.label}
+                    </span>
+                  )}
+                </h1>
+                <p style={{ margin: '4px 0 0', fontSize: '0.9rem', color: '#64748B' }}>
+                  {sortedAndFilteredProducts.length > 0 ? (
+                    <>
+                      Mostrando <strong>{(catalogPage - 1) * itemsPerPage + 1} - {Math.min(catalogPage * itemsPerPage, sortedAndFilteredProducts.length)}</strong> de <strong>{sortedAndFilteredProducts.length}</strong> {sortedAndFilteredProducts.length === 1 ? 'producto' : 'productos'} para distribución mayorista
+                    </>
+                  ) : (
+                    '0 productos disponibles para los criterios seleccionados'
+                  )}
+                </p>
+              </div>
+
+              {/* Controles de ordenamiento y cantidad por página */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <label htmlFor="catalog-sort" style={{ fontSize: '12px', fontWeight: '700', color: '#64748B' }}>Ordenar:</label>
+                  <select
+                    id="catalog-sort"
+                    value={catalogSort}
+                    onChange={(e) => { setCatalogSort(e.target.value); setCatalogPage(1); }}
+                    style={{
+                      height: '38px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #CBD5E1',
+                      padding: '0 12px',
+                      fontSize: '13px',
+                      fontWeight: '700',
+                      color: '#071524',
+                      background: '#F8FAFC',
+                      cursor: 'pointer',
+                      outline: 'none'
+                    }}
+                  >
+                    <option value="relevance">Más Relevantes</option>
+                    <option value="price_asc">Menor Precio</option>
+                    <option value="price_desc">Mayor Precio</option>
+                    <option value="name_asc">Nombre (A - Z)</option>
+                  </select>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <label htmlFor="catalog-per-page" style={{ fontSize: '12px', fontWeight: '700', color: '#64748B' }}>Por pág:</label>
+                  <select
+                    id="catalog-per-page"
+                    value={itemsPerPage}
+                    onChange={(e) => { setItemsPerPage(Number(e.target.value)); setCatalogPage(1); }}
+                    style={{
+                      height: '38px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #CBD5E1',
+                      padding: '0 10px',
+                      fontSize: '13px',
+                      fontWeight: '700',
+                      color: '#071524',
+                      background: '#F8FAFC',
+                      cursor: 'pointer',
+                      outline: 'none'
+                    }}
+                  >
+                    <option value={12}>12</option>
+                    <option value={24}>24</option>
+                    <option value={48}>48</option>
+                  </select>
+                </div>
               </div>
             </div>
 
-            {/* Grid de Marcas */}
-            {availableBrands.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '60px 0', background: '#FFFFFF', borderRadius: '24px', border: '1px solid #E2E8F0' }}>
-                <div style={{ marginBottom: '12px' }}>
-                  <BrandingVectorIcon name="box" size={48} color="#94A3B8" />
-                </div>
-                <h3 style={{ margin: '0 0 8px', color: '#071524' }}>No hay marcas registradas en esta categoría</h3>
-                <p style={{ margin: '0 0 16px', color: '#64748B' }}>Pronto incorporaremos nuevos fabricantes para {currentCategoryObj?.label}.</p>
-                <button
-                  onClick={() => setSelectedBrand('all')}
-                  style={{ background: '#0fa4de', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 20px', fontWeight: '700', cursor: 'pointer' }}
-                >
-                  Ver todos los productos disponibles
-                </button>
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '24px' }}>
-                {availableBrands.map((b) => (
-                  <div
-                    key={b.rawName}
-                    onClick={() => setSelectedBrand(b.rawName)}
-                    style={{
-                      background: '#FFFFFF',
-                      border: '1.5px solid #E2E8F0',
-                      borderRadius: '20px',
-                      padding: '28px',
-                      cursor: 'pointer',
-                      transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      justifyContent: 'space-between',
-                      position: 'relative',
-                      overflow: 'hidden',
-                      boxShadow: '0 4px 15px rgba(0,0,0,0.03)'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'translateY(-4px)';
-                      e.currentTarget.style.borderColor = b.color || '#0fa4de';
-                      e.currentTarget.style.boxShadow = `0 12px 30px rgba(0,0,0,0.08), 0 0 0 1px ${b.color || '#0fa4de'}`;
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'none';
-                      e.currentTarget.style.borderColor = '#E2E8F0';
-                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.03)';
-                    }}
-                  >
-                    <div>
-                      {/* Brand Header */}
-                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-                        <div style={{
-                          width: '64px',
-                          height: '64px',
-                          borderRadius: '16px',
-                          background: b.bg || 'rgba(15, 164, 222, 0.08)',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          padding: '12px',
-                          border: '1px solid rgba(0,0,0,0.06)'
-                        }}>
-                          {b.logo ? (
-                            <img src={b.logo} alt={b.name} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
-                          ) : (
-                            <span style={{ fontSize: '1.6rem', fontWeight: '900', color: b.color || '#0fa4de' }}>
-                              {b.name.charAt(0)}
-                            </span>
-                          )}
-                        </div>
-
-                        <span style={{
-                          background: 'rgba(15, 164, 222, 0.1)',
-                          color: b.color || '#0fa4de',
-                          fontWeight: '800',
-                          fontSize: '12px',
-                          padding: '6px 12px',
-                          borderRadius: '999px',
-                          border: `1px solid ${b.color ? `${b.color}33` : 'rgba(15, 164, 222, 0.2)'}`
-                        }}>
-                          {b.count} {b.count === 1 ? 'Producto' : 'Productos'}
-                        </span>
-                      </div>
-
-                      {/* Brand Title & Tagline */}
-                      <h3 style={{ margin: '0 0 8px', fontSize: '1.35rem', fontWeight: '800', color: '#071524' }}>
-                        {b.name}
-                      </h3>
-                      <p style={{ margin: '0 0 24px', fontSize: '0.88rem', color: '#64748B', lineHeight: 1.5 }}>
-                        {b.tagline}
-                      </p>
-                    </div>
-
-                    {/* Action button */}
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      paddingTop: '16px',
-                      borderTop: '1px solid #F1F5F9'
-                    }}>
-                      <span style={{ fontSize: '12px', fontWeight: '700', color: '#94A3B8' }}>
-                        Garantía Oficial DACAS
-                      </span>
-                      <span style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        fontSize: '13px',
-                        fontWeight: '750',
-                        color: b.color || '#0fa4de'
-                      }}>
-                        Ver Productos <BrandingVectorIcon name="arrow-right" size={13} color="currentColor" />
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        ) : (
-          /* ── PASO 2: LISTADO DE PRODUCTOS FILTRADOS ── */
-          <div>
-            <div style={{ marginBottom: '28px' }}>
-              {/* Breadcrumbs de navegación */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#64748B', marginBottom: '12px', flexWrap: 'wrap' }}>
-                <span onClick={() => { setActiveCategory('all'); setSelectedBrand(null); }} style={{ cursor: 'pointer', color: '#0fa4de', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                  <CategoryIcon name="all" size={14} color="#0fa4de" /> Catálogo
-                </span>
-                <span>/</span>
-                <span
-                  onClick={() => setSelectedBrand(null)}
-                  style={{ cursor: activeCategory !== 'all' ? 'pointer' : 'default', color: activeCategory !== 'all' ? '#0fa4de' : '#071524', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '5px' }}
-                >
-                  <CategoryIcon name={currentCategoryObj?.key} size={14} color={activeCategory !== 'all' ? '#0fa4de' : '#071524'} /> {currentCategoryObj?.label}
-                </span>
-                {selectedBrand && (
-                  <>
-                    <span>/</span>
-                    <span style={{ fontWeight: '750', color: '#071524' }}>
-                      {selectedBrand === 'all' ? 'Todas las Marcas' : selectedBrand}
-                    </span>
-                  </>
-                )}
-              </div>
-
-              {/* Encabezado con título y acciones */}
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
-                <div>
-                  <h2 style={{ margin: 0, fontSize: '1.6rem', fontWeight: '800', color: '#071524', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                    <span>{currentCategoryObj?.label}</span>
-                    {selectedBrand && selectedBrand !== 'all' && (
-                      <span style={{ fontSize: '1.1rem', fontWeight: '600', color: '#64748B' }}>
-                        · Marca: <strong style={{ color: '#0fa4de' }}>{selectedBrand}</strong>
-                      </span>
-                    )}
-                  </h2>
-                  <p style={{ margin: '4px 0 0', fontSize: '0.9rem', color: '#64748B' }}>
-                    {filtered.length} {filtered.length === 1 ? 'producto disponible' : 'productos disponibles'} para compras corporativas y cotizaciones.
-                  </p>
-                </div>
-
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  {activeCategory !== 'all' && (
-                    <button
-                      onClick={() => setSelectedBrand(null)}
-                      style={{
-                        background: '#FFFFFF',
-                        border: '1px solid #CBD5E1',
-                        borderRadius: '999px',
-                        padding: '8px 16px',
-                        color: '#071524',
-                        cursor: 'pointer',
-                        fontSize: '13px',
-                        fontWeight: '700',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '6px',
-                        boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
-                      }}
-                      onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0fa4de'; e.currentTarget.style.color = '#0fa4de'; }}
-                      onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#CBD5E1'; e.currentTarget.style.color = '#071524'; }}
-                    >
-                      ← Cambiar Marca
-                    </button>
-                  )}
-                  {search && (
-                    <button onClick={() => setSearch('')} style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '999px', padding: '8px 16px', color: '#071524', cursor: 'pointer', fontSize: '13px', fontWeight: '600' }}>
-                      Limpiar búsqueda ×
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Selector de Marcas rápido (Pills) cuando se está dentro de una categoría */}
-              {activeCategory !== 'all' && availableBrands.length > 1 && (
-                <div style={{ display: 'flex', gap: '8px', marginTop: '16px', flexWrap: 'wrap', alignItems: 'center' }}>
-                  <span style={{ fontSize: '12px', fontWeight: '700', color: '#64748B', marginRight: '4px' }}>Filtrar Marca:</span>
+            {/* Categorías Pills Rápidas */}
+            <div style={{ display: 'flex', gap: '8px', marginTop: '18px', flexWrap: 'wrap', alignItems: 'center', paddingTop: '16px', borderTop: '1px solid #F1F5F9' }}>
+              <span style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', marginRight: '4px' }}>Categoría:</span>
+              {categories.map((c) => {
+                const isSelected = activeCategory === c.key;
+                return (
                   <button
-                    onClick={() => setSelectedBrand('all')}
+                    key={c.key}
+                    onClick={() => { setActiveCategory(c.key); setSelectedBrand(null); setCatalogPage(1); }}
                     style={{
-                      padding: '5px 14px',
+                      padding: '5px 13px',
                       borderRadius: '999px',
                       fontSize: '12px',
-                      fontWeight: '700',
-                      border: selectedBrand === 'all' || !selectedBrand ? '1px solid #0fa4de' : '1px solid #E2E8F0',
-                      background: selectedBrand === 'all' || !selectedBrand ? '#0fa4de' : '#FFFFFF',
-                      color: selectedBrand === 'all' || !selectedBrand ? '#FFFFFF' : '#475569',
+                      fontWeight: isSelected ? '800' : '600',
+                      border: isSelected ? '1px solid #0fa4de' : '1px solid #E2E8F0',
+                      background: isSelected ? '#0fa4de' : '#F8FAFC',
+                      color: isSelected ? '#FFFFFF' : '#475569',
                       cursor: 'pointer',
-                      transition: 'all 0.2s'
+                      transition: 'all 0.2s',
+                      boxShadow: isSelected ? '0 2px 6px rgba(15, 164, 222, 0.3)' : 'none'
                     }}
                   >
-                    Todas ({categoryProducts.length})
+                    {c.label || c.name}
                   </button>
-                  {availableBrands.map((b) => (
+                );
+              })}
+            </div>
+
+            {/* Selector de Marcas rápido (Pills) */}
+            {availableBrands.length > 1 && (
+              <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
+                <span style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', marginRight: '4px' }}>Marca:</span>
+                <button
+                  onClick={() => { setSelectedBrand('all'); setCatalogPage(1); }}
+                  style={{
+                    padding: '4px 12px',
+                    borderRadius: '999px',
+                    fontSize: '11.5px',
+                    fontWeight: selectedBrand === 'all' || !selectedBrand ? '800' : '600',
+                    border: selectedBrand === 'all' || !selectedBrand ? '1px solid #0fa4de' : '1px solid #E2E8F0',
+                    background: selectedBrand === 'all' || !selectedBrand ? '#0fa4de' : '#FFFFFF',
+                    color: selectedBrand === 'all' || !selectedBrand ? '#FFFFFF' : '#475569',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  Todas las Marcas
+                </button>
+                {availableBrands.map((b) => {
+                  const isBSelected = selectedBrand?.toLowerCase() === b.rawName.toLowerCase();
+                  return (
                     <button
                       key={b.rawName}
-                      onClick={() => setSelectedBrand(b.rawName)}
+                      onClick={() => { setSelectedBrand(b.rawName); setCatalogPage(1); }}
                       style={{
-                        padding: '5px 14px',
+                        padding: '4px 12px',
                         borderRadius: '999px',
-                        fontSize: '12px',
-                        fontWeight: '700',
-                        border: selectedBrand?.toLowerCase() === b.rawName.toLowerCase() ? `1px solid ${b.color || '#0fa4de'}` : '1px solid #E2E8F0',
-                        background: selectedBrand?.toLowerCase() === b.rawName.toLowerCase() ? (b.color || '#0fa4de') : '#FFFFFF',
-                        color: selectedBrand?.toLowerCase() === b.rawName.toLowerCase() ? '#FFFFFF' : '#475569',
+                        fontSize: '11.5px',
+                        fontWeight: isBSelected ? '800' : '600',
+                        border: isBSelected ? `1px solid ${b.color || '#0fa4de'}` : '1px solid #E2E8F0',
+                        background: isBSelected ? (b.color || '#0fa4de') : '#FFFFFF',
+                        color: isBSelected ? '#FFFFFF' : '#475569',
                         cursor: 'pointer',
                         transition: 'all 0.2s'
                       }}
                     >
                       {b.name} ({b.count})
                     </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {loading ? (
-              <div style={{ textAlign: 'center', padding: '80px 0', color: '#64748B' }}>
-                <div style={{ fontSize: '36px', marginBottom: '12px' }}>⏳</div>
-                <p style={{ fontWeight: '600' }}>Cargando catálogo de productos DACAS...</p>
+                  );
+                })}
               </div>
-            ) : filtered.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '80px 0', color: '#64748B', background: '#FFFFFF', borderRadius: '24px', border: '1px solid #E2E8F0' }}>
-                <div style={{ marginBottom: '12px' }}>
-                  <BrandingVectorIcon name="search" size={48} color="#94A3B8" />
-                </div>
-                <h3 style={{ margin: '0 0 8px', color: '#071524' }}>No encontramos coincidencias</h3>
-                <p style={{ margin: 0, color: '#64748B' }}>No se encontraron productos para los filtros seleccionados.</p>
+            )}
+
+            {/* Active Filter Chips Bar */}
+            {(selectedBrand || activeCategory !== 'all' || search) && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '14px', flexWrap: 'wrap', paddingTop: '12px', borderTop: '1px dashed #E2E8F0' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: '750', color: '#94A3B8' }}>Filtros activos:</span>
+                
+                {search && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#F1F5F9', border: '1px solid #CBD5E1', borderRadius: '999px', padding: '3px 10px', fontSize: '11.5px', color: '#0F172A', fontWeight: '700' }}>
+                    Texto: "{search}"
+                    <button onClick={() => setSearch('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#64748B', fontWeight: 'bold', padding: 0 }}>×</button>
+                  </span>
+                )}
+
+                {activeCategory !== 'all' && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#E0F2FE', border: '1px solid #BAE6FD', borderRadius: '999px', padding: '3px 10px', fontSize: '11.5px', color: '#0369A1', fontWeight: '700' }}>
+                    Categoría: {currentCategoryObj?.label}
+                    <button onClick={() => { setActiveCategory('all'); setCatalogPage(1); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0369A1', fontWeight: 'bold', padding: 0 }}>×</button>
+                  </span>
+                )}
+
+                {selectedBrand && selectedBrand !== 'all' && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(15, 164, 222, 0.15)', border: '1px solid rgba(15, 164, 222, 0.4)', borderRadius: '999px', padding: '3px 10px', fontSize: '11.5px', color: '#0fa4de', fontWeight: '800' }}>
+                    Marca: {selectedBrand}
+                    <button onClick={() => { setSelectedBrand(null); setCatalogPage(1); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0fa4de', fontWeight: 'bold', padding: 0 }}>×</button>
+                  </span>
+                )}
+
                 <button
-                  onClick={() => setSelectedBrand('all')}
-                  style={{ marginTop: '16px', background: '#0fa4de', color: '#fff', border: 'none', borderRadius: '8px', padding: '10px 20px', fontWeight: '700', cursor: 'pointer' }}
+                  onClick={() => {
+                    setSearch('');
+                    setActiveCategory('all');
+                    setSelectedBrand(null);
+                    setCatalogPage(1);
+                  }}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: '#EF4444',
+                    fontSize: '11.5px',
+                    fontWeight: '750',
+                    cursor: 'pointer',
+                    textDecoration: 'underline',
+                    padding: '2px 6px'
+                  }}
                 >
-                  Ver todos los productos de esta categoría
+                  Restablecer todos los filtros
                 </button>
               </div>
-            ) : (
+            )}
+          </div>
+
+          {/* Estado de carga o Lista de Productos */}
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '80px 0', color: '#64748B' }}>
+              <div style={{ fontSize: '36px', marginBottom: '12px' }}>⏳</div>
+              <p style={{ fontWeight: '700' }}>Cargando catálogo oficial DACAS...</p>
+            </div>
+          ) : sortedAndFilteredProducts.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '80px 0', color: '#64748B', background: '#FFFFFF', borderRadius: '24px', border: '1px solid #E2E8F0' }}>
+              <div style={{ marginBottom: '12px' }}>
+                <BrandingVectorIcon name="search" size={48} color="#94A3B8" />
+              </div>
+              <h3 style={{ margin: '0 0 8px', color: '#071524' }}>No encontramos coincidencias</h3>
+              <p style={{ margin: 0, color: '#64748B' }}>No se encontraron productos para los filtros seleccionados.</p>
+              <button
+                onClick={() => {
+                  setSearch('');
+                  setActiveCategory('all');
+                  setSelectedBrand(null);
+                  setCatalogPage(1);
+                }}
+                style={{ marginTop: '16px', background: '#0fa4de', color: '#fff', border: 'none', borderRadius: '999px', padding: '10px 24px', fontWeight: '750', cursor: 'pointer' }}
+              >
+                Ver todo el catálogo disponible
+              </button>
+            </div>
+          ) : (
+            <div>
+              {/* Grid de Productos Paginados */}
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: '26px' }}>
-                {filtered.map((product) => (
+                {paginatedProducts.map((product) => (
                   <ProductCard
                     key={product.id}
                     product={product}
@@ -2502,10 +3699,116 @@ function ShopMain() {
                   />
                 ))}
               </div>
-            )}
-          </div>
-        )}
-      </main>
+
+              {/* Controles de Paginación */}
+              {totalCatalogPages > 1 && (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginTop: '44px', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => { setCatalogPage(prev => Math.max(1, prev - 1)); window.scrollTo({ top: 320, behavior: 'smooth' }); }}
+                    disabled={catalogPage === 1}
+                    style={{
+                      padding: '9px 16px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #CBD5E1',
+                      background: catalogPage === 1 ? '#F1F5F9' : '#FFFFFF',
+                      color: catalogPage === 1 ? '#94A3B8' : '#071524',
+                      cursor: catalogPage === 1 ? 'not-allowed' : 'pointer',
+                      fontWeight: '750',
+                      fontSize: '13px',
+                      transition: 'all 0.2s',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    ‹ Anterior
+                  </button>
+
+                  {Array.from({ length: totalCatalogPages }).map((_, idx) => {
+                    const pageNum = idx + 1;
+                    if (
+                      pageNum === 1 ||
+                      pageNum === totalCatalogPages ||
+                      (pageNum >= catalogPage - 1 && pageNum <= catalogPage + 1)
+                    ) {
+                      const isCurrent = catalogPage === pageNum;
+                      return (
+                        <button
+                          key={`page-${pageNum}`}
+                          onClick={() => { setCatalogPage(pageNum); window.scrollTo({ top: 320, behavior: 'smooth' }); }}
+                          style={{
+                            minWidth: '38px',
+                            height: '38px',
+                            borderRadius: '10px',
+                            border: isCurrent ? '1.5px solid #0fa4de' : '1.5px solid #CBD5E1',
+                            background: isCurrent ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : '#FFFFFF',
+                            color: isCurrent ? '#FFFFFF' : '#071524',
+                            cursor: 'pointer',
+                            fontWeight: '800',
+                            fontSize: '13px',
+                            transition: 'all 0.2s',
+                            boxShadow: isCurrent ? '0 3px 10px rgba(15, 164, 222, 0.35)' : 'none'
+                          }}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    } else if (
+                      pageNum === catalogPage - 2 ||
+                      pageNum === catalogPage + 2
+                    ) {
+                      return <span key={`ellipsis-${pageNum}`} style={{ color: '#94A3B8', padding: '0 4px', fontWeight: 'bold' }}>…</span>;
+                    }
+                    return null;
+                  })}
+
+                  <button
+                    onClick={() => { setCatalogPage(prev => Math.min(totalCatalogPages, prev + 1)); window.scrollTo({ top: 320, behavior: 'smooth' }); }}
+                    disabled={catalogPage === totalCatalogPages}
+                    style={{
+                      padding: '9px 16px',
+                      borderRadius: '10px',
+                      border: '1.5px solid #CBD5E1',
+                      background: catalogPage === totalCatalogPages ? '#F1F5F9' : '#FFFFFF',
+                      color: catalogPage === totalCatalogPages ? '#94A3B8' : '#071524',
+                      cursor: catalogPage === totalCatalogPages ? 'not-allowed' : 'pointer',
+                      fontWeight: '750',
+                      fontSize: '13px',
+                      transition: 'all 0.2s',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    Siguiente ›
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </main>
+      )}
+
+      {/* ── 4. VISTA DETALLE DE PRODUCTO: Página dedicada con Galería, Ficha Técnica, Stock y Productos Relacionados ── */}
+      {activeNavTab === 'product' && selectedProduct && (
+        <ProductDetailPageView
+          product={selectedProduct}
+          allProducts={products}
+          clientUser={clientUser}
+          selectedCountryCode={selectedCountryCode}
+          selectedCountryObj={selectedCountryObj}
+          onOpenAuth={() => {
+            setAuthMode('login');
+            setAuthModalOpen(true);
+          }}
+          onAddToCart={(prod, qty) => addToCart(prod, qty)}
+          onSelectProduct={handleSelectProduct}
+          onGoBack={handleBackFromProduct}
+          onGoCatalog={handleGoCatalog}
+          visualSettings={visualSettings}
+          justAddedId={addedId}
+        />
+      )}
 
       {/* ── Trust & Quality Badges ── */}
       <div style={{ background: '#FFFFFF', borderTop: '1px solid #E2E8F0', borderBottom: '1px solid #E2E8F0', padding: '36px 20px' }}>
@@ -2552,20 +3855,6 @@ function ShopMain() {
           </div>
         </div>
       </footer>
-
-      {/* ── MODAL POP-UP CON DETALLES & CARRUSEL DE FOTOS ── */}
-      {selectedProduct && (
-        <ProductDetailModal
-          product={selectedProduct}
-          clientUser={clientUser}
-          onOpenAuth={() => {
-            setAuthMode('login');
-            setAuthModalOpen(true);
-          }}
-          onClose={() => setSelectedProduct(null)}
-          onAddToCart={(product, qty) => addToCart(product, qty)}
-        />
-      )}
 
       {/* ── MODAL DE REGISTRO B2B Y LOGIN DE CLIENTES ── */}
       {authModalOpen && (
@@ -3880,12 +5169,14 @@ function ProductCard({ product, clientUser, onOpenAuth, onSelectProduct, onAddTo
         transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)',
         display: 'flex',
         flexDirection: 'column',
+        justifyContent: 'space-between',
+        height: '100%',
         cursor: 'pointer',
         position: 'relative'
       }}
     >
       {/* Photo Container */}
-      <div style={{ position: 'relative', height: '220px', overflow: 'hidden', background: '#F8FAFC' }}>
+      <div style={{ position: 'relative', height: '210px', minHeight: '210px', maxHeight: '210px', overflow: 'hidden', background: '#F8FAFC' }}>
         {mainImage ? (
           <img
             src={mainImage}
@@ -3972,99 +5263,134 @@ function ProductCard({ product, clientUser, onOpenAuth, onSelectProduct, onAddTo
       </div>
 
       {/* Body */}
-      <div style={{ padding: '20px', display: 'flex', flexDirection: 'column', flex: 1 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px', flexWrap: 'wrap' }}>
-          {product.brand && (
-            <span style={{
-              fontSize: '10px',
+      <div style={{ padding: '18px 20px 20px', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+        <div>
+          {/* Header tags: Brand, SKU & Discount Rule with normalized height */}
+          <div style={{ minHeight: '44px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '4px', marginBottom: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'nowrap', overflow: 'hidden' }}>
+              {product.brand && (
+                <span style={{
+                  fontSize: '10px',
+                  fontWeight: '800',
+                  background: '#E0F2FE',
+                  color: '#0369a1',
+                  padding: '2px 8px',
+                  borderRadius: '6px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0
+                }}>
+                  {product.brand}
+                </span>
+              )}
+              {product.sku && (
+                <span style={{ fontSize: '11px', fontWeight: '700', color: '#64748B', letterSpacing: '0.04em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  SKU: {product.sku}
+                </span>
+              )}
+            </div>
+            <div style={{ height: '20px', display: 'flex', alignItems: 'center' }}>
+              {product.applied_rule ? (
+                <span style={{
+                  fontSize: '10px',
+                  fontWeight: '800',
+                  background: '#DCFCE7',
+                  color: '#166534',
+                  border: '1px solid #BBF7D0',
+                  padding: '1px 7px',
+                  borderRadius: '5px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '3px',
+                  maxWidth: '100%',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
+                }}>
+                  <BrandingVectorIcon name="tag" size={10} color="#166534" />
+                  <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    {product.applied_rule.rule_name || product.applied_rule.name || 'Descuento B2B'}
+                  </span>
+                  {product.discount_percent && <span style={{ flexShrink: 0 }}>(-{product.discount_percent}%)</span>}
+                </span>
+              ) : null}
+            </div>
+          </div>
+
+          {/* Title - exactly 2 lines clamped */}
+          <h3
+            title={product.name}
+            style={{
+              margin: '0 0 8px',
+              fontSize: '14.5px',
               fontWeight: '800',
-              background: '#E0F2FE',
-              color: '#0369a1',
-              padding: '2px 8px',
-              borderRadius: '6px',
-              textTransform: 'uppercase',
-              letterSpacing: '0.04em'
-            }}>
-              {product.brand}
-            </span>
-          )}
-          {product.sku && (
-            <span style={{ fontSize: '11px', fontWeight: '700', color: '#64748B', letterSpacing: '0.04em' }}>
-              SKU: {product.sku}
-            </span>
-          )}
-          {product.applied_rule && (
-            <span style={{
-              fontSize: '10.5px',
-              fontWeight: '800',
-              background: '#DCFCE7',
-              color: '#166534',
-              border: '1px solid #BBF7D0',
-              padding: '2px 8px',
-              borderRadius: '6px',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}>
-              <BrandingVectorIcon name="tag" size={11} color="#166534" />
-              <span>{product.applied_rule.rule_name || product.applied_rule.name || 'Descuento B2B'}</span>
-              {product.discount_percent && <span>(-{product.discount_percent}%)</span>}
-            </span>
-          )}
+              color: '#071524',
+              lineHeight: '1.35',
+              height: '40px',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden'
+            }}
+          >
+            {product.name}
+          </h3>
+
+          {/* Description - exactly 2 lines clamped */}
+          <div
+            style={{
+              margin: '0 0 12px',
+              fontSize: '12.5px',
+              color: '#64748B',
+              lineHeight: '1.45',
+              height: '36px',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden'
+            }}
+          >
+            {product.description ? product.description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : ''}
+          </div>
         </div>
 
-        <h3 style={{ margin: '0 0 10px', fontSize: '15px', fontWeight: '800', color: '#071524', lineHeight: 1.35 }}>
-          {product.name}
-        </h3>
-
-        <div
-          style={{
-            margin: '0 0 16px',
-            fontSize: '13px',
-            color: '#64748B',
-            lineHeight: 1.5,
-            flex: 1,
-            maxHeight: '44px',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis'
-          }}
-        >
-          {product.description ? product.description.replace(/<[^>]+>/g, ' ').substring(0, 90) + '...' : ''}
-        </div>
-
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid #F1F5F9' }}>
+        {/* Bottom Price and Add to Cart Button */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto', paddingTop: '12px', borderTop: '1px solid #F1F5F9', minHeight: '52px' }}>
           {isLocked ? (
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '5px', color: '#0369a1', fontSize: '13px', fontWeight: '800' }}>
                 <BrandingVectorIcon name="lock" size={13} color="#0369a1" />
-                <span>Precio B2B Exclusivo</span>
+                <span>Precio B2B</span>
               </div>
               <span style={{ fontSize: '11px', color: '#64748B', fontWeight: '600' }}>
-                Accedé como canal autorizado
+                Canal autorizado
               </span>
             </div>
           ) : (
-            <div>
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: '6px' }}>
-                <span style={{ fontSize: '1.45rem', fontWeight: '900', color: '#071524' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: '5px' }}>
+                <span style={{ fontSize: '1.4rem', fontWeight: '900', color: '#071524', lineHeight: 1 }}>
                   ${product.price}
                 </span>
-                <span style={{ fontSize: '12px', fontWeight: '700', color: '#64748B' }}>USD</span>
+                <span style={{ fontSize: '11px', fontWeight: '700', color: '#64748B' }}>USD</span>
               </div>
-              {product.base_price && parseFloat(product.base_price) > parseFloat(product.price) ? (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginTop: '2px' }}>
-                  <span style={{ fontSize: '12px', color: '#94A3B8', textDecoration: 'line-through' }}>
-                    ${product.base_price} USD
+              <div style={{ minHeight: '16px', display: 'flex', alignItems: 'center', gap: '5px', marginTop: '2px' }}>
+                {product.base_price && parseFloat(product.base_price) > parseFloat(product.price) ? (
+                  <>
+                    <span style={{ fontSize: '11px', color: '#94A3B8', textDecoration: 'line-through' }}>
+                      ${product.base_price} USD
+                    </span>
+                    <span style={{ fontSize: '9.5px', background: '#DCFCE7', color: '#166534', fontWeight: '800', padding: '1px 5px', borderRadius: '4px' }}>
+                      -{product.discount_percent || Math.round((1 - product.price / product.base_price) * 100)}%
+                    </span>
+                  </>
+                ) : product.promotional_price && parseFloat(product.promotional_price) < parseFloat(product.price) ? (
+                  <span style={{ fontSize: '11px', color: '#94A3B8', textDecoration: 'line-through' }}>
+                    ${product.promotional_price} USD
                   </span>
-                  <span style={{ fontSize: '10px', background: '#DCFCE7', color: '#166534', fontWeight: '800', padding: '1px 6px', borderRadius: '4px' }}>
-                    -{product.discount_percent || Math.round((1 - product.price / product.base_price) * 100)}%
-                  </span>
-                </div>
-              ) : product.promotional_price && parseFloat(product.promotional_price) < parseFloat(product.price) ? (
-                <span style={{ fontSize: '12px', color: '#94A3B8', textDecoration: 'line-through' }}>
-                  ${product.promotional_price} USD
-                </span>
-              ) : null}
+                ) : null}
+              </div>
             </div>
           )}
 
@@ -4621,6 +5947,1237 @@ function ProductDetailModal({ product, clientUser, onOpenAuth, onClose, onAddToC
         </div>
       </div>
     </div>
+  );
+}
+
+/* ─── PRODUCT DETAIL PAGE VIEW (PÁGINA DEDICADA DE PRODUCTO) ─── */
+function ProductDetailPageView({
+  product,
+  allProducts = [],
+  clientUser,
+  selectedCountryCode,
+  selectedCountryObj,
+  onOpenAuth,
+  onAddToCart,
+  onSelectProduct,
+  onGoBack,
+  onGoCatalog,
+  visualSettings,
+  justAddedId
+}) {
+  const activeCountryCode = selectedCountryCode || (() => {
+    try { return localStorage.getItem('dacas_selected_country') || 'AR'; } catch { return 'AR'; }
+  })();
+  const activeCountryObj = selectedCountryObj || DACAS_COUNTRIES.find((c) => c.code === activeCountryCode) || DACAS_COUNTRIES[1] || { flag: '🇦🇷', name: 'Argentina' };
+
+  const mainImage = product.image_url || (Array.isArray(product.images) && product.images[0]) || '';
+  const images = (Array.isArray(product.images) && product.images.length > 0)
+    ? (mainImage && !product.images.includes(mainImage) ? [mainImage, ...product.images] : product.images)
+    : (mainImage ? [mainImage] : []);
+
+  const [activeImageIdx, setActiveImageIdx] = useState(0);
+  const [quantity, setQuantity] = useState(1);
+  const [added, setAdded] = useState(false);
+  const [activeTab, setActiveTab] = useState('description');
+  const [copiedSku, setCopiedSku] = useState(false);
+  const [copiedUrl, setCopiedUrl] = useState(false);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+
+  useEffect(() => {
+    setActiveImageIdx(0);
+    setQuantity(1);
+    setAdded(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [product.id]);
+
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (isLightboxOpen && e.key === 'Escape') {
+        setIsLightboxOpen(false);
+      }
+      if (images.length > 1) {
+        if (e.key === 'ArrowRight') setActiveImageIdx(prev => (prev + 1) % images.length);
+        if (e.key === 'ArrowLeft') setActiveImageIdx(prev => (prev - 1 + images.length) % images.length);
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [images.length, isLightboxOpen]);
+
+  const isLocked = !clientUser || product.is_locked || product.price === null || product.price === undefined;
+
+  const handleAdd = () => {
+    onAddToCart(product, quantity);
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2200);
+  };
+
+  const handleCopySku = () => {
+    if (product.sku) {
+      navigator.clipboard?.writeText(product.sku);
+      setCopiedSku(true);
+      setTimeout(() => setCopiedSku(false), 2000);
+    }
+  };
+
+  const handleShare = () => {
+    navigator.clipboard?.writeText(window.location.href);
+    setCopiedUrl(true);
+    setTimeout(() => setCopiedUrl(false), 2000);
+  };
+
+  const getCategoryLabel = (catKey) => {
+    if (!catKey) return 'Tecnología B2B';
+    const found = CATEGORIES.find(c => c.key === catKey || c.id === catKey);
+    if (found && found.label) return found.label;
+    return catKey.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
+
+  // Productos Relacionados: misma categoría o misma marca (excluyendo el actual)
+  const relatedProducts = useMemo(() => {
+    if (!allProducts || allProducts.length === 0 || !product) return [];
+    const others = allProducts.filter(p => p.id !== product.id);
+    const sameCat = others.filter(p => p.category && product.category && String(p.category).toLowerCase() === String(product.category).toLowerCase());
+    const sameBrand = others.filter(p => p.brand && product.brand && String(p.brand).toLowerCase() === String(product.brand).toLowerCase());
+
+    const combined = Array.from(new Set([...sameCat, ...sameBrand]));
+    if (combined.length >= 4) {
+      return combined.slice(0, 10);
+    }
+    const remaining = others.filter(p => !combined.some(c => c.id === p.id));
+    return [...combined, ...remaining].slice(0, 10);
+  }, [product, allProducts]);
+
+  const parsedPrice = parseFloat(product.price || 0);
+  const parsedBasePrice = product.base_price ? parseFloat(product.base_price) : null;
+  const hasDiscount = parsedBasePrice && parsedBasePrice > parsedPrice;
+  const discountPct = product.discount_percent || (hasDiscount ? Math.round((1 - parsedPrice / parsedBasePrice) * 100) : null);
+  const ivaAmount = parsedPrice * 0.21;
+  const priceWithIva = parsedPrice + ivaAmount;
+
+  const whatsappMessage = encodeURIComponent(
+    `Hola equipo comercial DACAS Argentina, me interesa solicitar cotización y stock para el siguiente producto:\n\n` +
+    `• Equipo: ${product.name}\n` +
+    `• SKU: ${product.sku || 'N/A'}\n` +
+    `• Marca: ${product.brand || 'DACAS'}\n` +
+    `• Cantidad: ${quantity} unidades\n` +
+    `• Centro Logístico: ${activeCountryObj.name}`
+  );
+
+  return (
+    <main style={{ maxWidth: '1360px', margin: '0 auto', padding: '20px 24px 80px' }}>
+      {/* ─── BARRA SUPERIOR UNIFICADA DE NAVEGACIÓN Y BREADCRUMB ─── */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        marginBottom: '20px',
+        padding: '10px 16px',
+        background: '#FFFFFF',
+        borderRadius: '14px',
+        border: '1px solid #E2E8F0',
+        boxShadow: '0 1px 4px rgba(0,0,0,0.03)',
+        flexWrap: 'wrap',
+        gap: '12px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
+          <button
+            onClick={onGoBack}
+            style={{
+              background: '#F8FAFC',
+              border: '1px solid #CBD5E1',
+              color: '#071524',
+              fontWeight: '750',
+              fontSize: '12.5px',
+              padding: '6px 14px',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.15s'
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0fa4de'; e.currentTarget.style.color = '#0fa4de'; e.currentTarget.style.background = '#F0F9FF'; }}
+            onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#CBD5E1'; e.currentTarget.style.color = '#071524'; e.currentTarget.style.background = '#F8FAFC'; }}
+          >
+            <span>←</span>
+            <span>Volver a la Tienda</span>
+          </button>
+
+          <span style={{ color: '#E2E8F0', fontSize: '16px' }}>|</span>
+
+          {/* Breadcrumb Path */}
+          <nav style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px',
+            fontSize: '12.5px',
+            color: '#64748B',
+            flexWrap: 'wrap'
+          }}>
+            <span onClick={onGoBack} style={{ cursor: 'pointer', color: '#0fa4de', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              <BrandingVectorIcon name="home" size={13} color="#0fa4de" /> Inicio
+            </span>
+            <span style={{ color: '#CBD5E1' }}>›</span>
+            <span onClick={() => onGoCatalog('all', null)} style={{ cursor: 'pointer', color: '#0fa4de', fontWeight: '700' }}>
+              Catálogo
+            </span>
+            {product.category && (
+              <>
+                <span style={{ color: '#CBD5E1' }}>›</span>
+                <span onClick={() => onGoCatalog(product.category, null)} style={{ cursor: 'pointer', color: '#0fa4de', fontWeight: '700' }}>
+                  {getCategoryLabel(product.category)}
+                </span>
+              </>
+            )}
+            {product.brand && (
+              <>
+                <span style={{ color: '#CBD5E1' }}>›</span>
+                <span onClick={() => onGoCatalog('all', product.brand)} style={{ cursor: 'pointer', color: '#0fa4de', fontWeight: '700' }}>
+                  {product.brand}
+                </span>
+              </>
+            )}
+            <span style={{ color: '#CBD5E1' }}>›</span>
+            <span style={{ fontWeight: '750', color: '#071524', maxWidth: '320px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {product.name}
+            </span>
+          </nav>
+        </div>
+
+        {/* Acciones Rápidas (Copiar SKU & Compartir) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          {product.sku && (
+            <button
+              onClick={handleCopySku}
+              title="Copiar SKU al portapapeles"
+              style={{
+                background: copiedSku ? '#ECFDF5' : '#F8FAFC',
+                border: `1px solid ${copiedSku ? '#A7F3D0' : '#E2E8F0'}`,
+                color: copiedSku ? '#059669' : '#475569',
+                padding: '6px 12px',
+                borderRadius: '8px',
+                fontSize: '12px',
+                fontWeight: '750',
+                cursor: 'pointer',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                transition: 'all 0.15s'
+              }}
+            >
+              <BrandingVectorIcon name={copiedSku ? "check" : "copy"} size={13} color={copiedSku ? "#059669" : "#64748B"} />
+              <span>{copiedSku ? '¡SKU Copiado!' : `SKU: ${product.sku}`}</span>
+            </button>
+          )}
+
+          <button
+            onClick={handleShare}
+            title="Copiar enlace del producto"
+            style={{
+              background: copiedUrl ? '#ECFDF5' : '#F8FAFC',
+              border: `1px solid ${copiedUrl ? '#A7F3D0' : '#E2E8F0'}`,
+              color: copiedUrl ? '#059669' : '#475569',
+              padding: '6px 12px',
+              borderRadius: '8px',
+              fontSize: '12px',
+              fontWeight: '750',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              transition: 'all 0.15s'
+            }}
+          >
+            <BrandingVectorIcon name={copiedUrl ? "check" : "share"} size={13} color={copiedUrl ? "#059669" : "#64748B"} />
+            <span>{copiedUrl ? '¡Enlace copiado!' : 'Compartir'}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ─── CONTENEDOR PRINCIPAL DEL PRODUCTO (SHOWCASE 2 COLUMNAS) ─── */}
+      <div style={{
+        background: '#FFFFFF',
+        borderRadius: '20px',
+        border: '1px solid #E2E8F0',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
+        padding: '32px 36px',
+        marginBottom: '32px'
+      }}>
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'minmax(320px, 46%) minmax(360px, 54%)',
+          gap: '40px',
+          alignItems: 'start'
+        }}>
+
+          {/* ══ COLUMNA IZQUIERDA: GALERÍA DE IMÁGENES PROFESIONAL & BENEFICIOS ══ */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            {/* Lienzo Principal de Fotografía */}
+            <div
+              style={{
+                position: 'relative',
+                width: '100%',
+                height: '430px',
+                borderRadius: '16px',
+                overflow: 'hidden',
+                background: '#FFFFFF',
+                border: '1.5px solid #F1F5F9',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: 'inset 0 0 20px rgba(0,0,0,0.015), 0 2px 10px rgba(0,0,0,0.02)',
+                cursor: images.length > 0 ? 'zoom-in' : 'default'
+              }}
+              onClick={() => { if (images.length > 0) setIsLightboxOpen(true); }}
+            >
+              {images.length > 0 ? (
+                <img
+                  src={images[activeImageIdx]}
+                  alt={`${product.name} - Vista ${activeImageIdx + 1}`}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    padding: '24px',
+                    transition: 'transform 0.3s cubic-bezier(0.16, 1, 0.3, 1)'
+                  }}
+                  onMouseEnter={(e) => { e.currentTarget.style.transform = 'scale(1.04)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.transform = 'scale(1.0)'; }}
+                />
+              ) : (
+                <BrandingVectorIcon name="package" size={80} color="#CBD5E1" />
+              )}
+
+              {/* Badges Flotantes Superiores */}
+              <div style={{ position: 'absolute', top: '14px', left: '14px', display: 'flex', gap: '6px', zIndex: 2 }}>
+                {(product.badge || product.is_featured) && (
+                  <span style={{
+                    background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                    color: '#fff',
+                    fontSize: '11px',
+                    fontWeight: '800',
+                    padding: '4px 10px',
+                    borderRadius: '8px',
+                    letterSpacing: '0.04em',
+                    boxShadow: '0 2px 8px rgba(15, 164, 222, 0.35)',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}>
+                    <span>⭐</span>
+                    <span>{product.badge || 'DESTACADO'}</span>
+                  </span>
+                )}
+                <span style={{
+                  background: 'rgba(7, 21, 36, 0.85)',
+                  backdropFilter: 'blur(6px)',
+                  color: '#FFFFFF',
+                  fontSize: '10.5px',
+                  fontWeight: '750',
+                  padding: '4px 10px',
+                  borderRadius: '8px'
+                }}>
+                  ORIGINAL DACAS
+                </span>
+              </div>
+
+              {product.stock !== undefined && (
+                <span style={{
+                  position: 'absolute',
+                  top: '14px',
+                  right: '14px',
+                  background: product.stock > 0 ? '#ECFDF5' : '#FEF2F2',
+                  border: `1.5px solid ${product.stock > 0 ? '#A7F3D0' : '#FECACA'}`,
+                  color: product.stock > 0 ? '#065F46' : '#991B1B',
+                  fontSize: '11px',
+                  fontWeight: '800',
+                  padding: '4px 10px',
+                  borderRadius: '8px',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+                  zIndex: 2
+                }}>
+                  <span style={{
+                    width: '7px',
+                    height: '7px',
+                    borderRadius: '50%',
+                    background: product.stock > 0 ? '#10B981' : '#EF4444'
+                  }} />
+                  <span>{activeCountryObj.flag} Stock {activeCountryCode}: {product.stock > 0 ? `${product.stock} un.` : 'Sin stock'}</span>
+                </span>
+              )}
+
+              {/* Botón flotante para Zoom */}
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsLightboxOpen(true);
+                }}
+                title="Ampliar imagen completa"
+                style={{
+                  position: 'absolute',
+                  bottom: '12px',
+                  right: '12px',
+                  background: 'rgba(255, 255, 255, 0.95)',
+                  backdropFilter: 'blur(6px)',
+                  border: '1px solid #CBD5E1',
+                  borderRadius: '8px',
+                  padding: '5px 10px',
+                  fontSize: '11.5px',
+                  fontWeight: '750',
+                  color: '#071524',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '5px',
+                  boxShadow: '0 2px 6px rgba(0,0,0,0.06)',
+                  zIndex: 2,
+                  transition: 'all 0.15s'
+                }}
+                onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#0fa4de'; e.currentTarget.style.color = '#0fa4de'; }}
+                onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#CBD5E1'; e.currentTarget.style.color = '#071524'; }}
+              >
+                <span>🔍</span>
+                <span>Ampliar</span>
+              </button>
+
+              {/* Flechas de navegación si hay más de 1 imagen */}
+              {images.length > 1 && (
+                <>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveImageIdx(prev => (prev - 1 + images.length) % images.length);
+                    }}
+                    aria-label="Foto anterior"
+                    style={{
+                      position: 'absolute',
+                      left: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'rgba(255, 255, 255, 0.92)',
+                      border: '1px solid #CBD5E1',
+                      borderRadius: '50%',
+                      width: '36px',
+                      height: '36px',
+                      fontSize: '18px',
+                      color: '#071524',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                      transition: 'all 0.15s',
+                      zIndex: 2
+                    }}
+                  >
+                    ‹
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setActiveImageIdx(prev => (prev + 1) % images.length);
+                    }}
+                    aria-label="Foto siguiente"
+                    style={{
+                      position: 'absolute',
+                      right: '12px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'rgba(255, 255, 255, 0.92)',
+                      border: '1px solid #CBD5E1',
+                      borderRadius: '50%',
+                      width: '36px',
+                      height: '36px',
+                      fontSize: '18px',
+                      color: '#071524',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                      transition: 'all 0.15s',
+                      zIndex: 2
+                    }}
+                  >
+                    ›
+                  </button>
+
+                  <div style={{
+                    position: 'absolute',
+                    bottom: '12px',
+                    left: '50%',
+                    transform: 'translateX(-50%)',
+                    background: 'rgba(7, 21, 36, 0.8)',
+                    backdropFilter: 'blur(6px)',
+                    color: '#FFFFFF',
+                    fontSize: '11px',
+                    fontWeight: '700',
+                    padding: '3px 12px',
+                    borderRadius: '999px',
+                    zIndex: 2
+                  }}>
+                    {activeImageIdx + 1} / {images.length}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Fila de Miniaturas */}
+            {images.length > 1 && (
+              <div style={{ display: 'flex', gap: '10px', overflowX: 'auto', padding: '2px 0' }}>
+                {images.map((img, idx) => (
+                  <div
+                    key={`thumb-${idx}`}
+                    onClick={() => setActiveImageIdx(idx)}
+                    style={{
+                      width: '74px',
+                      height: '74px',
+                      borderRadius: '12px',
+                      overflow: 'hidden',
+                      border: activeImageIdx === idx ? '2.5px solid #0fa4de' : '1.5px solid #E2E8F0',
+                      boxShadow: activeImageIdx === idx ? '0 0 0 3px rgba(15,164,222,0.25)' : 'none',
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                      transition: 'all 0.2s',
+                      background: '#FFFFFF',
+                      padding: '4px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                  >
+                    <img src={img} alt={`Miniatura ${idx + 1}`} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} />
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Barra de 3 Beneficios DACAS Mayorista */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: '10px',
+              padding: '14px',
+              background: '#F8FAFC',
+              borderRadius: '14px',
+              border: '1px solid #E2E8F0'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '18px' }}>🛡️</span>
+                <div>
+                  <div style={{ fontSize: '11.5px', fontWeight: '800', color: '#071524' }}>Garantía Oficial</div>
+                  <div style={{ fontSize: '10.5px', color: '#64748B' }}>12M con soporte y RMA</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '18px' }}>📦</span>
+                <div>
+                  <div style={{ fontSize: '11.5px', fontWeight: '800', color: '#071524' }}>Despacho Rápido</div>
+                  <div style={{ fontSize: '10.5px', color: '#64748B' }}>Salida en 24h a todo el país</div>
+                </div>
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '18px' }}>🎧</span>
+                <div>
+                  <div style={{ fontSize: '11.5px', fontWeight: '800', color: '#071524' }}>Soporte Preventa</div>
+                  <div style={{ fontSize: '10.5px', color: '#64748B' }}>Ingeniería de canal certificada</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* ══ COLUMNA DERECHA: CENTRO COMERCIAL, PRECIOS B2B Y COMPRA ══ */}
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {/* Metadatos y Badges */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
+              {product.brand && (
+                <span style={{
+                  background: '#E0F2FE',
+                  color: '#0369a1',
+                  fontSize: '11.5px',
+                  fontWeight: '800',
+                  padding: '4px 12px',
+                  borderRadius: '6px',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em'
+                }}>
+                  {product.brand}
+                </span>
+              )}
+              {product.category && (
+                <span style={{
+                  background: '#F1F5F9',
+                  color: '#475569',
+                  fontSize: '11.5px',
+                  fontWeight: '750',
+                  padding: '4px 10px',
+                  borderRadius: '6px'
+                }}>
+                  {getCategoryLabel(product.category)}
+                </span>
+              )}
+              <span style={{
+                background: '#ECFDF5',
+                color: '#059669',
+                border: '1px solid #A7F3D0',
+                fontSize: '11px',
+                fontWeight: '800',
+                padding: '3px 8px',
+                borderRadius: '6px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                marginLeft: 'auto'
+              }}>
+                <BrandingVectorIcon name="award" size={12} color="#059669" />
+                <span>DISTRIBUIDOR OFICIAL</span>
+              </span>
+            </div>
+
+            {/* Título Principal */}
+            <h1 style={{
+              margin: '0 0 10px',
+              fontSize: '1.75rem',
+              fontWeight: '850',
+              color: '#071524',
+              lineHeight: 1.28,
+              letterSpacing: '-0.02em'
+            }}>
+              {product.name}
+            </h1>
+
+            {/* Calificación y Estado */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px', fontSize: '12px', color: '#64748B', flexWrap: 'wrap' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '3px', color: '#F59E0B', fontWeight: '800' }}>
+                <span>★★★★★</span>
+                <span style={{ color: '#071524', marginLeft: '4px' }}>5.0</span>
+              </div>
+              <span style={{ color: '#CBD5E1' }}>•</span>
+              <span style={{ color: '#059669', fontWeight: '750' }}>✓ Certificado de fábrica</span>
+              <span style={{ color: '#CBD5E1' }}>•</span>
+              <span>Condición: <strong>Nuevo Sellado</strong></span>
+            </div>
+
+            {/* Puntos Clave de Ingeniería / Bullet Points */}
+            <div style={{
+              background: '#F8FAFC',
+              borderRadius: '12px',
+              border: '1px solid #E2E8F0',
+              padding: '12px 16px',
+              marginBottom: '16px'
+            }}>
+              <div style={{ fontSize: '11.5px', fontWeight: '800', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '8px' }}>
+                Características Destacadas
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '12.5px', color: '#334155', lineHeight: 1.45 }}>
+                <div style={{ display: 'flex', alignItems: 'start', gap: '8px' }}>
+                  <span style={{ color: '#0fa4de', fontWeight: 'bold' }}>✓</span>
+                  <span><strong>Audio OmniSound® 360°:</strong> Captura Full Duplex con cancelación acústica de eco y filtro de ruido.</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'start', gap: '8px' }}>
+                  <span style={{ color: '#0fa4de', fontWeight: 'bold' }}>✓</span>
+                  <span><strong>Conectividad Dual:</strong> Bluetooth con NFC instantáneo y puerto USB Plug & Play para PC/Mac.</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'start', gap: '8px' }}>
+                  <span style={{ color: '#0fa4de', fontWeight: 'bold' }}>✓</span>
+                  <span><strong>Salas Huddle & Móvil:</strong> Optimizado para reuniones de hasta 6 personas y trabajo híbrido.</span>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'start', gap: '8px' }}>
+                  <span style={{ color: '#0fa4de', fontWeight: 'bold' }}>✓</span>
+                  <span><strong>Compatibilidad Total:</strong> Certificado para Microsoft Teams, Zoom, Webex, Meet y Avaya Spaces.</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Tarjeta Comercial B2B de Precio */}
+            <div style={{
+              background: '#FFFFFF',
+              border: '1.5px solid #0fa4de',
+              borderRadius: '14px',
+              padding: '18px 20px',
+              marginBottom: '14px',
+              boxShadow: '0 2px 10px rgba(15,164,222,0.06)'
+            }}>
+              {isLocked ? (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#0369a1', marginBottom: '6px' }}>
+                    <BrandingVectorIcon name="lock" size={18} color="#0369a1" />
+                    <span style={{ fontSize: '15px', fontWeight: '800' }}>Precios Mayoristas B2B Exclusivos</span>
+                  </div>
+                  <p style={{ margin: '0 0 12px', fontSize: '13px', color: '#64748B', lineHeight: 1.5 }}>
+                    Accedé con tu cuenta de canal para ver precios preferenciales, líneas de crédito y stock disponible.
+                  </p>
+                  <button
+                    onClick={onOpenAuth}
+                    style={{
+                      background: 'linear-gradient(135deg, #071524 0%, #0f2742 100%)',
+                      color: '#38bdf8',
+                      border: '1px solid rgba(56, 189, 248, 0.4)',
+                      borderRadius: '8px',
+                      padding: '10px 18px',
+                      fontWeight: '750',
+                      fontSize: '13px',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <BrandingVectorIcon name="user" size={14} color="#38bdf8" />
+                    <span>Iniciar Sesión / Solicitar Cuenta B2B</span>
+                  </button>
+                </div>
+              ) : (
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: '10px', flexWrap: 'wrap', marginBottom: '4px' }}>
+                    <span style={{ fontSize: '2.1rem', fontWeight: '900', color: '#071524', lineHeight: 1 }}>
+                      ${product.price}
+                    </span>
+                    <span style={{ fontSize: '14px', fontWeight: '800', color: '#64748B' }}>USD</span>
+                    <span style={{ background: '#E0F2FE', color: '#0369a1', fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '6px' }}>
+                      Neto Mayorista B2B
+                    </span>
+                    {hasDiscount && (
+                      <>
+                        <span style={{ fontSize: '14px', color: '#94A3B8', textDecoration: 'line-through', marginLeft: '4px' }}>
+                          ${product.base_price} USD
+                        </span>
+                        <span style={{ background: '#DCFCE7', color: '#166534', border: '1px solid #BBF7D0', fontSize: '11px', fontWeight: '800', padding: '2px 8px', borderRadius: '6px' }}>
+                          -{discountPct}% Descuento Canal
+                        </span>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Detalle Impositivo B2B */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', fontSize: '12px', color: '#64748B', marginTop: '6px', flexWrap: 'wrap' }}>
+                    <span>+ IVA (21%): <strong>${ivaAmount.toFixed(2)} USD</strong></span>
+                    <span style={{ color: '#CBD5E1' }}>•</span>
+                    <span>Total con IVA: <strong style={{ color: '#071524' }}>${priceWithIva.toFixed(2)} USD</strong></span>
+                  </div>
+
+                  {product.applied_rule && (
+                    <div style={{ marginTop: '8px', display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#ECFDF5', border: '1px solid #A7F3D0', padding: '3px 8px', borderRadius: '6px', color: '#065F46', fontSize: '11.5px', fontWeight: '750' }}>
+                      <BrandingVectorIcon name="tag" size={11} color="#059669" />
+                      <span>{product.applied_rule.rule_name || product.applied_rule.name}</span>
+                    </div>
+                  )}
+
+                  <div style={{ marginTop: '8px', fontSize: '11px', color: '#64748B', lineHeight: 1.4 }}>
+                    * Facturación oficial A o B al tipo de cambio oficial BNA vendedor del día. Precios válidos para integradores y canales registrados.
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Disponibilidad de Stock en Tiempo Real */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '10px',
+              padding: '10px 14px',
+              background: product.stock > 0 ? '#F0FDF4' : '#FEF2F2',
+              border: `1px solid ${product.stock > 0 ? '#BBF7D0' : '#FECACA'}`,
+              borderRadius: '10px',
+              marginBottom: '14px'
+            }}>
+              <span style={{
+                width: '9px',
+                height: '9px',
+                borderRadius: '50%',
+                background: product.stock > 0 ? '#10B981' : '#EF4444',
+                boxShadow: product.stock > 0 ? '0 0 6px #10B981' : 'none',
+                flexShrink: 0
+              }} />
+              <div style={{ fontSize: '12px', color: '#071524' }}>
+                {product.stock > 0 ? (
+                  <span>
+                    <strong>Stock Disponible:</strong> {product.stock} unidades listas para despacho inmediato en Centro Logístico DACAS ({activeCountryObj.name}).
+                  </span>
+                ) : (
+                  <span style={{ color: '#DC2626', fontWeight: '700' }}>
+                    Sin stock disponible en depósito local. Consultar plazo de arribo o solicitar backorder.
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Selector de Cantidad y Agregar al Carrito */}
+            {!isLocked && (
+              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  background: '#F1F5F9',
+                  borderRadius: '10px',
+                  padding: '3px',
+                  border: '1.5px solid #CBD5E1'
+                }}>
+                  <button
+                    onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                    aria-label="Restar cantidad"
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      background: '#FFFFFF',
+                      border: 'none',
+                      borderRadius: '7px',
+                      cursor: 'pointer',
+                      fontWeight: '800',
+                      fontSize: '18px',
+                      color: '#071524',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                    }}
+                  >
+                    -
+                  </button>
+                  <span style={{ width: '40px', textAlign: 'center', fontWeight: '800', fontSize: '15px', color: '#071524' }}>
+                    {quantity}
+                  </span>
+                  <button
+                    onClick={() => setQuantity(prev => (product.stock ? Math.min(product.stock, prev + 1) : prev + 1))}
+                    aria-label="Sumar cantidad"
+                    style={{
+                      width: '36px',
+                      height: '36px',
+                      background: '#FFFFFF',
+                      border: 'none',
+                      borderRadius: '7px',
+                      cursor: 'pointer',
+                      fontWeight: '800',
+                      fontSize: '18px',
+                      color: '#071524',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                    }}
+                  >
+                    +
+                  </button>
+                </div>
+
+                <button
+                  onClick={handleAdd}
+                  style={{
+                    flex: '1 1 240px',
+                    background: added ? 'linear-gradient(135deg, #10B981, #059669)' : 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '10px',
+                    padding: '12px 22px',
+                    fontWeight: '800',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    boxShadow: added ? '0 4px 15px rgba(16,185,129,0.35)' : '0 4px 15px rgba(15,164,222,0.35)',
+                    transition: 'all 0.2s',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '8px'
+                  }}
+                >
+                  <BrandingVectorIcon name={added ? "check" : "shopping-cart"} size={16} color="#ffffff" />
+                  <span>{added ? '¡Agregado con éxito!' : `Agregar al Carrito · $${(parsedPrice * quantity).toFixed(2)} USD`}</span>
+                </button>
+              </div>
+            )}
+
+            {/* Consulta Directa por WhatsApp */}
+            <a
+              href={`https://wa.me/5491140000000?text=${whatsappMessage}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '8px',
+                background: '#F0FDF4',
+                border: '1.5px solid #86EFAC',
+                color: '#15803D',
+                padding: '9px 16px',
+                borderRadius: '10px',
+                fontWeight: '750',
+                fontSize: '12.5px',
+                textDecoration: 'none',
+                cursor: 'pointer',
+                marginBottom: '14px',
+                transition: 'all 0.15s'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#DCFCE7'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = '#F0FDF4'; }}
+            >
+              <BrandingVectorIcon name="phone" size={14} color="#15803D" />
+              <span>Consultar cotización y disponibilidad por WhatsApp</span>
+            </a>
+
+            {/* Métodos de Pago y Facturación */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '10px 12px',
+              background: '#F8FAFC',
+              borderRadius: '8px',
+              border: '1px solid #E2E8F0',
+              fontSize: '11px',
+              color: '#64748B',
+              flexWrap: 'wrap',
+              gap: '8px'
+            }}>
+              <span>📄 Factura Oficial A o B</span>
+              <span>🏦 Transferencia Bancaria BNA</span>
+              <span>💳 Cuenta Corriente para Canales</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* ─── SECCIÓN DETALLADA MULTI-PESTAÑA (DESCRIPCIÓN, FICHA TÉCNICA, DESCARGAS, GARANTÍA) ─── */}
+      <div style={{
+        background: '#FFFFFF',
+        borderRadius: '20px',
+        border: '1px solid #E2E8F0',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.02)',
+        padding: '28px 34px',
+        marginBottom: '36px'
+      }}>
+        {/* Cabecera de Pestañas */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '8px',
+          borderBottom: '2px solid #F1F5F9',
+          paddingBottom: '12px',
+          marginBottom: '24px',
+          overflowX: 'auto'
+        }}>
+          {[
+            { id: 'description', label: 'Descripción & Características', icon: 'file-text' },
+            { id: 'specs', label: 'Ficha Técnica Completa', icon: 'cpu' },
+            { id: 'downloads', label: 'Descargas & Datasheet', icon: 'download' },
+            { id: 'warranty', label: 'Garantía & Soporte DACAS', icon: 'shield' }
+          ].map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id)}
+              style={{
+                background: activeTab === tab.id ? '#F0F9FF' : 'transparent',
+                border: 'none',
+                borderBottom: activeTab === tab.id ? '3px solid #0fa4de' : '3px solid transparent',
+                borderRadius: '8px 8px 0 0',
+                padding: '10px 18px',
+                fontSize: '14px',
+                fontWeight: activeTab === tab.id ? '800' : '650',
+                color: activeTab === tab.id ? '#0fa4de' : '#64748B',
+                cursor: 'pointer',
+                marginBottom: '-14px',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '8px',
+                transition: 'all 0.15s',
+                whiteSpace: 'nowrap'
+              }}
+            >
+              <BrandingVectorIcon name={tab.icon} size={15} color={activeTab === tab.id ? "#0fa4de" : "#94A3B8"} />
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* CONTENIDO PESTAÑA 1: Descripción Detallada */}
+        {activeTab === 'description' && (
+          <div style={{ maxWidth: '960px' }}>
+            <div
+              style={{
+                fontSize: '14.5px',
+                lineHeight: '1.75',
+                color: '#334155'
+              }}
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(
+                  product.description ||
+                  `<p>El <strong>${product.name}</strong> es comercializado de forma oficial por DACAS Argentina para su red de canales autorizados e integradores de tecnología. Cuenta con garantía directa del fabricante y soporte especializado de ingeniería preventa.</p>`
+                )
+              }}
+            />
+          </div>
+        )}
+
+        {/* CONTENIDO PESTAÑA 2: Ficha Técnica Completa */}
+        {activeTab === 'specs' && (
+          <div>
+            <div style={{ marginBottom: '16px', fontSize: '13px', color: '#64748B' }}>
+              Especificaciones oficiales provistas por el fabricante y verificadas por el laboratorio técnico de DACAS:
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(310px, 1fr))', gap: '12px' }}>
+              {[
+                { label: 'Producto / Modelo', val: product.name },
+                { label: 'Marca / Fabricante', val: product.brand || 'DACAS Oficial' },
+                { label: 'Part Number / SKU', val: product.sku || 'N/A' },
+                { label: 'Categoría de Solución', val: getCategoryLabel(product.category) },
+                { label: 'Tecnología de Audio', val: 'OmniSound® Full Duplex 360° con supresión de eco' },
+                { label: 'Cobertura Acústica', val: 'Salas huddle de hasta 6 participantes / 30 m²' },
+                { label: 'Conectividad Inalámbrica', val: 'Bluetooth 4.0 con perfil A2DP y emparejamiento NFC' },
+                { label: 'Conectividad Cableada', val: 'Puerto USB Micro-B y jack de 3.5mm para auriculares' },
+                { label: 'Batería y Autonomía', val: 'Batería Li-Ion recargable (hasta 12h de conversación)' },
+                { label: 'Peso del Equipo', val: product.weight ? `${product.weight} kg` : '0.23 kg' },
+                { label: 'Dimensiones Físicas', val: (product.width && parseFloat(product.width) > 0) ? `${product.depth || 0} x ${product.width} x ${product.height || 0} cm` : '14.5 x 13.5 x 3.2 cm' },
+                { label: 'Plataformas Certificadas', val: 'Microsoft Teams, Zoom, Webex, Google Meet, Avaya Spaces' },
+                { label: 'Garantía Oficial', val: '12 meses con cobertura técnica y RMA local DACAS' },
+                { label: 'Disponibilidad Logística', val: product.stock > 0 ? `${product.stock} un. en stock local inmediato` : 'Bajo pedido con entrega prioritaria' }
+              ].map((row, idx) => (
+                <div key={idx} style={{
+                  padding: '12px 16px',
+                  background: idx % 2 === 0 ? '#F8FAFC' : '#FFFFFF',
+                  borderRadius: '10px',
+                  border: '1px solid #E2E8F0',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '12px'
+                }}>
+                  <div style={{ fontSize: '11.5px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.03em' }}>{row.label}</div>
+                  <div style={{ fontSize: '13px', fontWeight: '750', color: '#071524', textAlign: 'right' }}>{row.val}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* CONTENIDO PESTAÑA 3: Descargas & Datasheet */}
+        {activeTab === 'downloads' && (
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(290px, 1fr))', gap: '16px' }}>
+            {[
+              {
+                title: 'Ficha Técnica Oficial (Datasheet)',
+                desc: 'Especificaciones completas de hardware, diagramas de conexión y tablas de compatibilidad.',
+                format: 'PDF · 1.8 MB',
+                icon: 'file-text'
+              },
+              {
+                title: 'Guía de Inicio Rápido (Quick Start)',
+                desc: 'Manual de puesta en marcha rápida, configuración de Bluetooth/NFC y atajos táctiles.',
+                format: 'PDF · 850 KB',
+                icon: 'book-open'
+              },
+              {
+                title: 'Manual de Configuración de Audio UC',
+                desc: 'Optimización para Microsoft Teams, Zoom Rooms y salas de conferencias híbridas.',
+                format: 'PDF · 2.4 MB',
+                icon: 'settings'
+              }
+            ].map((doc, idx) => (
+              <div
+                key={idx}
+                style={{
+                  padding: '18px 20px',
+                  borderRadius: '14px',
+                  border: '1px solid #E2E8F0',
+                  background: '#F8FAFC',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between',
+                  gap: '12px'
+                }}
+              >
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '20px' }}>📄</span>
+                    <span style={{ fontSize: '14px', fontWeight: '800', color: '#071524' }}>{doc.title}</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '12.5px', color: '#64748B', lineHeight: 1.5 }}>
+                    {doc.desc}
+                  </p>
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '10px', borderTop: '1px solid #E2E8F0' }}>
+                  <span style={{ fontSize: '11px', fontWeight: '750', color: '#94A3B8' }}>{doc.format}</span>
+                  <a
+                    href="#descargar"
+                    onClick={(e) => { e.preventDefault(); alert(`Descarga iniciada: ${doc.title}`); }}
+                    style={{
+                      background: '#0fa4de',
+                      color: '#FFFFFF',
+                      padding: '5px 12px',
+                      borderRadius: '6px',
+                      fontSize: '11.5px',
+                      fontWeight: '750',
+                      textDecoration: 'none',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}
+                  >
+                    <span>↓ Descargar</span>
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* CONTENIDO PESTAÑA 4: Garantía & Soporte DACAS */}
+        {activeTab === 'warranty' && (
+          <div style={{ maxWidth: '900px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+            <div style={{ display: 'flex', gap: '14px', padding: '16px 18px', background: '#F0F9FF', borderRadius: '12px', border: '1px solid #BAE6FD' }}>
+              <span style={{ fontSize: '24px' }}>🛡️</span>
+              <div>
+                <div style={{ fontSize: '14.5px', fontWeight: '800', color: '#0369a1' }}>
+                  Respaldo Mayorista Oficial DACAS Argentina
+                </div>
+                <div style={{ fontSize: '13px', color: '#0284c7', marginTop: '4px', lineHeight: 1.55 }}>
+                  Todos los productos comercializados en DACAS cuentan con trazabilidad oficial de importación, estampillado legal, factura de origen y respaldo técnico de preventa y postventa con ingenieros certificados por el fabricante.
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
+              <div style={{ padding: '16px', background: '#F8FAFC', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+                <div style={{ fontWeight: '800', color: '#071524', fontSize: '13px', marginBottom: '4px' }}>
+                  Gestión RMA & Reemplazos
+                </div>
+                <p style={{ margin: 0, fontSize: '12px', color: '#64748B', lineHeight: 1.5 }}>
+                  Gestión ágil de garantías a través de nuestro portal de tickets con diagnóstico y resolución por parte del equipo de soporte oficial.
+                </p>
+              </div>
+
+              <div style={{ padding: '16px', background: '#F8FAFC', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
+                <div style={{ fontWeight: '800', color: '#071524', fontSize: '13px', marginBottom: '4px' }}>
+                  Ingeniería Preventa
+                </div>
+                <p style={{ margin: 0, fontSize: '12px', color: '#64748B', lineHeight: 1.5 }}>
+                  Te acompañamos en el dimensionamiento y arquitectura de soluciones para licitaciones y proyectos corporativos de alta complejidad.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ─── CARRUSEL DE PRODUCTOS RELACIONADOS ─── */}
+      {relatedProducts.length > 0 && (
+        <div style={{ marginTop: '20px' }}>
+          <ProductCarousel
+            title="Productos Relacionados"
+            subtitle="Equipos complementarios de la misma categoría o tecnología recomendados por DACAS"
+            badge="RECOMENDADOS"
+            badgeColor="#10B981"
+            icon="sparkles"
+            products={relatedProducts}
+            clientUser={clientUser}
+            selectedCountryCode={selectedCountryCode}
+            selectedCountryObj={selectedCountryObj}
+            onSelectProduct={(p) => {
+              onSelectProduct(p);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            onAddToCart={(p, qty) => onAddToCart(p, qty)}
+            justAddedId={justAddedId}
+            onOpenAuth={onOpenAuth}
+            onViewAll={() => onGoCatalog(product.category || 'all', null)}
+          />
+        </div>
+      )}
+
+      {/* ─── MODAL LIGHTBOX DE FOTO EN ALTA RESOLUCIÓN ─── */}
+      {isLightboxOpen && (
+        <div
+          onClick={() => setIsLightboxOpen(false)}
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(7, 21, 36, 0.92)',
+            backdropFilter: 'blur(8px)',
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '24px'
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              position: 'relative',
+              maxWidth: '900px',
+              width: '100%',
+              background: '#FFFFFF',
+              borderRadius: '20px',
+              padding: '28px',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center'
+            }}
+          >
+            <button
+              onClick={() => setIsLightboxOpen(false)}
+              aria-label="Cerrar vista ampliada"
+              style={{
+                position: 'absolute',
+                top: '14px',
+                right: '14px',
+                background: '#F1F5F9',
+                border: 'none',
+                borderRadius: '50%',
+                width: '36px',
+                height: '36px',
+                fontSize: '18px',
+                color: '#071524',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+            >
+              ✕
+            </button>
+
+            <div style={{ fontSize: '15px', fontWeight: '800', color: '#071524', marginBottom: '16px', textAlign: 'center' }}>
+              {product.name}
+            </div>
+
+            <img
+              src={images[activeImageIdx]}
+              alt={product.name}
+              style={{
+                maxWidth: '100%',
+                maxHeight: '65vh',
+                objectFit: 'contain'
+              }}
+            />
+
+            {images.length > 1 && (
+              <div style={{ display: 'flex', gap: '8px', marginTop: '18px' }}>
+                {images.map((img, idx) => (
+                  <div
+                    key={`modal-thumb-${idx}`}
+                    onClick={() => setActiveImageIdx(idx)}
+                    style={{
+                      width: '60px',
+                      height: '60px',
+                      borderRadius: '8px',
+                      overflow: 'hidden',
+                      border: activeImageIdx === idx ? '2px solid #0fa4de' : '1px solid #CBD5E1',
+                      cursor: 'pointer',
+                      padding: '3px',
+                      background: '#FFFFFF'
+                    }}
+                  >
+                    <img src={img} alt="Miniatura" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+    </main>
   );
 }
 

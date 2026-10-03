@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
   "architecture": "DACAS OneWorld Multi-Subsidiary & Multi-Currency",
-  "updated_at": "2026-10-01T21:23:11.475Z",
+  "updated_at": "2026-10-02T21:11:20.204Z",
   "subsidiaries": [
     {
       "id": 1,
@@ -335,17 +335,17 @@
       "categoria": "Next-Gen Firewall",
       "precio_mayorista": 1250,
       "costo_promedio": 890,
-      "stock_disponible": 61,
+      "stock_disponible": 63,
       "stock_por_almacen": {
         "LOC-BUE": 30,
         "LOC-SCL": 10,
-        "LOC-MIA": 17,
+        "LOC-MIA": 19,
         "LOC-BOG": 4
       },
       "lead_time_days": 7,
       "moneda": "USD",
-      "precio_mayorista_usd": 890,
-      "updated_at": "2026-10-01T21:23:11.475Z"
+      "precio_mayorista_usd": 729.8,
+      "updated_at": "2026-10-02T18:16:54.501Z"
     },
     {
       "id": 2,
@@ -357,17 +357,17 @@
       "categoria": "Wireless Enterprise",
       "precio_mayorista": 395,
       "costo_promedio": 260,
-      "stock_disponible": 107,
+      "stock_disponible": 106,
       "stock_por_almacen": {
         "LOC-BUE": 50,
         "LOC-SCL": 30,
-        "LOC-MIA": 17,
+        "LOC-MIA": 16,
         "LOC-BOG": 10
       },
       "lead_time_days": 5,
       "moneda": "USD",
       "precio_mayorista_usd": 480,
-      "updated_at": "2026-10-01T21:00:08.167Z"
+      "updated_at": "2026-10-02T18:58:52.037Z"
     },
     {
       "id": 3,
@@ -419,15 +419,17 @@
       "categoria": "Routing & Security",
       "precio_mayorista": 980,
       "costo_promedio": 690,
-      "stock_disponible": 25,
+      "stock_disponible": 34,
       "stock_por_almacen": {
         "LOC-BUE": 12,
         "LOC-SCL": 6,
-        "LOC-MIA": 5,
+        "LOC-MIA": 14,
         "LOC-BOG": 2
       },
       "lead_time_days": 10,
-      "moneda": "USD"
+      "moneda": "USD",
+      "precio_mayorista_usd": 680,
+      "updated_at": "2026-10-02T17:48:26.522Z"
     },
     {
       "id": 6,
@@ -448,6 +450,22 @@
       },
       "lead_time_days": 7,
       "moneda": "USD"
+    },
+    {
+      "id": 7,
+      "sku": "zpa5",
+      "nombre": "Zapatilla De 6 ejes, con tensión",
+      "marca": "AudioCodes",
+      "categoria": "networking",
+      "item_type": "Inventario Físico",
+      "stock_disponible": 10,
+      "stock_por_almacen": {
+        "LOC-MIA": 10
+      },
+      "precio_mayorista_usd": 1000,
+      "currency": "USD",
+      "status": "Disponible",
+      "created_at": "2026-10-02T19:30:20.976Z"
     }
   ],
   "vendors": [
@@ -853,6 +871,51 @@
     }
   ],
   "inventory_adjustments": [
+    {
+      "id": 1790969420976,
+      "sku": "zpa5",
+      "item_name": "Zapatilla De 6 ejes, con tensión",
+      "location": "LOC-MIA",
+      "adjustment": 10,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-02T19:30:20.976Z"
+    },
+    {
+      "id": 1790967532037,
+      "sku": "AP-505-RW",
+      "item_name": "Aruba AP-505 Campus Unified Access Point Wi-Fi 6",
+      "location": "LOC-MIA",
+      "adjustment": 16,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-02T18:58:52.037Z"
+    },
+    {
+      "id": 1790965014501,
+      "sku": "FG-60F-BDL",
+      "item_name": "FortiGate 60F Hardware + 1yr FortiGuard Unified Threat Protection",
+      "location": "LOC-MIA",
+      "adjustment": 19,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-02T18:16:54.501Z"
+    },
+    {
+      "id": 1790963306522,
+      "sku": "SRX300-SYS-JB",
+      "item_name": "Juniper SRX300 Services Gateway with Junos Software Base",
+      "location": "LOC-MIA",
+      "adjustment": 14,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-02T17:48:26.522Z"
+    },
+    {
+      "id": 1790948958848,
+      "sku": "FG-60F-BDL",
+      "item_name": "FortiGate 60F Hardware + 1yr FortiGuard Unified Threat Protection",
+      "location": "LOC-MIA",
+      "adjustment": 20,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-02T13:49:18.848Z"
+    },
     {
       "id": 1790889791475,
       "sku": "FG-60F-BDL",

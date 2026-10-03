@@ -92,6 +92,8 @@ rawPool.connect()
         ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS depth VARCHAR(50);
         ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS width VARCHAR(50);
         ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS height VARCHAR(50);
+        ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS is_featured BOOLEAN DEFAULT FALSE;
+        ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS badge VARCHAR(50);
       `);
     } catch (_) {}
     client.release();
@@ -131,7 +133,12 @@ const DEFAULT_VISUAL_SETTINGS = {
       desc: 'Más de 25 años conectando a los principales fabricantes mundiales de ciberseguridad, networking, infraestructura y comunicaciones unificadas con integradores de toda la región.',
       primaryBtn: { text: 'Explorar Catálogo', cat: 'all' },
       secondaryBtn: { text: 'Nuestros Países', cat: 'all' },
-      type: 'animated_stats',
+      type: 'metrics',
+      metrics: [
+        { value: '+25 Años', label: 'Liderando el Mercado IT' },
+        { value: '12 Países', label: 'Cobertura Regional' },
+        { value: '24/7', label: 'Soporte y Garantía Oficial' }
+      ],
       stats: [
         { key: 'exp', target: 25, suffix: '+ Años', label: 'Liderando el Mercado IT' },
         { key: 'part', target: 100, suffix: '%', label: 'Partners Certificados' },
@@ -210,6 +217,156 @@ const DEFAULT_VISUAL_SETTINGS = {
     'networking': [
       'mikrotik', 'aruba', 'infoblox', 'silver peak', 'commscope'
     ]
+  },
+  brandBanners: [
+    {
+      id: 'brand_banner_1',
+      brand: 'Fortinet',
+      title: 'Fortinet Security Fabric',
+      subtitle: 'Firewalls NGFW FortiGate y protección perimetral con procesamiento SOC4',
+      badge: 'CIBERSEGURIDAD LÍDER',
+      accentColor: '#EE3124',
+      buttonText: 'Explorar Fortinet',
+      imageUrl: '',
+      targetCategory: 'security',
+      enabled: true
+    },
+    {
+      id: 'brand_banner_2',
+      brand: 'Vertiv',
+      title: 'Vertiv Critical Power',
+      subtitle: 'Sistemas UPS Online doble conversión y racks de alta densidad para Data Centers',
+      badge: 'ENERGÍA CRÍTICA',
+      accentColor: '#38bdf8',
+      buttonText: 'Ver Soluciones Vertiv',
+      imageUrl: '',
+      targetCategory: 'infraestructura',
+      enabled: true
+    },
+    {
+      id: 'brand_banner_3',
+      brand: 'MikroTik',
+      title: 'MikroTik Routing & Core',
+      subtitle: 'Switches gestionables Gigabit PoE+ y routers para enlaces de fibra óptica de alto tráfico',
+      badge: 'NETWORKING ENTERPRISE',
+      accentColor: '#10b981',
+      buttonText: 'Ver Equipos MikroTik',
+      imageUrl: '',
+      targetCategory: 'networking',
+      enabled: true
+    }
+  ],
+  homeCarousels: {
+    featured: {
+      enabled: true,
+      title: '🔥 Productos Destacados',
+      subtitle: 'Equipamiento de alta demanda con entrega inmediata y garantía oficial DACAS',
+      productIds: []
+    },
+    custom: {
+      enabled: true,
+      title: '⚡ Oportunidades & Novedades IT',
+      subtitle: 'Soluciones corporativas seleccionadas con precios mayoristas especiales para canales',
+      productIds: []
+    }
+  },
+  brandCustomInfo: {
+    'fortinet': {
+      name: 'Fortinet',
+      logo: '',
+      tagline: 'Seguridad de Red Convergente y Firewalls NGFW FortiGate',
+      color: '#EE3124'
+    },
+    'avaya': {
+      name: 'Avaya',
+      logo: '',
+      tagline: 'Líder en Contact Center y Comunicaciones Unificadas',
+      color: '#CC0000'
+    },
+    'vertiv': {
+      name: 'Vertiv',
+      logo: '',
+      tagline: 'Climatización Crítica Liebert, UPS y Micro-Datacenters',
+      color: '#FF4500'
+    },
+    'mikrotik': {
+      name: 'MikroTik',
+      logo: '',
+      tagline: 'Routers, Switches de alta capacidad y RouterOS',
+      color: '#D8232A'
+    },
+    'aruba': {
+      name: 'Aruba',
+      logo: '',
+      tagline: 'Puntos de Acceso Wi-Fi 6 y Switching Corporativo Cloud',
+      color: '#FF8300'
+    },
+    'f5': {
+      name: 'F5 Networks',
+      logo: '',
+      tagline: 'Seguridad y Entrega Multi-Cloud de Aplicaciones & DDoS',
+      color: '#E2231A'
+    },
+    'algosec': {
+      name: 'AlgoSec',
+      logo: '',
+      tagline: 'Automatización de Seguridad y Políticas de Firewall',
+      color: '#0084C7'
+    },
+    'audiocodes': {
+      name: 'AudioCodes',
+      logo: '',
+      tagline: 'Gateways de Voz, SBCs y Teléfonos IP Teams',
+      color: '#005596'
+    },
+    'barracuda': {
+      name: 'Barracuda Networks',
+      logo: '',
+      tagline: 'Seguridad de Email, WAF y Respaldo en la Nube',
+      color: '#006699'
+    },
+    'imperva': {
+      name: 'Imperva',
+      logo: '',
+      tagline: 'Protección Integral de Datos, APIs y WAF Avanzado',
+      color: '#001E62'
+    },
+    'sophos': {
+      name: 'Sophos',
+      logo: '',
+      tagline: 'Ciberseguridad Sincronizada, Intercept X Endpoint y XGS',
+      color: '#00549A'
+    },
+    'sonicwall': {
+      name: 'SonicWall',
+      logo: '',
+      tagline: 'Firewalls de Nueva Generación TZ / NSa y Acceso Seguro',
+      color: '#F37023'
+    },
+    'eaton': {
+      name: 'Eaton',
+      logo: '',
+      tagline: 'Sistemas UPS, PDUs y Protección de Energía Crítica',
+      color: '#005EB8'
+    },
+    'panduit': {
+      name: 'Panduit',
+      logo: '',
+      tagline: 'Cableado Estructurado, Canalización y Datacenter Solutions',
+      color: '#005A9C'
+    },
+    'commscope': {
+      name: 'CommScope',
+      logo: '',
+      tagline: 'Infraestructura Integral de Redes Ópticas y Cableado',
+      color: '#005596'
+    },
+    'microsoft': {
+      name: 'Microsoft',
+      logo: '',
+      tagline: 'Licenciamiento Corporativo CSP, Windows Server y M365',
+      color: '#00A4EF'
+    }
   }
 };
 
@@ -714,6 +871,55 @@ const DEFAULT_N8N_BOT_LOGS = [
 
 // --- IN-MEMORY DATABASE FALLBACK STORE ---
 const PRODUCTS_FILE = path.join(__dirname, 'ecommerce_products.json');
+const VISUAL_SETTINGS_FILE = path.join(__dirname, 'ecommerce_visual_settings.json');
+
+function getDefaultVisualSettingsForCountry(countryCode) {
+  const code = (countryCode || 'AR').toUpperCase();
+  const c = resolveCountry(code);
+  const countryName = c ? c.name : 'Argentina';
+
+  const base = JSON.parse(JSON.stringify(DEFAULT_VISUAL_SETTINGS));
+  base.announcement.text = `DACAS ${countryName}: Distribución Mayorista Oficial y Soporte Certificado en ${countryName}`;
+  base.announcement.badgeText = `DACAS ${code}`;
+  base.general.shopTitle = `DACAS ${countryName} B2B Shop`;
+  base.general.shopSubtitle = `Plataforma Corporativa de Soluciones IT & Ciberseguridad para ${countryName}`;
+  if (base.heroSlides && base.heroSlides[0]) {
+    base.heroSlides[0].badge = `RED DACAS ${countryName.toUpperCase()}`;
+    base.heroSlides[0].titleLine1 = `Distribución Mayorista Oficial`;
+    base.heroSlides[0].titleLine2 = `En ${countryName}`;
+    base.heroSlides[0].desc = `Conectando a los principales fabricantes de IT con los integradores de ${countryName}. Stock local y soporte técnico certificado.`;
+  }
+  return base;
+}
+
+function loadVisualSettingsFromFile() {
+  try {
+    if (fs.existsSync(VISUAL_SETTINGS_FILE)) {
+      const data = fs.readFileSync(VISUAL_SETTINGS_FILE, 'utf-8');
+      const parsed = JSON.parse(data);
+      if (parsed && typeof parsed === 'object') {
+        return parsed;
+      }
+    }
+  } catch (err) {
+    console.error('Error cargando ecommerce_visual_settings.json:', err);
+  }
+  const initial = {};
+  ['AR', 'CL', 'CO', 'MX', 'US', 'UY', 'PE', 'BO', 'CR', 'EC', 'PY', 'DO'].forEach(code => {
+    initial[code] = getDefaultVisualSettingsForCountry(code);
+  });
+  return initial;
+}
+
+function saveVisualSettingsToFile() {
+  try {
+    if (typeof inMem !== 'undefined' && inMem && inMem.visualSettingsByCountry) {
+      fs.writeFileSync(VISUAL_SETTINGS_FILE, JSON.stringify(inMem.visualSettingsByCountry, null, 2), 'utf-8');
+    }
+  } catch (err) {
+    console.error('Error guardando ecommerce_visual_settings.json:', err);
+  }
+}
 
 function saveProductsToFile() {
   try {
@@ -731,7 +937,14 @@ function loadProductsFromFile(defaultProducts) {
       const data = fs.readFileSync(PRODUCTS_FILE, 'utf-8');
       const parsed = JSON.parse(data);
       if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+        return parsed.map(p => {
+          const c = resolveCountry(p.country_code || p.country_id || 'AR');
+          return {
+            ...p,
+            country_code: p.country_code ? p.country_code.toUpperCase() : c.code,
+            country_id: p.country_id ? parseInt(p.country_id, 10) : c.id
+          };
+        });
       }
     }
   } catch (err) {
@@ -741,7 +954,15 @@ function loadProductsFromFile(defaultProducts) {
 }
 
 const inMem = {
-  visualSettings: JSON.parse(JSON.stringify(DEFAULT_VISUAL_SETTINGS)),
+  visualSettingsByCountry: loadVisualSettingsFromFile(),
+  get visualSettings() {
+    return (this.visualSettingsByCountry && this.visualSettingsByCountry['AR']) || DEFAULT_VISUAL_SETTINGS;
+  },
+  set visualSettings(val) {
+    if (!this.visualSettingsByCountry) this.visualSettingsByCountry = {};
+    this.visualSettingsByCountry['AR'] = val;
+    saveVisualSettingsToFile();
+  },
   checkoutMethods: JSON.parse(JSON.stringify(DEFAULT_CHECKOUT_METHODS)),
   apliConfig: JSON.parse(JSON.stringify(DEFAULT_APLI_CONFIG)),
   apliLogs: JSON.parse(JSON.stringify(DEFAULT_APLI_LOGS)),
@@ -1161,12 +1382,17 @@ const inMem = {
       brand: 'Avaya',
       category: 'comunicaciones_unificadas',
       sku: 'AVAYA-B109-CONF',
-      description: '<p>Solución de colaboración y videoconferencia HD con audio OmniSound cristalino, cancelación de eco y conectividad Bluetooth/USB.</p>',
+      description: '<p>El <strong>Avaya B109</strong> es un altavoz de conferencia personal ultracompacto y portátil diseñado para profesionales que demandan máxima claridad acústica en entornos de trabajo híbrido, oficinas privadas y salas de reunión pequeñas (huddle rooms de hasta 6 personas).</p><h4>Claridad de Audio Excepcional con OmniSound®</h4><p>Equipado con la tecnología patentada <strong>OmniSound®</strong> de Avaya, ofrece audio de banda ancha Full Duplex cristalino en 360°, eliminando ruidos de fondo no deseados y ecos acústicos molestos. Ideal tanto para llamadas de conferencia críticas como para reproducción de contenido multimedia con alta fidelidad.</p><h4>Conectividad Instantánea y Sin Fisuras</h4><ul><li><strong>Bluetooth con NFC:</strong> Emparejamiento instantáneo al aproximar cualquier smartphone o tablet compatible.</li><li><strong>Conexión USB Plug & Play:</strong> Compatible con PC y Mac sin necesidad de drivers adicionales.</li><li><strong>Compatibilidad Certificada:</strong> Integración transparente con Microsoft Teams, Zoom, Avaya Spaces, Cisco Webex y Google Meet.</li><li><strong>Salida de Audio 3.5mm:</strong> Permite conectar auriculares para alternar con total privacidad entre llamadas personales y de conferencia.</li></ul><h4>Autonomía y Diseño Portátil</h4><p>Incorpora una batería de iones de litio de alta densidad que proporciona hasta <strong>12 horas continuas de conversación</strong> y 60 días en modo standby. Su pantalla LCD informativa y teclas táctiles retroiluminadas permiten gestionar el volumen, silenciar micrófonos y conmutar fuentes de audio de forma intuitiva.</p>',
       price: '680.00',
       stock: 14,
-      image_url: 'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=1000&auto=format&fit=crop',
+      weight: '0.23',
+      depth: '14.5',
+      width: '13.5',
+      height: '3.2',
+      image_url: 'http://localhost:3001/uploads/avaya_b109.png',
       images: [
-        'https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=1000&auto=format&fit=crop'
+        'http://localhost:3001/uploads/avaya_b109.png',
+        'http://localhost:3001/uploads/avaya_b109_angle.jpg'
       ],
       created_at: new Date().toISOString()
     },
@@ -1486,6 +1712,14 @@ function executeInMemoryQuery(sql, params = []) {
 
   // 2. SELECT * FROM ecommerce_products
   if (/^SELECT \* FROM ecommerce_products/i.test(norm)) {
+    if (fs.existsSync(PRODUCTS_FILE)) {
+      try {
+        const fileProds = JSON.parse(fs.readFileSync(PRODUCTS_FILE, 'utf-8'));
+        if (Array.isArray(fileProds) && fileProds.length > 0) {
+          inMem.products = fileProds;
+        }
+      } catch (_) {}
+    }
     if (/WHERE id = \$1/i.test(norm)) {
       const row = inMem.products.find(p => p.id === parseInt(params[0]));
       return { rows: row ? [row] : [] };
@@ -1834,6 +2068,9 @@ function executeInMemoryQuery(sql, params = []) {
       stock: pData.stock_type === 'infinite' ? 9999 : (parseInt(pData.stock) || 0),
       sku: pData.sku || '',
       barcode: pData.barcode || '',
+      brand: pData.brand || '',
+      is_featured: Boolean(pData.is_featured || pData.isFeatured || pData.featured),
+      badge: pData.badge || (Boolean(pData.is_featured || pData.isFeatured || pData.featured) ? 'DESTACADO' : ''),
       weight: pData.weight || '',
       depth: pData.depth || '',
       width: pData.width || '',
@@ -1842,6 +2079,9 @@ function executeInMemoryQuery(sql, params = []) {
       age_group: pData.age_group || '',
       gender: pData.gender || '',
       categories: pData.categories || [pData.category || 'General'],
+      category: pData.category || (Array.isArray(pData.categories) ? pData.categories[0] : 'General'),
+      country_code: pData.country_code ? pData.country_code.toUpperCase() : 'AR',
+      country_id: pData.country_id ? parseInt(pData.country_id, 10) : (resolveCountry(pData.country_code || 'AR').id),
       variants: pData.variants || [],
       image_url: pData.image_url || '',
       secondary_images: Array.isArray(pData.secondary_images) ? pData.secondary_images : [],
@@ -1887,10 +2127,17 @@ function executeInMemoryQuery(sql, params = []) {
         ? pData.images
         : [mainImg, ...secImgs].filter(Boolean);
 
+      const isFeat = pData.is_featured !== undefined ? Boolean(pData.is_featured) : (pData.isFeatured !== undefined ? Boolean(pData.isFeatured) : (pData.featured !== undefined ? Boolean(pData.featured) : current.is_featured));
+
       inMem.products[idx] = {
         ...current,
         ...pData,
         id,
+        brand: pData.brand !== undefined ? pData.brand : current.brand,
+        country_code: pData.country_code ? pData.country_code.toUpperCase() : (current.country_code || 'AR'),
+        country_id: pData.country_id ? parseInt(pData.country_id, 10) : (current.country_id || 2),
+        is_featured: isFeat,
+        badge: pData.badge !== undefined ? pData.badge : (isFeat && !current.badge ? 'DESTACADO' : (!isFeat && current.badge === 'DESTACADO' ? '' : current.badge)),
         image_url: mainImg,
         secondary_images: secImgs,
         images: allImgs,
@@ -2437,18 +2684,29 @@ router.get('/products', async (req, res) => {
     }
 
     // Determine target country (primary key scope)
-    const countryParam = req.query.country || req.query.country_code || req.query.country_id || (user ? user.country_id : 'AR');
+    const rawCountryParam = req.query.country || req.query.country_code || req.query.country_id;
+    const isAllCountries = rawCountryParam && (rawCountryParam.toString().toLowerCase() === 'all' || rawCountryParam.toString().toLowerCase() === 'todos');
+    const countryParam = rawCountryParam || (user ? user.country_id : 'AR');
     const targetCountry = resolveCountry(countryParam);
 
     const result = await pool.query('SELECT * FROM ecommerce_products ORDER BY id ASC');
     const rulesRes = await pool.query('SELECT * FROM ecommerce_pricing_rules WHERE is_active = true');
     const allRules = rulesRes.rows;
 
-    const formatted = result.rows.map(p => {
+    let sourceProducts = result.rows;
+    if (!isAllCountries) {
+      sourceProducts = sourceProducts.filter(p => {
+        const prodCountryCode = (p.country_code || 'AR').toUpperCase();
+        return prodCountryCode === targetCountry.code.toUpperCase();
+      });
+    }
+
+    const formatted = sourceProducts.map(p => {
+      const pCountry = resolveCountry(p.country_code || targetCountry.code);
       // Find stock in the selected country
       let localStock = p.stock !== undefined ? parseInt(p.stock, 10) : 0;
       if (typeof inMem !== 'undefined' && Array.isArray(inMem.product_stock)) {
-        const cStock = inMem.product_stock.find(s => s.product_id === p.id && s.country_id === targetCountry.id);
+        const cStock = inMem.product_stock.find(s => s.product_id === p.id && s.country_id === pCountry.id);
         if (cStock && cStock.stock !== undefined) {
           localStock = parseInt(cStock.stock, 10);
         }
@@ -2456,8 +2714,8 @@ router.get('/products', async (req, res) => {
 
       // Contextual pricing rule application with country scope
       const contextualUser = user
-        ? { ...user, country_id: targetCountry.id }
-        : { country_id: targetCountry.id, tipo_cliente: 'Integrador IT / Reseller' };
+        ? { ...user, country_id: pCountry.id }
+        : { country_id: pCountry.id, tipo_cliente: 'Integrador IT / Reseller' };
       const pricing = calculateCustomProductPrice(p, contextualUser, allRules);
 
       const mainImg = p.image_url || (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : '');
@@ -2473,15 +2731,17 @@ router.get('/products', async (req, res) => {
       return {
         ...p,
         ...pricing,
+        country_code: pCountry.code,
+        country_id: pCountry.id,
         stock: localStock,
         country_stock: localStock,
         total_stock: p.stock,
         selected_country: {
-          id: targetCountry.id,
-          code: targetCountry.code,
-          name: targetCountry.name,
-          tax_rate: targetCountry.tax_rate,
-          shipping_cost: targetCountry.shipping_cost
+          id: pCountry.id,
+          code: pCountry.code,
+          name: pCountry.name,
+          tax_rate: pCountry.tax_rate,
+          shipping_cost: pCountry.shipping_cost
         },
         image_url: mainImg,
         images: combinedImages
@@ -4714,15 +4974,21 @@ router.post('/ai/generate-categories', authenticateToken, requireAdmin, async (r
 
 router.post('/admin/products', authenticateToken, requireAdmin, async (req, res) => {
   try {
+    const targetCountry = resolveCountry(req.body.country_code || req.body.country_id || req.query.country || 'AR');
+    const productPayload = {
+      ...req.body,
+      country_code: targetCountry.code,
+      country_id: targetCountry.id
+    };
     let result;
     if (isPgConnected) {
-      const { name, description, price, stock, image_url } = req.body;
+      const { name, description, price, stock, image_url } = productPayload;
       result = await pool.query(
-        'INSERT INTO ecommerce_products (name, description, price, stock, image_url) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-        [name, description, price, stock, image_url]
+        'INSERT INTO ecommerce_products (name, description, price, stock, image_url, country_code, country_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
+        [name, description, price, stock, image_url, targetCountry.code, targetCountry.id]
       );
     } else {
-      result = await pool.query('INSERT INTO ecommerce_products', [req.body]);
+      result = await pool.query('INSERT INTO ecommerce_products', [productPayload]);
     }
     const nuevoProducto = result.rows[0];
     registrarLog({
@@ -4955,6 +5221,61 @@ router.put('/admin/products/:id', authenticateToken, requireAdmin, async (req, r
   }
 });
 
+router.patch('/admin/products/:id/toggle-featured', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const prodId = parseInt(id, 10);
+
+    let updatedProduct = null;
+    if (isPgConnected) {
+      const checkRes = await pool.query('SELECT is_featured, badge, name FROM ecommerce_products WHERE id = $1', [prodId]);
+      if (checkRes.rows.length === 0) return res.status(404).json({ error: 'Producto no encontrado' });
+      const current = checkRes.rows[0];
+      const nextFeatured = !current.is_featured;
+      let nextBadge = current.badge;
+      if (nextFeatured && !nextBadge) nextBadge = 'DESTACADO';
+      else if (!nextFeatured && nextBadge === 'DESTACADO') nextBadge = '';
+
+      const updateRes = await pool.query(
+        'UPDATE ecommerce_products SET is_featured = $1, badge = $2 WHERE id = $3 RETURNING *',
+        [nextFeatured, nextBadge, prodId]
+      );
+      updatedProduct = updateRes.rows[0];
+    } else {
+      const idx = inMem.products.findIndex(p => p.id === prodId);
+      if (idx === -1) return res.status(404).json({ error: 'Producto no encontrado' });
+      const current = inMem.products[idx];
+      const nextFeatured = !current.is_featured;
+      let nextBadge = current.badge;
+      if (nextFeatured && !nextBadge) nextBadge = 'DESTACADO';
+      else if (!nextFeatured && nextBadge === 'DESTACADO') nextBadge = '';
+
+      inMem.products[idx] = {
+        ...current,
+        is_featured: nextFeatured,
+        badge: nextBadge
+      };
+      saveProductsToFile();
+      updatedProduct = inMem.products[idx];
+    }
+
+    registrarLog({
+      origen: 'ecommerce',
+      tipo: 'INFO',
+      accion: 'ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE',
+      descripcion: `Producto #${prodId} marcado como ${updatedProduct.is_featured ? 'DESTACADO ⭐' : 'NORMAL'} por ${req.user ? req.user.email : 'Admin'}`,
+      usuario: req.user ? req.user.email : 'Admin',
+      req,
+      detalles: { productoId: prodId, is_featured: updatedProduct.is_featured }
+    });
+
+    res.json({ success: true, is_featured: updatedProduct.is_featured, product: updatedProduct });
+  } catch (error) {
+    console.error('Error toggling featured product:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 router.delete('/admin/products/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
@@ -4971,6 +5292,57 @@ router.delete('/admin/products/:id', authenticateToken, requireAdmin, async (req
       detalles: { productoId: id }
     });
     res.json({ message: 'Product deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/admin/products/:id/clone', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const prodId = parseInt(req.params.id, 10);
+    const { target_country, target_countries } = req.body;
+
+    const prod = inMem.products.find(p => p.id === prodId);
+    if (!prod) {
+      return res.status(404).json({ error: 'Producto no encontrado' });
+    }
+
+    const destinations = Array.isArray(target_countries) && target_countries.length > 0
+      ? target_countries
+      : [target_country || 'CL'];
+
+    const clonedList = [];
+    for (const target of destinations) {
+      const c = resolveCountry(target);
+      const cloned = {
+        ...JSON.parse(JSON.stringify(prod)),
+        id: inMem.nextIds.products++,
+        sku: prod.sku ? `${prod.sku}-${c.code}` : '',
+        country_code: c.code,
+        country_id: c.id,
+        created_at: new Date().toISOString()
+      };
+      inMem.products.push(cloned);
+      clonedList.push(cloned);
+    }
+
+    saveProductsToFile();
+
+    registrarLog({
+      origen: 'ecommerce',
+      tipo: 'SUCCESS',
+      accion: 'ECOMMERCE_PRODUCTO_CLONADO',
+      descripcion: `Producto "${prod.name}" clonado a ${destinations.join(', ')}`,
+      usuario: req.user ? req.user.email : 'Admin',
+      req,
+      detalles: { originalId: prod.id, cloned: clonedList.map(c => ({ id: c.id, country: c.country_code })) }
+    });
+
+    res.status(201).json({
+      success: true,
+      message: `Producto clonado exitosamente a ${destinations.join(', ')}`,
+      cloned: clonedList
+    });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -5381,54 +5753,69 @@ router.delete('/admin/users/:id', authenticateToken, requireAdmin, async (req, r
 // ── Visual / Customization Settings API ──
 router.get('/settings/visual', async (req, res) => {
   try {
-    if (isPgConnected) {
-      await pool.query(`
-        CREATE TABLE IF NOT EXISTS ecommerce_visual_settings (
-          id INT PRIMARY KEY DEFAULT 1,
-          config JSONB NOT NULL,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-      `);
-      const row = await pool.query('SELECT config FROM ecommerce_visual_settings WHERE id = 1');
-      if (row.rows.length > 0 && row.rows[0].config) {
-        return res.json(row.rows[0].config);
-      }
+    const rawCountry = req.query.country || req.query.country_code || req.query.country_id || 'AR';
+    const targetCountry = resolveCountry(rawCountry);
+    const code = targetCountry ? targetCountry.code.toUpperCase() : 'AR';
+
+    if (!inMem.visualSettingsByCountry) {
+      inMem.visualSettingsByCountry = loadVisualSettingsFromFile();
     }
-    return res.json(inMem.visualSettings || DEFAULT_VISUAL_SETTINGS);
+    if (!inMem.visualSettingsByCountry[code]) {
+      inMem.visualSettingsByCountry[code] = getDefaultVisualSettingsForCountry(code);
+      saveVisualSettingsToFile();
+    }
+
+    const base = inMem.visualSettingsByCountry[code];
+    return res.json({
+      ...DEFAULT_VISUAL_SETTINGS,
+      ...base,
+      country_code: code,
+      country_name: targetCountry.name,
+      brandBanners: (Array.isArray(base.brandBanners) && base.brandBanners.length > 0)
+        ? base.brandBanners
+        : DEFAULT_VISUAL_SETTINGS.brandBanners,
+      homeCarousels: {
+        ...DEFAULT_VISUAL_SETTINGS.homeCarousels,
+        ...(base.homeCarousels || {})
+      },
+      brandCustomInfo: {
+        ...DEFAULT_VISUAL_SETTINGS.brandCustomInfo,
+        ...(base.brandCustomInfo || {})
+      }
+    });
   } catch (error) {
     console.error('Error fetching visual settings:', error);
-    return res.json(inMem.visualSettings || DEFAULT_VISUAL_SETTINGS);
+    return res.json(DEFAULT_VISUAL_SETTINGS);
   }
 });
 
 router.put('/settings/visual', authenticateToken, requireAdmin, async (req, res) => {
   try {
+    const rawCountry = req.query.country || req.query.country_code || req.body.country_code || 'AR';
+    const targetCountry = resolveCountry(rawCountry);
+    const code = targetCountry ? targetCountry.code.toUpperCase() : 'AR';
     const updated = req.body;
     if (!updated || typeof updated !== 'object') {
       return res.status(400).json({ error: 'Configuración visual inválida' });
     }
 
-    inMem.visualSettings = { ...DEFAULT_VISUAL_SETTINGS, ...updated };
-
-    if (isPgConnected) {
-      await pool.query(`
-        CREATE TABLE IF NOT EXISTS ecommerce_visual_settings (
-          id INT PRIMARY KEY DEFAULT 1,
-          config JSONB NOT NULL,
-          updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-      `);
-      await pool.query(`
-        INSERT INTO ecommerce_visual_settings (id, config, updated_at)
-        VALUES (1, $1, CURRENT_TIMESTAMP)
-        ON CONFLICT (id) DO UPDATE SET config = $1, updated_at = CURRENT_TIMESTAMP
-      `, [JSON.stringify(inMem.visualSettings)]);
+    if (!inMem.visualSettingsByCountry) {
+      inMem.visualSettingsByCountry = loadVisualSettingsFromFile();
     }
+
+    const current = inMem.visualSettingsByCountry[code] || getDefaultVisualSettingsForCountry(code);
+    inMem.visualSettingsByCountry[code] = {
+      ...current,
+      ...updated,
+      country_code: code
+    };
+    saveVisualSettingsToFile();
 
     res.json({
       success: true,
-      message: 'Diseño y personalización del Shop guardados exitosamente',
-      config: inMem.visualSettings
+      message: `Diseño y personalización del Shop guardados exitosamente para ${targetCountry.name} (${code})`,
+      config: inMem.visualSettingsByCountry[code],
+      country_code: code
     });
   } catch (error) {
     console.error('Error updating visual settings:', error);
@@ -5438,20 +5825,22 @@ router.put('/settings/visual', authenticateToken, requireAdmin, async (req, res)
 
 router.post('/settings/visual/reset', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    inMem.visualSettings = JSON.parse(JSON.stringify(DEFAULT_VISUAL_SETTINGS));
+    const rawCountry = req.query.country || req.query.country_code || 'AR';
+    const targetCountry = resolveCountry(rawCountry);
+    const code = targetCountry ? targetCountry.code.toUpperCase() : 'AR';
 
-    if (isPgConnected) {
-      await pool.query(`
-        INSERT INTO ecommerce_visual_settings (id, config, updated_at)
-        VALUES (1, $1, CURRENT_TIMESTAMP)
-        ON CONFLICT (id) DO UPDATE SET config = $1, updated_at = CURRENT_TIMESTAMP
-      `, [JSON.stringify(DEFAULT_VISUAL_SETTINGS)]);
+    if (!inMem.visualSettingsByCountry) {
+      inMem.visualSettingsByCountry = loadVisualSettingsFromFile();
     }
+
+    inMem.visualSettingsByCountry[code] = getDefaultVisualSettingsForCountry(code);
+    saveVisualSettingsToFile();
 
     res.json({
       success: true,
-      message: 'Diseño restablecido a los valores oficiales de DACAS',
-      config: inMem.visualSettings
+      message: `Diseño restablecido a los valores oficiales para ${targetCountry.name} (${code})`,
+      config: inMem.visualSettingsByCountry[code],
+      country_code: code
     });
   } catch (error) {
     res.status(500).json({ error: error.message });

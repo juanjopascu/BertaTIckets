@@ -7,6 +7,7 @@ import {
 import AdminProductFormTiendanube from './AdminProductFormTiendanube';
 import BrandingVectorIcon from './BrandingVectorIcon';
 import NotificationBell from './NotificationBell';
+import { BRAND_INFO, BrandLogoImg } from './Shop';
 
 const API_BASE_URL = `http://${window.location.hostname}:3001`;
 const COLORS = ['#0fa4de', '#38bdf8', '#0284c7', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4'];
@@ -342,6 +343,10 @@ function AdminEcommerce({ embedded = false }) {
   });
 
   const filteredProducts = products.filter(p => {
+    if (selectedCountryScope !== 'all') {
+      const pCountry = (p.country_code || 'AR').toUpperCase();
+      if (pCountry !== selectedCountryScope.toUpperCase()) return false;
+    }
     const q = (productSearch || '').toLowerCase();
     const matchSearch = !productSearch ||
       (p.name && p.name.toLowerCase().includes(q)) ||
@@ -351,6 +356,42 @@ function AdminEcommerce({ embedded = false }) {
     const matchStock = filterStock === 'all' || (filterStock === 'in_stock' && Number(p.stock) > 0) || (filterStock === 'out_of_stock' && Number(p.stock) === 0);
     return matchSearch && matchCat && matchStock;
   });
+
+  // Product Cloning State
+  const [showCloneModal, setShowCloneModal] = useState(false);
+  const [productToClone, setProductToClone] = useState(null);
+  const [cloneTargetCountry, setCloneTargetCountry] = useState('CL');
+  const [isCloning, setIsCloning] = useState(false);
+
+  const handleOpenCloneModal = (p) => {
+    setProductToClone(p);
+    const currentCode = (p.country_code || 'AR').toUpperCase();
+    const otherCountry = DACAS_COUNTRIES_LIST.find(c => c.code !== currentCode) || DACAS_COUNTRIES_LIST[1];
+    setCloneTargetCountry(otherCountry.code);
+    setShowCloneModal(true);
+  };
+
+  const handleExecuteClone = async () => {
+    if (!productToClone || !cloneTargetCountry) return;
+    setIsCloning(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/admin/products/${productToClone.id}/clone`, {
+        method: 'POST',
+        headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ target_country: cloneTargetCountry })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al clonar el producto');
+      alert(`✅ Producto "${productToClone.name}" clonado con éxito a ${cloneTargetCountry}!`);
+      setShowCloneModal(false);
+      setProductToClone(null);
+      fetchProducts(selectedCountryScope);
+    } catch (err) {
+      alert('Error: ' + err.message);
+    } finally {
+      setIsCloning(false);
+    }
+  };
 
   // Forms and modals
   const [showProductForm, setShowProductForm] = useState(false);
@@ -456,15 +497,103 @@ function AdminEcommerce({ embedded = false }) {
   const [editingSlideIdx, setEditingSlideIdx] = useState(0);
 
   // ── Brand & Country Management State ──
-  const [editingBrandModal, setEditingBrandModal] = useState(null); // { catKey, brandIdx, name, countries }
+  const [editingBrandModal, setEditingBrandModal] = useState(null); // { brandKey, catKey, brandIdx, name, logo, tagline, color, countries, isGlobal }
+  const [isUploadingBrandLogo, setIsUploadingBrandLogo] = useState(false);
+  const [brandAdminSearch, setBrandAdminSearch] = useState('');
+  const [brandAdminCategory, setBrandAdminCategory] = useState('all');
   const [brandCountryFilter, setBrandCountryFilter] = useState('all');
   const [showNewBrandModal, setShowNewBrandModal] = useState(false);
   const [newBrandForm, setNewBrandForm] = useState({
     name: '',
+    logo: '',
+    tagline: '',
+    color: '#0fa4de',
     category: 'networking',
     isGlobal: true,
     countries: []
   });
+
+  const allAdminBrands = useMemo(() => {
+    const keysSet = new Set(Object.keys(BRAND_INFO || {}));
+    if (visualConfig?.brandCustomInfo) {
+      Object.keys(visualConfig.brandCustomInfo).forEach(k => {
+        if (k) keysSet.add(k.toLowerCase());
+      });
+    }
+    Object.values(visualConfig?.categoryBrands || {}).forEach(list => {
+      if (Array.isArray(list)) {
+        list.forEach(item => {
+          const name = typeof item === 'string' ? item : item?.name;
+          if (name) keysSet.add(name.toLowerCase());
+        });
+      }
+    });
+    products.forEach(p => {
+      if (p.brand) keysSet.add(p.brand.toLowerCase());
+    });
+
+    return Array.from(keysSet).map(key => {
+      const defaultInfo = BRAND_INFO?.[key] || {
+        name: key.charAt(0).toUpperCase() + key.slice(1),
+        logo: '',
+        tagline: `Soluciones corporativas oficiales ${key.toUpperCase()}`,
+        color: '#0fa4de'
+      };
+      const custom = visualConfig?.brandCustomInfo?.[key] || {};
+      const finalName = custom.name || defaultInfo.name || (key.charAt(0).toUpperCase() + key.slice(1));
+      const finalLogo = custom.logo !== undefined ? custom.logo : (defaultInfo.logo || '');
+      const finalTagline = custom.tagline || defaultInfo.tagline || `Soluciones corporativas oficiales ${key.toUpperCase()}`;
+      const finalColor = custom.color || defaultInfo.color || '#0fa4de';
+
+      let catKey = 'networking';
+      let originalIdx = -1;
+      Object.entries(visualConfig?.categoryBrands || {}).forEach(([cat, list]) => {
+        if (Array.isArray(list)) {
+          const idx = list.findIndex(item => {
+            const bName = typeof item === 'string' ? item : item?.name;
+            return bName && bName.toLowerCase() === key;
+          });
+          if (idx !== -1) {
+            catKey = cat;
+            originalIdx = idx;
+          }
+        }
+      });
+
+      let countries = [];
+      if (visualConfig?.brandCountries && Array.isArray(visualConfig.brandCountries[key])) {
+        countries = visualConfig.brandCountries[key];
+      }
+
+      const prodCount = products.filter(p => p.brand && p.brand.toLowerCase() === key).length;
+
+      return {
+        key,
+        name: finalName,
+        logo: finalLogo,
+        tagline: finalTagline,
+        color: finalColor,
+        category: catKey,
+        originalIdx,
+        countries,
+        productCount: prodCount,
+        hasCustomLogo: Boolean(custom.logo),
+        hasCustomTagline: Boolean(custom.tagline)
+      };
+    });
+  }, [visualConfig, products]);
+
+  const filteredAdminBrands = useMemo(() => {
+    return allAdminBrands.filter(b => {
+      const matchCat = brandAdminCategory === 'all' || b.category === brandAdminCategory;
+      const q = brandAdminSearch.toLowerCase().trim();
+      const matchSearch = !q ||
+        b.name.toLowerCase().includes(q) ||
+        b.tagline.toLowerCase().includes(q) ||
+        b.key.includes(q);
+      return matchCat && matchSearch;
+    }).sort((a, b) => (b.productCount - a.productCount) || a.name.localeCompare(b.name));
+  }, [allAdminBrands, brandAdminSearch, brandAdminCategory]);
 
   // ── Checkout Methods (Shipping & Payment) State ──
   const [checkoutMethods, setCheckoutMethods] = useState(() => {
@@ -568,13 +697,16 @@ function AdminEcommerce({ embedded = false }) {
   const [isPlaygroundTyping, setIsPlaygroundTyping] = useState(false);
 
   useEffect(() => {
-    fetchProducts();
+    fetchProducts(selectedCountryScope);
+    fetchVisualSettings(selectedCountryScope);
+    fetchCheckoutMethods(selectedCountryScope);
+    fetchUsers(selectedCountryScope);
+  }, [selectedCountryScope]);
+
+  useEffect(() => {
     fetchOrders();
     fetchCountries();
-    fetchUsers();
     fetchRules();
-    fetchVisualSettings();
-    fetchCheckoutMethods();
     fetchApliSettings();
     fetchApliLogs();
     fetchN8nSettings();
@@ -918,12 +1050,110 @@ function AdminEcommerce({ embedded = false }) {
     }
   };
 
-  const fetchVisualSettings = async () => {
+  const sanitizeVisualConfig = (config) => {
+    if (!config) return config;
+    const slides = Array.isArray(config.heroSlides) ? config.heroSlides : [];
+    const seenIds = new Set();
+    const sanitizedSlides = slides.map((s, idx) => {
+      let id = s.id;
+      if (id === undefined || id === null || seenIds.has(String(id))) {
+        id = `slide_${Date.now()}_${idx}_${Math.random().toString(36).substring(2, 6)}`;
+      }
+      seenIds.add(String(id));
+      const rawMetrics = Array.isArray(s.metrics) ? s.metrics : [];
+      const defaultMetrics = [
+        { value: '+25 Años', label: 'Liderando el Mercado IT' },
+        { value: '12 Países', label: 'Cobertura Regional' },
+        { value: '24/7', label: 'Soporte y Garantía Oficial' }
+      ];
+      const metrics = [
+        rawMetrics[0] || defaultMetrics[0],
+        rawMetrics[1] || defaultMetrics[1],
+        rawMetrics[2] || defaultMetrics[2]
+      ];
+      return {
+        ...s,
+        id,
+        metrics
+      };
+    });
+
+    const defaultBrandBanners = [
+      {
+        id: 'brand_banner_1',
+        brand: 'Fortinet',
+        title: 'Fortinet Security Fabric',
+        subtitle: 'Firewalls NGFW FortiGate y protección perimetral con procesamiento SOC4',
+        badge: 'CIBERSEGURIDAD LÍDER',
+        accentColor: '#EE3124',
+        buttonText: 'Explorar Fortinet',
+        imageUrl: '',
+        targetCategory: 'security',
+        enabled: true
+      },
+      {
+        id: 'brand_banner_2',
+        brand: 'Vertiv',
+        title: 'Vertiv Critical Power',
+        subtitle: 'Sistemas UPS Online doble conversión y racks de alta densidad para Data Centers',
+        badge: 'ENERGÍA CRÍTICA',
+        accentColor: '#38bdf8',
+        buttonText: 'Ver Soluciones Vertiv',
+        imageUrl: '',
+        targetCategory: 'infraestructura',
+        enabled: true
+      },
+      {
+        id: 'brand_banner_3',
+        brand: 'MikroTik',
+        title: 'MikroTik Routing & Core',
+        subtitle: 'Switches gestionables Gigabit PoE+ y routers para enlaces de fibra óptica de alto tráfico',
+        badge: 'NETWORKING ENTERPRISE',
+        accentColor: '#10b981',
+        buttonText: 'Ver Equipos MikroTik',
+        imageUrl: '',
+        targetCategory: 'networking',
+        enabled: true
+      }
+    ];
+
+    const brandBanners = (Array.isArray(config.brandBanners) && config.brandBanners.length > 0)
+      ? config.brandBanners
+      : defaultBrandBanners;
+
+    const homeCarousels = {
+      featured: {
+        enabled: true,
+        title: '🔥 Productos Destacados',
+        subtitle: 'Equipamiento de alta demanda con entrega inmediata y garantía oficial DACAS',
+        productIds: [],
+        ...(config.homeCarousels?.featured || {})
+      },
+      custom: {
+        enabled: true,
+        title: '⚡ Oportunidades & Novedades IT',
+        subtitle: 'Soluciones corporativas seleccionadas con precios mayoristas especiales para canales',
+        productIds: [],
+        ...(config.homeCarousels?.custom || {})
+      }
+    };
+
+    return {
+      ...config,
+      heroSlides: sanitizedSlides,
+      brandBanners,
+      homeCarousels
+    };
+  };
+
+  const fetchVisualSettings = async (countryCode) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/visual`);
+      const code = countryCode !== undefined ? countryCode : selectedCountryScope;
+      const target = (code && code !== 'all') ? code : 'AR';
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/visual?country=${target}`);
       if (res.ok) {
         const data = await res.json();
-        setVisualConfig(data);
+        setVisualConfig(sanitizeVisualConfig(data));
       }
     } catch (err) {
       console.error('Error fetching visual settings:', err);
@@ -943,14 +1173,15 @@ function AdminEcommerce({ embedded = false }) {
     setIsSavingVisual(true);
     setVisualSaveSuccess(false);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/visual`, {
+      const target = (selectedCountryScope && selectedCountryScope !== 'all') ? selectedCountryScope : 'AR';
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/visual?country=${target}`, {
         method: 'PUT',
         headers: getAuthHeader(),
         body: JSON.stringify(visualConfig)
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al guardar diseño');
-      setVisualConfig(data.config || visualConfig);
+      setVisualConfig(sanitizeVisualConfig(data.config || visualConfig));
       setVisualSaveSuccess(true);
       setTimeout(() => setVisualSaveSuccess(false), 4000);
     } catch (err) {
@@ -961,16 +1192,17 @@ function AdminEcommerce({ embedded = false }) {
   };
 
   const handleResetVisualSettings = async () => {
-    if (!window.confirm('¿Deseas restaurar la configuración visual a la plantilla oficial de DACAS?')) return;
+    const target = (selectedCountryScope && selectedCountryScope !== 'all') ? selectedCountryScope : 'AR';
+    if (!window.confirm(`¿Deseas restaurar la configuración visual de ${target} a la plantilla oficial de DACAS?`)) return;
     setIsSavingVisual(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/visual/reset`, {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/settings/visual/reset?country=${target}`, {
         method: 'POST',
         headers: getAuthHeader()
       });
       const data = await res.json();
       if (res.ok && data.config) {
-        setVisualConfig(data.config);
+        setVisualConfig(sanitizeVisualConfig(data.config));
         setVisualSaveSuccess(true);
         setTimeout(() => setVisualSaveSuccess(false), 3000);
       }
@@ -984,7 +1216,7 @@ function AdminEcommerce({ embedded = false }) {
   const handleAddSlide = () => {
     if (!visualConfig) return;
     const newSlide = {
-      id: Date.now(),
+      id: `slide_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       badge: 'NUEVA SOLUCIÓN DACAS',
       badgeIcon: '🚀',
       titleLine1: 'Título de la Solución',
@@ -1012,7 +1244,7 @@ function AdminEcommerce({ embedded = false }) {
     }
     const updated = visualConfig.heroSlides.filter((_, idx) => idx !== index);
     setVisualConfig({ ...visualConfig, heroSlides: updated });
-    setEditingSlideIdx(Math.max(0, index - 1));
+    setEditingSlideIdx(prev => Math.min(prev >= index ? Math.max(0, prev - 1) : prev, updated.length - 1));
   };
 
   const handleMoveSlide = (index, direction) => {
@@ -1020,17 +1252,40 @@ function AdminEcommerce({ embedded = false }) {
     const slides = [...visualConfig.heroSlides];
     const targetIdx = index + direction;
     if (targetIdx < 0 || targetIdx >= slides.length) return;
+
     const temp = slides[index];
     slides[index] = slides[targetIdx];
     slides[targetIdx] = temp;
+
+    let newEditingIdx = editingSlideIdx;
+    if (editingSlideIdx === index) {
+      newEditingIdx = targetIdx;
+    } else if (editingSlideIdx === targetIdx) {
+      newEditingIdx = index;
+    }
+
     setVisualConfig({ ...visualConfig, heroSlides: slides });
-    setEditingSlideIdx(targetIdx);
+    setEditingSlideIdx(newEditingIdx);
   };
 
   const handleUpdateSlideField = (index, field, value) => {
     if (!visualConfig || !visualConfig.heroSlides) return;
     const slides = [...visualConfig.heroSlides];
-    slides[index] = { ...slides[index], [field]: value };
+    const updatedSlide = { ...slides[index], [field]: value };
+    if (field === 'type' || !updatedSlide.metrics || updatedSlide.metrics.length < 3) {
+      const rawMetrics = Array.isArray(updatedSlide.metrics) ? updatedSlide.metrics : [];
+      const defaultMetrics = [
+        { value: '+25 Años', label: 'Liderando el Mercado IT' },
+        { value: '12 Países', label: 'Cobertura Regional' },
+        { value: '24/7', label: 'Soporte y Garantía Oficial' }
+      ];
+      updatedSlide.metrics = [
+        rawMetrics[0] || defaultMetrics[0],
+        rawMetrics[1] || defaultMetrics[1],
+        rawMetrics[2] || defaultMetrics[2]
+      ];
+    }
+    slides[index] = updatedSlide;
     setVisualConfig({ ...visualConfig, heroSlides: slides });
   };
 
@@ -1048,9 +1303,20 @@ function AdminEcommerce({ embedded = false }) {
   const handleUpdateSlideMetric = (slideIdx, metricIdx, field, value) => {
     if (!visualConfig || !visualConfig.heroSlides) return;
     const slides = [...visualConfig.heroSlides];
-    const metrics = [...(slides[slideIdx].metrics || [])];
+    const currentSlide = slides[slideIdx] || {};
+    const rawMetrics = Array.isArray(currentSlide.metrics) ? currentSlide.metrics : [];
+    const defaultMetrics = [
+      { value: '+25 Años', label: 'Liderando el Mercado IT' },
+      { value: '12 Países', label: 'Cobertura Regional' },
+      { value: '24/7', label: 'Soporte y Garantía Oficial' }
+    ];
+    const metrics = [
+      { ...(rawMetrics[0] || defaultMetrics[0]) },
+      { ...(rawMetrics[1] || defaultMetrics[1]) },
+      { ...(rawMetrics[2] || defaultMetrics[2]) }
+    ];
     metrics[metricIdx] = { ...metrics[metricIdx], [field]: value };
-    slides[slideIdx] = { ...slides[slideIdx], metrics };
+    slides[slideIdx] = { ...currentSlide, metrics };
     setVisualConfig({ ...visualConfig, heroSlides: slides });
   };
   const handleBannerFileUpload = async (e, slideIdx) => {
@@ -1100,6 +1366,80 @@ function AdminEcommerce({ embedded = false }) {
     }
   };
 
+  // ── Brand Banners (Home) & Home Carousels Handlers ──
+  const handleUpdateBrandBanner = (index, field, value) => {
+    if (!visualConfig) return;
+    const banners = [...(visualConfig.brandBanners || [])];
+    banners[index] = { ...banners[index], [field]: value };
+    setVisualConfig({ ...visualConfig, brandBanners: banners });
+  };
+
+  const handleBrandBannerFileUpload = async (e, bannerIdx) => {
+    const file = e.target?.files?.[0];
+    if (!file) return;
+    if (file.size > 15 * 1024 * 1024) {
+      alert('El archivo supera el tamaño máximo permitido de 15 MB.');
+      return;
+    }
+    try {
+      setUploadingBanner(true);
+      const reader = new FileReader();
+      reader.onload = async (event) => {
+        const base64Url = event.target.result;
+        handleUpdateBrandBanner(bannerIdx, 'imageUrl', base64Url);
+        try {
+          const formData = new FormData();
+          formData.append('image', file);
+          const token = localStorage.getItem('token') || localStorage.getItem('crm_token');
+          const res = await fetch(`${API_BASE_URL}/api/system/branding/upload`, {
+            method: 'POST',
+            headers: { ...(token ? { 'Authorization': `Bearer ${token}` } : {}) },
+            body: formData
+          });
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.url) {
+              handleUpdateBrandBanner(bannerIdx, 'imageUrl', `${API_BASE_URL}${data.url}`);
+            }
+          }
+        } catch (_) {}
+      };
+      reader.readAsDataURL(file);
+    } catch (err) {
+      console.error('Error al cargar archivo de banner de marca:', err);
+    } finally {
+      setUploadingBanner(false);
+      if (e.target) e.target.value = '';
+    }
+  };
+
+  const handleUpdateCarouselConfig = (carouselKey, field, value) => {
+    if (!visualConfig) return;
+    const current = visualConfig.homeCarousels || {};
+    const specific = current[carouselKey] || {};
+    setVisualConfig({
+      ...visualConfig,
+      homeCarousels: {
+        ...current,
+        [carouselKey]: {
+          ...specific,
+          [field]: value
+        }
+      }
+    });
+  };
+
+  const handleToggleCarouselProduct = (carouselKey, productId) => {
+    if (!visualConfig) return;
+    const current = visualConfig.homeCarousels || {};
+    const specific = current[carouselKey] || {};
+    const productIds = Array.isArray(specific.productIds) ? [...specific.productIds] : [];
+    const idNum = parseInt(productId);
+    const exists = productIds.includes(idNum);
+    const updated = exists ? productIds.filter(id => id !== idNum) : [...productIds, idNum];
+    handleUpdateCarouselConfig(carouselKey, 'productIds', updated);
+  };
+
   // ── Brand Management Handlers ──
   const normalizeBrandItem = (item, catKey) => {
     if (typeof item === 'string') {
@@ -1113,7 +1453,7 @@ function AdminEcommerce({ embedded = false }) {
     };
   };
 
-  const handleCreateNewBrand = (e) => {
+  const handleCreateNewBrand = async (e) => {
     e.preventDefault();
     const brandName = newBrandForm.name.trim().toLowerCase();
     if (!brandName) return;
@@ -1143,22 +1483,168 @@ function AdminEcommerce({ embedded = false }) {
       [brandName]: newBrandForm.isGlobal ? [] : newBrandForm.countries
     };
 
-    setVisualConfig({
+    const updatedCustomInfo = {
+      ...(visualConfig?.brandCustomInfo || {}),
+      [brandName]: {
+        name: newBrandForm.name.trim(),
+        logo: (newBrandForm.logo || '').trim(),
+        tagline: (newBrandForm.tagline || '').trim(),
+        color: newBrandForm.color || '#0fa4de'
+      }
+    };
+
+    const newConfig = {
       ...visualConfig,
       categoryBrands: {
         ...(visualConfig?.categoryBrands || {}),
         [catKey]: updatedList
       },
-      brandCountries: updatedBrandCountries
-    });
+      brandCountries: updatedBrandCountries,
+      brandCustomInfo: updatedCustomInfo
+    };
+
+    setVisualConfig(newConfig);
 
     setNewBrandForm({
       name: '',
+      logo: '',
+      tagline: '',
+      color: '#0fa4de',
       category: newBrandForm.category,
       isGlobal: true,
       countries: []
     });
     setShowNewBrandModal(false);
+
+    try {
+      await fetch(`${API_BASE_URL}/api/ecommerce/settings/visual`, {
+        method: 'PUT',
+        headers: getAuthHeader(),
+        body: JSON.stringify(newConfig)
+      });
+    } catch (err) {
+      console.error('Error guardando nueva marca:', err);
+    }
+  };
+
+  const handleOpenEditBrand = (brandKey, initialCat = 'networking', brandIdx = -1) => {
+    const key = (brandKey || '').toLowerCase();
+    const custom = visualConfig?.brandCustomInfo?.[key] || {};
+    const defaultInfo = BRAND_INFO?.[key] || {};
+
+    let countries = [];
+    if (visualConfig?.brandCountries && Array.isArray(visualConfig.brandCountries[key])) {
+      countries = visualConfig.brandCountries[key];
+    } else {
+      Object.entries(visualConfig?.categoryBrands || {}).forEach(([cat, list]) => {
+        if (Array.isArray(list)) {
+          list.forEach(item => {
+            const b = normalizeBrandItem(item, cat);
+            if (b.name === key && b.countries?.length > 0) countries = b.countries;
+          });
+        }
+      });
+    }
+
+    setEditingBrandModal({
+      brandKey: key,
+      brandIdx,
+      catKey: initialCat,
+      name: custom.name || defaultInfo.name || (key.charAt(0).toUpperCase() + key.slice(1)),
+      logo: custom.logo !== undefined ? custom.logo : (defaultInfo.logo || ''),
+      tagline: custom.tagline || defaultInfo.tagline || `Soluciones corporativas oficiales ${key.toUpperCase()}`,
+      color: custom.color || defaultInfo.color || '#0fa4de',
+      countries: countries || [],
+      isGlobal: !countries || countries.length === 0
+    });
+  };
+
+  const handleSaveBrandModal = async (e) => {
+    if (e) e.preventDefault();
+    if (!editingBrandModal) return;
+    const { brandKey, catKey, brandIdx, name, logo, tagline, color, countries, isGlobal } = editingBrandModal;
+
+    const brandNameClean = (name || brandKey).trim();
+    const updatedCountries = isGlobal ? [] : (countries || []);
+
+    const updatedCustomInfo = {
+      ...(visualConfig?.brandCustomInfo || {}),
+      [brandKey]: {
+        name: brandNameClean,
+        logo: (logo || '').trim(),
+        tagline: (tagline || '').trim(),
+        color: color || '#0fa4de'
+      }
+    };
+
+    const updatedBrandCountries = {
+      ...(visualConfig?.brandCountries || {}),
+      [brandKey]: updatedCountries
+    };
+
+    let updatedCategoryBrands = { ...(visualConfig?.categoryBrands || {}) };
+    if (catKey && updatedCategoryBrands[catKey]) {
+      const list = [...updatedCategoryBrands[catKey]];
+      if (brandIdx >= 0 && brandIdx < list.length) {
+        list[brandIdx] = { name: brandKey, countries: updatedCountries };
+      }
+      updatedCategoryBrands[catKey] = list;
+    }
+
+    const newConfig = {
+      ...visualConfig,
+      brandCustomInfo: updatedCustomInfo,
+      brandCountries: updatedBrandCountries,
+      categoryBrands: updatedCategoryBrands
+    };
+
+    setVisualConfig(newConfig);
+    setEditingBrandModal(null);
+
+    try {
+      await fetch(`${API_BASE_URL}/api/ecommerce/settings/visual`, {
+        method: 'PUT',
+        headers: getAuthHeader(),
+        body: JSON.stringify(newConfig)
+      });
+    } catch (err) {
+      console.error('Error guardando marca:', err);
+    }
+  };
+
+  const handleUploadBrandLogo = async (file, isNew = false) => {
+    if (!file) return;
+    setIsUploadingBrandLogo(true);
+    const formData = new FormData();
+    formData.append('files', file);
+
+    try {
+      const token = localStorage.getItem('token') || localStorage.getItem('dacas_token') || sessionStorage.getItem('token');
+      const sessionId = sessionStorage.getItem('sessionId') || localStorage.getItem('sessionId');
+      const headers = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (sessionId) headers['x-session-id'] = sessionId;
+
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/upload`, {
+        method: 'POST',
+        headers,
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success && Array.isArray(data.urls) && data.urls[0]) {
+        if (isNew) {
+          setNewBrandForm(prev => ({ ...prev, logo: data.urls[0] }));
+        } else {
+          setEditingBrandModal(prev => ({ ...prev, logo: data.urls[0] }));
+        }
+      } else {
+        alert(data.error || 'Error al subir logo');
+      }
+    } catch (err) {
+      alert('Error de conexión al subir logo: ' + err.message);
+    } finally {
+      setIsUploadingBrandLogo(false);
+    }
   };
 
   const handleDeleteBrand = (catKey, brandIdx, brandName) => {
@@ -1206,17 +1692,46 @@ function AdminEcommerce({ embedded = false }) {
     setEditingBrandModal(null);
   };
 
+  const handleToggleFeaturedProduct = async (productId) => {
+    setProducts(prev => prev.map(prod => {
+      if (prod.id === productId) {
+        const nextFeat = !(prod.is_featured || prod.isFeatured || prod.badge === 'DESTACADO');
+        return {
+          ...prod,
+          is_featured: nextFeat,
+          isFeatured: nextFeat,
+          badge: nextFeat ? (prod.badge || 'DESTACADO') : (prod.badge === 'DESTACADO' ? '' : prod.badge)
+        };
+      }
+      return prod;
+    }));
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/admin/products/${productId}/toggle-featured`, {
+        method: 'PATCH',
+        headers: getAuthHeader()
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        fetchProducts();
+      }
+    } catch (err) {
+      console.error('Error toggling featured status:', err);
+      fetchProducts();
+    }
+  };
+
   const fetchProducts = async (countryCode) => {
     try {
       const code = countryCode !== undefined ? countryCode : selectedCountryScope;
       const url = code && code !== 'all'
         ? `${API_BASE_URL}/api/ecommerce/products?country=${code}`
-        : `${API_BASE_URL}/api/ecommerce/products`;
+        : `${API_BASE_URL}/api/ecommerce/products?country=all`;
       const res = await fetch(url);
       const data = await res.json();
-      setProducts(Array.isArray(data) && data.length > 0 ? data : MOCK_PRODUCTS);
+      setProducts(Array.isArray(data) ? data : []);
     } catch {
-      setProducts(MOCK_PRODUCTS);
+      setProducts([]);
     }
   };
 
@@ -1240,9 +1755,13 @@ function AdminEcommerce({ embedded = false }) {
     }
   };
 
-  const fetchUsers = async () => {
+  const fetchUsers = async (countryCode) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/ecommerce/admin/users`);
+      const code = countryCode !== undefined ? countryCode : selectedCountryScope;
+      const url = code && code !== 'all'
+        ? `${API_BASE_URL}/api/ecommerce/admin/users?country=${code}`
+        : `${API_BASE_URL}/api/ecommerce/admin/users`;
+      const res = await fetch(url);
       const data = await res.json();
       setUsers(Array.isArray(data) ? data : MOCK_USERS);
     } catch {
@@ -1269,26 +1788,36 @@ function AdminEcommerce({ embedded = false }) {
 
   const handleSaveTiendanubeProduct = async (payload) => {
     setError(null);
+    const targetCountryCode = payload.country_code || (selectedCountryScope !== 'all' ? selectedCountryScope : 'AR');
+    const targetCountryObj = DACAS_COUNTRIES_LIST.find(c => c.code === targetCountryCode) || DACAS_COUNTRIES_LIST[0];
+    const fullPayload = {
+      ...payload,
+      country_code: targetCountryCode,
+      country_id: targetCountryObj.id
+    };
     const url = editingProduct
       ? `${API_BASE_URL}/api/ecommerce/admin/products/${editingProduct.id}`
-      : `${API_BASE_URL}/api/ecommerce/admin/products`;
+      : `${API_BASE_URL}/api/ecommerce/admin/products?country=${targetCountryCode}`;
     const method = editingProduct ? 'PUT' : 'POST';
     const res = await fetch(url, {
       method,
       headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
+      body: JSON.stringify(fullPayload),
     });
     if (!res.ok) throw new Error('Error al guardar el producto');
     resetProductForm();
-    fetchProducts();
+    fetchProducts(selectedCountryScope);
   };
 
   const handleDeleteProduct = async (id) => {
     if (!window.confirm('¿Estás seguro de que deseas eliminar este producto?')) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/ecommerce/admin/products/${id}`, { method: 'DELETE' });
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/admin/products/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeader()
+      });
       if (!res.ok) throw new Error('Error al eliminar');
-      fetchProducts();
+      fetchProducts(selectedCountryScope);
     } catch (err) {
       alert(err.message);
     }
@@ -2501,6 +3030,10 @@ function AdminEcommerce({ embedded = false }) {
             </svg>
             <span>Productos</span>
           </button>
+          <button className={`tab-btn${activeTab === 'brands' ? ' active' : ''}`} onClick={() => setActiveTab('brands')}>
+            <BrandingVectorIcon name="award" size={17} />
+            <span>Marcas</span>
+          </button>
           <button className={`tab-btn${activeTab === 'countries' ? ' active' : ''}`} onClick={() => setActiveTab('countries')}>
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="12" cy="12" r="10" />
@@ -2638,14 +3171,33 @@ function AdminEcommerce({ embedded = false }) {
               onSave={handleSaveTiendanubeProduct}
               onCancel={resetProductForm}
               apiBaseUrl={API_BASE_URL}
+              defaultCountryCode={selectedCountryScope}
             />
           ) : (
             <section className="board-section" style={{ width: '100%', boxSizing: 'border-box' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
                 <div>
-                  <h2 style={{ margin: 0, fontSize: '1.35rem' }}>Catálogo de Productos</h2>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <h2 style={{ margin: 0, fontSize: '1.35rem' }}>Catálogo de Productos</h2>
+                    <span style={{
+                      background: 'rgba(15, 164, 222, 0.1)',
+                      color: '#0284c7',
+                      fontWeight: '800',
+                      fontSize: '11px',
+                      padding: '3px 10px',
+                      borderRadius: '999px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <span>{activeCountryObj.flag}</span>
+                      <span>{activeCountryObj.name}</span>
+                    </span>
+                  </div>
                   <p style={{ margin: '4px 0 0', fontSize: '0.86rem', color: '#6b7280' }}>
-                    Gestiona tu catálogo, fotos, descripciones enriquecidas, precios y stock.
+                    {selectedCountryScope === 'all' 
+                      ? 'Mostrando el catálogo consolidado de todos los países de la red regional DACAS.' 
+                      : `Gestionando exclusivamente el inventario, catálogo y precios de ${activeCountryObj.name}.`}
                   </p>
                 </div>
                 <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
@@ -2746,10 +3298,14 @@ function AdminEcommerce({ embedded = false }) {
                   <thead>
                     <tr>
                       <th style={{ width: '48px', textAlign: 'center' }}>Foto</th>
+                      {selectedCountryScope === 'all' && (
+                        <th style={{ width: '85px', textAlign: 'center' }}>País</th>
+                      )}
                       <th>Producto / SKU</th>
                       <th>Categoría</th>
                       <th style={{ textAlign: 'right' }}>Precio</th>
                       <th style={{ textAlign: 'center' }}>Stock {selectedCountryScope !== 'all' ? `${activeCountryObj.flag} ${activeCountryObj.code}` : 'Global'}</th>
+                      <th style={{ textAlign: 'center', width: '110px' }}>⭐ Destacado</th>
                       <th style={{ textAlign: 'center' }}>Acciones</th>
                     </tr>
                   </thead>
@@ -2768,6 +3324,24 @@ function AdminEcommerce({ embedded = false }) {
                               onError={(e) => { e.target.src = 'https://placehold.co/50x50/f1f5f9/94a3b8?text=Foto'; }}
                             />
                           </td>
+                          {selectedCountryScope === 'all' && (
+                            <td style={{ textAlign: 'center' }}>
+                              <span style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                padding: '3px 8px',
+                                borderRadius: '12px',
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                background: '#f1f5f9',
+                                color: '#334155'
+                              }}>
+                                <span>{DACAS_COUNTRIES_LIST.find(c => c.code === (p.country_code || 'AR'))?.flag || '🌎'}</span>
+                                <span>{p.country_code || 'AR'}</span>
+                              </span>
+                            </td>
+                          )}
                           <td>
                             <div style={{ fontWeight: '600', color: 'var(--text-main)', fontSize: '0.88rem', lineHeight: 1.3 }}>
                               {p.name}
@@ -2851,6 +3425,36 @@ function AdminEcommerce({ embedded = false }) {
                             )}
                           </td>
                           <td style={{ textAlign: 'center' }}>
+                            {(() => {
+                              const isFeat = Boolean(p.is_featured || p.isFeatured || p.badge === 'DESTACADO');
+                              return (
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleFeaturedProduct(p.id)}
+                                  title={isFeat ? "Quitar de productos destacados en la Home" : "Marcar como producto destacado en la Home"}
+                                  style={{
+                                    background: isFeat ? '#fffbeb' : '#f8fafc',
+                                    border: isFeat ? '1.5px solid #f59e0b' : '1px solid #cbd5e1',
+                                    color: isFeat ? '#d97706' : '#94a3b8',
+                                    borderRadius: '20px',
+                                    padding: '4px 10px',
+                                    fontSize: '0.78rem',
+                                    fontWeight: '700',
+                                    cursor: 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '4px',
+                                    boxShadow: isFeat ? '0 2px 6px rgba(245, 158, 11, 0.2)' : 'none',
+                                    transition: 'all 0.15s ease'
+                                  }}
+                                >
+                                  <span style={{ fontSize: '13px' }}>{isFeat ? '⭐' : '☆'}</span>
+                                  <span>{isFeat ? 'Destacado' : 'Normal'}</span>
+                                </button>
+                              );
+                            })()}
+                          </td>
+                          <td style={{ textAlign: 'center' }}>
                             <div style={{ display: 'flex', justifyContent: 'center', gap: '6px' }}>
                               <button
                                 className={`dacas-action-pill${editingProduct?.id === p.id && showProductForm ? ' active' : ''}`}
@@ -2869,6 +3473,15 @@ function AdminEcommerce({ embedded = false }) {
                                 <span>Stock</span>
                               </button>
                               <button
+                                className="dacas-action-pill"
+                                onClick={() => handleOpenCloneModal(p)}
+                                title="Clonar este producto a otro país"
+                                style={{ background: '#f0fdf4', color: '#16a34a', borderColor: '#bbf7d0' }}
+                              >
+                                <BrandingVectorIcon name="copy" size={13} color="#16a34a" />
+                                <span>Clonar</span>
+                              </button>
+                              <button
                                 className="dacas-action-pill danger"
                                 onClick={() => handleDeleteProduct(p.id)}
                                 title="Eliminar producto"
@@ -2883,8 +3496,398 @@ function AdminEcommerce({ embedded = false }) {
                   </tbody>
                 </table>
               </div>
+
+              {/* MODAL CLONAR PRODUCTO A OTRO PAÍS */}
+              {showCloneModal && productToClone && (
+                <div style={{
+                  position: 'fixed',
+                  inset: 0,
+                  background: 'rgba(15, 23, 42, 0.65)',
+                  backdropFilter: 'blur(4px)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 99999,
+                  padding: '20px'
+                }}>
+                  <div style={{
+                    background: '#FFFFFF',
+                    borderRadius: '20px',
+                    maxWidth: '480px',
+                    width: '100%',
+                    padding: '28px',
+                    boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+                    border: '1px solid #E2E8F0'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '16px' }}>
+                      <span style={{ fontSize: '26px' }}>📋</span>
+                      <div>
+                        <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '800', color: '#0F172A' }}>
+                          Clonar Producto a Otro País
+                        </h3>
+                        <div style={{ fontSize: '12px', color: '#64748B' }}>
+                          Multi-tenancy: crea una copia independiente para otro catálogo nacional
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ background: '#F8FAFC', borderRadius: '12px', padding: '12px 14px', marginBottom: '18px', border: '1px solid #E2E8F0' }}>
+                      <div style={{ fontSize: '13px', fontWeight: '700', color: '#1E293B' }}>{productToClone.name}</div>
+                      <div style={{ fontSize: '11.5px', color: '#64748B', marginTop: '3px' }}>
+                        SKU actual: <span style={{ fontFamily: 'monospace' }}>{productToClone.sku || 'N/A'}</span> • País actual: <strong>{productToClone.country_code || 'AR'}</strong>
+                      </div>
+                    </div>
+
+                    <div style={{ marginBottom: '22px' }}>
+                      <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '8px' }}>
+                        Selecciona el País de Destino:
+                      </label>
+                      <select
+                        value={cloneTargetCountry}
+                        onChange={(e) => setCloneTargetCountry(e.target.value)}
+                        style={{
+                          width: '100%',
+                          padding: '10px 14px',
+                          borderRadius: '10px',
+                          border: '1.5px solid #0fa4de',
+                          fontSize: '13.5px',
+                          fontWeight: '600',
+                          background: '#FFFFFF',
+                          color: '#0F172A'
+                        }}
+                      >
+                        {DACAS_COUNTRIES_LIST.map(c => (
+                          <option key={c.code} value={c.code} disabled={c.code === (productToClone.country_code || 'AR')}>
+                            {c.flag} {c.name} ({c.code}) {c.code === (productToClone.country_code || 'AR') ? '— (País Actual)' : ''}
+                          </option>
+                        ))}
+                      </select>
+                      <div style={{ fontSize: '11px', color: '#64748B', marginTop: '6px' }}>
+                        El nuevo producto tendrá su propio ID, SKU adaptado e inventario local independiente.
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
+                      <button
+                        type="button"
+                        onClick={() => { setShowCloneModal(false); setProductToClone(null); }}
+                        style={{
+                          padding: '10px 18px',
+                          borderRadius: '10px',
+                          border: '1px solid #CBD5E1',
+                          background: '#FFFFFF',
+                          color: '#64748B',
+                          fontWeight: '600',
+                          fontSize: '13px',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleExecuteClone}
+                        disabled={isCloning}
+                        style={{
+                          padding: '10px 20px',
+                          borderRadius: '10px',
+                          border: 'none',
+                          background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                          color: '#FFFFFF',
+                          fontWeight: '700',
+                          fontSize: '13px',
+                          cursor: isCloning ? 'wait' : 'pointer',
+                          boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+                        }}
+                      >
+                        {isCloning ? 'Clonando...' : `Confirmar y Clonar a ${cloneTargetCountry}`}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </section>
           )
+        )}
+
+        {/* ═══════════════ BRANDS (MARCAS OFICIALES) ═══════════════ */}
+        {activeTab === 'brands' && (
+          <section className="board-section" style={{ width: '100%', boxSizing: 'border-box' }}>
+            {/* Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '14px' }}>
+              <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '24px' }}>🏷️</span>
+                  <h2 style={{ margin: 0, fontSize: '1.45rem', fontWeight: '800', color: '#071524' }}>
+                    Marcas y Fabricantes Oficiales
+                  </h2>
+                </div>
+                <p style={{ margin: '6px 0 0', fontSize: '0.88rem', color: '#64748b' }}>
+                  Personaliza los logotipos, descripciones comerciales, áreas tecnológicas y países autorizados de cada marca en el Shop.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  className="dacas-pill-btn active"
+                  onClick={() => {
+                    setNewBrandForm({
+                      name: '',
+                      logo: '',
+                      tagline: '',
+                      color: '#0fa4de',
+                      category: 'networking',
+                      isGlobal: true,
+                      countries: []
+                    });
+                    setShowNewBrandModal(true);
+                  }}
+                  title="Crear y configurar una nueva marca"
+                  style={{ background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)', color: '#fff', border: 'none', boxShadow: '0 4px 14px rgba(15, 164, 222, 0.35)' }}
+                >
+                  <BrandingVectorIcon name="plus" size={16} />
+                  <span>Nueva Marca</span>
+                </button>
+              </div>
+            </div>
+
+            {/* KPI Badges */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+              gap: '14px',
+              marginBottom: '22px'
+            }}>
+              <div style={{ background: '#f8fafc', padding: '14px 18px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                <div style={{ fontSize: '11.5px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Total Marcas</div>
+                <div style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a', marginTop: '4px' }}>{allAdminBrands.length}</div>
+              </div>
+              <div style={{ background: '#f8fafc', padding: '14px 18px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                <div style={{ fontSize: '11.5px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Con Logo Configurado</div>
+                <div style={{ fontSize: '24px', fontWeight: '800', color: '#0284c7', marginTop: '4px' }}>
+                  {allAdminBrands.filter(b => Boolean(b.logo)).length}
+                </div>
+              </div>
+              <div style={{ background: '#f8fafc', padding: '14px 18px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                <div style={{ fontSize: '11.5px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Con Productos Activos</div>
+                <div style={{ fontSize: '24px', fontWeight: '800', color: '#16a34a', marginTop: '4px' }}>
+                  {allAdminBrands.filter(b => b.productCount > 0).length}
+                </div>
+              </div>
+              <div style={{ background: '#f8fafc', padding: '14px 18px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                <div style={{ fontSize: '11.5px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Visualización en Shop</div>
+                <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a', marginTop: '6px' }}>
+                  Directorio & Marcas Slide
+                </div>
+              </div>
+            </div>
+
+            {/* Filter & Search Bar */}
+            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '22px' }}>
+              <div style={{ position: 'relative', flex: '1 1 240px', minWidth: '180px' }}>
+                <input
+                  type="text"
+                  placeholder="🔍 Buscar marca o descripción..."
+                  value={brandAdminSearch}
+                  onChange={(e) => setBrandAdminSearch(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '9px 34px 9px 12px',
+                    borderRadius: '10px',
+                    border: '1px solid #cbd5e1',
+                    background: '#ffffff',
+                    color: '#0f172a',
+                    fontSize: '0.88rem',
+                    boxSizing: 'border-box'
+                  }}
+                />
+                {brandAdminSearch && (
+                  <button
+                    onClick={() => setBrandAdminSearch('')}
+                    style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontWeight: 'bold' }}
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+
+              {/* Category Filter Buttons */}
+              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                {[
+                  { key: 'all', label: 'Todas' },
+                  { key: 'security', label: '🛡️ Ciberseguridad' },
+                  { key: 'networking', label: '🌐 Networking' },
+                  { key: 'infraestructura', label: '⚡ Infraestructura' },
+                  { key: 'comunicaciones_unificadas', label: '📞 Comunicaciones Unificadas' }
+                ].map(c => {
+                  const isSel = brandAdminCategory === c.key;
+                  return (
+                    <button
+                      key={c.key}
+                      onClick={() => setBrandAdminCategory(c.key)}
+                      style={{
+                        padding: '7px 13px',
+                        borderRadius: '8px',
+                        fontSize: '12px',
+                        fontWeight: isSel ? '700' : '600',
+                        border: isSel ? '1.5px solid #0fa4de' : '1px solid #cbd5e1',
+                        background: isSel ? 'rgba(15, 164, 222, 0.12)' : '#ffffff',
+                        color: isSel ? '#0284c7' : '#475569',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      {c.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Grid of Brands */}
+            {filteredAdminBrands.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '60px 20px', background: '#f8fafc', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+                <div style={{ fontSize: '36px', marginBottom: '8px' }}>🔍</div>
+                <h4 style={{ margin: 0, color: '#334155' }}>No se encontraron marcas</h4>
+                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748b' }}>Prueba ajustando el término de búsqueda o categoría.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '18px' }}>
+                {filteredAdminBrands.map(b => {
+                  const isGlobal = !b.countries || b.countries.length === 0;
+                  return (
+                    <div
+                      key={b.key}
+                      style={{
+                        background: '#ffffff',
+                        borderRadius: '16px',
+                        border: '1.5px solid #e2e8f0',
+                        padding: '20px',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        justifyContent: 'space-between',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
+                        transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+                        position: 'relative'
+                      }}
+                    >
+                      <div>
+                        {/* Top row: Logo preview + badges */}
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
+                          <div style={{
+                            width: '56px',
+                            height: '56px',
+                            borderRadius: '14px',
+                            background: 'rgba(15, 164, 222, 0.08)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            padding: '6px',
+                            border: `1.5px solid ${b.color ? `${b.color}33` : '#e2e8f0'}`
+                          }}>
+                            <BrandLogoImg src={b.logo} alt={b.name} name={b.name} color={b.color} size={32} />
+                          </div>
+
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                            <span style={{
+                              background: b.productCount > 0 ? 'rgba(16, 185, 129, 0.12)' : '#f1f5f9',
+                              color: b.productCount > 0 ? '#10b981' : '#94a3b8',
+                              fontWeight: '700',
+                              fontSize: '11px',
+                              padding: '2px 8px',
+                              borderRadius: '999px'
+                            }}>
+                              {b.productCount} {b.productCount === 1 ? 'Producto' : 'Productos'}
+                            </span>
+                            <span style={{
+                              background: 'rgba(15, 164, 222, 0.08)',
+                              color: '#0284c7',
+                              fontWeight: '700',
+                              fontSize: '10.5px',
+                              padding: '2px 7px',
+                              borderRadius: '6px',
+                              textTransform: 'capitalize'
+                            }}>
+                              {b.category.replace(/_/g, ' ')}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Name & Tagline */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                          <h3 style={{ margin: 0, fontSize: '1.18rem', fontWeight: '800', color: '#0f172a' }}>
+                            {b.name}
+                          </h3>
+                          {b.hasCustomLogo && (
+                            <span title="Logo personalizado activo" style={{ fontSize: '12px' }}>✨</span>
+                          )}
+                        </div>
+
+                        <p style={{
+                          margin: '0 0 14px',
+                          fontSize: '0.84rem',
+                          color: '#475569',
+                          lineHeight: 1.45,
+                          background: '#f8fafc',
+                          padding: '10px 12px',
+                          borderRadius: '10px',
+                          border: '1px solid #f1f5f9',
+                          minHeight: '44px'
+                        }}>
+                          {b.tagline}
+                        </p>
+
+                        {/* Country badges */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                          <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '600' }}>Cobertura:</span>
+                          {isGlobal ? (
+                            <span style={{ background: '#dcfce7', color: '#16a34a', fontSize: '10.5px', fontWeight: '700', padding: '2px 7px', borderRadius: '6px' }}>
+                              🌐 Todos los Países
+                            </span>
+                          ) : (
+                            <span style={{ background: '#e0f2fe', color: '#0369a1', fontSize: '10.5px', fontWeight: '700', padding: '2px 7px', borderRadius: '6px' }}>
+                              {b.countries.map(c => {
+                                const found = DACAS_COUNTRIES_LIST.find(x => x.code === c);
+                                return found ? found.flag : c;
+                              }).join(' ')} ({b.countries.length})
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Bottom action row */}
+                      <div style={{ display: 'flex', gap: '8px', paddingTop: '14px', borderTop: '1px solid #f1f5f9' }}>
+                        <button
+                          type="button"
+                          onClick={() => handleOpenEditBrand(b.key, b.category, b.originalIdx)}
+                          style={{
+                            flex: 1,
+                            background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                            color: '#ffffff',
+                            border: 'none',
+                            borderRadius: '10px',
+                            padding: '9px 12px',
+                            fontSize: '12.5px',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '6px',
+                            boxShadow: '0 2px 8px rgba(15, 164, 222, 0.25)'
+                          }}
+                        >
+                          <BrandingVectorIcon name="edit" size={13} color="#ffffff" />
+                          <span>Editar Marca & Logo</span>
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </section>
         )}
 
         {/* ═══════════════ COUNTRIES ═══════════════ */}
@@ -6600,6 +7603,37 @@ function AdminEcommerce({ embedded = false }) {
               </div>
             </div>
 
+            {/* Active Country Context Indicator */}
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(15, 164, 222, 0.08) 0%, rgba(2, 132, 199, 0.12) 100%)',
+              border: '1.5px solid rgba(15, 164, 222, 0.3)',
+              borderRadius: '16px',
+              padding: '14px 20px',
+              marginBottom: '20px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              flexWrap: 'wrap',
+              gap: '12px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '30px' }}>{activeCountryObj.flag || '🌎'}</span>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: '800', color: '#0F172A' }}>
+                    Editando Banners, Carruseles y Home para: <span style={{ color: '#0284c7' }}>{activeCountryObj.name} ({activeCountryObj.code})</span>
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#64748B' }}>
+                    Multi-tenancy activo: los banners, carruseles y anuncios son 100% independientes para este país.
+                  </div>
+                </div>
+              </div>
+              {selectedCountryScope === 'all' && (
+                <div style={{ fontSize: '12px', fontWeight: '700', color: '#d97706', background: '#fef3c7', padding: '6px 12px', borderRadius: '8px' }}>
+                  ⚠️ Selecciona un país específico arriba en la barra de países para editar su diseño exclusivo
+                </div>
+              )}
+            </div>
+
             {/* Success Toast */}
             {visualSaveSuccess && (
               <div style={{
@@ -6635,6 +7669,7 @@ function AdminEcommerce({ embedded = false }) {
                 }}>
                   {[
                     { id: 'hero', icon: 'rocket', title: 'Carousel de Banners (Hero)', desc: `${(visualConfig.heroSlides || []).length} Slides Activos` },
+                    { id: 'brand_banners', icon: 'star', title: 'Banners Marcas & Carruseles', desc: 'Banners 2/3 marcas y productos home' },
                     { id: 'announcement', icon: 'megaphone', title: 'Anuncio & Barra Superior', desc: 'Mensaje de cobertura' },
                     { id: 'categories', icon: 'tag', title: '4 Categorías del Shop', desc: 'Títulos, íconos y orden' },
                     { id: 'brands', icon: 'building', title: 'Marcas por Categoría', desc: 'Fabricantes autorizados' },
@@ -6886,9 +7921,10 @@ function AdminEcommerce({ embedded = false }) {
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
                           {visualConfig.heroSlides?.map((s, idx) => {
                             const isSelected = editingSlideIdx === idx;
+                            const slideKey = `hero-slide-item-${s.id !== undefined && s.id !== null ? s.id : idx}`;
                             return (
                               <div
-                                key={s.id || idx}
+                                key={slideKey}
                                 onClick={() => setEditingSlideIdx(idx)}
                                 style={{
                                   padding: '14px 16px',
@@ -7271,41 +8307,400 @@ function AdminEcommerce({ embedded = false }) {
                               </div>
                             </div>
 
-                            {/* Metrics (3 boxes) */}
-                            {cur.type !== 'animated_stats' && (
+                            {/* Metrics / 3 KPI Buttons */}
+                            {cur.type !== 'custom_image' ? (
                               <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
-                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', color: '#0F172A', marginBottom: '8px' }}>
-                                  📊 3 Métricas Destacadas del Banner
-                                </label>
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
+                                  <label style={{ fontSize: '12px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <span>📊</span> 3 Métricas Destacadas del Banner (Botones / KPIs laterales)
+                                  </label>
+                                  {cur.type === 'animated_stats' && (
+                                    <span style={{ fontSize: '10.5px', background: '#FEF3C7', color: '#D97706', padding: '2px 8px', borderRadius: '6px', fontWeight: '700' }}>
+                                      ⚡ Modo animado DACAS
+                                    </span>
+                                  )}
+                                </div>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
                                   {[0, 1, 2].map(mIdx => {
                                     const m = cur.metrics?.[mIdx] || { value: '', label: '' };
                                     return (
-                                      <div key={mIdx} style={{ background: '#FFFFFF', padding: '8px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                                      <div key={mIdx} style={{ background: '#FFFFFF', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                                        <div style={{ fontSize: '11px', fontWeight: '700', color: '#0284c7', marginBottom: '4px' }}>
+                                          Botón #{mIdx + 1}
+                                        </div>
                                         <input
                                           type="text"
                                           value={m.value || ''}
                                           onChange={(e) => handleUpdateSlideMetric(editingSlideIdx, mIdx, 'value', e.target.value)}
-                                          placeholder="Valor (ej: 1.4 Gbps)"
-                                          style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', fontWeight: '700', marginBottom: '4px' }}
+                                          placeholder={mIdx === 0 ? "Valor (ej: +25 Años)" : mIdx === 1 ? "Valor (ej: 12 Países)" : "Valor (ej: 24/7)"}
+                                          style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', fontWeight: '700', marginBottom: '4px' }}
                                         />
                                         <input
                                           type="text"
                                           value={m.label || ''}
                                           onChange={(e) => handleUpdateSlideMetric(editingSlideIdx, mIdx, 'label', e.target.value)}
-                                          placeholder="Etiqueta (ej: Uptime)"
-                                          style={{ width: '100%', padding: '6px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '11px', color: '#64748B' }}
+                                          placeholder={mIdx === 0 ? "Etiqueta (ej: Liderando el Mercado IT)" : mIdx === 1 ? "Etiqueta (ej: Cobertura Regional)" : "Etiqueta (ej: Soporte Oficial)"}
+                                          style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '11px', color: '#64748B' }}
                                         />
                                       </div>
                                     );
                                   })}
                                 </div>
                               </div>
+                            ) : (
+                              <div style={{ background: '#F8FAFC', padding: '12px 14px', borderRadius: '10px', border: '1px dashed #CBD5E1', fontSize: '12px', color: '#64748B' }}>
+                                💡 <em>En modo "Banner Gráfico Completo", se muestra únicamente la imagen subida adaptada a 420px de alto. Para mostrar títulos y los 3 botones / métricas, selecciona <strong>"Título + Métricas"</strong> arriba.</em>
+                              </div>
                             )}
 
                           </div>
                         );
                       })()}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── SUBTAB: BRAND BANNERS & CAROUSELS ── */}
+                {visualSubTab === 'brand_banners' && (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
+                    {/* Header card */}
+                    <div style={{ background: '#FFFFFF', padding: '26px 30px', borderRadius: '22px', border: '1px solid rgba(15, 164, 222, 0.18)', boxShadow: '0 12px 36px rgba(7, 21, 36, 0.05)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
+                        <div>
+                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(15, 164, 222, 0.1)', color: '#0fa4de', padding: '4px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: '800', marginBottom: '8px' }}>
+                            ⭐ HOME DEL SHOP · BANNERS DE MARCA & CARRUSELES
+                          </div>
+                          <h3 style={{ margin: '0 0 6px', fontSize: '1.35rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span>🏷️</span> Banners Promocionales de Marcas & Carruseles de la Home
+                          </h3>
+                          <p style={{ margin: 0, color: '#64748B', fontSize: '0.92rem', maxWidth: '780px', lineHeight: 1.5 }}>
+                            Personaliza los 2 o 3 banners destacados de marcas que promocionamos en la pantalla de inicio, y los carruseles horizontales de productos para que los clientes exploren el catálogo cómodamente.
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Section 1: 3 Brand Banners */}
+                    <div style={{ background: '#FFFFFF', padding: '28px', borderRadius: '22px', border: '1px solid #E2E8F0', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
+                        <div>
+                          <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span>🎯</span> 2 o 3 Banners de Marcas Promocionadas (Home)
+                          </h4>
+                          <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748B' }}>
+                            Al hacer clic en un banner, el cliente navegará directo al catálogo con los productos de ese fabricante.
+                          </p>
+                        </div>
+                        <span style={{ fontSize: '11px', background: '#E0F2FE', color: '#0369A1', padding: '4px 10px', borderRadius: '8px', fontWeight: '750' }}>
+                          {(visualConfig.brandBanners || []).filter(b => b.enabled !== false).length} de {(visualConfig.brandBanners || []).length} Activos
+                        </span>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+                        {(visualConfig.brandBanners || []).map((b, bIdx) => (
+                          <div
+                            key={b.id || bIdx}
+                            style={{
+                              background: '#F8FAFC',
+                              borderRadius: '16px',
+                              border: `1.5px solid ${b.enabled !== false ? (b.accentColor || '#0fa4de') : '#CBD5E1'}`,
+                              padding: '20px',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              gap: '12px',
+                              boxShadow: b.enabled !== false ? '0 4px 15px rgba(0,0,0,0.04)' : 'none',
+                              opacity: b.enabled !== false ? 1 : 0.65,
+                              transition: 'all 0.2s'
+                            }}
+                          >
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #E2E8F0', paddingBottom: '12px' }}>
+                              <span style={{ fontWeight: '800', fontSize: '12.5px', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: b.accentColor || '#0fa4de' }}></span>
+                                Banner de Marca #{bIdx + 1}
+                              </span>
+                              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '700', color: b.enabled !== false ? '#0284c7' : '#64748B', cursor: 'pointer' }}>
+                                <input
+                                  type="checkbox"
+                                  checked={b.enabled !== false}
+                                  onChange={(e) => handleUpdateBrandBanner(bIdx, 'enabled', e.target.checked)}
+                                  style={{ cursor: 'pointer', accentColor: '#0fa4de' }}
+                                />
+                                {b.enabled !== false ? 'Activo en Home' : 'Oculto'}
+                              </label>
+                            </div>
+
+                            {/* Marca / Fabricante */}
+                            <div>
+                              <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#475569', marginBottom: '4px' }}>
+                                Fabricante / Marca Destacada:
+                              </label>
+                              <input
+                                type="text"
+                                value={b.brand || ''}
+                                onChange={(e) => handleUpdateBrandBanner(bIdx, 'brand', e.target.value)}
+                                placeholder="Ej: Fortinet, Vertiv, MikroTik, Panduit..."
+                                style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12px', fontWeight: '700' }}
+                              />
+                            </div>
+
+                            {/* Badge & Título */}
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                              <div>
+                                <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#475569', marginBottom: '4px' }}>
+                                  Badge Superior:
+                                </label>
+                                <input
+                                  type="text"
+                                  value={b.badge || ''}
+                                  onChange={(e) => handleUpdateBrandBanner(bIdx, 'badge', e.target.value)}
+                                  placeholder="Ej: CIBERSEGURIDAD LÍDER"
+                                  style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '11.5px' }}
+                                />
+                              </div>
+                              <div>
+                                <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#475569', marginBottom: '4px' }}>
+                                  Color de Acento:
+                                </label>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <input
+                                    type="color"
+                                    value={b.accentColor || '#0fa4de'}
+                                    onChange={(e) => handleUpdateBrandBanner(bIdx, 'accentColor', e.target.value)}
+                                    style={{ width: '34px', height: '32px', borderRadius: '6px', border: '1px solid #CBD5E1', cursor: 'pointer', padding: 0 }}
+                                  />
+                                  <input
+                                    type="text"
+                                    value={b.accentColor || '#0fa4de'}
+                                    onChange={(e) => handleUpdateBrandBanner(bIdx, 'accentColor', e.target.value)}
+                                    style={{ flex: 1, padding: '6px 8px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '11.5px' }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Título Principal */}
+                            <div>
+                              <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#475569', marginBottom: '4px' }}>
+                                Título del Banner:
+                              </label>
+                              <input
+                                type="text"
+                                value={b.title || ''}
+                                onChange={(e) => handleUpdateBrandBanner(bIdx, 'title', e.target.value)}
+                                placeholder="Ej: Fortinet Security Fabric"
+                                style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12.5px', fontWeight: '700' }}
+                              />
+                            </div>
+
+                            {/* Subtítulo / Descripción */}
+                            <div>
+                              <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#475569', marginBottom: '4px' }}>
+                                Subtítulo / Descripción:
+                              </label>
+                              <textarea
+                                rows={2}
+                                value={b.subtitle || ''}
+                                onChange={(e) => handleUpdateBrandBanner(bIdx, 'subtitle', e.target.value)}
+                                placeholder="Texto descriptivo de las soluciones de la marca..."
+                                style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '11.5px', resize: 'vertical' }}
+                              />
+                            </div>
+
+                            {/* Texto del Botón */}
+                            <div>
+                              <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#475569', marginBottom: '4px' }}>
+                                Texto del Botón de Acción:
+                              </label>
+                              <input
+                                type="text"
+                                value={b.buttonText || ''}
+                                onChange={(e) => handleUpdateBrandBanner(bIdx, 'buttonText', e.target.value)}
+                                placeholder={`Ej: Explorar ${b.brand || 'Marca'}`}
+                                style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12px' }}
+                              />
+                            </div>
+
+                            {/* Imagen de Fondo Opcional */}
+                            <div>
+                              <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#475569', marginBottom: '4px' }}>
+                                Imagen / Foto del Banner (Opcional):
+                              </label>
+                              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                                <input
+                                  type="text"
+                                  value={b.imageUrl || ''}
+                                  onChange={(e) => handleUpdateBrandBanner(bIdx, 'imageUrl', e.target.value)}
+                                  placeholder="https://... o sube una imagen"
+                                  style={{ flex: 1, padding: '7px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '11.5px' }}
+                                />
+                                {b.imageUrl && (
+                                  <button
+                                    type="button"
+                                    onClick={() => handleUpdateBrandBanner(bIdx, 'imageUrl', '')}
+                                    style={{ background: '#FEE2E2', border: '1px solid #FECACA', color: '#DC2626', padding: '6px 10px', borderRadius: '6px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
+                                  >
+                                    Quitar
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Section 2: Product Carousels Configuration */}
+                    <div style={{ background: '#FFFFFF', padding: '28px', borderRadius: '22px', border: '1px solid #E2E8F0', boxShadow: '0 4px 20px rgba(0,0,0,0.03)' }}>
+                      <div style={{ marginBottom: '20px' }}>
+                        <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span>🎠</span> Configuración de Carruseles Horizontales de la Home
+                        </h4>
+                        <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748B' }}>
+                          Define los 2 carruseles de productos que se mostrarán en la página principal: Productos Destacados y Selección Especial.
+                        </p>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: '22px' }}>
+                        {/* Carousel 1: Featured */}
+                        <div style={{ background: '#F8FAFC', padding: '20px', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #E2E8F0', paddingBottom: '10px' }}>
+                            <div style={{ fontWeight: '800', fontSize: '13px', color: '#0F172A' }}>
+                              Carrusel 1: Productos Destacados
+                            </div>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '700', color: visualConfig.homeCarousels?.featured?.enabled !== false ? '#0284c7' : '#64748B', cursor: 'pointer' }}>
+                              <input
+                                type="checkbox"
+                                checked={visualConfig.homeCarousels?.featured?.enabled !== false}
+                                onChange={(e) => handleUpdateCarouselConfig('featured', 'enabled', e.target.checked)}
+                                style={{ accentColor: '#0fa4de', cursor: 'pointer' }}
+                              />
+                              {visualConfig.homeCarousels?.featured?.enabled !== false ? 'Habilitado' : 'Deshabilitado'}
+                            </label>
+                          </div>
+
+                          <div style={{ marginBottom: '12px' }}>
+                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#475569', marginBottom: '4px' }}>
+                              Título del Carrusel:
+                            </label>
+                            <input
+                              type="text"
+                              value={visualConfig.homeCarousels?.featured?.title || '🔥 Productos Destacados'}
+                              onChange={(e) => handleUpdateCarouselConfig('featured', 'title', e.target.value)}
+                              style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12px', fontWeight: '700' }}
+                            />
+                          </div>
+
+                          <div style={{ marginBottom: '14px' }}>
+                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#475569', marginBottom: '4px' }}>
+                              Subtítulo:
+                            </label>
+                            <input
+                              type="text"
+                              value={visualConfig.homeCarousels?.featured?.subtitle || 'Equipamiento de alta demanda con entrega inmediata'}
+                              onChange={(e) => handleUpdateCarouselConfig('featured', 'subtitle', e.target.value)}
+                              style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '11.5px' }}
+                            />
+                          </div>
+
+                          <div style={{ fontSize: '11.5px', color: '#64748B', background: '#F1F5F9', padding: '10px 12px', borderRadius: '8px', lineHeight: 1.5 }}>
+                            ℹ️ <em>Muestra automáticamente los productos con stock disponible y más recientes de la tienda, o los que marques en la selección manual.</em>
+                          </div>
+                        </div>
+
+                        {/* Carousel 2: Custom Selected Products */}
+                        <div style={{ background: '#F8FAFC', padding: '20px', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #E2E8F0', paddingBottom: '10px' }}>
+                            <div style={{ fontWeight: '800', fontSize: '13px', color: '#0F172A' }}>
+                              Carrusel 2: Productos Seleccionados por Nosotros
+                            </div>
+                            <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '700', color: visualConfig.homeCarousels?.custom?.enabled !== false ? '#0284c7' : '#64748B', cursor: 'pointer' }}>
+                              <input
+                                type="checkbox"
+                                checked={visualConfig.homeCarousels?.custom?.enabled !== false}
+                                onChange={(e) => handleUpdateCarouselConfig('custom', 'enabled', e.target.checked)}
+                                style={{ accentColor: '#0fa4de', cursor: 'pointer' }}
+                              />
+                              {visualConfig.homeCarousels?.custom?.enabled !== false ? 'Habilitado' : 'Deshabilitado'}
+                            </label>
+                          </div>
+
+                          <div style={{ marginBottom: '12px' }}>
+                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#475569', marginBottom: '4px' }}>
+                              Título del Carrusel:
+                            </label>
+                            <input
+                              type="text"
+                              value={visualConfig.homeCarousels?.custom?.title || '⚡ Oportunidades & Novedades IT'}
+                              onChange={(e) => handleUpdateCarouselConfig('custom', 'title', e.target.value)}
+                              style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12px', fontWeight: '700' }}
+                            />
+                          </div>
+
+                          <div style={{ marginBottom: '14px' }}>
+                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '800', color: '#475569', marginBottom: '4px' }}>
+                              Subtítulo:
+                            </label>
+                            <input
+                              type="text"
+                              value={visualConfig.homeCarousels?.custom?.subtitle || 'Soluciones corporativas seleccionadas con precios mayoristas especiales'}
+                              onChange={(e) => handleUpdateCarouselConfig('custom', 'subtitle', e.target.value)}
+                              style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '11.5px' }}
+                            />
+                          </div>
+
+                          {/* Multi-product selector */}
+                          <div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                              <label style={{ fontSize: '11.5px', fontWeight: '800', color: '#0F172A' }}>
+                                Elegir Productos para este Carrusel:
+                              </label>
+                              <span style={{ fontSize: '11px', color: '#0284c7', fontWeight: '700' }}>
+                                {(visualConfig.homeCarousels?.custom?.productIds || []).length} seleccionados
+                              </span>
+                            </div>
+
+                            <div style={{ maxHeight: '180px', overflowY: 'auto', background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '10px', padding: '6px' }}>
+                              {products && products.length > 0 ? (
+                                products.map(prod => {
+                                  const isSelected = (visualConfig.homeCarousels?.custom?.productIds || []).includes(parseInt(prod.id));
+                                  return (
+                                    <div
+                                      key={prod.id}
+                                      onClick={() => handleToggleCarouselProduct('custom', prod.id)}
+                                      style={{
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '10px',
+                                        padding: '6px 8px',
+                                        borderRadius: '6px',
+                                        cursor: 'pointer',
+                                        background: isSelected ? '#F0F9FF' : 'transparent',
+                                        border: isSelected ? '1px solid #BAE6FD' : '1px solid transparent',
+                                        marginBottom: '3px'
+                                      }}
+                                    >
+                                      <input
+                                        type="checkbox"
+                                        checked={isSelected}
+                                        onChange={() => {}}
+                                        style={{ accentColor: '#0fa4de', cursor: 'pointer' }}
+                                      />
+                                      <div style={{ flex: 1, minWidth: 0, fontSize: '12px' }}>
+                                        <span style={{ fontWeight: '700', color: '#0F172A' }}>{prod.name}</span>
+                                        <span style={{ color: '#64748B', marginLeft: '6px', fontSize: '11px' }}>({prod.brand || 'DACAS'}) · ${parseFloat(prod.price || 0).toFixed(2)} USD</span>
+                                      </div>
+                                    </div>
+                                  );
+                                })
+                              ) : (
+                                <div style={{ padding: '12px', fontSize: '12px', color: '#64748B', textAlign: 'center' }}>
+                                  No hay productos cargados en el inventario
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -7825,16 +9220,11 @@ function AdminEcommerce({ embedded = false }) {
                                       <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
                                         <button
                                           type="button"
-                                          onClick={() => setEditingBrandModal({
-                                            catKey: group.key,
-                                            brandIdx: b.originalIdx,
-                                            name: b.name,
-                                            countries: isGlobal ? [] : b.countries
-                                          })}
-                                          title="Administrar países para esta marca"
+                                          onClick={() => handleOpenEditBrand(b.name, group.key, b.originalIdx)}
+                                          title="Editar logotipo, descripción y cobertura de esta marca"
                                           style={{
                                             background: '#F1F5F9',
-                                            color: '#334155',
+                                            color: '#0284c7',
                                             border: '1px solid #CBD5E1',
                                             borderRadius: '6px',
                                             padding: '5px 9px',
@@ -7846,7 +9236,7 @@ function AdminEcommerce({ embedded = false }) {
                                             gap: '4px'
                                           }}
                                         >
-                                          ⚙️ Países
+                                          ✏️ Editar Marca & Logo
                                         </button>
 
                                         <button
@@ -10809,7 +12199,7 @@ function AdminEcommerce({ embedded = false }) {
             </div>
 
             <form onSubmit={handleCreateNewBrand}>
-              <div style={{ marginBottom: '16px' }}>
+              <div style={{ marginBottom: '14px' }}>
                 <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
                   Nombre de la Marca / Fabricante *
                 </label>
@@ -10819,24 +12209,106 @@ function AdminEcommerce({ embedded = false }) {
                   placeholder="Ej: Cisco, Palo Alto Networks, APC, Motorola..."
                   value={newBrandForm.name}
                   onChange={(e) => setNewBrandForm({ ...newBrandForm, name: e.target.value })}
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px', boxSizing: 'border-box' }}
                 />
               </div>
 
-              <div style={{ marginBottom: '18px' }}>
+              {/* Logo Upload & URL for New Brand */}
+              <div style={{ marginBottom: '14px' }}>
                 <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
-                  Categoría del Shop *
+                  Logotipo de la Marca (Imagen / SVG / PNG / WebP)
                 </label>
-                <select
-                  value={newBrandForm.category}
-                  onChange={(e) => setNewBrandForm({ ...newBrandForm, category: e.target.value })}
-                  style={{ width: '100%', padding: '10px 14px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px' }}
-                >
-                  <option value="networking">🌐 Networking</option>
-                  <option value="infraestructura">⚡ Infraestructura</option>
-                  <option value="comunicaciones_unificadas">📞 Comunicaciones Unificadas</option>
-                  <option value="security">🛡️ Seguridad & Ciberseguridad</option>
-                </select>
+                <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '6px' }}>
+                  <label style={{
+                    background: '#F1F5F9',
+                    color: '#0284c7',
+                    border: '1px solid #CBD5E1',
+                    borderRadius: '8px',
+                    padding: '6px 12px',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}>
+                    <BrandingVectorIcon name="upload" size={14} color="#0284c7" />
+                    <span>{isUploadingBrandLogo ? 'Subiendo...' : 'Subir imagen...'}</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          handleUploadBrandLogo(e.target.files[0], true);
+                        }
+                      }}
+                    />
+                  </label>
+                  {newBrandForm.logo && (
+                    <span style={{ fontSize: '11px', color: '#16a34a', fontWeight: '600' }}>✓ Imagen cargada</span>
+                  )}
+                </div>
+                <input
+                  type="text"
+                  placeholder="O ingresa la URL de la imagen (https://...)"
+                  value={newBrandForm.logo}
+                  onChange={(e) => setNewBrandForm({ ...newBrandForm, logo: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12px', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              {/* Tagline / Description for New Brand */}
+              <div style={{ marginBottom: '14px' }}>
+                <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                  Descripción Comercial (Tagline de la tarjeta)
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="Ej: Soluciones de infraestructura de red y conmutación corporativa..."
+                  value={newBrandForm.tagline}
+                  onChange={(e) => setNewBrandForm({ ...newBrandForm, tagline: e.target.value })}
+                  style={{ width: '100%', padding: '8px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '12.5px', resize: 'vertical', boxSizing: 'border-box' }}
+                />
+              </div>
+
+              {/* Category & Color */}
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                    Categoría del Shop *
+                  </label>
+                  <select
+                    value={newBrandForm.category}
+                    onChange={(e) => setNewBrandForm({ ...newBrandForm, category: e.target.value })}
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                  >
+                    <option value="networking">🌐 Networking</option>
+                    <option value="infraestructura">⚡ Infraestructura</option>
+                    <option value="comunicaciones_unificadas">📞 Comunicaciones Unificadas</option>
+                    <option value="security">🛡️ Seguridad & Ciberseguridad</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                    Color Distintivo
+                  </label>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <input
+                      type="color"
+                      value={newBrandForm.color || '#0fa4de'}
+                      onChange={(e) => setNewBrandForm({ ...newBrandForm, color: e.target.value })}
+                      style={{ width: '38px', height: '36px', padding: 0, border: '1px solid #CBD5E1', borderRadius: '8px', cursor: 'pointer' }}
+                    />
+                    <input
+                      type="text"
+                      value={newBrandForm.color || '#0fa4de'}
+                      onChange={(e) => setNewBrandForm({ ...newBrandForm, color: e.target.value })}
+                      style={{ flex: 1, padding: '7px 8px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12px' }}
+                    />
+                  </div>
+                </div>
               </div>
 
               <div style={{ marginBottom: '20px' }}>
@@ -10950,17 +12422,21 @@ function AdminEcommerce({ embedded = false }) {
         </div>
       )}
 
-      {/* ── MODAL: EDITAR COBERTURA DE PAÍSES PARA UNA MARCA ── */}
+      {/* ── MODAL: EDITAR MARCA OFICIAL, LOGO, DESCRIPCIÓN & COBERTURA ── */}
       {editingBrandModal && (
         <div className="modal-overlay" style={{ zIndex: 9999 }}>
-          <div className="modal-content" style={{ maxWidth: '620px', padding: '28px', borderRadius: '18px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #F1F5F9', paddingBottom: '12px' }}>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span>⚙️</span> Cobertura de Países: <span style={{ color: '#0284c7', textTransform: 'uppercase' }}>{editingBrandModal.name}</span>
-                </h3>
-                <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
-                  Indica los países donde está habilitada esta marca en el catálogo.
+          <div className="modal-content" style={{ maxWidth: '840px', padding: '26px 28px', borderRadius: '20px', maxHeight: '92vh', overflowY: 'auto' }}>
+            {/* Modal Header */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', borderBottom: '1px solid #F1F5F9', paddingBottom: '14px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <span style={{ fontSize: '24px' }}>🏷️</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '800', color: '#0F172A' }}>
+                    Editar Marca Oficial: <span style={{ color: '#0284c7' }}>{editingBrandModal.name}</span>
+                  </h3>
+                  <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
+                    Personaliza el logotipo, descripción comercial (tagline), color y presencia regional para el Shop.
+                  </div>
                 </div>
               </div>
               <button
@@ -10968,58 +12444,266 @@ function AdminEcommerce({ embedded = false }) {
                 onClick={() => setEditingBrandModal(null)}
                 style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: '#94A3B8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               >
-                <BrandingVectorIcon name="x" size={18} color="#94A3B8" />
+                <BrandingVectorIcon name="x" size={20} color="#94A3B8" />
               </button>
             </div>
 
-            <div style={{ marginBottom: '18px' }}>
-              <div style={{ display: 'flex', gap: '14px', marginBottom: '14px' }}>
-                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
-                  <input
-                    type="radio"
-                    name="editBrandGlobal"
-                    checked={!editingBrandModal.countries || editingBrandModal.countries.length === 0}
-                    onChange={() => setEditingBrandModal({ ...editingBrandModal, countries: [] })}
-                  />
-                  🌐 Habilitar en TODOS los Países (Global)
-                </label>
+            <form onSubmit={handleSaveBrandModal}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '22px', marginBottom: '20px' }}>
+                {/* Left Column: Form Fields */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  {/* Brand Name */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                      Nombre Oficial de la Marca *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editingBrandModal.name}
+                      onChange={(e) => setEditingBrandModal({ ...editingBrandModal, name: e.target.value })}
+                      style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px', boxSizing: 'border-box' }}
+                    />
+                  </div>
 
-                <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
-                  <input
-                    type="radio"
-                    name="editBrandGlobal"
-                    checked={editingBrandModal.countries && editingBrandModal.countries.length > 0}
-                    onChange={() => setEditingBrandModal({ ...editingBrandModal, countries: ['US', 'AR', 'CL'] })}
-                  />
-                  🎯 Restringir a Países Específicos
-                </label>
-              </div>
+                  {/* Brand Logo: Upload & URL */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                      Logotipo de la Marca (Imagen / SVG / PNG / WebP)
+                    </label>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '6px' }}>
+                      <label style={{
+                        background: '#F1F5F9',
+                        color: '#0284c7',
+                        border: '1px solid #CBD5E1',
+                        borderRadius: '8px',
+                        padding: '7px 12px',
+                        fontSize: '12px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}>
+                        <BrandingVectorIcon name="upload" size={14} color="#0284c7" />
+                        <span>{isUploadingBrandLogo ? 'Subiendo...' : 'Subir archivo...'}</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          style={{ display: 'none' }}
+                          onChange={(e) => {
+                            if (e.target.files && e.target.files[0]) {
+                              handleUploadBrandLogo(e.target.files[0], false);
+                            }
+                          }}
+                        />
+                      </label>
+                      {editingBrandModal.logo && (
+                        <button
+                          type="button"
+                          onClick={() => setEditingBrandModal({ ...editingBrandModal, logo: '' })}
+                          style={{ background: 'transparent', border: 'none', color: '#DC2626', fontSize: '11.5px', cursor: 'pointer', fontWeight: '600' }}
+                        >
+                          ✕ Quitar logo
+                        </button>
+                      )}
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="O ingresa la URL de la imagen (https://... o data:image/...)"
+                      value={editingBrandModal.logo || ''}
+                      onChange={(e) => setEditingBrandModal({ ...editingBrandModal, logo: e.target.value })}
+                      style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12px', boxSizing: 'border-box', color: '#334155' }}
+                    />
+                  </div>
 
-              {editingBrandModal.countries && editingBrandModal.countries.length > 0 && (
-                <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '12px', padding: '14px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
-                    <span style={{ fontSize: '12px', color: '#64748B', fontWeight: '600' }}>
-                      Países autorizados ({editingBrandModal.countries.length}):
-                    </span>
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                      <button
-                        type="button"
-                        onClick={() => setEditingBrandModal({ ...editingBrandModal, countries: DACAS_COUNTRIES_LIST.map(c => c.code) })}
-                        style={{ background: '#E2E8F0', border: 'none', borderRadius: '6px', padding: '3px 8px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
-                      >
-                        Marcar Todos
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setEditingBrandModal({ ...editingBrandModal, countries: [] })}
-                        style={{ background: '#E2E8F0', border: 'none', borderRadius: '6px', padding: '3px 8px', fontSize: '11px', fontWeight: '700', cursor: 'pointer' }}
-                      >
-                        Hacer Global
-                      </button>
+                  {/* Brand Tagline / Description */}
+                  <div>
+                    <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                      Descripción Comercial (Tagline de la tarjeta en el Shop) *
+                    </label>
+                    <textarea
+                      rows={3}
+                      required
+                      placeholder="Ej: Seguridad de Red Convergente y Firewalls NGFW FortiGate..."
+                      value={editingBrandModal.tagline || ''}
+                      onChange={(e) => setEditingBrandModal({ ...editingBrandModal, tagline: e.target.value })}
+                      style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '12.5px', lineHeight: 1.4, resize: 'vertical', boxSizing: 'border-box' }}
+                    />
+                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginTop: '6px' }}>
+                      <span style={{ fontSize: '11px', color: '#94a3b8' }}>Plantillas:</span>
+                      {[
+                        'Puntos de Acceso Wi-Fi 6 y Switching Corporativo Cloud',
+                        'Seguridad de Red Convergente y Firewalls NGFW',
+                        'Líder en Contact Center y Comunicaciones Unificadas',
+                        'Climatización Crítica Liebert, UPS y Micro-Datacenters',
+                        'Routers, Switches de alta capacidad y RouterOS'
+                      ].map((tpl, i) => (
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => setEditingBrandModal({ ...editingBrandModal, tagline: tpl })}
+                          style={{
+                            background: '#F8FAFC',
+                            border: '1px solid #E2E8F0',
+                            borderRadius: '6px',
+                            padding: '2px 7px',
+                            fontSize: '10.5px',
+                            color: '#475569',
+                            cursor: 'pointer'
+                          }}
+                        >
+                          {tpl.slice(0, 24)}...
+                        </button>
+                      ))}
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(135px, 1fr))', gap: '8px' }}>
+                  {/* Category & Color row */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                        Área Tecnológica
+                      </label>
+                      <select
+                        value={editingBrandModal.catKey || 'networking'}
+                        onChange={(e) => setEditingBrandModal({ ...editingBrandModal, catKey: e.target.value })}
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12.5px' }}
+                      >
+                        <option value="networking">🌐 Networking</option>
+                        <option value="infraestructura">⚡ Infraestructura</option>
+                        <option value="comunicaciones_unificadas">📞 Comunicaciones Unificadas</option>
+                        <option value="security">🛡️ Ciberseguridad</option>
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
+                        Color Distintivo
+                      </label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                          type="color"
+                          value={editingBrandModal.color || '#0fa4de'}
+                          onChange={(e) => setEditingBrandModal({ ...editingBrandModal, color: e.target.value })}
+                          style={{ width: '38px', height: '36px', padding: 0, border: '1px solid #CBD5E1', borderRadius: '8px', cursor: 'pointer' }}
+                        />
+                        <input
+                          type="text"
+                          value={editingBrandModal.color || '#0fa4de'}
+                          onChange={(e) => setEditingBrandModal({ ...editingBrandModal, color: e.target.value })}
+                          style={{ flex: 1, padding: '7px 8px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12px' }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Column: Live Shop Card Preview */}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>👁️</span> VISTA PREVIA EN TIENDA (SHOP CARD)
+                  </div>
+                  <div style={{
+                    background: '#FFFFFF',
+                    borderRadius: '22px',
+                    border: `2px solid ${editingBrandModal.color || '#0fa4de'}`,
+                    padding: '24px',
+                    boxShadow: '0 8px 24px rgba(0,0,0,0.06)',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    justifyContent: 'space-between',
+                    minHeight: '230px'
+                  }}>
+                    <div>
+                      {/* Logo & Product count badge */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                        <div style={{
+                          width: '64px',
+                          height: '64px',
+                          borderRadius: '16px',
+                          background: 'rgba(15, 164, 222, 0.08)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '8px',
+                          border: '1px solid rgba(0,0,0,0.06)'
+                        }}>
+                          <BrandLogoImg
+                            src={editingBrandModal.logo}
+                            alt={editingBrandModal.name}
+                            name={editingBrandModal.name}
+                            color={editingBrandModal.color}
+                            size={36}
+                          />
+                        </div>
+                        <span style={{
+                          background: 'rgba(15, 164, 222, 0.1)',
+                          color: editingBrandModal.color || '#0fa4de',
+                          fontWeight: '800',
+                          fontSize: '11.5px',
+                          padding: '5px 12px',
+                          borderRadius: '999px',
+                          border: `1px solid ${editingBrandModal.color || '#0fa4de'}33`
+                        }}>
+                          1 Producto
+                        </span>
+                      </div>
+
+                      {/* Brand Name & Tagline */}
+                      <h4 style={{ margin: '0 0 6px', fontSize: '1.22rem', fontWeight: '800', color: '#071524' }}>
+                        {editingBrandModal.name || 'Nombre de la Marca'}
+                      </h4>
+                      <p style={{ margin: 0, fontSize: '0.86rem', color: '#64748B', lineHeight: 1.45 }}>
+                        {editingBrandModal.tagline || 'Descripción o soluciones que ofrece esta marca...'}
+                      </p>
+                    </div>
+
+                    {/* Card Footer */}
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid #F1F5F9', marginTop: '16px' }}>
+                      <span style={{ fontSize: '11px', fontWeight: '700', color: '#94A3B8' }}>
+                        Garantía Directa DACAS
+                      </span>
+                      <span style={{ color: editingBrandModal.color || '#0fa4de', fontSize: '12.5px', fontWeight: '800' }}>
+                        Ver Productos →
+                      </span>
+                    </div>
+                  </div>
+                  <div style={{ fontSize: '11.5px', color: '#94a3b8', fontStyle: 'italic', textAlign: 'center' }}>
+                    Esta es exactamente la tarjeta que tus clientes verán en el catálogo y directorio de marcas.
+                  </div>
+                </div>
+              </div>
+
+              {/* Country Coverage Section */}
+              <div style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', borderRadius: '12px', padding: '14px', marginBottom: '20px' }}>
+                <div style={{ fontSize: '12.5px', fontWeight: '700', color: '#334155', marginBottom: '8px' }}>
+                  Cobertura Regional de la Marca
+                </div>
+                <div style={{ display: 'flex', gap: '14px', marginBottom: '10px' }}>
+                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      name="editBrandGlobal"
+                      checked={editingBrandModal.isGlobal || !editingBrandModal.countries || editingBrandModal.countries.length === 0}
+                      onChange={() => setEditingBrandModal({ ...editingBrandModal, isGlobal: true, countries: [] })}
+                    />
+                    🌐 Habilitar en TODOS los Países (Global)
+                  </label>
+
+                  <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}>
+                    <input
+                      type="radio"
+                      name="editBrandGlobal"
+                      checked={!editingBrandModal.isGlobal && editingBrandModal.countries && editingBrandModal.countries.length > 0}
+                      onChange={() => setEditingBrandModal({ ...editingBrandModal, isGlobal: false, countries: editingBrandModal.countries?.length > 0 ? editingBrandModal.countries : ['US', 'AR', 'CL'] })}
+                    />
+                    🎯 Restringir a Países Específicos
+                  </label>
+                </div>
+
+                {!editingBrandModal.isGlobal && editingBrandModal.countries && (
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '6px', marginTop: '8px' }}>
                     {DACAS_COUNTRIES_LIST.map(c => {
                       const checked = editingBrandModal.countries.includes(c.code);
                       return (
@@ -11029,12 +12713,12 @@ function AdminEcommerce({ embedded = false }) {
                             display: 'flex',
                             alignItems: 'center',
                             gap: '6px',
-                            padding: '6px 10px',
+                            padding: '5px 8px',
                             background: checked ? '#E0F2FE' : '#FFFFFF',
                             border: `1px solid ${checked ? '#0284c7' : '#E2E8F0'}`,
                             borderRadius: '8px',
                             cursor: 'pointer',
-                            fontSize: '12px',
+                            fontSize: '11.5px',
                             fontWeight: checked ? '700' : '500',
                             color: checked ? '#0369A1' : '#334155'
                           }}
@@ -11055,26 +12739,26 @@ function AdminEcommerce({ embedded = false }) {
                       );
                     })}
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
 
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', borderTop: '1px solid #F1F5F9', paddingTop: '16px' }}>
-              <button
-                type="button"
-                onClick={() => setEditingBrandModal(null)}
-                style={{ background: '#F1F5F9', color: '#475569', border: '1px solid #CBD5E1', borderRadius: '10px', padding: '10px 18px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={() => handleSaveBrandCountries(editingBrandModal.catKey, editingBrandModal.brandIdx, editingBrandModal.countries)}
-                style={{ background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)', color: '#FFFFFF', border: 'none', borderRadius: '10px', padding: '10px 20px', fontSize: '13px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 3px 10px rgba(15, 164, 222, 0.3)' }}
-              >
-                Guardar Asignación
-              </button>
-            </div>
+              {/* Modal Actions */}
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', borderTop: '1px solid #F1F5F9', paddingTop: '16px' }}>
+                <button
+                  type="button"
+                  onClick={() => setEditingBrandModal(null)}
+                  style={{ background: '#F1F5F9', color: '#475569', border: '1px solid #CBD5E1', borderRadius: '10px', padding: '10px 18px', fontSize: '13px', fontWeight: '600', cursor: 'pointer' }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  style={{ background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)', color: '#FFFFFF', border: 'none', borderRadius: '10px', padding: '10px 22px', fontSize: '13px', fontWeight: '700', cursor: 'pointer', boxShadow: '0 3px 10px rgba(15, 164, 222, 0.3)' }}
+                >
+                  Guardar Marca
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}

@@ -13,9 +13,15 @@ export default function AdminProductFormTiendanube({
   product,
   onSave,
   onCancel,
-  apiBaseUrl
+  apiBaseUrl,
+  defaultCountryCode = 'AR'
 }) {
   const isEditing = Boolean(product && product.id);
+
+  // 0. Country Scope
+  const [countryCode, setCountryCode] = useState(
+    product?.country_code || (defaultCountryCode && defaultCountryCode !== 'all' ? defaultCountryCode : 'AR')
+  );
 
   // 1. Basic Info
   const [name, setName] = useState(product?.name || '');
@@ -52,6 +58,7 @@ export default function AdminProductFormTiendanube({
   const [sku, setSku] = useState(product?.sku || '');
   const [barcode, setBarcode] = useState(product?.barcode || '');
   const [brand, setBrand] = useState(product?.brand || '');
+  const [isFeatured, setIsFeatured] = useState(Boolean(product?.is_featured || product?.isFeatured || product?.featured || product?.badge === 'DESTACADO'));
 
   // 6. Weight and Dimensions
   const [weight, setWeight] = useState(product?.weight || '');
@@ -387,6 +394,7 @@ export default function AdminProductFormTiendanube({
       name: name.trim(),
       description: descriptionHtml,
       price: price.toString(),
+      country_code: countryCode,
       promotional_price: promotionalPrice ? promotionalPrice.toString() : null,
       compare_price: promotionalPrice ? promotionalPrice.toString() : null,
       show_price: showPriceInStore,
@@ -398,6 +406,9 @@ export default function AdminProductFormTiendanube({
       sku: sku.trim(),
       barcode: barcode.trim(),
       brand: brand.trim(),
+      is_featured: isFeatured,
+      featured: isFeatured,
+      badge: isFeatured ? (product?.badge || 'DESTACADO') : (product?.badge === 'DESTACADO' ? '' : (product?.badge || '')),
       weight: weight.toString(),
       depth: depth.toString(),
       width: width.toString(),
@@ -585,6 +596,40 @@ export default function AdminProductFormTiendanube({
         {/* ══════════════════════════════════════════════════ */}
         <div style={cardStyle}>
           <h2 style={cardTitleStyle}>Nombre y descripción</h2>
+
+          {/* Selector de País / Mercado */}
+          <div style={{ marginBottom: '20px' }}>
+            <label style={labelStyle}>
+              🌍 País / Mercado del Producto (Catálogo independiente)
+            </label>
+            <select
+              value={countryCode}
+              onChange={(e) => setCountryCode(e.target.value)}
+              style={{
+                ...inputStyle,
+                cursor: 'pointer',
+                fontWeight: '600',
+                background: '#f8fafc',
+                border: '1.5px solid #0fa4de'
+              }}
+            >
+              <option value="AR">🇦🇷 Argentina (AR)</option>
+              <option value="CL">🇨🇱 Chile (CL)</option>
+              <option value="CO">🇨🇴 Colombia (CO)</option>
+              <option value="MX">🇲🇽 México (MX)</option>
+              <option value="US">🇺🇸 Estados Unidos (US)</option>
+              <option value="UY">🇺🇾 Uruguay (UY)</option>
+              <option value="PE">🇵🇪 Perú (PE)</option>
+              <option value="BO">🇧🇴 Bolivia (BO)</option>
+              <option value="CR">🇨🇷 Costa Rica (CR)</option>
+              <option value="EC">🇪🇨 Ecuador (EC)</option>
+              <option value="PY">🇵🇾 Paraguay (PY)</option>
+              <option value="DO">🇩🇴 República Dominicana (DO)</option>
+            </select>
+            <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#64748b' }}>
+              Este producto se gestionará de manera 100% aislada e independiente en el inventario y tienda del país seleccionado.
+            </p>
+          </div>
 
           <div style={{ marginBottom: '20px' }}>
             <label style={labelStyle}>Nombre</label>
@@ -1095,6 +1140,68 @@ export default function AdminProductFormTiendanube({
                 El código de barras consta de 13 números para identificar el producto.
               </p>
             </div>
+          </div>
+        </div>
+
+        {/* ══════════════════════════════════════════════════ */}
+        {/* CARD 6.5: PRODUCTO DESTACADO EN SHOP */}
+        {/* ══════════════════════════════════════════════════ */}
+        <div style={{
+          ...cardStyle,
+          background: isFeatured ? 'linear-gradient(135deg, rgba(254, 243, 199, 0.45) 0%, rgba(255, 255, 255, 0.95) 100%)' : cardStyle.background,
+          border: isFeatured ? '1.5px solid #f59e0b' : cardStyle.border,
+          boxShadow: isFeatured ? '0 6px 24px rgba(245, 158, 11, 0.12)' : cardStyle.boxShadow,
+          transition: 'all 0.25s ease'
+        }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+            <div style={{ flex: '1 1 320px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                <span style={{ fontSize: '22px' }}>⭐</span>
+                <h2 style={{ ...cardTitleStyle, margin: 0, color: isFeatured ? '#b45309' : cardTitleStyle.color, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  Producto Destacado en Tienda
+                  {isFeatured && (
+                    <span style={{
+                      background: '#fef3c7',
+                      color: '#b45309',
+                      border: '1px solid #fde68a',
+                      padding: '2px 10px',
+                      borderRadius: '999px',
+                      fontSize: '11px',
+                      fontWeight: '800',
+                      letterSpacing: '0.04em'
+                    }}>
+                      VISIBLE EN HOME
+                    </span>
+                  )}
+                </h2>
+              </div>
+              <p style={{ margin: 0, fontSize: '0.86rem', color: '#64748b', maxWidth: '640px', lineHeight: 1.5 }}>
+                Al activar esta opción, el equipo se incluirá prioritariamente en el <strong>Carrusel de Productos Destacados</strong> de la página principal del Shop, garantizando máxima visibilidad ante integradores y clientes.
+              </p>
+            </div>
+
+            <label style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '12px',
+              cursor: 'pointer',
+              userSelect: 'none',
+              background: isFeatured ? '#fef3c7' : '#f1f5f9',
+              padding: '10px 18px',
+              borderRadius: '12px',
+              border: `1.5px solid ${isFeatured ? '#f59e0b' : '#cbd5e1'}`,
+              transition: 'all 0.2s ease'
+            }}>
+              <input
+                type="checkbox"
+                checked={isFeatured}
+                onChange={(e) => setIsFeatured(e.target.checked)}
+                style={{ width: '20px', height: '20px', accentColor: '#f59e0b', cursor: 'pointer' }}
+              />
+              <span style={{ fontWeight: '800', fontSize: '0.92rem', color: isFeatured ? '#b45309' : '#475569' }}>
+                {isFeatured ? '⭐ Destacado Activo' : '☆ Marcar como Destacado'}
+              </span>
+            </label>
           </div>
         </div>
 
