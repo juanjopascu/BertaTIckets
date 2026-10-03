@@ -326,6 +326,17 @@ function AdminEcommerce({ embedded = false }) {
            (activeCountryObj.name && oCountryName.includes(activeCountryObj.name.toLowerCase()));
   });
 
+  const countryScopedRules = rules.filter(r => {
+    if (selectedCountryScope === 'all') return true;
+    const rCountryId = r.country_id !== null && r.country_id !== undefined && r.country_id !== '' ? Number(r.country_id) : null;
+    const rCountryCode = (r.country_code || '').toUpperCase();
+    const rCountryName = (r.country_name || '').toLowerCase();
+    if (!rCountryId && !rCountryCode) return true; // Reglas globales aplican a todos los países
+    return (activeCountryObj.id && rCountryId === activeCountryObj.id) ||
+           (activeCountryObj.code && rCountryCode === activeCountryObj.code) ||
+           (activeCountryObj.name && rCountryName.includes(activeCountryObj.name.toLowerCase()));
+  });
+
   const filteredOrders = countryScopedOrders.filter(o => {
     const q = (orderSearch || '').toLowerCase();
     const matchSearch = !orderSearch ||
@@ -701,12 +712,12 @@ function AdminEcommerce({ embedded = false }) {
     fetchVisualSettings(selectedCountryScope);
     fetchCheckoutMethods(selectedCountryScope);
     fetchUsers(selectedCountryScope);
+    fetchOrders(selectedCountryScope);
+    fetchRules(selectedCountryScope);
   }, [selectedCountryScope]);
 
   useEffect(() => {
-    fetchOrders();
     fetchCountries();
-    fetchRules();
     fetchApliSettings();
     fetchApliLogs();
     fetchN8nSettings();
@@ -1517,7 +1528,8 @@ function AdminEcommerce({ embedded = false }) {
     setShowNewBrandModal(false);
 
     try {
-      await fetch(`${API_BASE_URL}/api/ecommerce/settings/visual`, {
+      const targetCountry = selectedCountryScope && selectedCountryScope !== 'all' ? selectedCountryScope : 'AR';
+      await fetch(`${API_BASE_URL}/api/ecommerce/settings/visual?country=${targetCountry}`, {
         method: 'PUT',
         headers: getAuthHeader(),
         body: JSON.stringify(newConfig)
@@ -1602,7 +1614,8 @@ function AdminEcommerce({ embedded = false }) {
     setEditingBrandModal(null);
 
     try {
-      await fetch(`${API_BASE_URL}/api/ecommerce/settings/visual`, {
+      const targetCountry = selectedCountryScope && selectedCountryScope !== 'all' ? selectedCountryScope : 'AR';
+      await fetch(`${API_BASE_URL}/api/ecommerce/settings/visual?country=${targetCountry}`, {
         method: 'PUT',
         headers: getAuthHeader(),
         body: JSON.stringify(newConfig)
@@ -1735,9 +1748,13 @@ function AdminEcommerce({ embedded = false }) {
     }
   };
 
-  const fetchOrders = async () => {
+  const fetchOrders = async (countryCode) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/ecommerce/admin/orders`);
+      const code = countryCode !== undefined ? countryCode : selectedCountryScope;
+      const url = code && code !== 'all'
+        ? `${API_BASE_URL}/api/ecommerce/admin/orders?country=${code}`
+        : `${API_BASE_URL}/api/ecommerce/admin/orders`;
+      const res = await fetch(url);
       const data = await res.json();
       setOrders(Array.isArray(data) ? data : MOCK_ORDERS);
     } catch {
@@ -1769,9 +1786,13 @@ function AdminEcommerce({ embedded = false }) {
     }
   };
 
-  const fetchRules = async () => {
+  const fetchRules = async (countryCode) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/ecommerce/admin/rules`);
+      const code = countryCode !== undefined ? countryCode : selectedCountryScope;
+      const url = code && code !== 'all'
+        ? `${API_BASE_URL}/api/ecommerce/admin/rules?country=${code}`
+        : `${API_BASE_URL}/api/ecommerce/admin/rules`;
+      const res = await fetch(url);
       const data = await res.json();
       setRules(Array.isArray(data) ? data : MOCK_RULES);
     } catch {
@@ -2163,7 +2184,13 @@ function AdminEcommerce({ embedded = false }) {
 
   // ── Rules Engine Methods ──
   const resetRuleForm = () => {
-    setRuleForm(initialRuleForm);
+    const defaultCountryId = (selectedCountryScope && selectedCountryScope !== 'all')
+      ? (DACAS_COUNTRIES_LIST.find(c => c.code === selectedCountryScope)?.id || '')
+      : '';
+    setRuleForm({
+      ...initialRuleForm,
+      country_id: defaultCountryId ? String(defaultCountryId) : ''
+    });
     setEditingRule(null);
     setShowRuleForm(false);
   };
@@ -2236,7 +2263,7 @@ function AdminEcommerce({ embedded = false }) {
         throw new Error(errData.error || 'Error al guardar regla/cupón');
       }
       resetRuleForm();
-      fetchRules();
+      fetchRules(selectedCountryScope);
     } catch (err) {
       alert(err.message);
     }
@@ -2246,7 +2273,7 @@ function AdminEcommerce({ embedded = false }) {
     if (!window.confirm('¿Estás seguro de eliminar esta regla?')) return;
     try {
       await fetch(`${API_BASE_URL}/api/ecommerce/admin/rules/${id}`, { method: 'DELETE' });
-      fetchRules();
+      fetchRules(selectedCountryScope);
     } catch (err) {
       alert(err.message);
     }
@@ -3985,8 +4012,16 @@ function AdminEcommerce({ embedded = false }) {
                 <button 
                   className="dacas-pill-btn active" 
                   onClick={() => {
+                    const defaultCountryId = (selectedCountryScope && selectedCountryScope !== 'all')
+                      ? (DACAS_COUNTRIES_LIST.find(c => c.code === selectedCountryScope)?.id || '')
+                      : '';
                     setEditingRule(null);
-                    setRuleForm({ ...initialRuleForm, is_coupon: true, coupon_code: `DACAS-${Math.floor(100 + Math.random() * 900)}` });
+                    setRuleForm({ 
+                      ...initialRuleForm, 
+                      is_coupon: true, 
+                      coupon_code: `DACAS-${Math.floor(100 + Math.random() * 900)}`,
+                      country_id: defaultCountryId ? String(defaultCountryId) : ''
+                    });
                     setShowRuleForm(true);
                   }}
                   style={{
@@ -4011,8 +4046,16 @@ function AdminEcommerce({ embedded = false }) {
                 <button 
                   className="dacas-pill-btn" 
                   onClick={() => {
+                    const defaultCountryId = (selectedCountryScope && selectedCountryScope !== 'all')
+                      ? (DACAS_COUNTRIES_LIST.find(c => c.code === selectedCountryScope)?.id || '')
+                      : '';
                     setEditingRule(null);
-                    setRuleForm({ ...initialRuleForm, is_coupon: false, coupon_code: '' });
+                    setRuleForm({ 
+                      ...initialRuleForm, 
+                      is_coupon: false, 
+                      coupon_code: '',
+                      country_id: defaultCountryId ? String(defaultCountryId) : ''
+                    });
                     setShowRuleForm(true);
                   }}
                   style={{
@@ -4053,7 +4096,7 @@ function AdminEcommerce({ embedded = false }) {
                   gap: '6px'
                 }}
               >
-                <span>Todos ({rules.length})</span>
+                <span>Todos ({countryScopedRules.length})</span>
               </button>
               <button
                 onClick={() => setRuleFilterType('coupons')}
@@ -4071,7 +4114,7 @@ function AdminEcommerce({ embedded = false }) {
                   gap: '6px'
                 }}
               >
-                <span>🎟️ Cupones con Código ({rules.filter(r => r.coupon_code && String(r.coupon_code).trim()).length})</span>
+                <span>🎟️ Cupones con Código ({countryScopedRules.filter(r => r.coupon_code && String(r.coupon_code).trim()).length})</span>
               </button>
               <button
                 onClick={() => setRuleFilterType('rules')}
@@ -4089,9 +4132,30 @@ function AdminEcommerce({ embedded = false }) {
                   gap: '6px'
                 }}
               >
-                <span>⚙️ Tarifas y Reglas Automáticas ({rules.filter(r => !r.coupon_code || !String(r.coupon_code).trim()).length})</span>
+                <span>⚙️ Tarifas y Reglas Automáticas ({countryScopedRules.filter(r => !r.coupon_code || !String(r.coupon_code).trim()).length})</span>
               </button>
             </div>
+
+            {selectedCountryScope !== 'all' && (
+              <div style={{
+                background: '#F0F9FF',
+                border: '1px solid #BAE6FD',
+                borderRadius: '12px',
+                padding: '10px 16px',
+                marginBottom: '16px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                color: '#0369A1',
+                fontSize: '13px',
+                fontWeight: '600'
+              }}>
+                <span style={{ fontSize: '18px' }}>{activeCountryObj?.flag || '🌎'}</span>
+                <span>
+                  Filtrando cupones y reglas comerciales aplicables a <strong>{activeCountryObj?.name || selectedCountryScope}</strong> (incluyendo reglas globales).
+                </span>
+              </div>
+            )}
 
             {/* Creation / Edit Modal Form */}
             {showRuleForm && (
@@ -4496,7 +4560,7 @@ function AdminEcommerce({ embedded = false }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {rules
+                  {countryScopedRules
                     .filter(r => {
                       if (ruleFilterType === 'coupons') return !!(r.coupon_code && String(r.coupon_code).trim());
                       if (ruleFilterType === 'rules') return !(r.coupon_code && String(r.coupon_code).trim());

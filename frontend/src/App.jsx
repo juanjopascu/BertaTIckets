@@ -370,9 +370,23 @@ function FloatingHelpButton({ usuario }) {
   const cardRef = React.useRef(null);
 
   useEffect(() => {
-    if (!isOpen || !activeUser || isShopRoute) return;
+    if (!isOpen) return;
     const apiHost = typeof window !== 'undefined' ? window.location.hostname : 'localhost';
-    fetch(`http://${apiHost}:3001/api/config-ayuda`)
+    let userCountry = 'AR';
+    if (activeUser?.country_code) {
+      userCountry = activeUser.country_code;
+    } else if (activeUser?.pais) {
+      const p = activeUser.pais.toLowerCase();
+      if (p.includes('chile')) userCountry = 'CL';
+      else if (p.includes('colombia')) userCountry = 'CO';
+      else if (p.includes('mexico') || p.includes('méxico')) userCountry = 'MX';
+      else if (p.includes('uruguay')) userCountry = 'UY';
+      else if (p.includes('peru') || p.includes('perú')) userCountry = 'PE';
+      else if (p.includes('estados unidos') || p.includes('usa')) userCountry = 'US';
+    } else {
+      userCountry = localStorage.getItem('dacas_selected_country') || localStorage.getItem('dacas_shop_country') || 'AR';
+    }
+    fetch(`http://${apiHost}:3001/api/config-ayuda?country=${userCountry}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {

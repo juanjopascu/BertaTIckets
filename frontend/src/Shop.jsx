@@ -1514,6 +1514,8 @@ function ShopMain() {
     }
   });
 
+  const selectedCountryObj = DACAS_COUNTRIES.find((c) => c.code === selectedCountryCode) || DACAS_COUNTRIES[1];
+
   const [visualSettings, setVisualSettings] = useState(null);
 
   const heroSlides = useMemo(() => {
@@ -1797,13 +1799,24 @@ function ShopMain() {
     tipo_cliente: 'Integrador IT / Reseller',
     phone: '',
     numero_nit: '',
-    country_id: '1',
+    country_id: String(selectedCountryObj?.id || 2),
+    country_code: selectedCountryCode || 'AR',
     ciudad: '',
     direccion_legal: ''
   });
 
   const cartRef = useRef(null);
   const userMenuRef = useRef(null);
+
+  useEffect(() => {
+    if (selectedCountryObj && selectedCountryObj.id) {
+      setAuthForm(prev => ({
+        ...prev,
+        country_id: String(selectedCountryObj.id),
+        country_code: selectedCountryObj.code
+      }));
+    }
+  }, [selectedCountryObj]);
 
   useEffect(() => {
     fetchCountries();
@@ -1857,10 +1870,15 @@ function ShopMain() {
     setAuthLoading(true);
 
     try {
+      const payload = {
+        ...authForm,
+        country_code: authForm.country_code || selectedCountryCode || 'AR',
+        country_id: authForm.country_id || selectedCountryObj?.id || 2
+      };
       const res = await fetch(`${API_BASE_URL}/api/ecommerce/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(authForm)
+        body: JSON.stringify(payload)
       });
       const data = await res.json();
 
@@ -2218,8 +2236,6 @@ function ShopMain() {
     const start = (catalogPage - 1) * itemsPerPage;
     return sortedAndFilteredProducts.slice(start, start + itemsPerPage);
   }, [sortedAndFilteredProducts, catalogPage, itemsPerPage]);
-
-  const selectedCountryObj = DACAS_COUNTRIES.find((c) => c.code === selectedCountryCode) || DACAS_COUNTRIES[1];
 
   return (
     <div style={{ fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif", background: '#F8FAFC', minHeight: '100vh', color: '#0F172A' }}>
@@ -3851,7 +3867,7 @@ function ShopMain() {
             <span>· Mayorista de Valor Agregado en Tecnología & Ciberseguridad</span>
           </div>
           <div>
-            <span>© {new Date().getFullYear()} DACAS Argentina · Todos los derechos reservados.</span>
+            <span>© {new Date().getFullYear()} DACAS {selectedCountryObj?.name || 'Argentina'} · Todos los derechos reservados.</span>
           </div>
         </div>
       </footer>

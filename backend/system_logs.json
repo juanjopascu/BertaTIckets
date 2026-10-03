@@ -1,5 +1,56 @@
 [
   {
+    "id": 285,
+    "timestamp": "2026-10-03T00:28:21.790Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $195,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1790987301790",
+      "itemsCount": 1,
+      "total": 195,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Aruba Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22 ($195.00)",
+      "items": [
+        {
+          "id": 3,
+          "name": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
+          "brand": "Aruba",
+          "sku": "R4W02A-AP22",
+          "qty": 1,
+          "price": 195,
+          "subtotal": 195
+        }
+      ],
+      "timestamp": "2026-10-03T00:28:21.790Z"
+    }
+  },
+  {
+    "id": 284,
+    "timestamp": "2026-10-03T00:21:18.655Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"admin@dacas.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {
+      "emailIntentado": "admin@dacas.com"
+    }
+  },
+  {
     "id": 283,
     "timestamp": "2026-10-03T00:00:27.859Z",
     "origen": "auth",

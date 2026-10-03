@@ -680,23 +680,32 @@ const COUNTRY_CHECKOUT_METHODS = {
 
 const DEFAULT_CHECKOUT_METHODS = COUNTRY_CHECKOUT_METHODS.AR;
 
+const STATIC_COUNTRIES = [
+  { id: 1, code: 'US', name: 'Estados Unidos', tax_rate: '0.00', shipping_cost: '20.00', nationalization_cost: '0.00', discount_rate: '0.00' },
+  { id: 2, code: 'AR', name: 'Argentina', tax_rate: '21.00', shipping_cost: '15.00', nationalization_cost: '5.00', discount_rate: '0.00' },
+  { id: 3, code: 'BO', name: 'Bolivia', tax_rate: '13.00', shipping_cost: '18.00', nationalization_cost: '0.00', discount_rate: '0.00' },
+  { id: 4, code: 'CL', name: 'Chile', tax_rate: '19.00', shipping_cost: '18.00', nationalization_cost: '2.00', discount_rate: '5.00' },
+  { id: 5, code: 'CO', name: 'Colombia', tax_rate: '19.00', shipping_cost: '18.00', nationalization_cost: '0.00', discount_rate: '0.00' },
+  { id: 6, code: 'CR', name: 'Costa Rica', tax_rate: '13.00', shipping_cost: '20.00', nationalization_cost: '0.00', discount_rate: '0.00' },
+  { id: 7, code: 'EC', name: 'Ecuador', tax_rate: '12.00', shipping_cost: '20.00', nationalization_cost: '0.00', discount_rate: '0.00' },
+  { id: 8, code: 'MX', name: 'México', tax_rate: '16.00', shipping_cost: '25.00', nationalization_cost: '10.00', discount_rate: '0.00' },
+  { id: 9, code: 'PY', name: 'Paraguay', tax_rate: '10.00', shipping_cost: '18.00', nationalization_cost: '0.00', discount_rate: '0.00' },
+  { id: 10, code: 'PE', name: 'Perú', tax_rate: '18.00', shipping_cost: '18.00', nationalization_cost: '0.00', discount_rate: '0.00' },
+  { id: 11, code: 'DO', name: 'República Dominicana', tax_rate: '18.00', shipping_cost: '22.00', nationalization_cost: '0.00', discount_rate: '0.00' },
+  { id: 12, code: 'UY', name: 'Uruguay', tax_rate: '22.00', shipping_cost: '20.00', nationalization_cost: '0.00', discount_rate: '0.00' }
+];
+
 function resolveCountry(identifier) {
-  if (!identifier) {
-    if (typeof inMem !== 'undefined' && Array.isArray(inMem.countries)) {
-      return inMem.countries.find(c => c.code === 'AR') || inMem.countries[1] || { id: 2, code: 'AR', name: 'Argentina' };
-    }
-    return { id: 2, code: 'AR', name: 'Argentina' };
-  }
+  if (!identifier) return STATIC_COUNTRIES.find(c => c.code === 'AR') || STATIC_COUNTRIES[1];
   const str = String(identifier).trim().toUpperCase();
   const num = parseInt(identifier, 10);
-  if (typeof inMem !== 'undefined' && Array.isArray(inMem.countries)) {
-    const found = inMem.countries.find(c => 
-      (!isNaN(num) && c.id === num) || 
-      c.code.toUpperCase() === str || 
-      c.name.toUpperCase() === str
-    );
-    if (found) return found;
-  }
+  const found = STATIC_COUNTRIES.find(c => 
+    (!isNaN(num) && c.id === num) || 
+    c.code.toUpperCase() === str || 
+    c.name.toUpperCase() === str ||
+    c.name.toUpperCase().includes(str)
+  );
+  if (found) return found;
   if (str === 'AR' || str === 'ARGENTINA' || num === 2) return { id: 2, code: 'AR', name: 'Argentina' };
   if (str === 'CL' || str === 'CHILE' || num === 4) return { id: 4, code: 'CL', name: 'Chile' };
   if (str === 'CO' || str === 'COLOMBIA' || num === 5) return { id: 5, code: 'CO', name: 'Colombia' };
@@ -1197,6 +1206,66 @@ const inMem = {
       status: 'activo',
       avatar_url: null,
       created_at: new Date(Date.now() - 86400000 * 5).toISOString()
+    },
+    {
+      id: 9,
+      name: 'Joaquín Silva',
+      email: 'jsilva@montevideoredes.com.uy',
+      password_hash: bcrypt.hashSync('password123', 10),
+      razon_social: 'Montevideo Redes & Conectividad S.A.',
+      cargo: 'Director de Operaciones',
+      tipo_cliente: 'Integrador IT / Reseller',
+      phone: '+598 2900 1234',
+      numero_nit: '21.432.765.0019',
+      direccion_legal: 'Rambla República de México 5500',
+      direccion_entrega: 'Zonamerica Edificio Beta 3',
+      ciudad: 'Montevideo',
+      country_id: 12,
+      country_code: 'UY',
+      country_name: 'Uruguay',
+      status: 'activo',
+      avatar_url: null,
+      created_at: new Date(Date.now() - 86400000 * 2).toISOString()
+    },
+    {
+      id: 10,
+      name: 'Renzo Carranza',
+      email: 'rcarranza@limanetsolutions.pe',
+      password_hash: bcrypt.hashSync('password123', 10),
+      razon_social: 'Lima Net Solutions S.A.C.',
+      cargo: 'Gerente Comercial',
+      tipo_cliente: 'Integrador IT / Reseller',
+      phone: '+51 1 420 5678',
+      numero_nit: '20512345678',
+      direccion_legal: 'Av. Javier Prado Este 4200, Surco',
+      direccion_entrega: 'Av. Argentina 2800, Callao',
+      ciudad: 'Lima',
+      country_id: 10,
+      country_code: 'PE',
+      country_name: 'Perú',
+      status: 'activo',
+      avatar_url: null,
+      created_at: new Date(Date.now() - 86400000 * 4).toISOString()
+    },
+    {
+      id: 11,
+      name: 'John Miller',
+      email: 'jmiller@floridanetworks.com',
+      password_hash: bcrypt.hashSync('password123', 10),
+      razon_social: 'Florida IT Networks LLC',
+      cargo: 'Procurement Director',
+      tipo_cliente: 'Integrador IT / Reseller',
+      phone: '+1 305 555 0199',
+      numero_nit: 'US-EIN-65-998811',
+      direccion_legal: '8350 NW 52nd Terrace, Suite 100',
+      direccion_entrega: '8350 NW 52nd Terrace, Suite 100',
+      ciudad: 'Doral, FL',
+      country_id: 1,
+      country_code: 'US',
+      country_name: 'Estados Unidos',
+      status: 'activo',
+      avatar_url: null,
+      created_at: new Date(Date.now() - 86400000 * 5).toISOString()
     }
   ],
   change_requests: [
@@ -1646,6 +1715,74 @@ const inMem = {
       shipping_address: 'Calle 26 # 69D-91, Bogotá, Colombia',
       tracking_number: 'DACAS-LOG-CO-55102',
       created_at: new Date(Date.now() - 86400000 * 4).toISOString()
+    },
+    {
+      id: 1070,
+      user_id: 12,
+      country_id: 12,
+      country_code: 'UY',
+      total: '1620.00',
+      subtotal: '1450.00',
+      tax_applied: '319.00',
+      shipping_applied: '12.00',
+      nationalization_applied: '0.00',
+      discount_applied: '161.00',
+      status: 'procesando',
+      payment_method: 'Transferencia Bancaria Local (BROU / Itaú Uruguay)',
+      shipping_address: 'Rbla. República de México 6400, Carrasco, Montevideo',
+      tracking_number: 'DACAS-LOG-UY-33109',
+      created_at: new Date(Date.now() - 3600000 * 8).toISOString()
+    },
+    {
+      id: 1075,
+      user_id: 10,
+      country_id: 10,
+      country_code: 'PE',
+      total: '3150.00',
+      subtotal: '2750.00',
+      tax_applied: '495.00',
+      shipping_applied: '25.00',
+      nationalization_applied: '0.00',
+      discount_applied: '120.00',
+      status: 'en_camino',
+      payment_method: 'Depósito / Transferencia BCP Perú',
+      shipping_address: 'Av. Javier Prado Este 4200, Surco, Lima',
+      tracking_number: 'DACAS-LOG-PE-44812',
+      created_at: new Date(Date.now() - 86400000 * 1).toISOString()
+    },
+    {
+      id: 1080,
+      user_id: 8,
+      country_id: 8,
+      country_code: 'MX',
+      total: '4200.00',
+      subtotal: '3700.00',
+      tax_applied: '592.00',
+      shipping_applied: '30.00',
+      nationalization_applied: '0.00',
+      discount_applied: '122.00',
+      status: 'entregado',
+      payment_method: 'Transferencia Interbancaria SPEI (BBVA México)',
+      shipping_address: 'Paseo de la Reforma 222, Cuauhtémoc, CDMX',
+      tracking_number: 'DACAS-LOG-MX-88901',
+      created_at: new Date(Date.now() - 86400000 * 3).toISOString()
+    },
+    {
+      id: 1085,
+      user_id: 11,
+      country_id: 1,
+      country_code: 'US',
+      total: '5500.00',
+      subtotal: '5200.00',
+      tax_applied: '300.00',
+      shipping_applied: '0.00',
+      nationalization_applied: '0.00',
+      discount_applied: '0.00',
+      status: 'entregado',
+      payment_method: 'Wire Transfer / ACH (Chase Bank)',
+      shipping_address: '8350 NW 52nd Terrace, Suite 100, Doral, FL 33166',
+      tracking_number: 'DACAS-LOG-US-11204',
+      created_at: new Date(Date.now() - 86400000 * 6).toISOString()
     }
   ],
   order_items: [
@@ -1694,7 +1831,7 @@ const inMem = {
       image_url: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1000&auto=format&fit=crop'
     }
   ],
-  nextIds: { users: 4, countries: 7, products: 7, stock: 7, rules: 5, orders: 1056, order_items: 5, change_requests: 2, company_team: 4, end_users: 3 }
+  nextIds: { users: 12, countries: 13, products: 7, stock: 7, rules: 5, orders: 1090, order_items: 5, change_requests: 2, company_team: 4, end_users: 3 }
 };
 
 function executeInMemoryQuery(sql, params = []) {
@@ -1783,10 +1920,13 @@ function executeInMemoryQuery(sql, params = []) {
         created_at: new Date().toISOString() 
       };
     } else {
+      const matchedCountry = inMem.countries.find(c => c.id === parseInt(params[9]));
       newUser = {
         id,
         name: params[0], email: params[1], password_hash: params[2], razon_social: params[3], tipo_cliente: params[4],
         direccion_legal: params[5], localidad: params[6], codigo_postal: params[7], ciudad: params[8], country_id: params[9],
+        country_code: matchedCountry ? matchedCountry.code : 'AR',
+        country_name: matchedCountry ? matchedCountry.name : 'Argentina',
         phone: params[10], fecha_limite_facturacion: params[11], web: params[12], report_to_country_id: params[13],
         vendedor: params[14], direccion_entrega: params[15], localidad_entrega: params[16], codigo_postal_entrega: params[17],
         ciudad_entrega: params[18], pais_entrega_id: params[19], tipo_iva: params[20], numero_nit: params[21],
@@ -1808,11 +1948,11 @@ function executeInMemoryQuery(sql, params = []) {
       const u = inMem.users.find(user => user.id === parseInt(params[0]));
       if (!u) return { rows: [] };
       const c = inMem.countries.find(country => country.id === u.country_id);
-      return { rows: [{ ...u, status: u.status || 'activo', country_name: c ? c.name : null }] };
+      return { rows: [{ ...u, status: u.status || 'activo', country_name: c ? c.name : (u.country_name || null), country_code: c ? c.code : (u.country_code || null) }] };
     }
     const rows = inMem.users.map(u => {
       const c = inMem.countries.find(country => country.id === u.country_id);
-      return { ...u, status: u.status || 'activo', country_name: c ? c.name : null };
+      return { ...u, status: u.status || 'activo', country_name: c ? c.name : (u.country_name || null), country_code: c ? c.code : (u.country_code || null) };
     });
     return { rows };
   }
@@ -1822,11 +1962,14 @@ function executeInMemoryQuery(sql, params = []) {
     const userId = parseInt(params[params.length - 1]);
     const idx = inMem.users.findIndex(u => u.id === userId);
     if (idx !== -1) {
+      const matchedCountry = inMem.countries.find(c => c.id === parseInt(params[8]));
       inMem.users[idx] = {
         ...inMem.users[idx],
         name: params[0], email: params[1], razon_social: params[2], tipo_cliente: params[3],
         direccion_legal: params[4], localidad: params[5], codigo_postal: params[6], ciudad: params[7],
-        country_id: params[8], phone: params[9], fecha_limite_facturacion: params[10], web: params[11],
+        country_id: params[8],
+        country_code: matchedCountry ? matchedCountry.code : inMem.users[idx].country_code,
+        country_name: matchedCountry ? matchedCountry.name : inMem.users[idx].country_name, phone: params[9], fecha_limite_facturacion: params[10], web: params[11],
         report_to_country_id: params[12], vendedor: params[13], direccion_entrega: params[14], localidad_entrega: params[15],
         codigo_postal_entrega: params[16], ciudad_entrega: params[17], pais_entrega_id: params[18], tipo_iva: params[19],
         numero_nit: params[20], nombre_compras: params[21], telefono_compras: params[22], email_compras: params[23],
@@ -1868,6 +2011,7 @@ function executeInMemoryQuery(sql, params = []) {
         ...r,
         product_name: p ? p.name : null,
         country_name: c ? c.name : null,
+        country_code: c ? c.code : null,
         user_email: u ? u.email : null
       };
     }).sort((a, b) => (b.priority || 0) - (a.priority || 0));
@@ -2250,7 +2394,7 @@ function executeInMemoryQuery(sql, params = []) {
     }
     const rows = inMem.orders.map(o => {
       const u = inMem.users.find(user => user.id === o.user_id);
-      const c = inMem.countries.find(country => country.id === o.country_id);
+      const c = inMem.countries.find(country => country.id === o.country_id) || (o.country_code ? STATIC_COUNTRIES.find(sc => sc.code === o.country_code.toUpperCase()) : null);
       const items = inMem.order_items.filter(it => it.order_id === o.id);
       return {
         ...o,
@@ -2259,7 +2403,8 @@ function executeInMemoryQuery(sql, params = []) {
         user_company: u ? (u.razon_social || u.empresa || u.name) : 'Empresa Cliente',
         user_cuit: u ? (u.cuit || u.numero_nit || '') : '',
         user_phone: u ? (u.phone || u.telefono || '') : '',
-        country_name: c ? c.name : 'Argentina',
+        country_name: c ? c.name : (o.country_name || 'Argentina'),
+        country_code: c ? c.code : (o.country_code || 'AR'),
         items: items
       };
     }).sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
@@ -2414,13 +2559,14 @@ router.post('/auth/register', async (req, res) => {
   try {
     const { 
       name, email, password, razon_social, tipo_cliente, phone, 
-      numero_nit, country_id, ciudad, direccion_legal, web, company 
+      numero_nit, country_id, country_code, ciudad, direccion_legal, web, company 
     } = req.body;
 
     if (!email) {
       return res.status(400).json({ error: 'El email es requerido' });
     }
 
+    const targetCountry = resolveCountry(country_code || country_id || 'AR');
     const hashedPassword = await bcrypt.hash(password || '123456', 10);
     
     // Check if PG or in-memory
@@ -2439,7 +2585,7 @@ router.post('/auth/register', async (req, res) => {
           tipo_cliente || 'Reseller / Integrador',
           phone || '',
           numero_nit || '',
-          country_id || null,
+          targetCountry.id,
           ciudad || '',
           direccion_legal || '',
           web || '',
@@ -2452,7 +2598,7 @@ router.post('/auth/register', async (req, res) => {
         'INSERT INTO ecommerce_users',
         [
           name || 'Cliente B2B', email, hashedPassword, razon_social || name || '', tipo_cliente || 'Reseller / Integrador',
-          direccion_legal || '', '', '', ciudad || '', country_id || 1,
+          direccion_legal || '', '', '', ciudad || '', targetCountry.id,
           phone || '', null, web || '', null, '', '', '', '', '', null, '', numero_nit || '',
           '', '', '', '', '', '', '', '', '',
           email, email, email, direccion_legal || '', company || razon_social || '',
@@ -4775,17 +4921,30 @@ router.post('/coupons/validate', optionalAuthToken, async (req, res) => {
   }
 });
 
-router.get('/admin/rules', authenticateToken, requireAdmin, async (req, res) => {
+router.get('/admin/rules', optionalAuthToken, async (req, res) => {
   try {
+    const { country, country_id } = req.query;
     const result = await pool.query(`
-      SELECT r.*, p.name as product_name, c.name as country_name, u.email as user_email, u.razon_social as user_razon_social 
+      SELECT r.*, p.name as product_name, c.name as country_name, c.code as country_code, u.email as user_email, u.razon_social as user_razon_social 
       FROM ecommerce_pricing_rules r
       LEFT JOIN ecommerce_products p ON r.product_id = p.id
       LEFT JOIN ecommerce_countries c ON r.country_id = c.id
       LEFT JOIN ecommerce_users u ON r.user_id = u.id
       ORDER BY r.priority DESC, r.created_at DESC
     `);
-    res.json(result.rows);
+    let rows = result.rows || [];
+    if (country || country_id) {
+      const target = resolveCountry(country || country_id);
+      if (target) {
+        rows = rows.filter(r => 
+          !r.country_id || 
+          r.country_id === target.id || 
+          (r.country_code && r.country_code.toUpperCase() === target.code) ||
+          (r.country_name && r.country_name.toLowerCase().includes(target.name.toLowerCase()))
+        );
+      }
+    }
+    res.json(rows);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -5362,7 +5521,11 @@ router.get('/admin/orders', optionalAuthToken, async (req, res) => {
     if (country || country_id) {
       const target = resolveCountry(country || country_id);
       if (target) {
-        orders = orders.filter(o => o.country_id === target.id || (o.country_name && o.country_name.toLowerCase().includes(target.name.toLowerCase())));
+        orders = orders.filter(o => 
+          o.country_id === target.id || 
+          (o.country_code && o.country_code.toUpperCase() === target.code) ||
+          (o.country_name && o.country_name.toLowerCase().includes(target.name.toLowerCase()))
+        );
       }
     }
     res.json(orders);
@@ -5501,7 +5664,7 @@ router.get('/admin/users', optionalAuthToken, async (req, res) => {
     if (country || country_id) {
       const target = resolveCountry(country || country_id);
       if (target) {
-        users = users.filter(u => u.country_id === target.id || (u.country_name && u.country_name.toLowerCase().includes(target.name.toLowerCase())));
+        users = users.filter(u => u.country_id === target.id || (u.country_code && u.country_code.toUpperCase() === target.code) || (u.country_name && u.country_name.toLowerCase().includes(target.name.toLowerCase())));
       }
     }
 

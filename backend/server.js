@@ -130,40 +130,288 @@ let configTicketsDb = {
     habilitarReservaViajes: true
 };
 
-let configAyudaDb = [
+const CONFIG_AYUDA_FILE = path.join(__dirname, 'config_ayuda.json');
+
+const DEFAULT_CONFIG_AYUDA = {
+  AR: [
     {
-        id: 'soporte_crm',
-        sector: 'Soporte Técnico / CRM',
-        email: 'soporte.interno@dacas.com',
-        asunto: 'Soporte CRM - Solicitud de Ayuda',
-        descripcion: 'Inconvenientes técnicos, acceso y uso del CRM / Tickets',
-        activo: true
+      id: 'soporte_ar',
+      sector: 'Soporte Técnico / CRM Argentina',
+      email: 'soporte.ar@dacas.com',
+      asunto: 'Soporte CRM - Solicitud de Ayuda Argentina',
+      descripcion: 'Inconvenientes técnicos, acceso y uso del CRM / Tickets en Argentina',
+      activo: true
     },
     {
-        id: 'ventas_shop',
-        sector: 'Ventas y E-Commerce / Shop',
-        email: 'ventas@dacas.com',
-        asunto: 'Consulta Comercial / E-Commerce Shop',
-        descripcion: 'Consultas sobre productos, pedidos, cotizaciones y stock',
-        activo: true
+      id: 'ventas_ar',
+      sector: 'Ventas y E-Commerce Shop Argentina',
+      email: 'ventas@dacas.com',
+      asunto: 'Consulta Comercial / E-Commerce Shop Argentina',
+      descripcion: 'Consultas sobre productos, pedidos, cotizaciones y stock en Argentina',
+      activo: true
     },
     {
-        id: 'facturacion',
-        sector: 'Facturación y Cobranzas',
-        email: 'facturacion@dacas.com',
-        asunto: 'Consulta de Facturación y Cuentas',
-        descripcion: 'Comprobantes, facturas A/B, pagos y cuentas corrientes',
-        activo: true
+      id: 'facturacion_ar',
+      sector: 'Facturación y Cobranzas Argentina',
+      email: 'facturacion@dacas.com',
+      asunto: 'Consulta de Facturación y Cuentas Argentina',
+      descripcion: 'Comprobantes, facturas A/B, pagos y cuentas corrientes',
+      activo: true
     },
     {
-        id: 'general',
-        sector: 'Atención General Dacas',
-        email: 'info@dacas.com',
-        asunto: 'Consulta General - Dacas',
-        descripcion: 'Consultas generales, recepción y contacto institucional',
-        activo: true
+      id: 'general_ar',
+      sector: 'Atención General Dacas Argentina',
+      email: 'info@dacas.com',
+      asunto: 'Consulta General - Dacas Argentina',
+      descripcion: 'Consultas generales, recepción y contacto institucional',
+      activo: true
     }
-];
+  ],
+  CL: [
+    {
+      id: 'soporte_cl',
+      sector: 'Soporte Técnico / CRM Chile',
+      email: 'soporte.cl@dacas.com',
+      asunto: 'Soporte CRM - Solicitud de Ayuda Chile',
+      descripcion: 'Inconvenientes técnicos, acceso y uso del CRM en Chile',
+      activo: true
+    },
+    {
+      id: 'ventas_cl',
+      sector: 'Ventas y E-Commerce Shop Chile',
+      email: 'ventas.cl@dacas.com',
+      asunto: 'Consulta Comercial / E-Commerce Shop Chile',
+      descripcion: 'Consultas sobre productos, pedidos y cotizaciones B2B en Chile',
+      activo: true
+    },
+    {
+      id: 'facturacion_cl',
+      sector: 'Facturación y Cobranzas Chile',
+      email: 'facturacion.cl@dacas.com',
+      asunto: 'Consulta de Facturación DTE Chile',
+      descripcion: 'Facturas electrónicas DTE, notas de crédito y pagos',
+      activo: true
+    },
+    {
+      id: 'general_cl',
+      sector: 'Atención General Dacas Chile',
+      email: 'info.cl@dacas.com',
+      asunto: 'Consulta General - Dacas Chile',
+      descripcion: 'Consultas generales y atención corporativa en Santiago',
+      activo: true
+    }
+  ],
+  CO: [
+    {
+      id: 'soporte_co',
+      sector: 'Soporte Técnico / CRM Colombia',
+      email: 'soporte.co@dacas.com',
+      asunto: 'Soporte CRM - Solicitud de Ayuda Colombia',
+      descripcion: 'Soporte técnico, acceso y tickets para Colombia',
+      activo: true
+    },
+    {
+      id: 'ventas_co',
+      sector: 'Ventas y E-Commerce Shop Colombia',
+      email: 'ventas.co@dacas.com',
+      asunto: 'Consulta Comercial / E-Commerce Shop Colombia',
+      descripcion: 'Cotizaciones mayoristas B2B y catálogo local en Bogotá',
+      activo: true
+    },
+    {
+      id: 'facturacion_co',
+      sector: 'Facturación y Cobranzas Colombia',
+      email: 'facturacion.co@dacas.com',
+      asunto: 'Consulta de Facturación DIAN Colombia',
+      descripcion: 'Facturas electrónicas DIAN, retenciones y cartera',
+      activo: true
+    },
+    {
+      id: 'general_co',
+      sector: 'Atención General Dacas Colombia',
+      email: 'info.co@dacas.com',
+      asunto: 'Consulta General - Dacas Colombia',
+      descripcion: 'Contacto institucional y recepción en Colombia',
+      activo: true
+    }
+  ],
+  MX: [
+    {
+      id: 'soporte_mx',
+      sector: 'Soporte Técnico / CRM México',
+      email: 'soporte.mx@dacas.com',
+      asunto: 'Soporte CRM - Solicitud de Ayuda México',
+      descripcion: 'Soporte técnico especializado para canales en México',
+      activo: true
+    },
+    {
+      id: 'ventas_mx',
+      sector: 'Ventas y E-Commerce Shop México',
+      email: 'ventas.mx@dacas.com',
+      asunto: 'Consulta Comercial / E-Commerce Shop México',
+      descripcion: 'Cotizaciones, proyectos y catálogo para integradores en México',
+      activo: true
+    },
+    {
+      id: 'facturacion_mx',
+      sector: 'Facturación y Cobranza México (CFDI)',
+      email: 'facturacion.mx@dacas.com',
+      asunto: 'Consulta de Facturación CFDI México',
+      descripcion: 'Facturas CFDI 4.0, complementos de pago y estado de cuenta',
+      activo: true
+    },
+    {
+      id: 'general_mx',
+      sector: 'Atención General Dacas México',
+      email: 'info.mx@dacas.com',
+      asunto: 'Consulta General - Dacas México',
+      descripcion: 'Contacto institucional en CDMX y Monterrey',
+      activo: true
+    }
+  ],
+  UY: [
+    {
+      id: 'soporte_uy',
+      sector: 'Soporte Técnico / CRM Uruguay',
+      email: 'soporte.uy@dacas.com',
+      asunto: 'Soporte CRM - Solicitud de Ayuda Uruguay',
+      descripcion: 'Soporte técnico y plataforma para canales de Uruguay',
+      activo: true
+    },
+    {
+      id: 'ventas_uy',
+      sector: 'Ventas y E-Commerce Shop Uruguay',
+      email: 'ventas.uy@dacas.com',
+      asunto: 'Consulta Comercial / E-Commerce Shop Uruguay',
+      descripcion: 'Ventas mayoristas y logística en Montevideo',
+      activo: true
+    },
+    {
+      id: 'facturacion_uy',
+      sector: 'Facturación y Cobranzas Uruguay',
+      email: 'facturacion.uy@dacas.com',
+      asunto: 'Consulta de Facturación DGI Uruguay',
+      descripcion: 'e-Facturas DGI, retenciones y pagos en USD o UYU',
+      activo: true
+    },
+    {
+      id: 'general_uy',
+      sector: 'Atención General Dacas Uruguay',
+      email: 'info.uy@dacas.com',
+      asunto: 'Consulta General - Dacas Uruguay',
+      descripcion: 'Atención al reseller en Montevideo',
+      activo: true
+    }
+  ],
+  PE: [
+    {
+      id: 'soporte_pe',
+      sector: 'Soporte Técnico / CRM Perú',
+      email: 'soporte.pe@dacas.com',
+      asunto: 'Soporte CRM - Solicitud de Ayuda Perú',
+      descripcion: 'Soporte técnico y certificaciones en Lima',
+      activo: true
+    },
+    {
+      id: 'ventas_pe',
+      sector: 'Ventas y E-Commerce Shop Perú',
+      email: 'ventas.pe@dacas.com',
+      asunto: 'Consulta Comercial / E-Commerce Shop Perú',
+      descripcion: 'Cotizaciones en Lima y despachos a provincias',
+      activo: true
+    },
+    {
+      id: 'facturacion_pe',
+      sector: 'Facturación y Cobranzas Perú (SUNAT)',
+      email: 'facturacion.pe@dacas.com',
+      asunto: 'Consulta de Facturación SUNAT Perú',
+      descripcion: 'Comprobantes electrónicos SUNAT, detracciones y pagos',
+      activo: true
+    },
+    {
+      id: 'general_pe',
+      sector: 'Atención General Dacas Perú',
+      email: 'info.pe@dacas.com',
+      asunto: 'Consulta General - Dacas Perú',
+      descripcion: 'Contacto institucional en Perú',
+      activo: true
+    }
+  ],
+  US: [
+    {
+      id: 'soporte_us',
+      sector: 'Technical Support / CRM USA & Miami',
+      email: 'support.miami@dacas.com',
+      asunto: 'Technical Support Inquiry - DACAS USA',
+      descripcion: 'Technical engineering, RMA and inquiries for USA & exports',
+      activo: true
+    },
+    {
+      id: 'ventas_us',
+      sector: 'Sales & E-Commerce USA Export',
+      email: 'sales.miami@dacas.com',
+      asunto: 'Commercial Inquiry - DACAS USA Hub',
+      descripcion: 'International quotes and dispatch from Miami Free Zone Hub',
+      activo: true
+    },
+    {
+      id: 'facturacion_us',
+      sector: 'Billing & Invoicing USA',
+      email: 'billing.miami@dacas.com',
+      asunto: 'Billing & Payments - DACAS USA',
+      descripcion: 'Wire transfers, commercial invoices and credit accounts',
+      activo: true
+    },
+    {
+      id: 'general_us',
+      sector: 'General Inquiries DACAS USA',
+      email: 'info.usa@dacas.com',
+      asunto: 'General Inquiry - DACAS USA',
+      descripcion: 'General inquiries and Miami corporate headquarters',
+      activo: true
+    }
+  ]
+};
+
+let configAyudaByCountry = JSON.parse(JSON.stringify(DEFAULT_CONFIG_AYUDA));
+
+try {
+  if (fs.existsSync(CONFIG_AYUDA_FILE)) {
+    const raw = fs.readFileSync(CONFIG_AYUDA_FILE, 'utf-8');
+    const parsed = JSON.parse(raw);
+    if (parsed && typeof parsed === 'object') {
+      configAyudaByCountry = { ...DEFAULT_CONFIG_AYUDA, ...parsed };
+    }
+  } else {
+    fs.writeFileSync(CONFIG_AYUDA_FILE, JSON.stringify(DEFAULT_CONFIG_AYUDA, null, 2), 'utf-8');
+  }
+} catch (e) {
+  console.warn('[config-ayuda] Error leyendo config_ayuda.json, usando defaults:', e.message);
+}
+
+function saveConfigAyuda() {
+  try {
+    fs.writeFileSync(CONFIG_AYUDA_FILE, JSON.stringify(configAyudaByCountry, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('[config-ayuda] Error guardando config_ayuda.json:', e.message);
+  }
+}
+
+function resolveAyudaCountryCode(queryOrBodyCountry) {
+  if (!queryOrBodyCountry) return 'AR';
+  const val = String(queryOrBodyCountry).trim().toUpperCase();
+  if (['AR', 'ARGENTINA'].includes(val)) return 'AR';
+  if (['CL', 'CHILE'].includes(val)) return 'CL';
+  if (['CO', 'COLOMBIA'].includes(val)) return 'CO';
+  if (['MX', 'MEXICO', 'MÉXICO'].includes(val)) return 'MX';
+  if (['UY', 'URUGUAY'].includes(val)) return 'UY';
+  if (['PE', 'PERU', 'PERÚ'].includes(val)) return 'PE';
+  if (['US', 'USA', 'ESTADOS UNIDOS', 'MIAMI'].includes(val)) return 'US';
+  return val.length === 2 ? val : 'AR';
+}
+
+// Backward compatibility alias for any direct server references
+let configAyudaDb = configAyudaByCountry['AR'] || [];
 
 let clientesDb = [
     {
@@ -633,13 +881,35 @@ app.post('/api/config-tickets', requireCrmAuth, requireCrmAdmin, (req, res) => {
 // ENDPOINTS DE CONFIGURACIÓN DE CANALES DE AYUDA
 // ==========================================
 app.get('/api/config-ayuda', (req, res) => {
-    res.status(200).json(configAyudaDb);
+    const rawCountry = req.query.country || req.query.pais;
+    if (rawCountry === 'all' || rawCountry === 'todos') {
+        return res.status(200).json(configAyudaByCountry);
+    }
+    const code = resolveAyudaCountryCode(rawCountry);
+    const countryCanales = configAyudaByCountry[code] || configAyudaByCountry['AR'] || [];
+    res.status(200).json(countryCanales);
 });
 
-app.post('/api/config-ayuda', requireCrmAuth, requireCrmAdmin, (req, res) => {
-    const { canales } = req.body;
+app.post('/api/config-ayuda', (req, res) => {
+    // Optional check for CRM session if provided
+    const authHeader = req.headers['authorization'] || req.headers['x-session-id'];
+    if (authHeader) {
+        let sesionId = typeof authHeader === 'string' && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader;
+        const sesion = sesionesActivas.find(s => s.id === sesionId);
+        if (sesion) {
+            const usuario = usuariosDb.find(u => u.id === sesion.usuarioId);
+            if (usuario && usuario.rol !== 'admin' && usuario.rol !== 'admin_ecommerce' && usuario.rol !== 'admin_erp') {
+                return res.status(403).json({ error: 'Permisos insuficientes para configurar canales de ayuda.' });
+            }
+        }
+    }
+
+    const { canales, country_code } = req.body;
+    const rawCountry = req.query.country || country_code || req.body.country || req.body.pais;
+    const code = resolveAyudaCountryCode(rawCountry);
+
     if (Array.isArray(canales)) {
-        configAyudaDb = canales.map(c => ({
+        configAyudaByCountry[code] = canales.map(c => ({
             id: c.id || `sector_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
             sector: (c.sector || c.nombre || '').trim(),
             email: (c.email || '').trim(),
@@ -647,8 +917,27 @@ app.post('/api/config-ayuda', requireCrmAuth, requireCrmAdmin, (req, res) => {
             descripcion: (c.descripcion || '').trim(),
             activo: c.activo !== false
         }));
+        if (code === 'AR') {
+            configAyudaDb = configAyudaByCountry['AR'];
+        }
+        saveConfigAyuda();
     }
-    res.status(200).json(configAyudaDb);
+    res.status(200).json(configAyudaByCountry[code] || []);
+});
+
+app.post('/api/config-ayuda/reset', (req, res) => {
+    const rawCountry = req.query.country || req.body.country_code || req.body.country;
+    const code = resolveAyudaCountryCode(rawCountry);
+    if (DEFAULT_CONFIG_AYUDA[code]) {
+        configAyudaByCountry[code] = JSON.parse(JSON.stringify(DEFAULT_CONFIG_AYUDA[code]));
+    } else {
+        configAyudaByCountry[code] = JSON.parse(JSON.stringify(DEFAULT_CONFIG_AYUDA['AR']));
+    }
+    if (code === 'AR') {
+        configAyudaDb = configAyudaByCountry['AR'];
+    }
+    saveConfigAyuda();
+    res.status(200).json(configAyudaByCountry[code]);
 });
 
 // ==========================================

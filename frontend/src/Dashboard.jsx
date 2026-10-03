@@ -207,6 +207,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
   const [filtroPrioridad, setFiltroPrioridad] = useState('Todas');
   const [filtroAsignado, setFiltroAsignado] = useState('Todos');
   const [filtroEstado, setFiltroEstado] = useState('Todos');
+  const [filtroPais, setFiltroPais] = useState('Todos');
   const [viewMode, setViewMode] = useState('list');
   const [departamentoActivo, setDepartamentoActivo] = useState(null);
   const [activeAdminView, setActiveAdminView] = useState(null); // null (Tickets) | 'personalizacion' | ...
@@ -749,8 +750,11 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
     
     // 4. Filtro Estado
     const matchesState = filtroEstado === 'Todos' || c.estado_embudo === filtroEstado;
+
+    // 5. Filtro País
+    const matchesPais = filtroPais === 'Todos' || (c.pais && c.pais.toLowerCase() === filtroPais.toLowerCase());
     
-    return matchesSearch && matchesPriority && matchesAssignee && matchesState;
+    return matchesSearch && matchesPriority && matchesAssignee && matchesState && matchesPais;
   });
 
   const deptosAMostrar = usuario?.rol === 'staff' && usuario?.accesos?.departamentos 
@@ -777,6 +781,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                 setFiltroEstado('Todos');
                 setFiltroPrioridad('Todas');
                 setFiltroAsignado('Todos');
+                setFiltroPais('Todos');
               }}
               title="Ir a Home / Inicio"
             >
@@ -919,6 +924,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                 setFiltroEstado('Todos');
                 setFiltroPrioridad('Todas');
                 setFiltroAsignado('Todos');
+                setFiltroPais('Todos');
               }}
               className={`sidebar-menu-btn ${!activeAdminView && !departamentoActivo ? 'active' : ''}`}
               style={{
@@ -2932,6 +2938,24 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                   {estadosAMostrar.map(e => (
                     <option key={e.id} value={e.nombre}>{e.nombre}</option>
                   ))}
+                </select>
+              </div>
+
+              <div>
+                <select 
+                  value={filtroPais} 
+                  onChange={(e) => setFiltroPais(e.target.value)}
+                  style={{ padding: '10px 14px', borderRadius: '14px', border: '1px solid rgba(0,0,0,0.08)', fontSize: '0.85rem', background: 'white', outline: 'none', cursor: 'pointer', fontWeight: '600' }}
+                  title="Filtrar tickets por país"
+                >
+                  <option value="Todos">🌎 País: Todos</option>
+                  <option value="Argentina">🇦🇷 Argentina</option>
+                  <option value="Chile">🇨🇱 Chile</option>
+                  <option value="Colombia">🇨🇴 Colombia</option>
+                  <option value="México">🇲🇽 México</option>
+                  <option value="Uruguay">🇺🇾 Uruguay</option>
+                  <option value="Perú">🇵🇪 Perú</option>
+                  <option value="Estados Unidos">🇺🇸 Estados Unidos</option>
                 </select>
               </div>
 
