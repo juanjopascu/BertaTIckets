@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const ShopContext = createContext(null);
 
-const API_BASE_URL = `http://${window.location.hostname}:3001`;
+import { API_BASE_URL } from './apiConfig';
 
 export function ShopProvider({ children }) {
   // ── Cart ──

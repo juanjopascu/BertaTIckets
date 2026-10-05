@@ -9,7 +9,7 @@ import BrandingVectorIcon from './BrandingVectorIcon';
 import NotificationBell from './NotificationBell';
 import { BRAND_INFO, BrandLogoImg } from './Shop';
 
-const API_BASE_URL = `http://${window.location.hostname}:3001`;
+const API_BASE_URL = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '' : `http://${window.location.hostname}:3001`;
 const COLORS = ['#0fa4de', '#38bdf8', '#0284c7', '#10b981', '#f59e0b', '#8b5cf6', '#06b6d4'];
 const PIE_COLORS = ['#0fa4de', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 
@@ -10740,13 +10740,13 @@ function AdminEcommerce({ embedded = false }) {
                       <input
                         type="text"
                         readOnly
-                        value={`http://${window.location.hostname}:3001/api/ecommerce/settings/apli/webhook`}
+                        value={`${typeof window !== 'undefined' ? window.location.origin : ''}/api/ecommerce/settings/apli/webhook`}
                         style={{ flex: 1, padding: '10px 12px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', background: '#F8FAFC', fontFamily: 'monospace' }}
                       />
                       <button
                         type="button"
                         onClick={() => {
-                          navigator.clipboard.writeText(`http://${window.location.hostname}:3001/api/ecommerce/settings/apli/webhook`);
+                          navigator.clipboard.writeText(`${window.location.origin}/api/ecommerce/settings/apli/webhook`);
                           alert('¡URL del Webhook copiada al portapapeles!');
                         }}
                         style={{ background: '#0fa4de', color: '#FFFFFF', border: 'none', padding: '0 16px', borderRadius: '10px', fontSize: '12.5px', fontWeight: '800', cursor: 'pointer' }}

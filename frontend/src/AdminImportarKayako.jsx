@@ -2,7 +2,7 @@ import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BrandingVectorIcon from './BrandingVectorIcon';
 
-const API_BASE_URL = `http://${window.location.hostname}:3001`;
+const API_BASE_URL = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '' : `http://${window.location.hostname}:3001`;
 
 function AdminImportarKayako({ embedded = false }) {
   const navigate = useNavigate();

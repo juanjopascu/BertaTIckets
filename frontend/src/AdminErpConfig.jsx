@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import BrandingVectorIcon from './BrandingVectorIcon';
 import NotificationBell from './NotificationBell';
 
-const API_BASE_URL = `http://${window.location.hostname}:3001`;
+const API_BASE_URL = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '' : `http://${window.location.hostname}:3001`;
 
 const COUNTRIES_LIST = [
   { name: 'Argentina', code: 'ARG', flag: '🇦🇷', currency: 'ARS', defaultTax: 'CUIT' },

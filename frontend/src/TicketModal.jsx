@@ -8,7 +8,7 @@ const MACROS = [
   "Tu ticket ha sido resuelto y será cerrado."
 ];
 
-const API_BASE_URL = `http://${window.location.hostname}:3001`;
+const API_BASE_URL = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '' : `http://${window.location.hostname}:3001`;
 
 const TRAVEL_GROUPS = [
   {

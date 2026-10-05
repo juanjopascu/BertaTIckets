@@ -124,7 +124,7 @@ function App() {
   useEffect(() => {
     if (!usuario || !usuario.sesionId) return;
 
-    const API_BASE_URL = `http://${window.location.hostname}:3001`;
+    const API_BASE_URL = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '' : `http://${window.location.hostname}:3001`;
 
     const verificarSesion = async () => {
       try {
@@ -386,7 +386,8 @@ function FloatingHelpButton({ usuario }) {
     } else {
       userCountry = localStorage.getItem('dacas_selected_country') || localStorage.getItem('dacas_shop_country') || 'AR';
     }
-    fetch(`http://${apiHost}:3001/api/config-ayuda?country=${userCountry}`)
+    const apiBase = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '' : `http://${apiHost}:3001`;
+    fetch(`${apiBase}/api/config-ayuda?country=${userCountry}`)
       .then(res => res.json())
       .then(data => {
         if (Array.isArray(data) && data.length > 0) {

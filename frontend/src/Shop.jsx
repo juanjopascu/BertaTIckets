@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import BrandingVectorIcon from './BrandingVectorIcon';
 
-const API_BASE_URL = `http://${window.location.hostname}:3001`;
+import { API_BASE_URL } from './apiConfig';
 
 /* ─── High-Tech Mock Products (DACAS Catalog & Solutions) ─── */
 const MOCK_PRODUCTS = [
@@ -257,7 +257,7 @@ export function BrandLogoImg({ src, alt, name, color = '#0fa4de', size = 38 }) {
   const letter = (name || alt || 'D').trim().charAt(0).toUpperCase();
 
   const finalSrc = src && typeof src === 'string' && src.startsWith('/uploads')
-    ? `http://${window.location.hostname}:3001${src}`
+    ? `${API_BASE_URL}${src}`
     : src;
 
   if (!finalSrc || hasError) {
@@ -4238,7 +4238,7 @@ function ShopMacHelpHub({ clientUser, generalSettings, onSelectProduct, navigate
 
   // Cargar configuración de n8n bot
   useEffect(() => {
-    fetch(`http://${window.location.hostname}:3001/api/ecommerce/settings/n8n-bot`)
+    fetch(`${API_BASE_URL}/api/ecommerce/settings/n8n-bot`)
       .then(res => res.json())
       .then(data => setBotConfig(data))
       .catch(() => { });
@@ -4318,7 +4318,7 @@ function ShopMacHelpHub({ clientUser, generalSettings, onSelectProduct, navigate
     setAiIsTyping(true);
 
     try {
-      const res = await fetch(`http://${window.location.hostname}:3001/api/ecommerce/n8n-bot/chat`, {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/n8n-bot/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

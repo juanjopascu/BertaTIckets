@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import BrandingVectorIcon, { BUILT_IN_BRANDING_ICONS } from './BrandingVectorIcon';
 
-const API_BASE_URL = `http://${window.location.hostname}:3001`;
+const API_BASE_URL = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '' : `http://${window.location.hostname}:3001`;
 
 // Iconos UI internos de la interfaz (estilo Lucide)
 function UIIcon({ name, size = 16, color = 'currentColor', strokeWidth = 2, style = {} }) {

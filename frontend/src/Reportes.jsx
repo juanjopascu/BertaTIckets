@@ -6,7 +6,7 @@ import {
   PieChart, Pie, Cell
 } from 'recharts';
 
-const API_BASE_URL = `http://${window.location.hostname}:3001`;
+const API_BASE_URL = typeof window !== 'undefined' && window.location.protocol === 'https:' ? '' : `http://${window.location.hostname}:3001`;
 const API_URL = `${API_BASE_URL}/api/clientes`;
 const DEPT_URL = `${API_BASE_URL}/api/departamentos`;
 const ESTADOS_URL = `${API_BASE_URL}/api/estados`;
