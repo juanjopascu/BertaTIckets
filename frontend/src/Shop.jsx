@@ -5991,7 +5991,6 @@ function ProductDetailPageView({
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
-  const [activeTab, setActiveTab] = useState('description');
   const [copiedSku, setCopiedSku] = useState(false);
   const [copiedUrl, setCopiedUrl] = useState(false);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -6299,17 +6298,6 @@ function ProductDetailPageView({
                     <span>{product.badge || 'DESTACADO'}</span>
                   </span>
                 )}
-                <span style={{
-                  background: 'rgba(7, 21, 36, 0.85)',
-                  backdropFilter: 'blur(6px)',
-                  color: '#FFFFFF',
-                  fontSize: '10.5px',
-                  fontWeight: '750',
-                  padding: '4px 10px',
-                  borderRadius: '8px'
-                }}>
-                  ORIGINAL DACAS
-                </span>
               </div>
 
               {product.stock !== undefined && (
@@ -6485,39 +6473,6 @@ function ProductDetailPageView({
                 ))}
               </div>
             )}
-
-            {/* Barra de 3 Beneficios DACAS Mayorista */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(3, 1fr)',
-              gap: '10px',
-              padding: '14px',
-              background: '#F8FAFC',
-              borderRadius: '14px',
-              border: '1px solid #E2E8F0'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '18px' }}>🛡️</span>
-                <div>
-                  <div style={{ fontSize: '11.5px', fontWeight: '800', color: '#071524' }}>Garantía Oficial</div>
-                  <div style={{ fontSize: '10.5px', color: '#64748B' }}>12M con soporte y RMA</div>
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '18px' }}>📦</span>
-                <div>
-                  <div style={{ fontSize: '11.5px', fontWeight: '800', color: '#071524' }}>Despacho Rápido</div>
-                  <div style={{ fontSize: '10.5px', color: '#64748B' }}>Salida en 24h a todo el país</div>
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '18px' }}>🎧</span>
-                <div>
-                  <div style={{ fontSize: '11.5px', fontWeight: '800', color: '#071524' }}>Soporte Preventa</div>
-                  <div style={{ fontSize: '10.5px', color: '#64748B' }}>Ingeniería de canal certificada</div>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* ══ COLUMNA DERECHA: CENTRO COMERCIAL, PRECIOS B2B Y COMPRA ══ */}
@@ -6847,30 +6802,11 @@ function ProductDetailPageView({
               <BrandingVectorIcon name="phone" size={14} color="#15803D" />
               <span>Consultar cotización y disponibilidad por WhatsApp</span>
             </a>
-
-            {/* Métodos de Pago y Facturación */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '10px 12px',
-              background: '#F8FAFC',
-              borderRadius: '8px',
-              border: '1px solid #E2E8F0',
-              fontSize: '11px',
-              color: '#64748B',
-              flexWrap: 'wrap',
-              gap: '8px'
-            }}>
-              <span>📄 Factura Oficial A o B</span>
-              <span>🏦 Transferencia Bancaria BNA</span>
-              <span>💳 Cuenta Corriente para Canales</span>
-            </div>
           </div>
         </div>
       </div>
 
-      {/* ─── SECCIÓN DETALLADA MULTI-PESTAÑA (DESCRIPCIÓN, FICHA TÉCNICA, DESCARGAS, GARANTÍA) ─── */}
+      {/* ─── SECCIÓN DETALLADA: DESCRIPCIÓN & CARACTERÍSTICAS Y DATASHEET ─── */}
       <div style={{
         background: '#FFFFFF',
         borderRadius: '20px',
@@ -6879,229 +6815,137 @@ function ProductDetailPageView({
         padding: '28px 34px',
         marginBottom: '36px'
       }}>
-        {/* Cabecera de Pestañas */}
+        {/* Cabecera de la Sección */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '8px',
+          gap: '10px',
           borderBottom: '2px solid #F1F5F9',
-          paddingBottom: '12px',
-          marginBottom: '24px',
-          overflowX: 'auto'
+          paddingBottom: '14px',
+          marginBottom: '24px'
         }}>
-          {[
-            { id: 'description', label: 'Descripción & Características', icon: 'file-text' },
-            { id: 'specs', label: 'Ficha Técnica Completa', icon: 'cpu' },
-            { id: 'downloads', label: 'Descargas & Datasheet', icon: 'download' },
-            { id: 'warranty', label: 'Garantía & Soporte DACAS', icon: 'shield' }
-          ].map(tab => (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              style={{
-                background: activeTab === tab.id ? '#F0F9FF' : 'transparent',
-                border: 'none',
-                borderBottom: activeTab === tab.id ? '3px solid #0fa4de' : '3px solid transparent',
-                borderRadius: '8px 8px 0 0',
-                padding: '10px 18px',
-                fontSize: '14px',
-                fontWeight: activeTab === tab.id ? '800' : '650',
-                color: activeTab === tab.id ? '#0fa4de' : '#64748B',
-                cursor: 'pointer',
-                marginBottom: '-14px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                transition: 'all 0.15s',
-                whiteSpace: 'nowrap'
-              }}
-            >
-              <BrandingVectorIcon name={tab.icon} size={15} color={activeTab === tab.id ? "#0fa4de" : "#94A3B8"} />
-              <span>{tab.label}</span>
-            </button>
-          ))}
+          <BrandingVectorIcon name="file-text" size={20} color="#0fa4de" />
+          <h2 style={{
+            fontSize: '18px',
+            fontWeight: '800',
+            color: '#071524',
+            margin: 0
+          }}>
+            Descripción &amp; Características
+          </h2>
         </div>
 
-        {/* CONTENIDO PESTAÑA 1: Descripción Detallada */}
-        {activeTab === 'description' && (
-          <div style={{ maxWidth: '960px' }}>
-            <div
-              style={{
-                fontSize: '14.5px',
-                lineHeight: '1.75',
-                color: '#334155'
-              }}
-              dangerouslySetInnerHTML={{
-                __html: DOMPurify.sanitize(
-                  product.description ||
-                  `<p>El <strong>${product.name}</strong> es comercializado de forma oficial por DACAS Argentina para su red de canales autorizados e integradores de tecnología. Cuenta con garantía directa del fabricante y soporte especializado de ingeniería preventa.</p>`
-                )
-              }}
-            />
-          </div>
-        )}
+        {/* Descripción Detallada */}
+        <div style={{ maxWidth: '960px' }}>
+          <div
+            style={{
+              fontSize: '14.5px',
+              lineHeight: '1.75',
+              color: '#334155'
+            }}
+            dangerouslySetInnerHTML={{
+              __html: DOMPurify.sanitize(
+                product.description ||
+                `<p>${product.name}</p>`
+              )
+            }}
+          />
+        </div>
 
-        {/* CONTENIDO PESTAÑA 2: Ficha Técnica Completa */}
-        {activeTab === 'specs' && (
-          <div>
-            <div style={{ marginBottom: '16px', fontSize: '13px', color: '#64748B' }}>
-              Especificaciones y parámetros técnicos oficiales provistos por el fabricante y registrados en el catálogo de DACAS:
-            </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(310px, 1fr))', gap: '12px' }}>
-              {[
-                { label: 'Producto / Modelo', val: product.name },
-                { label: 'Marca / Fabricante', val: product.brand || 'DACAS Oficial' },
-                { label: 'Part Number / SKU', val: product.sku || 'N/A' },
-                { label: 'Categoría de Solución', val: getCategoryLabel(product.category) },
-                product.barcode ? { label: 'Código de Barras / EAN', val: product.barcode } : null,
-                product.condition ? { label: 'Condición del Equipo', val: product.condition } : { label: 'Condición del Equipo', val: 'Nuevo Sellado' },
-                (product.weight && parseFloat(product.weight) > 0) ? { label: 'Peso del Equipo', val: `${product.weight} kg` } : null,
-                (product.width && parseFloat(product.width) > 0) ? { label: 'Dimensiones Físicas', val: `${product.depth || 0} × ${product.width || 0} × ${product.height || 0} cm` } : null,
-                { label: 'Garantía Oficial', val: product.warranty || '12 meses con cobertura técnica y RMA local DACAS' },
-                { label: 'Disponibilidad Logística', val: product.stock > 0 ? `${product.stock} un. en stock local (${activeCountryObj.name})` : 'Bajo pedido con entrega prioritaria' }
-              ].filter(Boolean).map((row, idx) => (
-                <div key={idx} style={{
-                  padding: '12px 16px',
-                  background: idx % 2 === 0 ? '#F8FAFC' : '#FFFFFF',
-                  borderRadius: '10px',
-                  border: '1px solid #E2E8F0',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  gap: '12px'
-                }}>
-                  <div style={{ fontSize: '11.5px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.03em' }}>{row.label}</div>
-                  <div style={{ fontSize: '13px', fontWeight: '750', color: '#071524', textAlign: 'right' }}>{row.val}</div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* CONTENIDO PESTAÑA 3: Descargas & Datasheet */}
-        {activeTab === 'downloads' && (
-          <div>
-            {product.datasheet_url ? (
-              <div style={{
-                maxWidth: '680px',
-                padding: '22px 24px',
-                borderRadius: '14px',
-                border: '1.5px solid #BAE6FD',
-                background: 'linear-gradient(135deg, #F0F9FF 0%, #FFFFFF 100%)',
-                boxShadow: '0 4px 14px rgba(15,164,222,0.06)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                flexWrap: 'wrap',
-                gap: '16px'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                  <span style={{ fontSize: '32px' }}>📄</span>
-                  <div>
-                    <div style={{ fontSize: '15px', fontWeight: '850', color: '#071524' }}>
-                      Ficha Técnica Oficial (Datasheet)
-                    </div>
-                    <div style={{ fontSize: '12.5px', color: '#64748B', marginTop: '3px' }}>
-                      Especificaciones completas de hardware, diagramas y compatibilidad de {product.brand || 'DACAS'}.
-                    </div>
-                  </div>
-                </div>
-                <a
-                  href={product.datasheet_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    background: '#0fa4de',
-                    color: '#FFFFFF',
-                    padding: '10px 18px',
-                    borderRadius: '8px',
-                    fontSize: '12.5px',
-                    fontWeight: '800',
-                    textDecoration: 'none',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    boxShadow: '0 2px 6px rgba(15,164,222,0.25)'
-                  }}
-                >
-                  <span>↓ Descargar Ficha Técnica (PDF)</span>
-                  <span>↗</span>
-                </a>
-              </div>
-            ) : (
-              <div style={{
-                maxWidth: '700px',
-                padding: '24px',
-                borderRadius: '14px',
-                border: '1px dashed #CBD5E1',
-                background: '#F8FAFC',
-                textAlign: 'center'
-              }}>
-                <div style={{ fontSize: '28px', marginBottom: '8px' }}>📋</div>
-                <div style={{ fontSize: '14px', fontWeight: '800', color: '#0F172A', marginBottom: '4px' }}>
-                  Documentación Técnica y Datasheets Oficiales
-                </div>
-                <p style={{ margin: '0 0 14px', fontSize: '12.5px', color: '#64748B', lineHeight: 1.55 }}>
-                  La documentación técnica oficial y diagrama de arquitectura de este equipo (SKU: <strong>{product.sku || 'N/A'}</strong>) están disponibles a solicitud de nuestros canales y partners autorizados.
-                </p>
-                <a
-                  href={`https://wa.me/5491141103300?text=${encodeURIComponent(`Hola DACAS, requiero el datasheet técnico oficial para el equipo ${product.name} (SKU: ${product.sku || ''})`)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  style={{
-                    background: '#25D366',
-                    color: '#FFFFFF',
-                    padding: '8px 16px',
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                    fontWeight: '750',
-                    textDecoration: 'none',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  <span>💬 Solicitar Datasheet por WhatsApp</span>
-                </a>
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* CONTENIDO PESTAÑA 4: Garantía & Soporte DACAS */}
-        {activeTab === 'warranty' && (
-          <div style={{ maxWidth: '900px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            <div style={{ display: 'flex', gap: '14px', padding: '16px 18px', background: '#F0F9FF', borderRadius: '12px', border: '1px solid #BAE6FD' }}>
-              <span style={{ fontSize: '24px' }}>🛡️</span>
+        {/* Ficha Técnica Oficial (Datasheet) */}
+        {product.datasheet_url ? (
+          <div style={{
+            marginTop: '32px',
+            padding: '20px 24px',
+            borderRadius: '14px',
+            border: '1.5px solid #BAE6FD',
+            background: 'linear-gradient(135deg, #F0F9FF 0%, #FFFFFF 100%)',
+            boxShadow: '0 4px 14px rgba(15,164,222,0.06)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '16px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+              <span style={{ fontSize: '32px' }}>📄</span>
               <div>
-                <div style={{ fontSize: '14.5px', fontWeight: '800', color: '#0369a1' }}>
-                  Respaldo Mayorista Oficial DACAS Argentina
+                <div style={{ fontSize: '15px', fontWeight: '850', color: '#071524' }}>
+                  Ficha Técnica Oficial (Datasheet)
                 </div>
-                <div style={{ fontSize: '13px', color: '#0284c7', marginTop: '4px', lineHeight: 1.55 }}>
-                  Todos los productos comercializados en DACAS cuentan con trazabilidad oficial de importación, estampillado legal, factura de origen y respaldo técnico de preventa y postventa con ingenieros certificados por el fabricante.
+                <div style={{ fontSize: '12.5px', color: '#64748B', marginTop: '3px' }}>
+                  Especificaciones completas de hardware, diagramas y compatibilidad de {product.brand || 'DACAS'}.
                 </div>
               </div>
             </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '14px' }}>
-              <div style={{ padding: '16px', background: '#F8FAFC', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
-                <div style={{ fontWeight: '800', color: '#071524', fontSize: '13px', marginBottom: '4px' }}>
-                  Gestión RMA & Reemplazos
+            <a
+              href={product.datasheet_url}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                background: '#0fa4de',
+                color: '#FFFFFF',
+                padding: '10px 18px',
+                borderRadius: '8px',
+                fontSize: '12.5px',
+                fontWeight: '800',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px',
+                boxShadow: '0 2px 6px rgba(15,164,222,0.25)',
+                transition: 'background 0.15s'
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = '#0284c7'; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = '#0fa4de'; }}
+            >
+              <span>↓ Descargar Ficha Técnica (PDF)</span>
+              <span>↗</span>
+            </a>
+          </div>
+        ) : (
+          <div style={{
+            marginTop: '32px',
+            padding: '18px 22px',
+            borderRadius: '12px',
+            border: '1px dashed #CBD5E1',
+            background: '#F8FAFC',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '14px'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontSize: '24px' }}>📋</span>
+              <div>
+                <div style={{ fontSize: '13.5px', fontWeight: '750', color: '#0F172A' }}>
+                  Documentación Técnica y Datasheet Oficial
                 </div>
-                <p style={{ margin: 0, fontSize: '12px', color: '#64748B', lineHeight: 1.5 }}>
-                  Gestión ágil de garantías a través de nuestro portal de tickets con diagnóstico y resolución por parte del equipo de soporte oficial.
-                </p>
-              </div>
-
-              <div style={{ padding: '16px', background: '#F8FAFC', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
-                <div style={{ fontWeight: '800', color: '#071524', fontSize: '13px', marginBottom: '4px' }}>
-                  Ingeniería Preventa
+                <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
+                  Solicita el datasheet técnico y diagrama de este equipo a nuestro equipo preventa.
                 </div>
-                <p style={{ margin: 0, fontSize: '12px', color: '#64748B', lineHeight: 1.5 }}>
-                  Te acompañamos en el dimensionamiento y arquitectura de soluciones para licitaciones y proyectos corporativos de alta complejidad.
-                </p>
               </div>
             </div>
+            <a
+              href={`https://wa.me/5491141103300?text=${encodeURIComponent(`Hola DACAS, requiero el datasheet técnico oficial para el equipo ${product.name} (SKU: ${product.sku || ''})`)}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{
+                background: '#25D366',
+                color: '#FFFFFF',
+                padding: '8px 16px',
+                borderRadius: '8px',
+                fontSize: '12px',
+                fontWeight: '750',
+                textDecoration: 'none',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+            >
+              <span>💬 Solicitar Datasheet por WhatsApp</span>
+            </a>
           </div>
         )}
       </div>

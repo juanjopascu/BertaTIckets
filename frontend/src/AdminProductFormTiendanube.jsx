@@ -354,6 +354,39 @@ export default function AdminProductFormTiendanube({
     }
   };
 
+  const handleDatasheetFileUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsUploading(true);
+    const formData = new FormData();
+    formData.append('files', file);
+
+    try {
+      const token = localStorage.getItem('token') || localStorage.getItem('dacas_token') || sessionStorage.getItem('token');
+      const sessionId = sessionStorage.getItem('sessionId') || localStorage.getItem('sessionId');
+      const headers = {};
+      if (token) headers['Authorization'] = `Bearer ${token}`;
+      if (sessionId) headers['x-session-id'] = sessionId;
+
+      const res = await fetch(`${apiBaseUrl}/api/ecommerce/upload`, {
+        method: 'POST',
+        headers,
+        body: formData
+      });
+      const data = await res.json();
+      if (data.success && (data.primaryUrl || (data.urls && data.urls[0]))) {
+        setDatasheetUrl(data.primaryUrl || data.urls[0]);
+      } else {
+        alert(data.error || 'Error al subir el archivo PDF del datasheet');
+      }
+    } catch (err) {
+      alert('Error de conexión al subir el datasheet: ' + err.message);
+    } finally {
+      setIsUploading(false);
+      e.target.value = '';
+    }
+  };
+
   const handleAddImageUrl = () => {
     if (!urlInput.trim()) return;
     setImages(prev => [...prev, urlInput.trim()]);
@@ -1297,15 +1330,39 @@ export default function AdminProductFormTiendanube({
 
             <div style={{ gridColumn: '1 / -1' }}>
               <label style={labelStyle}>Enlace a Ficha Técnica / Datasheet Oficial (PDF o URL externa)</label>
-              <input
-                type="url"
-                value={datasheetUrl}
-                onChange={(e) => setDatasheetUrl(e.target.value)}
-                placeholder="https://fabricante.com/datasheets/modelo-especificaciones.pdf"
-                style={inputStyle}
-              />
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <input
+                  type="url"
+                  value={datasheetUrl}
+                  onChange={(e) => setDatasheetUrl(e.target.value)}
+                  placeholder="https://fabricante.com/datasheet.pdf o adjunta un archivo PDF"
+                  style={{ ...inputStyle, flex: 1 }}
+                />
+                <label style={{
+                  padding: '9px 14px',
+                  background: '#F1F5F9',
+                  border: '1px solid #CBD5E1',
+                  borderRadius: '6px',
+                  fontSize: '0.85rem',
+                  fontWeight: '600',
+                  color: '#1E293B',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  whiteSpace: 'nowrap'
+                }}>
+                  📎 Adjuntar PDF
+                  <input
+                    type="file"
+                    accept=".pdf"
+                    style={{ display: 'none' }}
+                    onChange={handleDatasheetFileUpload}
+                  />
+                </label>
+              </div>
               <span style={{ fontSize: '0.78rem', color: '#64748B', marginTop: '4px', display: 'block' }}>
-                Si colocas una URL, los clientes podrán hacer clic en <strong>"↓ Descargar Ficha Técnica Oficial (PDF)"</strong> en la pestaña de descargas del producto.
+                Puedes pegar un enlace directo o adjuntar un archivo PDF desde tu equipo.
               </span>
             </div>
           </div>
