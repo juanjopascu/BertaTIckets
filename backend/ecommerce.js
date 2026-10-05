@@ -264,6 +264,34 @@ const DEFAULT_VISUAL_SETTINGS = {
     }
   ],
   homeCarousels: {
+    list: [
+      {
+        id: 'car_featured',
+        title: '🔥 Productos Destacados',
+        subtitle: 'Equipamiento de alta demanda con entrega inmediata y garantía oficial DACAS',
+        badge: 'TOP SELLERS',
+        badgeColor: '#0fa4de',
+        icon: 'star',
+        enabled: true,
+        selectionType: 'featured',
+        targetCategory: 'all',
+        targetBrand: 'all',
+        productIds: []
+      },
+      {
+        id: 'car_custom',
+        title: '⚡ Oportunidades & Ofertas IT',
+        subtitle: 'Soluciones corporativas seleccionadas con precios mayoristas para canales',
+        badge: 'SELECCIÓN DACAS',
+        badgeColor: '#10b981',
+        icon: 'shield',
+        enabled: true,
+        selectionType: 'manual',
+        targetCategory: 'all',
+        targetBrand: 'all',
+        productIds: []
+      }
+    ],
     featured: {
       enabled: true,
       title: '🔥 Productos Destacados',

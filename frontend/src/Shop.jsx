@@ -2204,29 +2204,79 @@ function ShopMain() {
     });
   }, [activeCategory, categoryProducts, products, categoryBrandsMap, visualSettings, selectedCountryCode]);
 
-  // Productos para Carrusel 1: Productos Destacados
-  const featuredProducts = useMemo(() => {
-    const config = visualSettings?.homeCarousels?.featured;
-    if (config?.productIds && Array.isArray(config.productIds) && config.productIds.length > 0) {
-      const selected = products.filter(p => config.productIds.includes(p.id));
-      if (selected.length > 0) return selected;
+  // Carruseles de la Home (Ilimitados, independientes por país)
+  const homeCarouselsList = useMemo(() => {
+    const rawList = visualSettings?.homeCarousels?.list;
+    let list = [];
+    if (Array.isArray(rawList) && rawList.length > 0) {
+      list = rawList;
+    } else {
+      // Fallback a los 2 carruseles clásicos si no hay lista
+      const feat = visualSettings?.homeCarousels?.featured;
+      const cust = visualSettings?.homeCarousels?.custom;
+      list = [
+        {
+          id: 'car_featured',
+          title: feat?.title || "Productos Destacados & Más Vendidos",
+          subtitle: feat?.subtitle || "Equipamiento enterprise de alta rotación con entrega inmediata",
+          badge: "TOP SELLERS",
+          badgeColor: "#0fa4de",
+          icon: "star",
+          enabled: feat?.enabled !== false,
+          selectionType: (feat?.productIds && feat.productIds.length > 0) ? 'manual' : 'featured',
+          targetCategory: 'all',
+          targetBrand: 'all',
+          productIds: feat?.productIds || []
+        },
+        {
+          id: 'car_custom',
+          title: cust?.title || "Selección Especial DACAS & Novedades",
+          subtitle: cust?.subtitle || "Soluciones tecnológicas recomendadas por nuestro equipo de ingenieros",
+          badge: "SELECCIÓN DACAS",
+          badgeColor: "#10b981",
+          icon: "shield",
+          enabled: cust?.enabled !== false,
+          selectionType: (cust?.productIds && cust.productIds.length > 0) ? 'manual' : 'custom_default',
+          targetCategory: 'all',
+          targetBrand: 'all',
+          productIds: cust?.productIds || []
+        }
+      ];
     }
-    const explicitlyFeatured = products.filter(p => p.is_featured || p.isFeatured || p.featured || p.badge === 'DESTACADO' || p.badge === 'MÁS VENDIDO');
-    if (explicitlyFeatured.length > 0) return explicitlyFeatured;
-    return products.slice(0, 8);
-  }, [products, visualSettings]);
 
-  // Productos para Carrusel 2: Selección Especial DACAS
-  const customCarouselProducts = useMemo(() => {
-    const config = visualSettings?.homeCarousels?.custom;
-    if (config?.productIds && Array.isArray(config.productIds) && config.productIds.length > 0) {
-      const selected = products.filter(p => config.productIds.includes(p.id));
-      if (selected.length > 0) return selected;
-    }
-    const tagged = products.filter(p => p.badge === 'NUEVO' || p.badge === 'ENTERPRISE');
-    if (tagged.length >= 3) return tagged;
-    if (products.length > 4) return products.slice(2, 10);
-    return products;
+    return list.filter(c => c && c.enabled !== false).map(c => {
+      let carProducts = [];
+      const selType = c.selectionType || 'manual';
+
+      if (selType === 'category' && c.targetCategory && c.targetCategory !== 'all') {
+        carProducts = products.filter(p => isProductInCat(p, c.targetCategory));
+      } else if (selType === 'brand' && c.targetBrand && c.targetBrand !== 'all') {
+        carProducts = products.filter(p => p.brand && p.brand.toLowerCase() === c.targetBrand.toLowerCase());
+      } else if (selType === 'manual' && Array.isArray(c.productIds) && c.productIds.length > 0) {
+        const idSet = new Set(c.productIds.map(id => parseInt(id)));
+        carProducts = products.filter(p => idSet.has(parseInt(p.id)));
+      } else if (selType === 'custom_default') {
+        const tagged = products.filter(p => p.badge === 'NUEVO' || p.badge === 'ENTERPRISE');
+        if (tagged.length >= 3) carProducts = tagged;
+        else if (products.length > 4) carProducts = products.slice(2, 10);
+        else carProducts = products;
+      } else {
+        // 'featured'
+        if (c.productIds && c.productIds.length > 0) {
+          const idSet = new Set(c.productIds.map(id => parseInt(id)));
+          carProducts = products.filter(p => idSet.has(parseInt(p.id)));
+        } else {
+          const explicitlyFeatured = products.filter(p => p.is_featured || p.isFeatured || p.featured || p.badge === 'DESTACADO' || p.badge === 'MÁS VENDIDO' || p.badge === 'HOT');
+          if (explicitlyFeatured.length > 0) carProducts = explicitlyFeatured;
+          else carProducts = products.slice(0, 8);
+        }
+      }
+
+      return {
+        ...c,
+        products: carProducts
+      };
+    }).filter(c => c.products && c.products.length > 0);
   }, [products, visualSettings]);
 
   // Marcas Oficiales para el Slide / Rail de la Home
@@ -3306,49 +3356,49 @@ function ShopMain() {
           {/* Main Home Content Grid */}
           <main style={{ maxWidth: '1320px', margin: '0 auto', padding: '16px 20px 60px' }}>
             
-            {/* Carrusel 1: Productos Destacados */}
-            {visualSettings?.homeCarousels?.featured?.enabled !== false && (
-              <ProductCarousel
-                title={visualSettings?.homeCarousels?.featured?.title || "Productos Destacados & Más Vendidos"}
-                subtitle={visualSettings?.homeCarousels?.featured?.subtitle || "Equipamiento enterprise de alta rotación con entrega inmediata"}
-                badge="TOP SELLERS"
-                badgeColor="#0fa4de"
-                icon="star"
-                products={featuredProducts}
-                clientUser={clientUser}
-                selectedCountryCode={selectedCountryCode}
-                selectedCountryObj={selectedCountryObj}
-                onOpenAuth={() => { setAuthMode('login'); setAuthModalOpen(true); }}
-                onSelectProduct={handleSelectProduct}
-                onAddToCart={(p, q) => addToCart(p, q)}
-                justAddedId={addedId}
-                onViewAll={() => handleGoCatalog('all', null)}
-              />
-            )}
+            {/* Carruseles Dinámicos de la Home (Ilimitados por País) */}
+            {homeCarouselsList.map((carousel, idx) => (
+              <React.Fragment key={carousel.id || idx}>
+                <ProductCarousel
+                  title={carousel.title}
+                  subtitle={carousel.subtitle}
+                  badge={carousel.badge}
+                  badgeColor={carousel.badgeColor || '#0fa4de'}
+                  icon={carousel.icon || 'star'}
+                  products={carousel.products}
+                  clientUser={clientUser}
+                  selectedCountryCode={selectedCountryCode}
+                  selectedCountryObj={selectedCountryObj}
+                  onOpenAuth={() => { setAuthMode('login'); setAuthModalOpen(true); }}
+                  onSelectProduct={handleSelectProduct}
+                  onAddToCart={(p, q) => addToCart(p, q)}
+                  justAddedId={addedId}
+                  onViewAll={() => {
+                    if (carousel.selectionType === 'category' && carousel.targetCategory) {
+                      handleGoCatalog(carousel.targetCategory, null);
+                    } else if (carousel.selectionType === 'brand' && carousel.targetBrand) {
+                      handleGoCatalog('all', carousel.targetBrand);
+                    } else {
+                      handleGoCatalog('all', null);
+                    }
+                  }}
+                />
 
-            {/* Espacio para Banners Promocionales de Marcas (2/3 marcas) */}
-            <BrandPromoBanners
-              banners={visualSettings?.brandBanners}
-              onBrandClick={handleSelectBrand}
-            />
+                {/* Banners Promocionales de Marcas luego del primer carrusel */}
+                {idx === 0 && (
+                  <BrandPromoBanners
+                    banners={visualSettings?.brandBanners}
+                    onBrandClick={handleSelectBrand}
+                  />
+                )}
+              </React.Fragment>
+            ))}
 
-            {/* Carrusel 2: Productos elegidos nosotros (Selección Especial DACAS) */}
-            {visualSettings?.homeCarousels?.custom?.enabled !== false && (
-              <ProductCarousel
-                title={visualSettings?.homeCarousels?.custom?.title || "Selección Especial DACAS & Novedades"}
-                subtitle={visualSettings?.homeCarousels?.custom?.subtitle || "Soluciones tecnológicas recomendadas por nuestro equipo de ingenieros"}
-                badge="SELECCIÓN DACAS"
-                badgeColor="#10b981"
-                icon="shield"
-                products={customCarouselProducts}
-                clientUser={clientUser}
-                selectedCountryCode={selectedCountryCode}
-                selectedCountryObj={selectedCountryObj}
-                onOpenAuth={() => { setAuthMode('login'); setAuthModalOpen(true); }}
-                onSelectProduct={handleSelectProduct}
-                onAddToCart={(p, q) => addToCart(p, q)}
-                justAddedId={addedId}
-                onViewAll={() => handleGoCatalog('all', null)}
+            {/* Si no hay ningún carrusel activo, mostrar los banners de marca igual */}
+            {homeCarouselsList.length === 0 && (
+              <BrandPromoBanners
+                banners={visualSettings?.brandBanners}
+                onBrandClick={handleSelectBrand}
               />
             )}
 
