@@ -85,6 +85,7 @@ rawPool.connect()
       await client.query(`
         ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS brand VARCHAR(100);
         ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS category VARCHAR(100) DEFAULT 'General';
+        ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS subcategory VARCHAR(100);
         ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS sku VARCHAR(100);
         ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS promotional_price DECIMAL(10, 2);
         ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS secondary_images JSONB;
@@ -2230,6 +2231,7 @@ function executeInMemoryQuery(sql, params = []) {
       gender: pData.gender || '',
       categories: pData.categories || [pData.category || 'General'],
       category: pData.category || (Array.isArray(pData.categories) ? pData.categories[0] : 'General'),
+      subcategory: pData.subcategory || '',
       country_code: pData.country_code ? pData.country_code.toUpperCase() : 'AR',
       country_id: pData.country_id ? parseInt(pData.country_id, 10) : (resolveCountry(pData.country_code || 'AR').id),
       variants: pData.variants || [],
@@ -2284,6 +2286,7 @@ function executeInMemoryQuery(sql, params = []) {
         ...pData,
         id,
         brand: pData.brand !== undefined ? pData.brand : current.brand,
+        subcategory: pData.subcategory !== undefined ? pData.subcategory : current.subcategory,
         country_code: pData.country_code ? pData.country_code.toUpperCase() : (current.country_code || 'AR'),
         country_id: pData.country_id ? parseInt(pData.country_id, 10) : (current.country_id || 2),
         is_featured: isFeat,
@@ -5147,10 +5150,24 @@ router.post('/admin/products', authenticateToken, requireAdmin, async (req, res)
     };
     let result;
     if (isPgConnected) {
-      const { name, description, price, stock, image_url } = productPayload;
+      const {
+        name, description, price, stock, image_url,
+        brand = '', category = 'General', subcategory = '', sku = '',
+        promotional_price = null, weight = '', depth = '', width = '', height = '',
+        highlights = '', warranty = '12 Meses con RMA y Soporte DACAS',
+        datasheet_url = '', condition = 'Nuevo Sellado', related_skus = []
+      } = productPayload;
       result = await pool.query(
-        'INSERT INTO ecommerce_products (name, description, price, stock, image_url, country_code, country_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *',
-        [name, description, price, stock, image_url, targetCountry.code, targetCountry.id]
+        `INSERT INTO ecommerce_products (
+          name, description, price, stock, image_url, country_code, country_id,
+          brand, category, subcategory, sku, promotional_price, weight, depth, width, height,
+          highlights, warranty, datasheet_url, condition, related_skus
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21) RETURNING *`,
+        [
+          name, description, price, stock, image_url, targetCountry.code, targetCountry.id,
+          brand, category, subcategory, sku, promotional_price, weight, depth, width, height,
+          highlights, warranty, datasheet_url, condition, JSON.stringify(related_skus)
+        ]
       );
     } else {
       result = await pool.query('INSERT INTO ecommerce_products', [productPayload]);
@@ -5222,6 +5239,7 @@ router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, asyn
 
       const brand = String(item.brand || item.marca || item.Marca || '').trim();
       const category = String(item.category || item.categoria || item.Categoría || 'General').trim() || 'General';
+      const subcategory = String(item.subcategory || item.subcategoria || item.Subcategoria || item.subcategoría || item.Subcategoría || item.tipo_equipo || item.Tipo_Equipo || '').trim();
       const sku = String(item.sku || item.SKU || item.codigo || item.Código || '').trim();
       const description = String(item.description || item.descripcion || item.Descripción || '').trim();
       const image_url = String(item.image_url || item.imagen || item.Imagen || item.foto || '').trim();
@@ -5258,16 +5276,16 @@ router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, asyn
                  weight = COALESCE(NULLIF($10, ''), weight), depth = COALESCE(NULLIF($11, ''), depth), width = COALESCE(NULLIF($12, ''), width), height = COALESCE(NULLIF($13, ''), height),
                  highlights = COALESCE(NULLIF($14, ''), highlights), warranty = COALESCE(NULLIF($15, ''), warranty),
                  datasheet_url = COALESCE(NULLIF($16, ''), datasheet_url), condition = COALESCE(NULLIF($17, ''), condition),
-                 related_skus = $18
-             WHERE id = $19`,
-            [name, brand, category, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height, highlights, warranty, datasheet_url, condition, JSON.stringify(related_skus), existing.id]
+                 related_skus = $18, subcategory = COALESCE(NULLIF($19, ''), subcategory)
+             WHERE id = $20`,
+            [name, brand, category, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height, highlights, warranty, datasheet_url, condition, JSON.stringify(related_skus), subcategory, existing.id]
           );
           updatedCount++;
         } else {
           await pool.query(
-            `INSERT INTO ecommerce_products (name, brand, category, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height, highlights, warranty, datasheet_url, condition, related_skus) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)`,
-            [name, brand, category, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height, highlights, warranty, datasheet_url, condition, JSON.stringify(related_skus)]
+            `INSERT INTO ecommerce_products (name, brand, category, subcategory, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height, highlights, warranty, datasheet_url, condition, related_skus) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`,
+            [name, brand, category, subcategory, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height, highlights, warranty, datasheet_url, condition, JSON.stringify(related_skus)]
           );
           createdCount++;
         }
@@ -5285,6 +5303,7 @@ router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, asyn
           existing.name = name;
           if (brand) existing.brand = brand;
           if (category) existing.category = category;
+          if (subcategory) existing.subcategory = subcategory;
           if (sku) existing.sku = sku;
           if (description) existing.description = description;
           existing.price = price;
@@ -5318,6 +5337,7 @@ router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, asyn
             brand: brand || 'DACAS',
             category,
             categories: [category],
+            subcategory: subcategory || '',
             sku,
             description: description || `<p>${name}</p>`,
             price,
@@ -5382,7 +5402,7 @@ router.put('/admin/products/:id', authenticateToken, requireAdmin, async (req, r
     let result;
     if (isPgConnected) {
       const {
-        name, description, price, stock, image_url, brand, category, sku, promotional_price,
+        name, description, price, stock, image_url, brand, category, subcategory, sku, promotional_price,
         weight, depth, width, height, highlights, warranty, datasheet_url, condition, related_ids, related_skus
       } = req.body;
       result = await pool.query(
@@ -5390,13 +5410,15 @@ router.put('/admin/products/:id', authenticateToken, requireAdmin, async (req, r
          SET name = $1, description = $2, price = $3, stock = $4, image_url = $5,
              brand = $6, category = $7, sku = $8, promotional_price = $9, weight = $10,
              depth = $11, width = $12, height = $13, highlights = $14, warranty = $15,
-             datasheet_url = $16, condition = $17, related_ids = $18, related_skus = $19
-         WHERE id = $20 RETURNING *`,
+             datasheet_url = $16, condition = $17, related_ids = $18, related_skus = $19,
+             subcategory = $20
+         WHERE id = $21 RETURNING *`,
         [
           name, description, price, stock, image_url,
           brand, category, sku, promotional_price, weight,
           depth, width, height, highlights, warranty,
           datasheet_url, condition, JSON.stringify(related_ids || []), JSON.stringify(related_skus || []),
+          subcategory || '',
           id
         ]
       );

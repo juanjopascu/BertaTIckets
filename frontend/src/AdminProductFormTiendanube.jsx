@@ -60,6 +60,7 @@ export default function AdminProductFormTiendanube({
   const [sku, setSku] = useState(product?.sku || '');
   const [barcode, setBarcode] = useState(product?.barcode || '');
   const [brand, setBrand] = useState(product?.brand || '');
+  const [subcategory, setSubcategory] = useState(product?.subcategory || '');
   const [isFeatured, setIsFeatured] = useState(Boolean(product?.is_featured || product?.isFeatured || product?.featured || product?.badge === 'DESTACADO'));
 
   // 5.5 Garantía, Ficha Técnica y Condición
@@ -459,6 +460,7 @@ export default function AdminProductFormTiendanube({
       sku: sku.trim(),
       barcode: barcode.trim(),
       brand: brand.trim(),
+      subcategory: subcategory.trim(),
       is_featured: isFeatured,
       featured: isFeatured,
       badge: isFeatured ? (product?.badge || 'DESTACADO') : (product?.badge === 'DESTACADO' ? '' : (product?.badge || '')),
@@ -1196,6 +1198,51 @@ export default function AdminProductFormTiendanube({
               )}
               <p style={helperStyle}>
                 Utilizada para aplicar reglas y descuentos automáticos por marca a clientes B2B.
+              </p>
+            </div>
+
+            {/* Subcategoría de la Marca */}
+            <div>
+              <label style={labelStyle}>Subcategoría / Tipo de Equipo</label>
+              <input
+                type="text"
+                placeholder="ej: Firewalls, Switches, Access Points, UPS..."
+                value={subcategory}
+                onChange={(e) => setSubcategory(e.target.value)}
+                style={{ ...inputStyle, marginBottom: '6px' }}
+              />
+              <div style={{ display: 'flex', gap: '5px', flexWrap: 'wrap', marginBottom: '6px' }}>
+                {(brand.toLowerCase() === 'fortinet'
+                  ? ['Firewalls', 'Switches', 'Access Points', 'Licencias FortiCare', 'Routers']
+                  : brand.toLowerCase() === 'mikrotik'
+                  ? ['Switches', 'Routers', 'Wireless / AP', 'Accesorios']
+                  : brand.toLowerCase() === 'vertiv'
+                  ? ['UPS / Respaldo Eléctrico', 'PDU Rackeables', 'Racks & Gabinetes', 'Climatización de Precisión']
+                  : brand.toLowerCase() === 'aruba'
+                  ? ['Access Points', 'Switches', 'Gateways']
+                  : ['Firewalls', 'Switches', 'Access Points', 'Routers', 'UPS / Energía', 'Servidores']
+                ).map(sug => (
+                  <button
+                    key={sug}
+                    type="button"
+                    onClick={() => setSubcategory(sug)}
+                    style={{
+                      padding: '2px 8px',
+                      fontSize: '11px',
+                      borderRadius: '4px',
+                      border: subcategory.toLowerCase() === sug.toLowerCase() ? '1px solid #0fa4de' : '1px solid #cbd5e1',
+                      background: subcategory.toLowerCase() === sug.toLowerCase() ? '#e0f2fe' : '#f8fafc',
+                      color: subcategory.toLowerCase() === sug.toLowerCase() ? '#0369a1' : '#475569',
+                      cursor: 'pointer',
+                      fontWeight: subcategory.toLowerCase() === sug.toLowerCase() ? '750' : '500'
+                    }}
+                  >
+                    + {sug}
+                  </button>
+                ))}
+              </div>
+              <p style={helperStyle}>
+                Permite a los clientes filtrar equipos dentro de la marca (ej: Fortinet → Access Points, Firewalls, Switches).
               </p>
             </div>
 

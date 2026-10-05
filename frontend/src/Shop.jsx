@@ -1238,7 +1238,9 @@ function BrandsDirectoryView({
           }
         });
 
-        const productCount = products.filter(p => p.brand && p.brand.toLowerCase() === key.toLowerCase()).length;
+        const brandProducts = products.filter(p => p.brand && p.brand.toLowerCase() === key.toLowerCase());
+        const productCount = brandProducts.length;
+        const subcategories = Array.from(new Set(brandProducts.map(p => (p.subcategory || '').trim()).filter(Boolean)));
 
         return {
           ...info,
@@ -1249,6 +1251,7 @@ function BrandsDirectoryView({
           color: finalColor,
           rawName: finalName,
           categories: cats,
+          subcategories,
           productCount
         };
       });
@@ -1456,9 +1459,45 @@ function BrandsDirectoryView({
                 <h3 style={{ margin: '0 0 6px', fontSize: '1.25rem', fontWeight: '800', color: '#071524' }}>
                   {b.name}
                 </h3>
-                <p style={{ margin: '0 0 20px', fontSize: '0.86rem', color: '#64748B', lineHeight: 1.5 }}>
+                <p style={{ margin: '0 0 14px', fontSize: '0.86rem', color: '#64748B', lineHeight: 1.5 }}>
                   {b.tagline}
                 </p>
+
+                {/* Subcategorías disponibles en este país */}
+                {b.subcategories && b.subcategories.length > 0 && (
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '16px' }}>
+                    {b.subcategories.map(sub => (
+                      <span
+                        key={sub}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectBrand(b.rawName, sub);
+                        }}
+                        style={{
+                          background: '#F0F9FF',
+                          border: '1px solid #BAE6FD',
+                          color: '#0369A1',
+                          fontSize: '11px',
+                          fontWeight: '750',
+                          padding: '3px 8px',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = '#0fa4de';
+                          e.currentTarget.style.color = '#FFFFFF';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = '#F0F9FF';
+                          e.currentTarget.style.color = '#0369A1';
+                        }}
+                      >
+                        {sub}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
 
               {/* Action row */}
@@ -1581,6 +1620,7 @@ function ShopMain() {
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
   const [selectedBrand, setSelectedBrand] = useState(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState(null);
   const [addedId, setAddedId] = useState(null);
 
   // Vistas principales: 'home' (Principal con carruseles y banners) | 'brands' (Directorio completo de marcas) | 'catalog' (Catálogo paginado)
@@ -1603,6 +1643,7 @@ function ShopMain() {
     setActiveNavTab('home');
     setSearch('');
     setSelectedBrand(null);
+    setSelectedSubcategory(null);
     setActiveCategory('all');
     try {
       const url = new URL(window.location.href);
@@ -1622,10 +1663,11 @@ function ShopMain() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleGoCatalog = (category = 'all', brand = null) => {
+  const handleGoCatalog = (category = 'all', brand = null, subcategory = null) => {
     setActiveNavTab('catalog');
     setActiveCategory(category);
     setSelectedBrand(brand);
+    setSelectedSubcategory(subcategory);
     setCatalogPage(1);
     try {
       const url = new URL(window.location.href);
@@ -1635,8 +1677,9 @@ function ShopMain() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleSelectBrand = (brandName) => {
+  const handleSelectBrand = (brandName, subcategory = null) => {
     setSelectedBrand(brandName);
+    setSelectedSubcategory(subcategory);
     setActiveCategory('all');
     setActiveNavTab('catalog');
     setCatalogPage(1);
@@ -2209,10 +2252,13 @@ function ShopMain() {
         (p.name && p.name.toLowerCase().includes(q)) ||
         (p.description && p.description.toLowerCase().includes(q)) ||
         (p.sku && p.sku.toLowerCase().includes(q)) ||
-        (p.brand && p.brand.toLowerCase().includes(q));
+        (p.brand && p.brand.toLowerCase().includes(q)) ||
+        (p.subcategory && p.subcategory.toLowerCase().includes(q));
       const matchCat = isProductInCat(p, activeCategory);
       const matchBrand = !selectedBrand || selectedBrand === 'all' || (p.brand && p.brand.toLowerCase() === selectedBrand.toLowerCase());
-      return matchSearch && matchCat && matchBrand;
+      const matchSubcat = !selectedSubcategory || selectedSubcategory === 'all' ||
+        (p.subcategory && p.subcategory.toLowerCase() === selectedSubcategory.toLowerCase());
+      return matchSearch && matchCat && matchBrand && matchSubcat;
     });
 
     if (catalogSort === 'price_asc') {
@@ -2223,7 +2269,22 @@ function ShopMain() {
       list = [...list].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     }
     return list;
-  }, [products, search, activeCategory, selectedBrand, catalogSort]);
+  }, [products, search, activeCategory, selectedBrand, selectedSubcategory, catalogSort]);
+
+  // Subcategorías dinámicas disponibles para la marca seleccionada en el país actual
+  const availableSubcategoriesForBrand = useMemo(() => {
+    if (!selectedBrand || selectedBrand === 'all') return [];
+    const brandProducts = products.filter(p => p.brand && p.brand.toLowerCase() === selectedBrand.toLowerCase());
+    const counts = {};
+    brandProducts.forEach(p => {
+      const sub = (p.subcategory || '').trim();
+      if (sub) {
+        counts[sub] = (counts[sub] || 0) + 1;
+      }
+    });
+    return Object.entries(counts).map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count || a.name.localeCompare(b.name));
+  }, [products, selectedBrand]);
 
   // Compatibilidad hacia atrás con referencias existentes a filtered
   const filtered = sortedAndFilteredProducts;
@@ -3438,7 +3499,7 @@ function ShopMain() {
               <>
                 <span>/</span>
                 <span
-                  onClick={() => { setSelectedBrand(null); setCatalogPage(1); }}
+                  onClick={() => { setSelectedBrand(null); setSelectedSubcategory(null); setCatalogPage(1); }}
                   style={{ cursor: 'pointer', color: !selectedBrand ? '#071524' : '#0fa4de', fontWeight: '700' }}
                 >
                   {currentCategoryObj?.label}
@@ -3448,8 +3509,23 @@ function ShopMain() {
             {selectedBrand && (
               <>
                 <span>/</span>
-                <span style={{ fontWeight: '800', color: '#071524' }}>
+                <span
+                  onClick={() => { setSelectedSubcategory(null); setCatalogPage(1); }}
+                  style={{
+                    fontWeight: !selectedSubcategory ? '800' : '650',
+                    color: !selectedSubcategory ? '#071524' : '#0fa4de',
+                    cursor: selectedSubcategory ? 'pointer' : 'default'
+                  }}
+                >
                   {selectedBrand === 'all' ? 'Todas las Marcas' : selectedBrand}
+                </span>
+              </>
+            )}
+            {selectedSubcategory && (
+              <>
+                <span>/</span>
+                <span style={{ fontWeight: '800', color: '#071524' }}>
+                  {selectedSubcategory}
                 </span>
               </>
             )}
@@ -3468,6 +3544,11 @@ function ShopMain() {
               <div>
                 <h1 style={{ margin: 0, fontSize: '1.65rem', fontWeight: '800', color: '#071524', display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                   <span>{selectedBrand && selectedBrand !== 'all' ? `Productos ${selectedBrand}` : currentCategoryObj?.label || 'Catálogo de Soluciones'}</span>
+                  {selectedSubcategory && (
+                    <span style={{ fontSize: '1.05rem', fontWeight: '750', color: '#0fa4de', background: '#F0F9FF', border: '1px solid #BAE6FD', padding: '2px 10px', borderRadius: '8px' }}>
+                      {selectedSubcategory}
+                    </span>
+                  )}
                   {selectedBrand && selectedBrand !== 'all' && activeCategory !== 'all' && (
                     <span style={{ fontSize: '1rem', fontWeight: '600', color: '#64748B' }}>
                       en {currentCategoryObj?.label}
@@ -3548,7 +3629,7 @@ function ShopMain() {
                 return (
                   <button
                     key={c.key}
-                    onClick={() => { setActiveCategory(c.key); setSelectedBrand(null); setCatalogPage(1); }}
+                    onClick={() => { setActiveCategory(c.key); setSelectedBrand(null); setSelectedSubcategory(null); setCatalogPage(1); }}
                     style={{
                       padding: '5px 13px',
                       borderRadius: '999px',
@@ -3573,7 +3654,7 @@ function ShopMain() {
               <div style={{ display: 'flex', gap: '8px', marginTop: '12px', flexWrap: 'wrap', alignItems: 'center' }}>
                 <span style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', marginRight: '4px' }}>Marca:</span>
                 <button
-                  onClick={() => { setSelectedBrand('all'); setCatalogPage(1); }}
+                  onClick={() => { setSelectedBrand('all'); setSelectedSubcategory(null); setCatalogPage(1); }}
                   style={{
                     padding: '4px 12px',
                     borderRadius: '999px',
@@ -3593,7 +3674,7 @@ function ShopMain() {
                   return (
                     <button
                       key={b.rawName}
-                      onClick={() => { setSelectedBrand(b.rawName); setCatalogPage(1); }}
+                      onClick={() => { setSelectedBrand(b.rawName); setSelectedSubcategory(null); setCatalogPage(1); }}
                       style={{
                         padding: '4px 12px',
                         borderRadius: '999px',
@@ -3613,8 +3694,67 @@ function ShopMain() {
               </div>
             )}
 
+            {/* Selector de Subcategorías de la Marca seleccionada */}
+            {selectedBrand && selectedBrand !== 'all' && availableSubcategoriesForBrand.length > 0 && (
+              <div style={{
+                display: 'flex',
+                gap: '8px',
+                marginTop: '12px',
+                flexWrap: 'wrap',
+                alignItems: 'center',
+                padding: '10px 14px',
+                background: '#F0F9FF',
+                borderRadius: '12px',
+                border: '1.5px solid #BAE6FD'
+              }}>
+                <span style={{ fontSize: '12px', fontWeight: '800', color: '#0369a1', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                  <BrandingVectorIcon name="layers" size={13} color="#0369a1" />
+                  Subcategorías {selectedBrand}:
+                </span>
+                <button
+                  onClick={() => { setSelectedSubcategory(null); setCatalogPage(1); }}
+                  style={{
+                    padding: '4px 12px',
+                    borderRadius: '999px',
+                    fontSize: '11.5px',
+                    fontWeight: !selectedSubcategory || selectedSubcategory === 'all' ? '800' : '650',
+                    border: !selectedSubcategory || selectedSubcategory === 'all' ? '1.5px solid #0fa4de' : '1px solid #BAE6FD',
+                    background: !selectedSubcategory || selectedSubcategory === 'all' ? '#0fa4de' : '#FFFFFF',
+                    color: !selectedSubcategory || selectedSubcategory === 'all' ? '#FFFFFF' : '#0369a1',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s'
+                  }}
+                >
+                  Todas las Subcategorías
+                </button>
+                {availableSubcategoriesForBrand.map(s => {
+                  const isSubSel = selectedSubcategory?.toLowerCase() === s.name.toLowerCase();
+                  return (
+                    <button
+                      key={s.name}
+                      onClick={() => { setSelectedSubcategory(s.name); setCatalogPage(1); }}
+                      style={{
+                        padding: '4px 12px',
+                        borderRadius: '999px',
+                        fontSize: '11.5px',
+                        fontWeight: isSubSel ? '800' : '650',
+                        border: isSubSel ? '1.5px solid #0fa4de' : '1px solid #BAE6FD',
+                        background: isSubSel ? '#0fa4de' : '#FFFFFF',
+                        color: isSubSel ? '#FFFFFF' : '#0369a1',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s',
+                        boxShadow: isSubSel ? '0 2px 6px rgba(15, 164, 222, 0.3)' : 'none'
+                      }}
+                    >
+                      {s.name} ({s.count})
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
             {/* Active Filter Chips Bar */}
-            {(selectedBrand || activeCategory !== 'all' || search) && (
+            {(selectedBrand || selectedSubcategory || activeCategory !== 'all' || search) && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '14px', flexWrap: 'wrap', paddingTop: '12px', borderTop: '1px dashed #E2E8F0' }}>
                 <span style={{ fontSize: '11.5px', fontWeight: '750', color: '#94A3B8' }}>Filtros activos:</span>
                 
@@ -3635,7 +3775,14 @@ function ShopMain() {
                 {selectedBrand && selectedBrand !== 'all' && (
                   <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(15, 164, 222, 0.15)', border: '1px solid rgba(15, 164, 222, 0.4)', borderRadius: '999px', padding: '3px 10px', fontSize: '11.5px', color: '#0fa4de', fontWeight: '800' }}>
                     Marca: {selectedBrand}
-                    <button onClick={() => { setSelectedBrand(null); setCatalogPage(1); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0fa4de', fontWeight: 'bold', padding: 0 }}>×</button>
+                    <button onClick={() => { setSelectedBrand(null); setSelectedSubcategory(null); setCatalogPage(1); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0fa4de', fontWeight: 'bold', padding: 0 }}>×</button>
+                  </span>
+                )}
+
+                {selectedSubcategory && (
+                  <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: '#E0F2FE', border: '1px solid #BAE6FD', borderRadius: '999px', padding: '3px 10px', fontSize: '11.5px', color: '#0369A1', fontWeight: '800' }}>
+                    Subcategoría: {selectedSubcategory}
+                    <button onClick={() => { setSelectedSubcategory(null); setCatalogPage(1); }} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#0369A1', fontWeight: 'bold', padding: 0 }}>×</button>
                   </span>
                 )}
 
@@ -3644,6 +3791,7 @@ function ShopMain() {
                     setSearch('');
                     setActiveCategory('all');
                     setSelectedBrand(null);
+                    setSelectedSubcategory(null);
                     setCatalogPage(1);
                   }}
                   style={{
@@ -5297,6 +5445,21 @@ function ProductCard({ product, clientUser, onOpenAuth, onSelectProduct, onAddTo
                   {product.brand}
                 </span>
               )}
+              {product.subcategory && (
+                <span style={{
+                  fontSize: '10px',
+                  fontWeight: '750',
+                  background: '#F0F9FF',
+                  border: '1px solid #BAE6FD',
+                  color: '#0284c7',
+                  padding: '2px 7px',
+                  borderRadius: '6px',
+                  whiteSpace: 'nowrap',
+                  flexShrink: 0
+                }}>
+                  {product.subcategory}
+                </span>
+              )}
               {product.sku && (
                 <span style={{ fontSize: '11px', fontWeight: '700', color: '#64748B', letterSpacing: '0.04em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   SKU: {product.sku}
@@ -6503,6 +6666,19 @@ function ProductDetailPageView({
                   borderRadius: '6px'
                 }}>
                   {getCategoryLabel(product.category)}
+                </span>
+              )}
+              {product.subcategory && (
+                <span style={{
+                  background: '#F0F9FF',
+                  border: '1px solid #BAE6FD',
+                  color: '#0369A1',
+                  fontSize: '11.5px',
+                  fontWeight: '800',
+                  padding: '4px 10px',
+                  borderRadius: '6px'
+                }}>
+                  {product.subcategory}
                 </span>
               )}
               <span style={{

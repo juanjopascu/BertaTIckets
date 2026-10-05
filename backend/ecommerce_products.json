@@ -33,8 +33,13 @@
     "warranty": "12 Meses con RMA y diagnóstico técnico DACAS",
     "datasheet_url": "https://i.mt.lv/cdn/product_files/CRS328-24P-4SplusRM_180315.pdf",
     "condition": "Nuevo Sellado",
-    "related_ids": [3],
-    "related_skus": ["R4W02A-AP22"]
+    "related_ids": [
+      3
+    ],
+    "related_skus": [
+      "R4W02A-AP22"
+    ],
+    "subcategory": "Switches"
   },
   {
     "id": 3,
@@ -70,8 +75,13 @@
     "warranty": "24 Meses con soporte oficial y garantía de hardware",
     "datasheet_url": "https://www.arubainstanton.com/files/DS_AIO_AP22_es.pdf",
     "condition": "Nuevo Sellado",
-    "related_ids": [2],
-    "related_skus": ["CRS328-24P-4S"]
+    "related_ids": [
+      2
+    ],
+    "related_skus": [
+      "CRS328-24P-4S"
+    ],
+    "subcategory": "Access Points"
   },
   {
     "id": 4,
@@ -102,7 +112,8 @@
     "discount_percent": null,
     "applied_rule": null,
     "is_locked": true,
-    "secondary_images": []
+    "secondary_images": [],
+    "subcategory": "UPS / Respaldo Eléctrico"
   },
   {
     "id": 5,
@@ -152,7 +163,8 @@
       "comunicaciones_unificadas"
     ],
     "variants": [],
-    "video_url": ""
+    "video_url": "",
+    "subcategory": "Videoconferencia & Audio"
   },
   {
     "id": 6,
@@ -183,7 +195,8 @@
     "is_locked": true,
     "secondary_images": [],
     "is_featured": true,
-    "badge": "DESTACADO"
+    "badge": "DESTACADO",
+    "subcategory": "Licencias & Soporte"
   },
   {
     "id": 7,
@@ -219,7 +232,8 @@
       "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1000&auto=format&fit=crop"
     ],
     "video_url": "",
-    "created_at": "2026-10-02T19:30:20.960Z"
+    "created_at": "2026-10-02T19:30:20.960Z",
+    "subcategory": "PDU Rackeables"
   },
   {
     "id": 101,
@@ -244,9 +258,12 @@
     ],
     "created_at": "2026-10-02T12:00:00.000Z",
     "base_price": "890.00",
-    "categories": ["security"],
+    "categories": [
+      "security"
+    ],
     "product_type": "physical",
-    "stock_type": "limited"
+    "stock_type": "limited",
+    "subcategory": "Firewalls"
   },
   {
     "id": 102,
@@ -271,9 +288,12 @@
     ],
     "created_at": "2026-10-02T12:05:00.000Z",
     "base_price": "1120.00",
-    "categories": ["networking"],
+    "categories": [
+      "networking"
+    ],
     "product_type": "physical",
-    "stock_type": "limited"
+    "stock_type": "limited",
+    "subcategory": "Switches"
   },
   {
     "id": 103,
@@ -298,9 +318,12 @@
     ],
     "created_at": "2026-10-02T12:10:00.000Z",
     "base_price": "1450.00",
-    "categories": ["infraestructura"],
+    "categories": [
+      "infraestructura"
+    ],
     "product_type": "physical",
-    "stock_type": "limited"
+    "stock_type": "limited",
+    "subcategory": "Racks & Gabinetes"
   },
   {
     "id": 201,
@@ -325,9 +348,12 @@
     ],
     "created_at": "2026-10-02T13:00:00.000Z",
     "base_price": "1350.00",
-    "categories": ["comunicaciones_unificadas"],
+    "categories": [
+      "comunicaciones_unificadas"
+    ],
     "product_type": "physical",
-    "stock_type": "limited"
+    "stock_type": "limited",
+    "subcategory": "Session Border Controllers (SBC)"
   },
   {
     "id": 202,
@@ -352,9 +378,12 @@
     ],
     "created_at": "2026-10-02T13:05:00.000Z",
     "base_price": "790.00",
-    "categories": ["security"],
+    "categories": [
+      "security"
+    ],
     "product_type": "physical",
-    "stock_type": "limited"
+    "stock_type": "limited",
+    "subcategory": "Firewalls"
   },
   {
     "id": 301,
@@ -379,9 +408,12 @@
     ],
     "created_at": "2026-10-02T14:00:00.000Z",
     "base_price": "310.00",
-    "categories": ["networking"],
+    "categories": [
+      "networking"
+    ],
     "product_type": "physical",
-    "stock_type": "limited"
+    "stock_type": "limited",
+    "subcategory": "Switches"
   },
   {
     "id": 302,
@@ -406,9 +438,12 @@
     ],
     "created_at": "2026-10-02T14:10:00.000Z",
     "base_price": "4200.00",
-    "categories": ["infraestructura"],
+    "categories": [
+      "infraestructura"
+    ],
     "product_type": "physical",
-    "stock_type": "limited"
+    "stock_type": "limited",
+    "subcategory": "Climatización de Precisión"
   },
   {
     "id": 401,
@@ -433,8 +468,138 @@
     ],
     "created_at": "2026-10-02T15:00:00.000Z",
     "base_price": "520.00",
-    "categories": ["networking"],
+    "categories": [
+      "networking"
+    ],
     "product_type": "physical",
-    "stock_type": "limited"
+    "stock_type": "limited",
+    "subcategory": "Routers"
+  },
+  {
+    "id": 8,
+    "name": "Firewall NGFW Fortinet FortiGate 60F",
+    "brand": "Fortinet",
+    "category": "security",
+    "subcategory": "Firewalls",
+    "sku": "FG-60F-BDL-950-AR",
+    "description": "<p>Firewall empresarial Next-Gen líder con procesador SOC4 acelerado por hardware para sucursales corporativas. Incluye SD-WAN seguro, 10 puertos GE RJ45 y soporte FortiCare 24x7.</p>",
+    "price": "890.00",
+    "stock": 24,
+    "weight": "0.90",
+    "depth": "21.6",
+    "width": "16.0",
+    "height": "3.8",
+    "country_code": "AR",
+    "country_id": 2,
+    "image_url": "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1000&auto=format&fit=crop",
+    "images": [
+      "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1000&auto=format&fit=crop"
+    ],
+    "is_featured": true,
+    "badge": "DESTACADO",
+    "warranty": "36 Meses con Soporte FortiCare 24x7",
+    "datasheet_url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-fortiwifi-60f-series.pdf",
+    "condition": "Nuevo Sellado",
+    "created_at": "2026-10-05T18:23:10.799Z"
+  },
+  {
+    "id": 9,
+    "name": "Switch Administrable Fortinet FortiSwitch 124E PoE+",
+    "brand": "Fortinet",
+    "category": "networking",
+    "subcategory": "Switches",
+    "sku": "FS-124E-POE-AR",
+    "description": "<p>Switch de acceso corporativo de 24 puertos Gigabit PoE+ y 4 puertos SFP. Gestión unificada e integrada directamente desde el firewall FortiGate con FortiLink.</p>",
+    "price": "640.00",
+    "stock": 18,
+    "weight": "3.20",
+    "depth": "26.0",
+    "width": "44.0",
+    "height": "4.4",
+    "country_code": "AR",
+    "country_id": 2,
+    "image_url": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000&auto=format&fit=crop",
+    "images": [
+      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000&auto=format&fit=crop"
+    ],
+    "is_featured": true,
+    "badge": "DESTACADO",
+    "warranty": "12 Meses con Garantía y RMA DACAS",
+    "datasheet_url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/FortiSwitch_100_Series.pdf",
+    "condition": "Nuevo Sellado",
+    "created_at": "2026-10-05T18:23:10.803Z"
+  },
+  {
+    "id": 10,
+    "name": "Punto de Acceso Wi-Fi 6 Fortinet FortiAP 231F",
+    "brand": "Fortinet",
+    "category": "networking",
+    "subcategory": "Access Points",
+    "sku": "FAP-231F-A-AR",
+    "description": "<p>Access Point de techo para interiores con tecnología Wi-Fi 6 (802.11ax), tres radios (2.4 GHz, 5 GHz y radio de escaneo de seguridad BLE). Seguridad integrada FortiGuard.</p>",
+    "price": "395.00",
+    "stock": 22,
+    "weight": "0.55",
+    "depth": "14.0",
+    "width": "14.0",
+    "height": "3.5",
+    "country_code": "AR",
+    "country_id": 2,
+    "image_url": "https://images.unsplash.com/photo-1563770660941-20978e870e26?q=80&w=1000&auto=format&fit=crop",
+    "images": [
+      "https://images.unsplash.com/photo-1563770660941-20978e870e26?q=80&w=1000&auto=format&fit=crop"
+    ],
+    "is_featured": true,
+    "badge": "DESTACADO",
+    "warranty": "24 Meses con Soporte Oficial",
+    "datasheet_url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortiap-series.pdf",
+    "condition": "Nuevo Sellado",
+    "created_at": "2026-10-05T18:23:10.803Z"
+  },
+  {
+    "id": 104,
+    "name": "Switch Administrable Fortinet FortiSwitch 124E PoE+ Chile",
+    "brand": "Fortinet",
+    "category": "networking",
+    "subcategory": "Switches",
+    "sku": "FS-124E-POE-CL",
+    "description": "<p>Switch de acceso L2 de 24 puertos GE PoE+ para empresas en Santiago y regiones. Integración nativa con FortiGate.</p>",
+    "price": "640.00",
+    "stock": 12,
+    "country_code": "CL",
+    "country_id": 4,
+    "image_url": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000&auto=format&fit=crop",
+    "images": [
+      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000&auto=format&fit=crop"
+    ],
+    "is_featured": true,
+    "badge": "DESTACADO",
+    "warranty": "12 Meses con Garantía DACAS Chile",
+    "datasheet_url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/FortiSwitch_100_Series.pdf",
+    "condition": "Nuevo Sellado",
+    "created_at": "2026-10-05T18:23:10.803Z"
+  },
+  {
+    "id": 105,
+    "name": "Punto de Acceso Wi-Fi 6 Fortinet FortiAP 231F Chile",
+    "brand": "Fortinet",
+    "category": "networking",
+    "subcategory": "Access Points",
+    "sku": "FAP-231F-A-CL",
+    "description": "<p>Access Point empresarial Wi-Fi 6 tri-radio para sedes corporativas en Chile. Cobertura de alta densidad y análisis de espectro.</p>",
+    "price": "395.00",
+    "stock": 16,
+    "country_code": "CL",
+    "country_id": 4,
+    "image_url": "https://images.unsplash.com/photo-1563770660941-20978e870e26?q=80&w=1000&auto=format&fit=crop",
+    "images": [
+      "https://images.unsplash.com/photo-1563770660941-20978e870e26?q=80&w=1000&auto=format&fit=crop"
+    ],
+    "is_featured": true,
+    "badge": "DESTACADO",
+    "warranty": "24 Meses con Soporte DACAS Chile",
+    "datasheet_url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortiap-series.pdf",
+    "condition": "Nuevo Sellado",
+    "created_at": "2026-10-05T18:23:10.803Z"
   }
 ]

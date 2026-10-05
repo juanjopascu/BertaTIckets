@@ -596,7 +596,8 @@ function AdminEcommerce({ embedded = false }) {
       const matchSearch = !productSearch ||
         (p.name && p.name.toLowerCase().includes(q)) ||
         (p.sku && p.sku.toLowerCase().includes(q)) ||
-        (p.brand && p.brand.toLowerCase().includes(q));
+        (p.brand && p.brand.toLowerCase().includes(q)) ||
+        (p.subcategory && p.subcategory.toLowerCase().includes(q));
       const matchCat = !selectedCategory || (p.category && p.category.toLowerCase() === selectedCategory.toLowerCase()) || (Array.isArray(p.categories) && p.categories.includes(selectedCategory));
       const matchStock = filterStock === 'all' || (filterStock === 'in_stock' && Number(p.stock) > 0) || (filterStock === 'out_of_stock' && Number(p.stock) === 0);
       return matchSearch && matchCat && matchStock;
@@ -2712,6 +2713,7 @@ function AdminEcommerce({ embedded = false }) {
         p.name,
         p.brand || '',
         p.category || 'General',
+        p.subcategory || '',
         p.sku || '',
         `$${p.price}`,
         p.promotional_price ? `$${p.promotional_price}` : '',
@@ -2729,7 +2731,7 @@ function AdminEcommerce({ embedded = false }) {
         (Array.isArray(p.related_skus) ? p.related_skus.join(', ') : (p.related_ids ? products.filter(x => p.related_ids.includes(x.id)).map(x => x.sku).filter(Boolean).join(', ') : ''))
       ]),
       [
-        'ID', 'Nombre', 'Marca', 'Categoria', 'SKU', 'Precio_USD', 'Precio_Promo_USD', 'Stock',
+        'ID', 'Nombre', 'Marca', 'Categoria', 'Subcategoria', 'SKU', 'Precio_USD', 'Precio_Promo_USD', 'Stock',
         'Peso_KG', 'Largo_CM', 'Ancho_CM', 'Altura_CM', 'Descripcion', 'URL_Imagen',
         'Caracteristicas_Destacadas', 'Garantia', 'Ficha_Tecnica_URL', 'Condicion', 'SKUs_Relacionados'
       ],
@@ -2739,7 +2741,7 @@ function AdminEcommerce({ embedded = false }) {
 
   const downloadSampleCSV = () => {
     const headers = [
-      'Nombre', 'Marca', 'Categoria', 'SKU', 'Precio_USD', 'Precio_Promo_USD', 'Stock',
+      'Nombre', 'Marca', 'Categoria', 'Subcategoria', 'SKU', 'Precio_USD', 'Precio_Promo_USD', 'Stock',
       'Peso_KG', 'Largo_CM', 'Ancho_CM', 'Altura_CM', 'Descripcion', 'URL_Imagen',
       'Caracteristicas_Destacadas', 'Garantia', 'Ficha_Tecnica_URL', 'Condicion', 'SKUs_Relacionados'
     ];
@@ -2748,6 +2750,7 @@ function AdminEcommerce({ embedded = false }) {
         'Fortinet FortiGate 60F NGFW',
         'Fortinet',
         'security',
+        'Firewalls',
         'FG-60F-BDL-950-12',
         '890.00',
         '845.00',
@@ -2768,6 +2771,7 @@ function AdminEcommerce({ embedded = false }) {
         'MikroTik Cloud Router Switch 24P PoE+',
         'MikroTik',
         'networking',
+        'Switches',
         'CRS328-24P-4S',
         '480.00',
         '449.00',
@@ -2788,6 +2792,7 @@ function AdminEcommerce({ embedded = false }) {
         'Aruba Instant On AP22 Wi-Fi 6',
         'Aruba',
         'networking',
+        'Access Points',
         'R4W02A-AP22',
         '195.00',
         '',
@@ -2874,6 +2879,7 @@ function AdminEcommerce({ embedded = false }) {
     rawHeaders.forEach((h, idx) => {
       if (h.includes('nombre') || h.includes('producto') || h.includes('name') || h.includes('title')) headerMap.name = idx;
       else if (h.includes('marca') || h.includes('brand') || h.includes('fabricante')) headerMap.brand = idx;
+      else if (h.includes('subcategoria') || h.includes('sub-categoria') || h.includes('subcat') || h.includes('subcategory') || h.includes('tipo')) headerMap.subcategory = idx;
       else if (h.includes('categoria') || h.includes('category') || h.includes('rubro')) headerMap.category = idx;
       else if (h.includes('sku') || h.includes('codigo') || h.includes('partnumber') || h.includes('mpn')) headerMap.sku = idx;
       else if (h.includes('promo') || h.includes('oferta') || h.includes('descuento')) headerMap.promotional_price = idx;
@@ -2904,6 +2910,7 @@ function AdminEcommerce({ embedded = false }) {
 
       const brand = headerMap.brand !== undefined ? (r[headerMap.brand] || '') : '';
       const category = headerMap.category !== undefined ? (r[headerMap.category] || 'General') : 'General';
+      const subcategory = headerMap.subcategory !== undefined ? (r[headerMap.subcategory] || '') : '';
       const sku = headerMap.sku !== undefined ? (r[headerMap.sku] || '') : '';
       const rawPrice = headerMap.price !== undefined ? (r[headerMap.price] || '0') : '0';
       const rawPromo = headerMap.promotional_price !== undefined ? (r[headerMap.promotional_price] || '') : '';
@@ -2940,6 +2947,7 @@ function AdminEcommerce({ embedded = false }) {
         name,
         brand,
         category: category || 'General',
+        subcategory,
         sku,
         price,
         promotional_price,
@@ -3716,6 +3724,11 @@ function AdminEcommerce({ embedded = false }) {
                                 {p.brand && (
                                   <span style={{ fontSize: '10px', color: '#64748b', fontWeight: '700', background: '#f1f5f9', padding: '1px 5px', borderRadius: '3px', whiteSpace: 'nowrap' }}>
                                     {p.brand}
+                                  </span>
+                                )}
+                                {p.subcategory && (
+                                  <span style={{ fontSize: '10px', color: '#0369a1', fontWeight: '750', background: '#e0f2fe', padding: '1px 5px', borderRadius: '3px', whiteSpace: 'nowrap' }}>
+                                    {p.subcategory}
                                   </span>
                                 )}
                               </div>
