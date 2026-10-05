@@ -1,5 +1,29 @@
 [
   {
+    "id": 298,
+    "timestamp": "2026-10-05T17:29:27.162Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Avaya Sistema de Videoconferencia Avaya Collaboration Bar B109 (SKU: AVAYA-B109-CONF, Cat: comunicaciones_unificadas, USD $680.00).",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 5,
+      "productName": "Sistema de Videoconferencia Avaya Collaboration Bar B109",
+      "sku": "AVAYA-B109-CONF",
+      "brand": "Avaya",
+      "price": "680.00",
+      "category": "comunicaciones_unificadas",
+      "timestamp": "2026-10-05T17:29:27.161Z"
+    }
+  },
+  {
     "id": 297,
     "timestamp": "2026-10-05T15:36:50.963Z",
     "origen": "ecommerce",

@@ -1465,13 +1465,10 @@ function BrandsDirectoryView({
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'space-between',
+                justifyContent: 'flex-end',
                 paddingTop: '16px',
                 borderTop: '1px solid #F1F5F9'
               }}>
-                <span style={{ fontSize: '11.5px', fontWeight: '700', color: '#94A3B8' }}>
-                  Garantía Directa DACAS
-                </span>
                 <span style={{
                   display: 'inline-flex',
                   alignItems: 'center',

@@ -13389,10 +13389,7 @@ function AdminEcommerce({ embedded = false }) {
                     </div>
 
                     {/* Card Footer */}
-                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '16px', borderTop: '1px solid #F1F5F9', marginTop: '16px' }}>
-                      <span style={{ fontSize: '11px', fontWeight: '700', color: '#94A3B8' }}>
-                        Garantía Directa DACAS
-                      </span>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', paddingTop: '16px', borderTop: '1px solid #F1F5F9', marginTop: '16px' }}>
                       <span style={{ color: editingBrandModal.color || '#0fa4de', fontSize: '12.5px', fontWeight: '800' }}>
                         Ver Productos →
                       </span>
