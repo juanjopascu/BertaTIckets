@@ -65,7 +65,7 @@
           "text": "Ver Catálogo",
           "cat": "all"
         },
-        "type": "metrics",
+        "type": "animated_stats",
         "metrics": [
           {
             "value": "1.4 Gbps",
@@ -79,7 +79,8 @@
             "value": "Zero-Day",
             "label": "Protección con IA"
           }
-        ]
+        ],
+        "imageUrl": "http://localhost:3001/uploads/1791233778951-561243976-ChatGPT_Image_5_oct_2026__05_56_00_p.m..png"
       }
     ],
     "categories": [
@@ -181,10 +182,79 @@
       }
     ],
     "homeCarousels": {
+      "list": [
+        {
+          "id": "car_featured",
+          "title": "🔥 Productos Destacados Argentina",
+          "subtitle": "Equipamiento disponible para despacho inmediato desde el centro de distribución en Buenos Aires",
+          "badge": "TOP SELLERS",
+          "badgeColor": "#0fa4de",
+          "icon": "star",
+          "enabled": true,
+          "selectionType": "manual",
+          "targetCategory": "all",
+          "targetBrand": "all",
+          "productIds": [
+            2,
+            3,
+            4,
+            5
+          ]
+        },
+        {
+          "id": "car_custom",
+          "title": "⚡ Oportunidades & Ofertas IT",
+          "subtitle": "Soluciones corporativas seleccionadas con precios mayoristas para canales argentinos",
+          "badge": "SELECCIÓN DACAS",
+          "badgeColor": "#10b981",
+          "icon": "shield",
+          "enabled": true,
+          "selectionType": "manual",
+          "targetCategory": "all",
+          "targetBrand": "all",
+          "productIds": [
+            6,
+            7
+          ]
+        },
+        {
+          "id": "car_1791232645455_ybbq",
+          "title": "⚡ Nuevo Carrusel #3",
+          "subtitle": "Soluciones corporativas seleccionadas para canales de distribución",
+          "badge": "DESTACADO",
+          "badgeColor": "#0fa4de",
+          "icon": "star",
+          "enabled": true,
+          "selectionType": "category",
+          "targetCategory": "networking",
+          "targetBrand": "all",
+          "productIds": []
+        },
+        {
+          "id": "car_1791232658479_w5s6",
+          "title": "⚡ Nuevo Carrusel #4",
+          "subtitle": "Soluciones corporativas seleccionadas para canales de distribución",
+          "badge": "DESTACADO",
+          "badgeColor": "#0fa4de",
+          "icon": "star",
+          "enabled": true,
+          "selectionType": "category",
+          "targetCategory": "networking",
+          "targetBrand": "all",
+          "productIds": []
+        }
+      ],
       "featured": {
-        "enabled": true,
+        "id": "car_featured",
         "title": "🔥 Productos Destacados Argentina",
         "subtitle": "Equipamiento disponible para despacho inmediato desde el centro de distribución en Buenos Aires",
+        "badge": "TOP SELLERS",
+        "badgeColor": "#0fa4de",
+        "icon": "star",
+        "enabled": true,
+        "selectionType": "manual",
+        "targetCategory": "all",
+        "targetBrand": "all",
         "productIds": [
           2,
           3,
@@ -193,9 +263,16 @@
         ]
       },
       "custom": {
-        "enabled": true,
+        "id": "car_custom",
         "title": "⚡ Oportunidades & Ofertas IT",
         "subtitle": "Soluciones corporativas seleccionadas con precios mayoristas para canales argentinos",
+        "badge": "SELECCIÓN DACAS",
+        "badgeColor": "#10b981",
+        "icon": "shield",
+        "enabled": true,
+        "selectionType": "manual",
+        "targetCategory": "all",
+        "targetBrand": "all",
         "productIds": [
           6,
           7

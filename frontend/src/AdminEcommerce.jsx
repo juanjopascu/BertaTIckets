@@ -9401,162 +9401,244 @@ function AdminEcommerce({ embedded = false }) {
                       </div>
                     </div>
 
-                    {/* Slides Grid Selector & Slide Form */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px' }}>
+                    {/* Slides Stacked: Cuadrante 1 Arriba (Slides Activos) y Cuadrante 2 Abajo (Personalización) */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '22px', width: '100%' }}>
                       
-                      {/* Left: Slides List */}
-                      <div style={{ background: '#FFFFFF', padding: '20px', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                          <h4 style={{ margin: 0, fontSize: '14px', fontWeight: '800', color: '#0F172A' }}>
-                            Diapositivas Activas ({visualConfig.heroSlides?.length || 0})
-                          </h4>
+                      {/* Cuadrante Superior: Lista de Diapositivas Activas */}
+                      <div style={{ background: '#FFFFFF', padding: '22px 26px', borderRadius: '18px', border: '1px solid #E2E8F0', boxShadow: '0 4px 18px rgba(0,0,0,0.03)', width: '100%' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                          <div>
+                            <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span>🎞️</span> Diapositivas Activas del Hero ({visualConfig.heroSlides?.length || 0})
+                            </h4>
+                            <p style={{ margin: '4px 0 0', fontSize: '12.5px', color: '#64748B' }}>
+                              Haz clic en cualquier diapositiva para seleccionarla y editarla a pantalla completa abajo. Reordena la secuencia con ⬅️ y ➡️.
+                            </p>
+                          </div>
                           <button
                             type="button"
                             onClick={handleAddSlide}
                             style={{
-                              background: '#E0F2FE',
-                              color: '#0369A1',
-                              border: '1px solid #BAE6FD',
-                              borderRadius: '8px',
-                              padding: '6px 12px',
-                              fontSize: '12px',
+                              background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                              color: '#FFFFFF',
+                              border: 'none',
+                              borderRadius: '10px',
+                              padding: '9px 18px',
+                              fontSize: '13px',
                               fontWeight: '700',
                               cursor: 'pointer',
                               display: 'flex',
                               alignItems: 'center',
-                              gap: '4px'
+                              gap: '7px',
+                              boxShadow: '0 3px 10px rgba(2, 132, 199, 0.25)',
+                              transition: 'all 0.15s'
                             }}
                           >
-                            ➕ Nuevo Slide
+                            ➕ Agregar Nuevo Slide
                           </button>
                         </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                          {visualConfig.heroSlides?.map((s, idx) => {
-                            const isSelected = editingSlideIdx === idx;
-                            const slideKey = `hero-slide-item-${s.id !== undefined && s.id !== null ? s.id : idx}`;
-                            return (
-                              <div
-                                key={slideKey}
-                                onClick={() => setEditingSlideIdx(idx)}
-                                style={{
-                                  padding: '14px 16px',
-                                  borderRadius: '12px',
-                                  background: isSelected ? '#F0F9FF' : '#F8FAFC',
-                                  border: isSelected ? '2px solid #0284c7' : '1px solid #E2E8F0',
-                                  cursor: 'pointer',
-                                  display: 'flex',
-                                  justifyContent: 'space-between',
-                                  alignItems: 'center',
-                                  gap: '12px',
-                                  transition: 'all 0.15s'
-                                }}
-                              >
-                                <div style={{ minWidth: 0 }}>
-                                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '800', color: s.titleColor || '#0284c7' }}>
-                                    <span>{s.badgeIcon || '🛡️'}</span>
-                                    <span>SLIDE #{idx + 1}</span>
-                                    {isSelected && <span style={{ color: '#0369A1' }}>• Editando</span>}
+                        {(!visualConfig.heroSlides || visualConfig.heroSlides.length === 0) ? (
+                          <div style={{ padding: '30px', textAlign: 'center', background: '#F8FAFC', borderRadius: '12px', border: '1px dashed #CBD5E1' }}>
+                            <p style={{ margin: '0 0 10px', color: '#64748B', fontWeight: '600' }}>No hay diapositivas activas configuradas.</p>
+                            <button type="button" onClick={handleAddSlide} style={{ background: '#0284c7', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: '700' }}>
+                              ➕ Crear Primera Diapositiva
+                            </button>
+                          </div>
+                        ) : (
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '14px' }}>
+                            {visualConfig.heroSlides.map((s, idx) => {
+                              const isSelected = editingSlideIdx === idx;
+                              const slideKey = `hero-slide-item-${s.id !== undefined && s.id !== null ? s.id : idx}`;
+                              const typeBadge = s.type === 'custom_image' ? '🖼️ Gráfico' : s.type === 'animated_stats' ? '⚡ Animado' : '📊 Título + KPIs';
+                              
+                              return (
+                                <div
+                                  key={slideKey}
+                                  onClick={() => setEditingSlideIdx(idx)}
+                                  style={{
+                                    padding: '12px 14px',
+                                    borderRadius: '14px',
+                                    background: isSelected ? '#F0F9FF' : '#F8FAFC',
+                                    border: isSelected ? '2px solid #0284c7' : '1px solid #E2E8F0',
+                                    boxShadow: isSelected ? '0 6px 18px rgba(2, 132, 199, 0.16)' : '0 1px 3px rgba(0,0,0,0.02)',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    justifyContent: 'space-between',
+                                    alignItems: 'center',
+                                    gap: '12px',
+                                    transition: 'all 0.18s ease'
+                                  }}
+                                >
+                                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: 1 }}>
+                                    {s.imageUrl ? (
+                                      <img 
+                                        src={s.imageUrl} 
+                                        alt={`Slide ${idx + 1}`} 
+                                        style={{ width: '52px', height: '38px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #CBD5E1', flexShrink: 0, background: '#071524' }} 
+                                      />
+                                    ) : (
+                                      <div style={{ width: '52px', height: '38px', borderRadius: '8px', background: 'linear-gradient(135deg, #071524 0%, #0f2742 100%)', color: '#38bdf8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0, border: '1px solid #CBD5E1' }}>
+                                        {s.badgeIcon || '🛡️'}
+                                      </div>
+                                    )}
+                                    <div style={{ minWidth: 0, flex: 1 }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '800', color: s.titleColor || '#0284c7' }}>
+                                        <span>SLIDE #{idx + 1}</span>
+                                        {isSelected ? (
+                                          <span style={{ background: '#0284c7', color: '#FFFFFF', padding: '1px 7px', borderRadius: '5px', fontSize: '10px', fontWeight: '800' }}>
+                                            ✓ Editando
+                                          </span>
+                                        ) : (
+                                          <span style={{ background: '#E2E8F0', color: '#475569', padding: '1px 6px', borderRadius: '5px', fontSize: '9.5px', fontWeight: '600' }}>
+                                            {typeBadge}
+                                          </span>
+                                        )}
+                                      </div>
+                                      <div style={{ fontWeight: '700', fontSize: '13px', color: '#0F172A', marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                        {s.titleLine1 || 'Sin título'}
+                                      </div>
+                                    </div>
                                   </div>
-                                  <div style={{ fontWeight: '700', fontSize: '13px', color: '#0F172A', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                                    {s.titleLine1 || 'Sin título'}
-                                  </div>
-                                </div>
 
-                                <div style={{ display: 'flex', gap: '4px', alignItems: 'center' }} onClick={(e) => e.stopPropagation()}>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleMoveSlide(idx, -1)}
-                                    disabled={idx === 0}
-                                    style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '4px 7px', cursor: idx === 0 ? 'not-allowed' : 'pointer', fontSize: '12px' }}
-                                    title="Mover arriba"
-                                  >
-                                    ⬆️
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleMoveSlide(idx, 1)}
-                                    disabled={idx === visualConfig.heroSlides.length - 1}
-                                    style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '6px', padding: '4px 7px', cursor: idx === visualConfig.heroSlides.length - 1 ? 'not-allowed' : 'pointer', fontSize: '12px' }}
-                                    title="Mover abajo"
-                                  >
-                                    ⬇️
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() => handleDeleteSlide(idx)}
-                                    style={{ background: '#FEE2E2', border: '1px solid #FECACA', color: '#DC2626', borderRadius: '6px', padding: '4px 7px', cursor: 'pointer', fontSize: '12px' }}
-                                    title="Eliminar slide"
-                                  >
-                                    🗑️
-                                  </button>
+                                  <div style={{ display: 'flex', gap: '4px', alignItems: 'center', flexShrink: 0 }} onClick={(e) => e.stopPropagation()}>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleMoveSlide(idx, -1)}
+                                      disabled={idx === 0}
+                                      style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '7px', padding: '5px 8px', cursor: idx === 0 ? 'not-allowed' : 'pointer', fontSize: '12px', opacity: idx === 0 ? 0.35 : 1 }}
+                                      title="Mover a la izquierda / antes"
+                                    >
+                                      ⬅️
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleMoveSlide(idx, 1)}
+                                      disabled={idx === visualConfig.heroSlides.length - 1}
+                                      style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '7px', padding: '5px 8px', cursor: idx === visualConfig.heroSlides.length - 1 ? 'not-allowed' : 'pointer', fontSize: '12px', opacity: idx === visualConfig.heroSlides.length - 1 ? 0.35 : 1 }}
+                                      title="Mover a la derecha / después"
+                                    >
+                                      ➡️
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteSlide(idx)}
+                                      style={{ background: '#FEE2E2', border: '1px solid #FECACA', color: '#DC2626', borderRadius: '7px', padding: '5px 8px', cursor: 'pointer', fontSize: '12px' }}
+                                      title="Eliminar slide"
+                                    >
+                                      🗑️
+                                    </button>
+                                  </div>
                                 </div>
-                              </div>
-                            );
-                          })}
-                        </div>
+                              );
+                            })}
+                          </div>
+                        )}
                       </div>
 
-                      {/* Right: Slide Editor Form */}
+                      {/* Cuadrante Inferior: Personalización del Slide a Pantalla Completa */}
                       {visualConfig.heroSlides && visualConfig.heroSlides[editingSlideIdx] && (() => {
                         const cur = visualConfig.heroSlides[editingSlideIdx];
                         return (
-                          <div style={{ background: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #E2E8F0' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '8px' }}>
-                              <h4 style={{ margin: 0, fontSize: '14px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span>✏️</span> Editando Slide #{editingSlideIdx + 1}: {cur.titleLine1 || 'Banner Personalizado'}
-                              </h4>
-                              <span style={{ fontSize: '11px', background: '#E0F2FE', color: '#0369A1', padding: '3px 8px', borderRadius: '6px', fontWeight: '750' }}>
-                                1920 x 500 px
-                              </span>
-                            </div>
+                          <div style={{ background: '#FFFFFF', padding: '26px 30px', borderRadius: '18px', border: '1px solid #E2E8F0', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', width: '100%' }}>
+                            
+                            {/* Header con Título y Botón Guardar Directo */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px', flexWrap: 'wrap', gap: '14px', borderBottom: '1px solid #F1F5F9', paddingBottom: '16px' }}>
+                              <div>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                  <h4 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                    <span>✏️</span> Personalizando Slide #{editingSlideIdx + 1}: {cur.titleLine1 || 'Banner Principal'}
+                                  </h4>
+                                  <span style={{ fontSize: '11px', background: '#E0F2FE', color: '#0369A1', padding: '3px 9px', borderRadius: '6px', fontWeight: '800' }}>
+                                    📐 1920 × 500 px
+                                  </span>
+                                </div>
+                                <p style={{ margin: '4px 0 0', fontSize: '12.5px', color: '#64748B' }}>
+                                  Configura el tipo de diseño, la imagen, los textos, enlaces y botones de este slide.
+                                </p>
+                              </div>
 
-                            {/* Selector de Modo de Banner */}
-                            <div style={{ marginBottom: '18px', background: '#F8FAFC', padding: '12px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
-                              <label style={{ display: 'block', fontSize: '12px', fontWeight: '800', color: '#0F172A', marginBottom: '8px' }}>
-                                🎨 Tipo de Presentación del Banner
-                              </label>
-                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '8px' }}>
-                                {[
-                                  { id: 'metrics', label: '📊 Título + Métricas', desc: 'Tipográfico con 3 KPIs' },
-                                  { id: 'custom_image', label: '🖼️ Banner Gráfico Completo', desc: 'Diseño 100% en Imagen' },
-                                  { id: 'animated_stats', label: '⚡ Animado Core DACAS', desc: 'Contadores automáticos' }
-                                ].map(t => (
-                                  <button
-                                    key={t.id}
-                                    type="button"
-                                    onClick={() => handleUpdateSlideField(editingSlideIdx, 'type', t.id)}
-                                    style={{
-                                      padding: '8px 10px',
-                                      borderRadius: '8px',
-                                      textAlign: 'left',
-                                      background: (cur.type || 'metrics') === t.id ? '#0284c7' : '#FFFFFF',
-                                      color: (cur.type || 'metrics') === t.id ? '#FFFFFF' : '#334155',
-                                      border: `1.5px solid ${(cur.type || 'metrics') === t.id ? '#0284c7' : '#CBD5E1'}`,
-                                      cursor: 'pointer',
-                                      fontSize: '11.5px',
-                                      fontWeight: '700'
-                                    }}
-                                  >
-                                    <div>{t.label}</div>
-                                    <div style={{ fontSize: '10px', opacity: 0.85, fontWeight: '500' }}>{t.desc}</div>
-                                  </button>
-                                ))}
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                {visualSaveSuccess && (
+                                  <span style={{ color: '#10B981', fontSize: '12.5px', fontWeight: '750', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                                    ✅ ¡Cambios guardados!
+                                  </span>
+                                )}
+                                <button
+                                  type="button"
+                                  onClick={handleSaveVisualSettings}
+                                  disabled={isSavingVisual}
+                                  style={{
+                                    background: '#0fa4de',
+                                    color: '#FFFFFF',
+                                    border: 'none',
+                                    borderRadius: '10px',
+                                    padding: '9px 20px',
+                                    fontSize: '13px',
+                                    fontWeight: '800',
+                                    cursor: isSavingVisual ? 'wait' : 'pointer',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '7px',
+                                    boxShadow: '0 4px 14px rgba(15, 164, 222, 0.35)',
+                                    transition: 'all 0.15s'
+                                  }}
+                                >
+                                  <span>💾</span> {isSavingVisual ? 'Guardando...' : 'Guardar Banners'}
+                                </button>
                               </div>
                             </div>
 
-                            {/* Imagen de Banner (Carga desde PC / URL) */}
-                            <div style={{ marginBottom: '16px', background: '#F0F9FF', padding: '16px', borderRadius: '14px', border: '1.5px solid #BAE6FD' }}>
-                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-                                <label style={{ fontSize: '12.5px', fontWeight: '800', color: '#0369A1' }}>
-                                  🖼️ Imagen del Banner (Cargar desde la PC o URL)
+                            {/* 1. Selector de Modo de Banner */}
+                            <div style={{ marginBottom: '22px', background: '#F8FAFC', padding: '16px 18px', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
+                              <label style={{ display: 'block', fontSize: '13px', fontWeight: '800', color: '#0F172A', marginBottom: '10px' }}>
+                                🎨 1. Tipo de Presentación del Banner
+                              </label>
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                                {[
+                                  { id: 'metrics', label: '📊 Título + Métricas', desc: 'Tipográfico con 3 KPIs laterales y botones' },
+                                  { id: 'custom_image', label: '🖼️ Banner Gráfico Completo', desc: 'Diseño 100% en Imagen (oculta textos sobreimpresos)' },
+                                  { id: 'animated_stats', label: '⚡ Animado Core DACAS', desc: 'Contadores automáticos y acentos tecnológicos' }
+                                ].map(t => {
+                                  const active = (cur.type || 'metrics') === t.id;
+                                  return (
+                                    <button
+                                      key={t.id}
+                                      type="button"
+                                      onClick={() => handleUpdateSlideField(editingSlideIdx, 'type', t.id)}
+                                      style={{
+                                        padding: '12px 14px',
+                                        borderRadius: '10px',
+                                        textAlign: 'left',
+                                        background: active ? '#0284c7' : '#FFFFFF',
+                                        color: active ? '#FFFFFF' : '#334155',
+                                        border: `2px solid ${active ? '#0284c7' : '#CBD5E1'}`,
+                                        cursor: 'pointer',
+                                        fontSize: '12.5px',
+                                        fontWeight: '750',
+                                        boxShadow: active ? '0 4px 12px rgba(2, 132, 199, 0.22)' : 'none',
+                                        transition: 'all 0.15s'
+                                      }}
+                                    >
+                                      <div style={{ fontSize: '13px', marginBottom: '3px' }}>{t.label}</div>
+                                      <div style={{ fontSize: '11px', opacity: active ? 0.95 : 0.75, fontWeight: '500' }}>{t.desc}</div>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+
+                            {/* 2. Imagen del Banner (Carga desde PC / URL) */}
+                            <div style={{ marginBottom: '22px', background: '#F0F9FF', padding: '18px 20px', borderRadius: '14px', border: '1.5px solid #BAE6FD' }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+                                <label style={{ fontSize: '13px', fontWeight: '800', color: '#0369A1', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                  <span>🖼️</span> 2. Imagen del Banner (Cargar desde la PC o URL)
                                 </label>
-                                <span style={{ fontSize: '11px', color: '#0284c7', fontWeight: '700' }}>
-                                  Recomendado: 1920x500 px
+                                <span style={{ fontSize: '11.5px', color: '#0284c7', fontWeight: '750' }}>
+                                  Resolución Oficial Recomendada: 1920 × 500 px
                                 </span>
                               </div>
 
-                              {/* Input de archivo nativo oculto */}
                               <input
                                 type="file"
                                 ref={bannerFileInputRef}
@@ -9565,8 +9647,7 @@ function AdminEcommerce({ embedded = false }) {
                                 onChange={(e) => handleBannerFileUpload(e, editingSlideIdx)}
                               />
 
-                              {/* Botones de acción: Cargar desde PC o Pegar URL */}
-                              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '10px' }}>
+                              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '12px' }}>
                                 <button
                                   type="button"
                                   onClick={() => bannerFileInputRef.current && bannerFileInputRef.current.click()}
@@ -9575,296 +9656,344 @@ function AdminEcommerce({ embedded = false }) {
                                     background: '#0fa4de',
                                     color: '#FFFFFF',
                                     border: 'none',
-                                    padding: '9px 18px',
+                                    padding: '10px 20px',
                                     borderRadius: '10px',
-                                    fontSize: '12.5px',
+                                    fontSize: '13px',
                                     fontWeight: '800',
-                                    cursor: 'pointer',
+                                    cursor: uploadingBanner ? 'wait' : 'pointer',
                                     display: 'inline-flex',
                                     alignItems: 'center',
-                                    gap: '6px',
-                                    boxShadow: '0 2px 8px rgba(15, 164, 222, 0.3)'
+                                    gap: '8px',
+                                    boxShadow: '0 3px 10px rgba(15, 164, 222, 0.3)'
                                   }}
                                 >
-                                  <span>📁</span> {uploadingBanner ? 'Cargando archivo...' : 'Cargar Foto desde la PC'}
+                                  <span>📁</span> {uploadingBanner ? 'Subiendo imagen...' : 'Cargar Foto desde la PC'}
                                 </button>
 
-                                <span style={{ fontSize: '11px', color: '#64748B', fontWeight: '600' }}>o ingresa una URL:</span>
+                                <span style={{ fontSize: '12px', color: '#64748B', fontWeight: '700' }}>o ingresa una URL:</span>
 
                                 <input
                                   type="text"
                                   value={cur.imageUrl || ''}
                                   onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'imageUrl', e.target.value)}
                                   placeholder="https://servidor.com/banner-1920x500.webp"
-                                  style={{ flex: 1, minWidth: '200px', padding: '8px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF' }}
+                                  style={{ flex: 1, minWidth: '240px', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12.5px', background: '#FFFFFF' }}
                                 />
 
                                 {cur.imageUrl && (
                                   <button
                                     type="button"
                                     onClick={() => handleUpdateSlideField(editingSlideIdx, 'imageUrl', '')}
-                                    style={{ background: '#FEE2E2', border: '1px solid #FECACA', color: '#DC2626', padding: '8px 12px', borderRadius: '8px', fontSize: '11.5px', fontWeight: '700', cursor: 'pointer' }}
+                                    style={{ background: '#FEE2E2', border: '1px solid #FECACA', color: '#DC2626', padding: '9px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '750', cursor: 'pointer' }}
                                   >
-                                    🗑️ Quitar
+                                    🗑️ Quitar Foto
                                   </button>
                                 )}
                               </div>
 
-                              {/* Zona Drag and Drop / Preview */}
                               {!cur.imageUrl ? (
                                 <div
                                   onClick={() => bannerFileInputRef.current && bannerFileInputRef.current.click()}
                                   style={{
                                     border: '2px dashed #93C5FD',
                                     borderRadius: '12px',
-                                    padding: '24px 16px',
+                                    padding: '28px 20px',
                                     textAlign: 'center',
                                     cursor: 'pointer',
-                                    background: 'rgba(255, 255, 255, 0.7)',
+                                    background: 'rgba(255, 255, 255, 0.75)',
                                     transition: 'all 0.2s'
                                   }}
                                   onMouseEnter={(e) => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.borderColor = '#0284c7'; }}
-                                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.7)'; e.currentTarget.style.borderColor = '#93C5FD'; }}
+                                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.75)'; e.currentTarget.style.borderColor = '#93C5FD'; }}
                                 >
-                                  <div style={{ fontSize: '1.8rem', marginBottom: '4px' }}>☁️</div>
-                                  <div style={{ fontWeight: '750', fontSize: '12.5px', color: '#0369A1' }}>
-                                    Haz click aquí o arrastra tu banner para subirlo desde la PC
+                                  <div style={{ fontSize: '2.2rem', marginBottom: '6px' }}>☁️</div>
+                                  <div style={{ fontWeight: '800', fontSize: '13.5px', color: '#0369A1' }}>
+                                    Haz clic aquí o arrastra tu banner para subirlo desde la PC
                                   </div>
-                                  <div style={{ fontSize: '11px', color: '#64748B', marginTop: '2px' }}>
-                                    Formatos: WebP, PNG, JPG • Máximo 15 MB
+                                  <div style={{ fontSize: '11.5px', color: '#64748B', marginTop: '3px' }}>
+                                    Formatos: WebP, PNG, JPG • Máximo 15 MB • Se adaptará automáticamente
                                   </div>
                                 </div>
                               ) : (
-                                <div style={{ marginTop: '8px', borderRadius: '10px', overflow: 'hidden', border: '1px solid #CBD5E1', position: 'relative', background: '#071524' }}>
+                                <div style={{ marginTop: '10px', borderRadius: '12px', overflow: 'hidden', border: '1.5px solid #CBD5E1', position: 'relative', background: '#071524' }}>
                                   <img 
                                     src={cur.imageUrl} 
                                     alt="Banner Preview" 
-                                    style={{ width: '100%', maxHeight: '160px', objectFit: 'cover', display: 'block' }} 
+                                    style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' }} 
                                   />
                                   <div style={{
                                     position: 'absolute',
-                                    bottom: '8px',
-                                    left: '8px',
-                                    background: 'rgba(7, 21, 36, 0.85)',
+                                    bottom: '10px',
+                                    left: '12px',
+                                    background: 'rgba(7, 21, 36, 0.88)',
                                     color: '#38bdf8',
-                                    padding: '3px 8px',
+                                    padding: '4px 10px',
                                     borderRadius: '6px',
-                                    fontSize: '10.5px',
-                                    fontWeight: '700',
-                                    backdropFilter: 'blur(4px)'
+                                    fontSize: '11px',
+                                    fontWeight: '750',
+                                    backdropFilter: 'blur(6px)',
+                                    border: '1px solid rgba(56, 189, 248, 0.3)'
                                   }}>
-                                    ✓ Banner Cargado Correctamente
+                                    ✓ Banner Cargado (1920×500 px)
                                   </div>
                                 </div>
                               )}
                             </div>
 
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '14px' }}>
-                              <div>
-                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '5px' }}>
-                                  Ícono / Emoji del Badge
-                                </label>
-                                <input
-                                  type="text"
-                                  value={cur.badgeIcon || ''}
-                                  onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'badgeIcon', e.target.value)}
-                                  style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px' }}
-                                  placeholder="🛡️"
-                                />
-                              </div>
-                              <div>
-                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '5px' }}>
-                                  Texto del Badge Superior
-                                </label>
-                                <input
-                                  type="text"
-                                  value={cur.badge || ''}
-                                  onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'badge', e.target.value)}
-                                  style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px' }}
-                                  placeholder="DISTRIBUIDOR OFICIAL MAYORISTA"
-                                />
-                              </div>
-                            </div>
-
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '14px' }}>
-                              <div>
-                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '5px' }}>
-                                  Título Línea 1
-                                </label>
-                                <input
-                                  type="text"
-                                  value={cur.titleLine1 || ''}
-                                  onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'titleLine1', e.target.value)}
-                                  style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px', fontWeight: '700' }}
-                                  placeholder="Equipamiento IT, Redes"
-                                />
-                              </div>
-                              <div>
-                                <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '5px' }}>
-                                  Título Línea 2 (Color Resaltado)
-                                </label>
-                                <input
-                                  type="text"
-                                  value={cur.titleLine2 || ''}
-                                  onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'titleLine2', e.target.value)}
-                                  style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px', fontWeight: '700' }}
-                                  placeholder="& Ciberseguridad Enterprise"
-                                />
-                              </div>
-                            </div>
-
-                            {/* Color Picker & Presets */}
-                            <div style={{ marginBottom: '14px' }}>
-                              <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '6px' }}>
-                                Color de Acento del Título
-                              </label>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                                <input
-                                  type="color"
-                                  value={cur.titleColor || '#0fa4de'}
-                                  onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'titleColor', e.target.value)}
-                                  style={{ width: '40px', height: '36px', borderRadius: '8px', border: '1px solid #CBD5E1', cursor: 'pointer', padding: '2px' }}
-                                />
-                                {[
-                                  { color: '#0fa4de', label: 'Cyan DACAS' },
-                                  { color: '#10b981', label: 'Verde Esmeralda' },
-                                  { color: '#38bdf8', label: 'Azul Sky' },
-                                  { color: '#f59e0b', label: 'Ámbar' },
-                                  { color: '#6366f1', label: 'Índigo' },
-                                  { color: '#EE3124', label: 'Rojo Fortinet' }
-                                ].map(p => (
-                                  <button
-                                    key={p.color}
-                                    type="button"
-                                    onClick={() => handleUpdateSlideField(editingSlideIdx, 'titleColor', p.color)}
-                                    style={{
-                                      background: cur.titleColor === p.color ? p.color : '#F1F5F9',
-                                      color: cur.titleColor === p.color ? '#FFF' : '#334155',
-                                      border: `1px solid ${cur.titleColor === p.color ? p.color : '#CBD5E1'}`,
-                                      borderRadius: '8px',
-                                      padding: '5px 10px',
-                                      fontSize: '11.5px',
-                                      fontWeight: '700',
-                                      cursor: 'pointer'
-                                    }}
-                                  >
-                                    <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: p.color, marginRight: '4px' }}></span>
-                                    {p.label}
-                                  </button>
-                                ))}
-                              </div>
-                            </div>
-
-                            {/* Description */}
-                            <div style={{ marginBottom: '14px' }}>
-                              <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '5px' }}>
-                                Descripción del Slide
-                              </label>
-                              <textarea
-                                value={cur.desc || ''}
-                                onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'desc', e.target.value)}
-                                rows={3}
-                                style={{ width: '100%', padding: '9px 12px', borderRadius: '10px', border: '1px solid #CBD5E1', fontSize: '13px', resize: 'vertical' }}
-                                placeholder="Texto explicativo para los clientes..."
-                              />
-                            </div>
-
-                            {/* Buttons */}
-                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginBottom: '14px' }}>
-                              <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-                                <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '800', color: '#0284c7', marginBottom: '6px' }}>
-                                  🔘 Botón Primario
-                                </label>
-                                <input
-                                  type="text"
-                                  value={cur.primaryBtn?.text || ''}
-                                  onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'primaryBtn', 'text', e.target.value)}
-                                  placeholder="Texto botón (ej: Ver Networking)"
-                                  style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12.5px', marginBottom: '6px' }}
-                                />
-                                <select
-                                  value={cur.primaryBtn?.cat || 'all'}
-                                  onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'primaryBtn', 'cat', e.target.value)}
-                                  style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12.5px' }}
-                                >
-                                  <option value="all">Ir a: Todo el Catálogo</option>
-                                  <option value="networking">Ir a: Networking</option>
-                                  <option value="infraestructura">Ir a: Infraestructura</option>
-                                  <option value="comunicaciones_unificadas">Ir a: Comunicaciones Unificadas</option>
-                                  <option value="security">Ir a: Seguridad</option>
-                                </select>
-                              </div>
-
-                              <div style={{ background: '#F8FAFC', padding: '12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-                                <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '800', color: '#64748B', marginBottom: '6px' }}>
-                                  🔘 Botón Secundario
-                                </label>
-                                <input
-                                  type="text"
-                                  value={cur.secondaryBtn?.text || ''}
-                                  onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'secondaryBtn', 'text', e.target.value)}
-                                  placeholder="Texto botón (ej: Consultar Stock)"
-                                  style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12.5px', marginBottom: '6px' }}
-                                />
-                                <select
-                                  value={cur.secondaryBtn?.cat || 'all'}
-                                  onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'secondaryBtn', 'cat', e.target.value)}
-                                  style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12.5px' }}
-                                >
-                                  <option value="all">Ir a: Todo el Catálogo</option>
-                                  <option value="networking">Ir a: Networking</option>
-                                  <option value="infraestructura">Ir a: Infraestructura</option>
-                                  <option value="comunicaciones_unificadas">Ir a: Comunicaciones Unificadas</option>
-                                  <option value="security">Ir a: Seguridad</option>
-                                </select>
-                              </div>
-                            </div>
-
-                            {/* Metrics / 3 KPI Buttons */}
+                            {/* 3. Textos, Badges, Colores y Botones (Distribuido a lo ancho de la pantalla) */}
                             {cur.type !== 'custom_image' ? (
-                              <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', flexWrap: 'wrap', gap: '6px' }}>
-                                  <label style={{ fontSize: '12px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                    <span>📊</span> 3 Métricas Destacadas del Banner (Botones / KPIs laterales)
-                                  </label>
-                                  {cur.type === 'animated_stats' && (
-                                    <span style={{ fontSize: '10.5px', background: '#FEF3C7', color: '#D97706', padding: '2px 8px', borderRadius: '6px', fontWeight: '700' }}>
-                                      ⚡ Modo animado DACAS
-                                    </span>
-                                  )}
-                                </div>
-                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '10px' }}>
-                                  {[0, 1, 2].map(mIdx => {
-                                    const m = cur.metrics?.[mIdx] || { value: '', label: '' };
-                                    return (
-                                      <div key={mIdx} style={{ background: '#FFFFFF', padding: '10px', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
-                                        <div style={{ fontSize: '11px', fontWeight: '700', color: '#0284c7', marginBottom: '4px' }}>
-                                          Botón #{mIdx + 1}
-                                        </div>
+                              <>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: '22px', marginBottom: '22px' }}>
+                                  
+                                  {/* Columna Izquierda: Badges, Títulos y Color */}
+                                  <div style={{ background: '#F8FAFC', padding: '18px 20px', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
+                                    <h5 style={{ margin: '0 0 14px', fontSize: '13px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                      <span>🏷️</span> Identidad Visual & Títulos
+                                    </h5>
+
+                                    <div style={{ display: 'grid', gridTemplateColumns: '110px 1fr', gap: '10px', marginBottom: '12px' }}>
+                                      <div>
+                                        <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '750', color: '#475569', marginBottom: '5px' }}>
+                                          Ícono / Emoji
+                                        </label>
                                         <input
                                           type="text"
-                                          value={m.value || ''}
-                                          onChange={(e) => handleUpdateSlideMetric(editingSlideIdx, mIdx, 'value', e.target.value)}
-                                          placeholder={mIdx === 0 ? "Valor (ej: +25 Años)" : mIdx === 1 ? "Valor (ej: 12 Países)" : "Valor (ej: 24/7)"}
-                                          style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', fontWeight: '700', marginBottom: '4px' }}
-                                        />
-                                        <input
-                                          type="text"
-                                          value={m.label || ''}
-                                          onChange={(e) => handleUpdateSlideMetric(editingSlideIdx, mIdx, 'label', e.target.value)}
-                                          placeholder={mIdx === 0 ? "Etiqueta (ej: Liderando el Mercado IT)" : mIdx === 1 ? "Etiqueta (ej: Cobertura Regional)" : "Etiqueta (ej: Soporte Oficial)"}
-                                          style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '11px', color: '#64748B' }}
+                                          value={cur.badgeIcon || ''}
+                                          onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'badgeIcon', e.target.value)}
+                                          style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', textAlign: 'center' }}
+                                          placeholder="🛡️"
                                         />
                                       </div>
-                                    );
-                                  })}
+                                      <div>
+                                        <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '750', color: '#475569', marginBottom: '5px' }}>
+                                          Texto del Badge Superior
+                                        </label>
+                                        <input
+                                          type="text"
+                                          value={cur.badge || ''}
+                                          onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'badge', e.target.value)}
+                                          style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                                          placeholder="DISTRIBUIDOR OFICIAL MAYORISTA"
+                                        />
+                                      </div>
+                                    </div>
+
+                                    <div style={{ marginBottom: '12px' }}>
+                                      <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '750', color: '#475569', marginBottom: '5px' }}>
+                                        Título Línea 1 (Texto Principal)
+                                      </label>
+                                      <input
+                                        type="text"
+                                        value={cur.titleLine1 || ''}
+                                        onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'titleLine1', e.target.value)}
+                                        style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13.5px', fontWeight: '700' }}
+                                        placeholder="Equipamiento IT, Redes"
+                                      />
+                                    </div>
+
+                                    <div style={{ marginBottom: '14px' }}>
+                                      <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '750', color: '#475569', marginBottom: '5px' }}>
+                                        Título Línea 2 (Texto con Color de Acento)
+                                      </label>
+                                      <input
+                                        type="text"
+                                        value={cur.titleLine2 || ''}
+                                        onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'titleLine2', e.target.value)}
+                                        style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13.5px', fontWeight: '700', color: cur.titleColor || '#0fa4de' }}
+                                        placeholder="& Ciberseguridad Enterprise"
+                                      />
+                                    </div>
+
+                                    <div>
+                                      <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '750', color: '#475569', marginBottom: '6px' }}>
+                                        Color de Acento del Título
+                                      </label>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                        <input
+                                          type="color"
+                                          value={cur.titleColor || '#0fa4de'}
+                                          onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'titleColor', e.target.value)}
+                                          style={{ width: '38px', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', cursor: 'pointer', padding: '2px' }}
+                                        />
+                                        {[
+                                          { color: '#0fa4de', label: 'Cyan DACAS' },
+                                          { color: '#10b981', label: 'Verde Esmeralda' },
+                                          { color: '#38bdf8', label: 'Azul Sky' },
+                                          { color: '#f59e0b', label: 'Ámbar' },
+                                          { color: '#6366f1', label: 'Índigo' },
+                                          { color: '#EE3124', label: 'Rojo Fortinet' }
+                                        ].map(p => (
+                                          <button
+                                            key={p.color}
+                                            type="button"
+                                            onClick={() => handleUpdateSlideField(editingSlideIdx, 'titleColor', p.color)}
+                                            style={{
+                                              background: cur.titleColor === p.color ? p.color : '#FFFFFF',
+                                              color: cur.titleColor === p.color ? '#FFF' : '#334155',
+                                              border: `1.5px solid ${cur.titleColor === p.color ? p.color : '#CBD5E1'}`,
+                                              borderRadius: '8px',
+                                              padding: '5px 9px',
+                                              fontSize: '11px',
+                                              fontWeight: '700',
+                                              cursor: 'pointer',
+                                              display: 'inline-flex',
+                                              alignItems: 'center',
+                                              gap: '5px'
+                                            }}
+                                          >
+                                            <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: p.color }}></span>
+                                            {p.label}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  </div>
+
+                                  {/* Columna Derecha: Descripción & Botones de Acción */}
+                                  <div style={{ background: '#F8FAFC', padding: '18px 20px', borderRadius: '14px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column' }}>
+                                    <h5 style={{ margin: '0 0 14px', fontSize: '13px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                      <span>🔘</span> Descripción & Botones de Acción
+                                    </h5>
+
+                                    <div style={{ marginBottom: '14px', flex: 1 }}>
+                                      <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '750', color: '#475569', marginBottom: '5px' }}>
+                                        Descripción del Slide
+                                      </label>
+                                      <textarea
+                                        value={cur.desc || ''}
+                                        onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'desc', e.target.value)}
+                                        rows={3}
+                                        style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12.5px', resize: 'vertical' }}
+                                        placeholder="Texto explicativo para los clientes..."
+                                      />
+                                    </div>
+
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
+                                      <div style={{ background: '#FFFFFF', padding: '12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                                        <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '800', color: '#0284c7', marginBottom: '6px' }}>
+                                          🔘 Botón Primario
+                                        </label>
+                                        <input
+                                          type="text"
+                                          value={cur.primaryBtn?.text || ''}
+                                          onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'primaryBtn', 'text', e.target.value)}
+                                          placeholder="Texto botón (ej: Ver Catálogo)"
+                                          style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', marginBottom: '6px' }}
+                                        />
+                                        <select
+                                          value={cur.primaryBtn?.cat || 'all'}
+                                          onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'primaryBtn', 'cat', e.target.value)}
+                                          style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px' }}
+                                        >
+                                          <option value="all">Ir a: Todo el Catálogo</option>
+                                          <option value="networking">Ir a: Networking</option>
+                                          <option value="infraestructura">Ir a: Infraestructura</option>
+                                          <option value="comunicaciones_unificadas">Ir a: Comunicaciones Unificadas</option>
+                                          <option value="security">Ir a: Seguridad</option>
+                                        </select>
+                                      </div>
+
+                                      <div style={{ background: '#FFFFFF', padding: '12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+                                        <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '800', color: '#64748B', marginBottom: '6px' }}>
+                                          🔘 Botón Secundario
+                                        </label>
+                                        <input
+                                          type="text"
+                                          value={cur.secondaryBtn?.text || ''}
+                                          onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'secondaryBtn', 'text', e.target.value)}
+                                          placeholder="Texto botón (ej: Consultar Stock)"
+                                          style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', marginBottom: '6px' }}
+                                        />
+                                        <select
+                                          value={cur.secondaryBtn?.cat || 'all'}
+                                          onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'secondaryBtn', 'cat', e.target.value)}
+                                          style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px' }}
+                                        >
+                                          <option value="all">Ir a: Todo el Catálogo</option>
+                                          <option value="networking">Ir a: Networking</option>
+                                          <option value="infraestructura">Ir a: Infraestructura</option>
+                                          <option value="comunicaciones_unificadas">Ir a: Comunicaciones Unificadas</option>
+                                          <option value="security">Ir a: Seguridad</option>
+                                        </select>
+                                      </div>
+                                    </div>
+                                  </div>
                                 </div>
-                              </div>
+
+                                {/* 4. Métricas / 3 KPIs distribuidos a lo ancho */}
+                                <div style={{ background: '#F8FAFC', padding: '18px 20px', borderRadius: '14px', border: '1px solid #E2E8F0', marginBottom: '22px' }}>
+                                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '6px' }}>
+                                    <label style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                      <span>📊</span> 3 Métricas Destacadas del Banner (Botones / KPIs laterales en pantalla grande)
+                                    </label>
+                                    {cur.type === 'animated_stats' && (
+                                      <span style={{ fontSize: '11px', background: '#FEF3C7', color: '#D97706', padding: '3px 9px', borderRadius: '6px', fontWeight: '750' }}>
+                                        ⚡ Modo animado DACAS activo
+                                      </span>
+                                    )}
+                                  </div>
+                                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
+                                    {[0, 1, 2].map(mIdx => {
+                                      const m = cur.metrics?.[mIdx] || { value: '', label: '' };
+                                      return (
+                                        <div key={mIdx} style={{ background: '#FFFFFF', padding: '14px', borderRadius: '10px', border: '1px solid #E2E8F0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
+                                          <div style={{ fontSize: '12px', fontWeight: '800', color: '#0284c7', marginBottom: '6px' }}>
+                                            KPI / Botón #{mIdx + 1}
+                                          </div>
+                                          <input
+                                            type="text"
+                                            value={m.value || ''}
+                                            onChange={(e) => handleUpdateSlideMetric(editingSlideIdx, mIdx, 'value', e.target.value)}
+                                            placeholder={mIdx === 0 ? "Valor (ej: +25 Años)" : mIdx === 1 ? "Valor (ej: 12 Países)" : "Valor (ej: 24/7)"}
+                                            style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12.5px', fontWeight: '700', marginBottom: '6px' }}
+                                          />
+                                          <input
+                                            type="text"
+                                            value={m.label || ''}
+                                            onChange={(e) => handleUpdateSlideMetric(editingSlideIdx, mIdx, 'label', e.target.value)}
+                                            placeholder={mIdx === 0 ? "Etiqueta (ej: Liderando el Mercado IT)" : mIdx === 1 ? "Etiqueta (ej: Cobertura Regional)" : "Etiqueta (ej: Soporte Oficial)"}
+                                            style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '11.5px', color: '#64748B' }}
+                                          />
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                </div>
+                              </>
                             ) : (
-                              <div style={{ background: '#F8FAFC', padding: '12px 14px', borderRadius: '10px', border: '1px dashed #CBD5E1', fontSize: '12px', color: '#64748B' }}>
-                                💡 <em>En modo "Banner Gráfico Completo", se muestra únicamente la imagen subida adaptada a 420px de alto. Para mostrar títulos y los 3 botones / métricas, selecciona <strong>"Título + Métricas"</strong> arriba.</em>
+                              <div style={{ background: '#F8FAFC', padding: '16px 20px', borderRadius: '12px', border: '1.5px dashed #CBD5E1', fontSize: '13px', color: '#475569', marginBottom: '22px' }}>
+                                💡 <em>En modo <strong>"Banner Gráfico Completo"</strong>, la imagen se presenta limpia sin textos sobreimpresos ni botones de métricas en la home del Shop. Si deseas agregar textos y KPIs dinámicos, selecciona la opción <strong>"Título + Métricas"</strong> o <strong>"Animado Core DACAS"</strong> en la sección 1 arriba.</em>
                               </div>
                             )}
+
+                            {/* 5. Barra Inferior de Guardado */}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', paddingTop: '16px', borderTop: '1px solid #E2E8F0' }}>
+                              <div style={{ fontSize: '12.5px', color: '#64748B' }}>
+                                🌍 Configurando para: <strong>{selectedCountryScope === 'all' ? 'Todos los Países' : selectedCountryScope || 'AR'}</strong> • Los cambios se verán inmediatamente en la tienda tras guardar.
+                              </div>
+                              <button
+                                type="button"
+                                onClick={handleSaveVisualSettings}
+                                disabled={isSavingVisual}
+                                style={{
+                                  background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                                  color: '#FFFFFF',
+                                  border: 'none',
+                                  borderRadius: '10px',
+                                  padding: '12px 28px',
+                                  fontSize: '13.5px',
+                                  fontWeight: '800',
+                                  cursor: isSavingVisual ? 'wait' : 'pointer',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  boxShadow: '0 4px 14px rgba(15, 164, 222, 0.35)',
+                                  transition: 'all 0.15s'
+                                }}
+                              >
+                                <span>💾</span> {isSavingVisual ? 'Guardando Cambios...' : 'Guardar Diseño y Banners'}
+                              </button>
+                            </div>
 
                           </div>
                         );
