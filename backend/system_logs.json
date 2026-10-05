@@ -1,5 +1,138 @@
 [
   {
+    "id": 297,
+    "timestamp": "2026-10-05T15:36:50.963Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router (SKU: CRS328-24P-4S, Cat: networking, USD $480.00).",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 2,
+      "productName": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+      "sku": "CRS328-24P-4S",
+      "brand": "MikroTik",
+      "price": "480.00",
+      "category": "networking",
+      "timestamp": "2026-10-05T15:36:50.963Z"
+    }
+  },
+  {
+    "id": 296,
+    "timestamp": "2026-10-05T15:36:46.606Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router (SKU: CRS328-24P-4S, Cat: networking, USD $480.00).",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 2,
+      "productName": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+      "sku": "CRS328-24P-4S",
+      "brand": "MikroTik",
+      "price": "480.00",
+      "category": "networking",
+      "timestamp": "2026-10-05T15:36:46.606Z"
+    }
+  },
+  {
+    "id": 295,
+    "timestamp": "2026-10-04T23:56:39.851Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Vertiv Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA (SKU: GXT5-3000IRT2UXLE, Cat: infraestructura, USD $2150.00).",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 4,
+      "productName": "Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA",
+      "sku": "GXT5-3000IRT2UXLE",
+      "brand": "Vertiv",
+      "price": "2150.00",
+      "category": "infraestructura",
+      "timestamp": "2026-10-04T23:56:39.851Z"
+    }
+  },
+  {
+    "id": 294,
+    "timestamp": "2026-10-04T23:56:21.457Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 293,
+    "timestamp": "2026-10-04T23:54:52.112Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Aruba Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22 (SKU: R4W02A-AP22, Cat: networking, USD $195.00).",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 3,
+      "productName": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
+      "sku": "R4W02A-AP22",
+      "brand": "Aruba",
+      "price": "195.00",
+      "category": "networking",
+      "timestamp": "2026-10-04T23:54:52.110Z"
+    }
+  },
+  {
+    "id": 292,
+    "timestamp": "2026-10-03T19:46:15.252Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "3364d9060647a896990644c82e54c8266616c4f0a05a0a7a5dd4a308cbe989bc"
+    }
+  },
+  {
     "id": 291,
     "timestamp": "2026-10-03T19:20:43.584Z",
     "origen": "ecommerce",
