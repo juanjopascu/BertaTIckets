@@ -6075,6 +6075,7 @@ router.put('/settings/visual', authenticateToken, requireAdmin, async (req, res)
       ...updated,
       country_code: code
     };
+
     saveVisualSettingsToFile();
 
     res.json({

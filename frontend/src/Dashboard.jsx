@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TicketModal from './TicketModal';
 import AdminPersonalizacion from './AdminPersonalizacion';
-import AdminEcommerce from './AdminEcommerce';
+import AdminEcommerce, { DACAS_COUNTRIES_LIST } from './AdminEcommerce';
 import Reportes from './Reportes';
 import AdminDepartamentos from './AdminDepartamentos';
 import AdminEstados from './AdminEstados';
@@ -234,6 +234,36 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
       setTicketsProcesosAbierto(true);
     }
   }, [activeAdminView]);
+
+  const [ecommerceSubTab, setEcommerceSubTab] = useState('products');
+  const [ecommerceCountryScope, setEcommerceCountryScope] = useState(() => {
+    try {
+      const saved = localStorage.getItem('dacas_admin_country_scope');
+      return (saved && saved !== 'all') ? saved : 'AR';
+    } catch {
+      return 'AR';
+    }
+  });
+
+  useEffect(() => {
+    const handleCountryChanged = (e) => {
+      if (e?.detail?.country) {
+        setEcommerceCountryScope(e.detail.country);
+      }
+    };
+    window.addEventListener('dacas_country_changed', handleCountryChanged);
+    return () => window.removeEventListener('dacas_country_changed', handleCountryChanged);
+  }, []);
+
+  const handleEcommerceCountryChange = (code) => {
+    const safeCode = (!code || code === 'all') ? 'AR' : code;
+    setEcommerceCountryScope(safeCode);
+    try {
+      localStorage.setItem('dacas_admin_country_scope', safeCode);
+      localStorage.setItem('dacas_selected_country', safeCode);
+      window.dispatchEvent(new CustomEvent('dacas_country_changed', { detail: { country: safeCode } }));
+    } catch {}
+  };
 
   const [registroModo, setRegistroModo] = useState('existente'); // 'existente' o 'manual'
   const [selectedClienteEmail, setSelectedClienteEmail] = useState('');
@@ -913,7 +943,163 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
       <main className="crm-main-grid">
         {/* BARRA LATERAL DE DEPARTAMENTOS Y ADMINISTRACION */}
         <aside className="sidebar-depts sidebar-left">
-          {/* BOTÓN HOME PRINCIPAL */}
+          {activeAdminView === 'ecommerce' ? (
+            /* ── SIDEBAR DEDICADO E-COMMERCE (Administración y CRM ocultos) ── */
+            <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '14px', animation: 'fadeIn 0.2s ease-out' }}>
+              {/* Botón Volver a Administración / CRM General */}
+              <button
+                type="button"
+                onClick={() => {
+                  setActiveAdminView(null);
+                  setIsMaximized(false);
+                }}
+                className="sidebar-menu-btn"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  fontWeight: '750',
+                  padding: '10px 14px',
+                  width: '100%',
+                  borderRadius: '12px',
+                  border: '1.5px solid var(--border-color, #cbd5e1)',
+                  background: 'var(--card-bg, #ffffff)',
+                  color: '#0284c7',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem',
+                  boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+                  transition: 'all 0.15s ease'
+                }}
+                title="Regresar al Portal General de Administración y Tickets"
+              >
+                <span style={{ fontSize: '15px', fontWeight: '800' }}>←</span>
+                <span>Volver a Administración</span>
+              </button>
+
+              {/* Encabezado E-commerce */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 4px' }}>
+                <div style={{
+                  width: '36px',
+                  height: '36px',
+                  borderRadius: '10px',
+                  background: 'linear-gradient(135deg, #0fa4de, #0284c7)',
+                  color: '#ffffff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '18px',
+                  boxShadow: '0 4px 10px rgba(15, 164, 222, 0.3)'
+                }}>
+                  🛒
+                </div>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '0.98rem', fontWeight: '800', color: 'var(--text-main, #0f172a)' }}>
+                    Gestión E-commerce
+                  </h3>
+                  <span style={{ fontSize: '11px', color: 'var(--text-muted, #64748b)', fontWeight: '600' }}>
+                    Control Regional DACAS
+                  </span>
+                </div>
+              </div>
+
+              {/* Selector de Scope Activo en el Sidebar */}
+              <div style={{
+                background: 'var(--card-bg, #ffffff)',
+                borderRadius: '14px',
+                border: '1.5px solid #cbd5e1',
+                padding: '12px 14px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '10.5px', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Scope Activo
+                  </span>
+                  <span style={{ fontSize: '9px', background: 'linear-gradient(135deg, #0fa4de, #0284c7)', color: '#ffffff', padding: '2px 7px', borderRadius: '4px', fontWeight: '800' }}>
+                    PRIMARY KEY
+                  </span>
+                </div>
+
+                <div style={{ position: 'relative' }}>
+                  <select
+                    value={ecommerceCountryScope}
+                    onChange={(e) => handleEcommerceCountryChange(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 10px',
+                      borderRadius: '8px',
+                      border: '1.5px solid #0fa4de',
+                      background: '#f8fafc',
+                      fontSize: '12.5px',
+                      fontWeight: '750',
+                      color: '#0f172a',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    {(DACAS_COUNTRIES_LIST || []).map(c => (
+                      <option key={c.code} value={c.code}>
+                        {c.flag} {c.name} ({c.code})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div style={{ fontSize: '10.5px', color: '#64748b', marginTop: '6px', lineHeight: 1.3 }}>
+                  Catálogo, stock y precios filtrados para este país.
+                </div>
+              </div>
+
+              {/* Menú de Navegación Vertical de E-commerce */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1, overflowY: 'auto' }}>
+                <div style={{ fontSize: '11px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '4px 8px', marginBottom: '2px' }}>
+                  Módulos E-commerce
+                </div>
+                {[
+                  { id: 'products', label: 'Productos', icon: '📦' },
+                  { id: 'brands', label: 'Marcas', icon: '🏷️' },
+                  { id: 'countries', label: 'Países y Sedes', icon: '🌎' },
+                  { id: 'rules', label: 'Cupones & Reglas', icon: '🎟️' },
+                  { id: 'users', label: 'Clientes Mayoristas', icon: '👥' },
+                  { id: 'orders', label: 'Órdenes de Compra', icon: '📑' },
+                  { id: 'reportes', label: 'Reportería & Métricas', icon: '📊' },
+                  { id: 'pagos_envios', label: 'Pagos y Envíos', icon: '💳' },
+                  { id: 'visual', label: 'Diseño & Banners', icon: '🎨' },
+                  { id: 'n8n_bot', label: 'Bot n8n B2B', icon: '🤖' },
+                  { id: 'apli', label: 'Conexión Apli', icon: '⚡' }
+                ].map(item => {
+                  const isSelected = ecommerceSubTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setEcommerceSubTab(item.id)}
+                      className={`sidebar-menu-btn ${isSelected ? 'active' : ''}`}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '10px 14px',
+                        fontSize: '0.88rem',
+                        borderRadius: '10px',
+                        fontWeight: isSelected ? '800' : '650',
+                        background: isSelected ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : 'transparent',
+                        color: isSelected ? '#ffffff' : 'var(--text-main, #334155)',
+                        border: isSelected ? 'none' : '1px solid transparent',
+                        boxShadow: isSelected ? '0 4px 12px rgba(15, 164, 222, 0.3)' : 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ fontSize: '15px' }}>{item.icon}</span>
+                        <span>{item.label}</span>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <>
+              {/* BOTÓN HOME PRINCIPAL */}
           <div style={{ marginBottom: '14px' }}>
             <button
               type="button"
@@ -1430,6 +1616,8 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
               })}
             </ul>
           </div>
+            </>
+          )}
         </aside>
 
         {/* VISTAS EMBEBIDAS DE ADMINISTRACIÓN O TABLERO PRINCIPAL DE TICKETS */}
@@ -1507,6 +1695,25 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                   </span>
                   <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)' }}>
                     {ADMIN_VIEWS_INFO[activeAdminView]?.title || 'Administración'}
+                    {activeAdminView === 'ecommerce' && (
+                      <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', marginLeft: '8px' }}>
+                        • {
+                          {
+                            products: 'Catálogo de Productos',
+                            brands: 'Marcas',
+                            countries: 'Países y Sedes',
+                            rules: 'Cupones & Reglas',
+                            users: 'Clientes Mayoristas',
+                            orders: 'Órdenes de Compra',
+                            reportes: 'Reportería & Métricas',
+                            pagos_envios: 'Pagos y Envíos',
+                            visual: 'Diseño & Banners',
+                            n8n_bot: 'Bot n8n B2B',
+                            apli: 'Conexión Apli'
+                          }[ecommerceSubTab] || 'Gestión'
+                        }
+                      </span>
+                    )}
                   </h3>
                 </div>
               </div>
@@ -1587,7 +1794,20 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                   }}
                 />
               )}
-              {activeAdminView === 'ecommerce' && <AdminEcommerce embedded={true} />}
+              {activeAdminView === 'ecommerce' && (
+                <AdminEcommerce
+                  embedded={true}
+                  hideTopBars={true}
+                  activeTab={ecommerceSubTab}
+                  onTabChange={setEcommerceSubTab}
+                  countryScope={ecommerceCountryScope}
+                  onCountryScopeChange={handleEcommerceCountryChange}
+                  onBack={() => {
+                    setActiveAdminView(null);
+                    setIsMaximized(false);
+                  }}
+                />
+              )}
               {activeAdminView === 'erp' && <AdminErp embedded={true} usuario={usuario} theme={theme} onBack={() => setActiveAdminView(null)} />}
               {activeAdminView === 'reportes' && <Reportes embedded={true} />}
               {activeAdminView === 'departamentos' && <AdminDepartamentos embedded={true} />}

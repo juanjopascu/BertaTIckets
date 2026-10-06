@@ -80,7 +80,8 @@
             "label": "Protección con IA"
           }
         ],
-        "imageUrl": "http://localhost:3001/uploads/1791233778951-561243976-ChatGPT_Image_5_oct_2026__05_56_00_p.m..png"
+        "imageUrl": "http://localhost:3001/uploads/1791257066571-176282348-ChatGPT_Image_5_oct_2026__05_56_00_p.m..png",
+        "showOverlayText": true
       }
     ],
     "categories": [
@@ -131,14 +132,7 @@
         "eaton"
       ],
       "networking": [
-        {
-          "name": "mikrotik",
-          "countries": [
-            "US",
-            "AR",
-            "CL"
-          ]
-        },
+        "mikrotik",
         "aruba",
         "commscope"
       ]
@@ -512,6 +506,9 @@
       "infraestructura": [
         "panduit",
         "vertiv"
+      ],
+      "comunicaciones_unificadas": [
+        "audiocodes"
       ]
     },
     "brandBanners": [
@@ -642,8 +639,47 @@
         "avaya"
       ],
       "security": [
+        "algosec",
+        "barracuda",
+        "fortinet",
+        "f5",
+        "imperva",
+        "hitachi vantara",
+        "infoblox",
+        "nsfocus",
+        "radware",
+        "silver peak",
+        "sophos",
         "sonicwall",
-        "fortinet"
+        "veracode",
+        "vicarius",
+        "viewtinet"
+      ],
+      "infraestructura": [
+        "avocent",
+        "commscope",
+        "commscope netconnect",
+        "commscope systimax",
+        "eaton",
+        "gabitel",
+        "panduit",
+        "siemon",
+        "vertiv",
+        "tz"
+      ],
+      "networking": [
+        {
+          "name": "mikrotik",
+          "countries": [
+            "US",
+            "AR",
+            "CL"
+          ]
+        },
+        "aruba",
+        "infoblox",
+        "silver peak",
+        "commscope"
       ]
     },
     "brandBanners": [
@@ -747,12 +783,52 @@
       }
     ],
     "categoryBrands": {
+      "comunicaciones_unificadas": [
+        "audiocodes",
+        "avaya"
+      ],
+      "security": [
+        "algosec",
+        "barracuda",
+        "fortinet",
+        "f5",
+        "imperva",
+        "hitachi vantara",
+        "infoblox",
+        "nsfocus",
+        "radware",
+        "silver peak",
+        "sophos",
+        "sonicwall",
+        "veracode",
+        "vicarius",
+        "viewtinet"
+      ],
       "infraestructura": [
+        "avocent",
+        "commscope",
+        "commscope netconnect",
+        "commscope systimax",
+        "eaton",
+        "gabitel",
+        "panduit",
+        "siemon",
         "vertiv",
-        "panduit"
+        "tz"
       ],
       "networking": [
-        "mikrotik"
+        {
+          "name": "mikrotik",
+          "countries": [
+            "US",
+            "AR",
+            "CL"
+          ]
+        },
+        "aruba",
+        "infoblox",
+        "silver peak",
+        "commscope"
       ]
     },
     "brandBanners": [
@@ -839,7 +915,17 @@
     ],
     "categoryBrands": {
       "networking": [
-        "mikrotik"
+        "mikrotik",
+        "aruba"
+      ],
+      "security": [
+        "fortinet"
+      ],
+      "infraestructura": [
+        "vertiv"
+      ],
+      "comunicaciones_unificadas": [
+        "avaya"
       ]
     },
     "brandBanners": [],
@@ -1083,10 +1169,17 @@
         "panduit",
         "siemon",
         "vertiv",
-        "tz"
+        "tz",
+        {
+          "name": "mikrotik",
+          "countries": [
+            "US",
+            "AR",
+            "CL"
+          ]
+        }
       ],
       "networking": [
-        "mikrotik",
         "aruba",
         "infoblox",
         "silver peak",
@@ -1132,16 +1225,58 @@
       }
     ],
     "homeCarousels": {
+      "list": [
+        {
+          "id": "car_featured",
+          "title": "🔥 Productos Destacados",
+          "subtitle": "Equipamiento de alta demanda con entrega inmediata y garantía oficial DACAS",
+          "badge": "TOP SELLERS",
+          "badgeColor": "#0fa4de",
+          "icon": "star",
+          "enabled": true,
+          "selectionType": "featured",
+          "targetCategory": "all",
+          "targetBrand": "all",
+          "productIds": []
+        },
+        {
+          "id": "car_custom",
+          "title": "⚡ Oportunidades & Ofertas IT",
+          "subtitle": "Soluciones corporativas seleccionadas con precios mayoristas para canales",
+          "badge": "SELECCIÓN DACAS",
+          "badgeColor": "#10b981",
+          "icon": "shield",
+          "enabled": true,
+          "selectionType": "manual",
+          "targetCategory": "all",
+          "targetBrand": "all",
+          "productIds": []
+        }
+      ],
       "featured": {
-        "enabled": true,
+        "id": "car_featured",
         "title": "🔥 Productos Destacados",
         "subtitle": "Equipamiento de alta demanda con entrega inmediata y garantía oficial DACAS",
+        "badge": "TOP SELLERS",
+        "badgeColor": "#0fa4de",
+        "icon": "star",
+        "enabled": true,
+        "selectionType": "featured",
+        "targetCategory": "all",
+        "targetBrand": "all",
         "productIds": []
       },
       "custom": {
+        "id": "car_custom",
+        "title": "⚡ Oportunidades & Ofertas IT",
+        "subtitle": "Soluciones corporativas seleccionadas con precios mayoristas para canales",
+        "badge": "SELECCIÓN DACAS",
+        "badgeColor": "#10b981",
+        "icon": "shield",
         "enabled": true,
-        "title": "⚡ Oportunidades & Novedades IT",
-        "subtitle": "Soluciones corporativas seleccionadas con precios mayoristas especiales para canales",
+        "selectionType": "manual",
+        "targetCategory": "all",
+        "targetBrand": "all",
         "productIds": []
       }
     },
@@ -1242,7 +1377,9 @@
         "tagline": "Licenciamiento Corporativo CSP, Windows Server y M365",
         "color": "#00A4EF"
       }
-    }
+    },
+    "country_code": "US",
+    "country_name": "Estados Unidos"
   },
   "PE": {
     "announcement": {
@@ -1476,7 +1613,14 @@
         "tz"
       ],
       "networking": [
-        "mikrotik",
+        {
+          "name": "mikrotik",
+          "countries": [
+            "US",
+            "AR",
+            "CL"
+          ]
+        },
         "aruba",
         "infoblox",
         "silver peak",
@@ -1866,7 +2010,14 @@
         "tz"
       ],
       "networking": [
-        "mikrotik",
+        {
+          "name": "mikrotik",
+          "countries": [
+            "US",
+            "AR",
+            "CL"
+          ]
+        },
         "aruba",
         "infoblox",
         "silver peak",
@@ -2256,7 +2407,14 @@
         "tz"
       ],
       "networking": [
-        "mikrotik",
+        {
+          "name": "mikrotik",
+          "countries": [
+            "US",
+            "AR",
+            "CL"
+          ]
+        },
         "aruba",
         "infoblox",
         "silver peak",
@@ -2646,7 +2804,14 @@
         "tz"
       ],
       "networking": [
-        "mikrotik",
+        {
+          "name": "mikrotik",
+          "countries": [
+            "US",
+            "AR",
+            "CL"
+          ]
+        },
         "aruba",
         "infoblox",
         "silver peak",
@@ -3036,7 +3201,14 @@
         "tz"
       ],
       "networking": [
-        "mikrotik",
+        {
+          "name": "mikrotik",
+          "countries": [
+            "US",
+            "AR",
+            "CL"
+          ]
+        },
         "aruba",
         "infoblox",
         "silver peak",

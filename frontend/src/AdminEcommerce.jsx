@@ -131,6 +131,14 @@ const MOCK_ORDERS = [
 ];
 const MOCK_PRODUCTS = [];
 const MOCK_RULES = [];
+const MOCK_COUNTRIES = [];
+const MOCK_USERS = [];
+const DEFAULT_N8N_WORKFLOW_TEMPLATE = {
+  name: 'DACAS E-Commerce AI Agent Workflow',
+  nodes: [],
+  connections: {},
+  settings: { executionOrder: 'v1' }
+};
 
 // --- DEFAULT CHECKOUT METHODS (SHIPPING & PAYMENT) ---
 const DEFAULT_CHECKOUT_METHODS = {
@@ -219,7 +227,7 @@ const DEFAULT_CHECKOUT_METHODS = {
   terms_conditions_text: 'Acepto las condiciones comerciales de DACAS B2B, términos de garantía oficial de fabricante de 12/36 meses y la emisión de la orden de compra con carácter vinculante para reserva de stock.'
 };
 
-const DACAS_COUNTRIES_LIST = [
+export const DACAS_COUNTRIES_LIST = [
   { code: 'AR', name: 'Argentina', flag: '🇦🇷', id: 2 },
   { code: 'CL', name: 'Chile', flag: '🇨🇱', id: 4 },
   { code: 'CO', name: 'Colombia', flag: '🇨🇴', id: 5 },
@@ -1021,13 +1029,27 @@ function CarouselEditorCard({
   );
 }
 
-function AdminEcommerce({ embedded = false }) {
+function AdminEcommerce({
+  embedded = false,
+  hideTopBars = false,
+  activeTab: externalActiveTab,
+  onTabChange: externalOnTabChange,
+  countryScope: externalCountryScope,
+  onCountryScopeChange: externalOnCountryScopeChange,
+  onBack
+}) {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('products');
+  const [internalActiveTab, setInternalActiveTab] = useState('products');
+  const activeTab = externalActiveTab !== undefined ? externalActiveTab : internalActiveTab;
+  const setActiveTab = (tab) => {
+    setInternalActiveTab(tab);
+    if (externalOnTabChange) externalOnTabChange(tab);
+  };
 
   // ── Primary Key / Country Scope Pivot (Cada país se administra de forma 100% independiente) ──
   const [selectedCountryScope, setSelectedCountryScope] = useState(() => {
     try {
+      if (externalCountryScope && externalCountryScope !== 'all') return externalCountryScope;
       const saved = localStorage.getItem('dacas_admin_country_scope');
       return (saved && saved !== 'all') ? saved : 'AR';
     } catch {
@@ -1035,11 +1057,29 @@ function AdminEcommerce({ embedded = false }) {
     }
   });
 
+  useEffect(() => {
+    if (externalCountryScope && externalCountryScope !== selectedCountryScope) {
+      setSelectedCountryScope(externalCountryScope);
+    }
+  }, [externalCountryScope]);
+
+  useEffect(() => {
+    const handleStorageScope = (e) => {
+      const c = e?.detail?.country;
+      if (c && c !== selectedCountryScope) {
+        setSelectedCountryScope(c);
+      }
+    };
+    window.addEventListener('dacas_country_changed', handleStorageScope);
+    return () => window.removeEventListener('dacas_country_changed', handleStorageScope);
+  }, [selectedCountryScope]);
+
   const activeCountryObj = DACAS_COUNTRIES_LIST.find(c => c.code === selectedCountryScope) || DACAS_COUNTRIES_LIST[0];
 
   const handleCountryScopeChange = (code) => {
     const safeCode = (!code || code === 'all') ? 'AR' : code;
     setSelectedCountryScope(safeCode);
+    if (externalOnCountryScopeChange) externalOnCountryScopeChange(safeCode);
     try {
       localStorage.setItem('dacas_admin_country_scope', safeCode);
       localStorage.setItem('dacas_selected_country', safeCode);
@@ -1417,6 +1457,8 @@ function AdminEcommerce({ embedded = false }) {
   const [brandAdminSearch, setBrandAdminSearch] = useState('');
   const [brandAdminCategory, setBrandAdminCategory] = useState('all');
   const [brandCountryFilter, setBrandCountryFilter] = useState('all');
+  const [brandsViewMode, setBrandsViewMode] = useState('categories'); // 'categories' | 'grid'
+  const [activeCategoryPill, setActiveCategoryPill] = useState('all');
   const [showNewBrandModal, setShowNewBrandModal] = useState(false);
   const [newBrandForm, setNewBrandForm] = useState({
     name: '',
@@ -1429,25 +1471,48 @@ function AdminEcommerce({ embedded = false }) {
   });
 
   const allAdminBrands = useMemo(() => {
-    const keysSet = new Set(Object.keys(BRAND_INFO || {}));
-    if (visualConfig?.brandCustomInfo) {
-      Object.keys(visualConfig.brandCustomInfo).forEach(k => {
-        if (k) keysSet.add(k.toLowerCase());
-      });
-    }
-    Object.values(visualConfig?.categoryBrands || {}).forEach(list => {
+    const keysMap = new Map(); // key -> { catKey, originalIdx, countries }
+    Object.entries(visualConfig?.categoryBrands || {}).forEach(([cat, list]) => {
       if (Array.isArray(list)) {
-        list.forEach(item => {
+        list.forEach((item, idx) => {
           const name = typeof item === 'string' ? item : item?.name;
-          if (name) keysSet.add(name.toLowerCase());
+          if (name) {
+            const k = name.toLowerCase().trim();
+            const bCountries = (typeof item === 'object' && Array.isArray(item.countries)) ? item.countries : [];
+            if (!keysMap.has(k)) {
+              keysMap.set(k, { catKey: cat, originalIdx: idx, countries: bCountries });
+            }
+          }
         });
       }
     });
+
+    // Fallback si categoryBrands no cargó aún
+    if (keysMap.size === 0) {
+      Object.keys(BRAND_INFO || {}).forEach(k => {
+        keysMap.set(k.toLowerCase().trim(), { catKey: 'networking', originalIdx: -1, countries: [] });
+      });
+    }
+
+    // Agregar marcas que tengan productos en inventario
     products.forEach(p => {
-      if (p.brand) keysSet.add(p.brand.toLowerCase());
+      if (p.brand) {
+        const k = p.brand.toLowerCase().trim();
+        if (!keysMap.has(k)) {
+          keysMap.set(k, { catKey: 'networking', originalIdx: -1, countries: [] });
+        }
+      }
     });
 
-    return Array.from(keysSet).map(key => {
+    if (visualConfig?.brandCustomInfo) {
+      Object.keys(visualConfig.brandCustomInfo).forEach(k => {
+        if (k && !keysMap.has(k.toLowerCase().trim())) {
+          keysMap.set(k.toLowerCase().trim(), { catKey: 'networking', originalIdx: -1, countries: [] });
+        }
+      });
+    }
+
+    return Array.from(keysMap.entries()).map(([key, meta]) => {
       const defaultInfo = BRAND_INFO?.[key] || {
         name: key.charAt(0).toUpperCase() + key.slice(1),
         logo: '',
@@ -1460,22 +1525,7 @@ function AdminEcommerce({ embedded = false }) {
       const finalTagline = custom.tagline || defaultInfo.tagline || `Soluciones corporativas oficiales ${key.toUpperCase()}`;
       const finalColor = custom.color || defaultInfo.color || '#0fa4de';
 
-      let catKey = 'networking';
-      let originalIdx = -1;
-      Object.entries(visualConfig?.categoryBrands || {}).forEach(([cat, list]) => {
-        if (Array.isArray(list)) {
-          const idx = list.findIndex(item => {
-            const bName = typeof item === 'string' ? item : item?.name;
-            return bName && bName.toLowerCase() === key;
-          });
-          if (idx !== -1) {
-            catKey = cat;
-            originalIdx = idx;
-          }
-        }
-      });
-
-      let countries = [];
+      let countries = meta.countries || [];
       if (visualConfig?.brandCountries && Array.isArray(visualConfig.brandCountries[key])) {
         countries = visualConfig.brandCountries[key];
       }
@@ -1488,8 +1538,8 @@ function AdminEcommerce({ embedded = false }) {
         logo: finalLogo,
         tagline: finalTagline,
         color: finalColor,
-        category: catKey,
-        originalIdx,
+        category: meta.catKey,
+        originalIdx: meta.originalIdx,
         countries,
         productCount: prodCount,
         hasCustomLogo: Boolean(custom.logo),
@@ -2176,8 +2226,8 @@ function AdminEcommerce({ embedded = false }) {
       titleLine2: 'Hardware & Licencias Oficiales',
       titleColor: '#0fa4de',
       desc: 'Descripción destacada de la tecnología, marcas y servicios de valor agregado para integradores.',
-      primaryBtn: { text: 'Ver Catálogo', cat: 'all' },
-      secondaryBtn: { text: 'Consultar Stock', cat: 'all' },
+      primaryBtn: { text: 'Ver Catálogo', link: '/shop', enabled: true },
+      secondaryBtn: { text: 'Consultar Stock', link: '/contacto', enabled: true },
       type: 'metrics',
       metrics: [
         { value: 'Entrega Inmediata', label: 'Stock Regional' },
@@ -2749,19 +2799,80 @@ function AdminEcommerce({ embedded = false }) {
     }
   };
 
-  const handleDeleteBrand = (catKey, brandIdx, brandName) => {
-    if (!window.confirm(`¿Estás seguro de que deseas eliminar la marca "${brandName.toUpperCase()}" de esta sección?`)) {
+  const handleReassignBrandCategory = async (brandName, fromCat, toCat) => {
+    if (!brandName || fromCat === toCat) return;
+    const cleanName = brandName.toLowerCase().trim();
+    const oldList = visualConfig?.categoryBrands?.[fromCat] || [];
+    const newList = visualConfig?.categoryBrands?.[toCat] || [];
+
+    // Encontrar el item en la lista original
+    const itemToMove = oldList.find(item => {
+      const b = normalizeBrandItem(item, fromCat);
+      return b.name === cleanName;
+    }) || cleanName;
+
+    // Remover de la categoría anterior
+    const updatedOldList = oldList.filter(item => {
+      const b = normalizeBrandItem(item, fromCat);
+      return b.name !== cleanName;
+    });
+
+    // Agregar a la nueva categoría si no está ya
+    const existsInNew = newList.some(item => {
+      const b = normalizeBrandItem(item, toCat);
+      return b.name === cleanName;
+    });
+    const updatedNewList = existsInNew ? newList : [...newList, itemToMove];
+
+    const newConfig = {
+      ...visualConfig,
+      categoryBrands: {
+        ...(visualConfig?.categoryBrands || {}),
+        [fromCat]: updatedOldList,
+        [toCat]: updatedNewList
+      }
+    };
+
+    setVisualConfig(newConfig);
+
+    try {
+      const targetCountry = selectedCountryScope && selectedCountryScope !== 'all' ? selectedCountryScope : 'AR';
+      await fetch(`${API_BASE_URL}/api/ecommerce/settings/visual?country=${targetCountry}`, {
+        method: 'PUT',
+        headers: getAuthHeader(),
+        body: JSON.stringify(newConfig)
+      });
+    } catch (err) {
+      console.error('Error reasignando categoría de marca:', err);
+    }
+  };
+
+  const handleDeleteBrand = async (catKey, brandIdx, brandName) => {
+    const countryName = DACAS_COUNTRIES_LIST.find(c => c.code === selectedCountryScope)?.name || selectedCountryScope || 'este país';
+    if (!window.confirm(`¿Estás seguro de que deseas quitar la marca "${brandName.toUpperCase()}" de ${countryName}?`)) {
       return;
     }
     const currentList = visualConfig?.categoryBrands?.[catKey] || [];
     const updatedList = currentList.filter((_, idx) => idx !== brandIdx);
-    setVisualConfig({
+    const newConfig = {
       ...visualConfig,
       categoryBrands: {
         ...(visualConfig?.categoryBrands || {}),
         [catKey]: updatedList
       }
-    });
+    };
+    setVisualConfig(newConfig);
+
+    try {
+      const targetCountry = selectedCountryScope && selectedCountryScope !== 'all' ? selectedCountryScope : 'AR';
+      await fetch(`${API_BASE_URL}/api/ecommerce/settings/visual?country=${targetCountry}`, {
+        method: 'PUT',
+        headers: getAuthHeader(),
+        body: JSON.stringify(newConfig)
+      });
+    } catch (err) {
+      console.error('Error persistiendo eliminación de marca:', err);
+    }
   };
 
   const handleSaveBrandCountries = (catKey, brandIdx, newCountries) => {
@@ -2938,6 +3049,19 @@ function AdminEcommerce({ embedded = false }) {
     setCountryForm({ code: '', name: '', tax_rate: '0', shipping_cost: '0', nationalization_cost: '0', discount_rate: '0' });
     setEditingCountry(null);
     setShowCountryForm(false);
+  };
+
+  const handleEditCountry = (c) => {
+    setEditingCountry(c);
+    setCountryForm({
+      code: c.code || '',
+      name: c.name || '',
+      tax_rate: c.tax_rate ?? '0',
+      shipping_cost: c.shipping_cost ?? '0',
+      nationalization_cost: c.nationalization_cost ?? '0',
+      discount_rate: c.discount_rate ?? '0'
+    });
+    setShowCountryForm(true);
   };
 
   const handleCountrySubmit = async (e) => {
@@ -4048,7 +4172,9 @@ function AdminEcommerce({ embedded = false }) {
       )}
 
       <main className={embedded ? "crm-main-embedded" : "crm-main"} style={embedded ? { width: '100%', maxWidth: '100%', padding: 0, margin: 0 } : {}}>
-        {/* ── Executive Primary Key / Country Scope Bar ── */}
+        {!hideTopBars && (
+          <>
+            {/* ── Executive Primary Key / Country Scope Bar ── */}
         <div style={{
           background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
           borderRadius: '16px',
@@ -4291,6 +4417,8 @@ function AdminEcommerce({ embedded = false }) {
             </span>
           </button>
         </div>
+          </>
+        )}
 
         {error && <div style={{ color: 'red', marginBottom: '20px' }}>{error}</div>}
 
@@ -5146,286 +5274,768 @@ function AdminEcommerce({ embedded = false }) {
         )}
 
         {/* ═══════════════ BRANDS (MARCAS OFICIALES) ═══════════════ */}
-        {activeTab === 'brands' && (
-          <section className="board-section" style={{ width: '100%', boxSizing: 'border-box' }}>
-            {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '14px' }}>
-              <div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '24px' }}>🏷️</span>
-                  <h2 style={{ margin: 0, fontSize: '1.45rem', fontWeight: '800', color: '#071524' }}>
-                    Marcas y Fabricantes Oficiales
-                  </h2>
-                </div>
-                <p style={{ margin: '6px 0 0', fontSize: '0.88rem', color: '#64748b' }}>
-                  Personaliza los logotipos, descripciones comerciales, áreas tecnológicas y países autorizados de cada marca en el Shop.
-                </p>
-              </div>
+        {activeTab === 'brands' && (() => {
+          const currentScopeCode = (selectedCountryScope && selectedCountryScope !== 'all') ? selectedCountryScope : 'AR';
+          const currentCountryObj = DACAS_COUNTRIES_LIST.find(c => c.code === currentScopeCode) || {
+            code: currentScopeCode,
+            name: currentScopeCode,
+            flag: '🇦🇷'
+          };
 
-              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                <button
-                  type="button"
-                  className="dacas-pill-btn active"
-                  onClick={() => {
-                    setNewBrandForm({
-                      name: '',
-                      logo: '',
-                      tagline: '',
-                      color: '#0fa4de',
-                      category: 'networking',
-                      isGlobal: true,
-                      countries: []
-                    });
-                    setShowNewBrandModal(true);
-                  }}
-                  title="Crear y configurar una nueva marca"
-                  style={{ background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)', color: '#fff', border: 'none', boxShadow: '0 4px 14px rgba(15, 164, 222, 0.35)' }}
-                >
-                  <BrandingVectorIcon name="plus" size={16} />
-                  <span>Nueva Marca</span>
-                </button>
-              </div>
-            </div>
+          const CATEGORY_GROUPS = [
+            { key: 'networking', label: 'Networking', icon: '🌐', color: '#0fa4de', bg: 'rgba(15, 164, 222, 0.08)' },
+            { key: 'infraestructura', label: 'Infraestructura', icon: '⚡', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.08)' },
+            { key: 'comunicaciones_unificadas', label: 'Comunicaciones Unificadas', icon: '📞', color: '#10b981', bg: 'rgba(16, 185, 129, 0.08)' },
+            { key: 'security', label: 'Seguridad & Ciberseguridad', icon: '🛡️', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.08)' }
+          ];
 
-            {/* KPI Badges */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-              gap: '14px',
-              marginBottom: '22px'
-            }}>
-              <div style={{ background: '#f8fafc', padding: '14px 18px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div style={{ fontSize: '11.5px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Total Marcas</div>
-                <div style={{ fontSize: '24px', fontWeight: '800', color: '#0f172a', marginTop: '4px' }}>{allAdminBrands.length}</div>
-              </div>
-              <div style={{ background: '#f8fafc', padding: '14px 18px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div style={{ fontSize: '11.5px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Con Logo Configurado</div>
-                <div style={{ fontSize: '24px', fontWeight: '800', color: '#0284c7', marginTop: '4px' }}>
-                  {allAdminBrands.filter(b => Boolean(b.logo)).length}
-                </div>
-              </div>
-              <div style={{ background: '#f8fafc', padding: '14px 18px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div style={{ fontSize: '11.5px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Con Productos Activos</div>
-                <div style={{ fontSize: '24px', fontWeight: '800', color: '#16a34a', marginTop: '4px' }}>
-                  {allAdminBrands.filter(b => b.productCount > 0).length}
-                </div>
-              </div>
-              <div style={{ background: '#f8fafc', padding: '14px 18px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
-                <div style={{ fontSize: '11.5px', color: '#64748b', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Visualización en Shop</div>
-                <div style={{ fontSize: '13px', fontWeight: '700', color: '#0f172a', marginTop: '6px' }}>
-                  Directorio & Marcas Slide
-                </div>
-              </div>
-            </div>
+          // Conteo total y por categoría en este país
+          const countsByCat = {};
+          let totalBrandsInCountry = 0;
+          CATEGORY_GROUPS.forEach(g => {
+            const list = (visualConfig?.categoryBrands && visualConfig.categoryBrands[g.key]) || [];
+            countsByCat[g.key] = list.length;
+            totalBrandsInCountry += list.length;
+          });
 
-            {/* Filter & Search Bar */}
-            <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '22px' }}>
-              <div style={{ position: 'relative', flex: '1 1 240px', minWidth: '180px' }}>
-                <input
-                  type="text"
-                  placeholder="🔍 Buscar marca o descripción..."
-                  value={brandAdminSearch}
-                  onChange={(e) => setBrandAdminSearch(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '9px 34px 9px 12px',
-                    borderRadius: '10px',
-                    border: '1px solid #cbd5e1',
-                    background: '#ffffff',
-                    color: '#0f172a',
-                    fontSize: '0.88rem',
-                    boxSizing: 'border-box'
-                  }}
-                />
-                {brandAdminSearch && (
-                  <button
-                    onClick={() => setBrandAdminSearch('')}
-                    style={{ position: 'absolute', right: '10px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontWeight: 'bold' }}
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
+          // Filtrar grupos a mostrar según la píldora activa
+          const visibleGroups = activeCategoryPill === 'all'
+            ? CATEGORY_GROUPS
+            : CATEGORY_GROUPS.filter(g => g.key === activeCategoryPill);
 
-              {/* Category Filter Buttons */}
-              <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                {[
-                  { key: 'all', label: 'Todas' },
-                  { key: 'security', label: '🛡️ Ciberseguridad' },
-                  { key: 'networking', label: '🌐 Networking' },
-                  { key: 'infraestructura', label: '⚡ Infraestructura' },
-                  { key: 'comunicaciones_unificadas', label: '📞 Comunicaciones Unificadas' }
-                ].map(c => {
-                  const isSel = brandAdminCategory === c.key;
-                  return (
+          const qSearch = brandAdminSearch.toLowerCase().trim();
+
+          return (
+            <section className="board-section" style={{ width: '100%', boxSizing: 'border-box' }}>
+              {/* ── CABECERA PRINCIPAL CON SCOPE ACTIVO (PRIMARY KEY) ── */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'flex-start',
+                marginBottom: '22px',
+                flexWrap: 'wrap',
+                gap: '16px',
+                background: 'var(--card-bg, #ffffff)',
+                padding: '22px 24px',
+                borderRadius: '18px',
+                border: '1.5px solid var(--border-color, #e2e8f0)',
+                boxShadow: '0 4px 16px rgba(0,0,0,0.03)'
+              }}>
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '28px' }}>🏷️</span>
+                    <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: '850', color: 'var(--text-main, #071524)', letterSpacing: '-0.02em' }}>
+                      Marcas Oficiales de {currentCountryObj.name}
+                    </h2>
+                    <span style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      background: 'linear-gradient(135deg, rgba(15, 164, 222, 0.12), rgba(2, 132, 199, 0.18))',
+                      color: '#0284c7',
+                      border: '1px solid #bae6fd',
+                      padding: '4px 10px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      fontWeight: '800',
+                      letterSpacing: '0.02em'
+                    }}>
+                      <span>{currentCountryObj.flag}</span>
+                      <span>PRIMARY KEY: {currentCountryObj.code}</span>
+                    </span>
+                  </div>
+                  <p style={{ margin: '8px 0 0', fontSize: '0.9rem', color: 'var(--text-muted, #64748b)', maxWidth: '780px', lineHeight: 1.45 }}>
+                    Gestiona los fabricantes y asigna sus categorías tecnológicas para clientes que operan en <strong>{currentCountryObj.name}</strong>. Cada país cuenta con su propio catálogo independiente y sincronizado en tiempo real con el Shop.
+                  </p>
+                </div>
+
+                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  {/* Selector de Modo de Vista */}
+                  <div style={{ display: 'flex', alignItems: 'center', background: '#f1f5f9', padding: '3px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
                     <button
-                      key={c.key}
-                      onClick={() => setBrandAdminCategory(c.key)}
+                      type="button"
+                      onClick={() => setBrandsViewMode('categories')}
                       style={{
-                        padding: '7px 13px',
+                        background: brandsViewMode === 'categories' ? '#ffffff' : 'transparent',
+                        color: brandsViewMode === 'categories' ? '#0284c7' : '#64748b',
+                        fontWeight: '750',
+                        padding: '6px 12px',
                         borderRadius: '8px',
-                        fontSize: '12px',
-                        fontWeight: isSel ? '700' : '600',
-                        border: isSel ? '1.5px solid #0fa4de' : '1px solid #cbd5e1',
-                        background: isSel ? 'rgba(15, 164, 222, 0.12)' : '#ffffff',
-                        color: isSel ? '#0284c7' : '#475569',
+                        border: 'none',
+                        boxShadow: brandsViewMode === 'categories' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
                         cursor: 'pointer',
+                        fontSize: '12px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '5px',
                         transition: 'all 0.15s ease'
                       }}
+                      title="Organizador visual por categorías tecnológicas"
                     >
-                      {c.label}
+                      <span>🏭</span>
+                      <span>Por Categorías & Asignación</span>
                     </button>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Grid of Brands */}
-            {filteredAdminBrands.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '60px 20px', background: '#f8fafc', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
-                <div style={{ fontSize: '36px', marginBottom: '8px' }}>🔍</div>
-                <h4 style={{ margin: 0, color: '#334155' }}>No se encontraron marcas</h4>
-                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748b' }}>Prueba ajustando el término de búsqueda o categoría.</p>
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '18px' }}>
-                {filteredAdminBrands.map(b => {
-                  const isGlobal = !b.countries || b.countries.length === 0;
-                  return (
-                    <div
-                      key={b.key}
+                    <button
+                      type="button"
+                      onClick={() => setBrandsViewMode('grid')}
                       style={{
-                        background: '#ffffff',
-                        borderRadius: '16px',
-                        border: '1.5px solid #e2e8f0',
-                        padding: '20px',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'space-between',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
-                        transition: 'all 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
-                        position: 'relative'
+                        background: brandsViewMode === 'grid' ? '#ffffff' : 'transparent',
+                        color: brandsViewMode === 'grid' ? '#0284c7' : '#64748b',
+                        fontWeight: '750',
+                        padding: '6px 12px',
+                        borderRadius: '8px',
+                        border: 'none',
+                        boxShadow: brandsViewMode === 'grid' ? '0 2px 6px rgba(0,0,0,0.06)' : 'none',
+                        cursor: 'pointer',
+                        fontSize: '12px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        transition: 'all 0.15s ease'
                       }}
+                      title="Directorio completo de tarjetas con logotipos"
                     >
-                      <div>
-                        {/* Top row: Logo preview + badges */}
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px' }}>
-                          <div style={{
-                            width: '56px',
-                            height: '56px',
-                            borderRadius: '14px',
-                            background: 'rgba(15, 164, 222, 0.08)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            padding: '6px',
-                            border: `1.5px solid ${b.color ? `${b.color}33` : '#e2e8f0'}`
-                          }}>
-                            <BrandLogoImg src={b.logo} alt={b.name} name={b.name} color={b.color} size={32} />
-                          </div>
+                      <span>🗂️</span>
+                      <span>Directorio de Tarjetas</span>
+                    </button>
+                  </div>
 
-                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
-                            <span style={{
-                              background: b.productCount > 0 ? 'rgba(16, 185, 129, 0.12)' : '#f1f5f9',
-                              color: b.productCount > 0 ? '#10b981' : '#94a3b8',
-                              fontWeight: '700',
-                              fontSize: '11px',
-                              padding: '2px 8px',
-                              borderRadius: '999px'
-                            }}>
-                              {b.productCount} {b.productCount === 1 ? 'Producto' : 'Productos'}
-                            </span>
-                            <span style={{
-                              background: 'rgba(15, 164, 222, 0.08)',
-                              color: '#0284c7',
-                              fontWeight: '700',
-                              fontSize: '10.5px',
-                              padding: '2px 7px',
-                              borderRadius: '6px',
-                              textTransform: 'capitalize'
-                            }}>
-                              {b.category.replace(/_/g, ' ')}
-                            </span>
-                          </div>
-                        </div>
+                  {/* Botón Principal: Asignar / Nueva Marca */}
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setNewBrandForm({
+                        name: '',
+                        logo: '',
+                        tagline: '',
+                        color: '#0fa4de',
+                        category: activeCategoryPill !== 'all' ? activeCategoryPill : 'networking',
+                        isGlobal: true,
+                        countries: []
+                      });
+                      setShowNewBrandModal(true);
+                    }}
+                    style={{
+                      background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                      color: '#ffffff',
+                      border: 'none',
+                      borderRadius: '10px',
+                      padding: '10px 18px',
+                      fontSize: '13px',
+                      fontWeight: '750',
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      boxShadow: '0 4px 14px rgba(15, 164, 222, 0.35)',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <span style={{ fontSize: '15px' }}>➕</span>
+                    <span>Asignar / Nueva Marca a {currentCountryObj.code}</span>
+                  </button>
+                </div>
+              </div>
 
-                        {/* Name & Tagline */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
-                          <h3 style={{ margin: 0, fontSize: '1.18rem', fontWeight: '800', color: '#0f172a' }}>
-                            {b.name}
-                          </h3>
-                          {b.hasCustomLogo && (
-                            <span title="Logo personalizado activo" style={{ fontSize: '12px' }}>✨</span>
-                          )}
-                        </div>
+              {/* ── KPI METRICS DEL PAÍS ACTIVO ── */}
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+                gap: '12px',
+                marginBottom: '20px'
+              }}>
+                <div style={{ background: '#f8fafc', padding: '14px 18px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                  <div style={{ fontSize: '11px', color: '#64748b', fontWeight: '750', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    Total Marcas en {currentCountryObj.code}
+                  </div>
+                  <div style={{ fontSize: '24px', fontWeight: '850', color: '#0f172a', marginTop: '4px' }}>
+                    {totalBrandsInCountry}
+                  </div>
+                </div>
+                {CATEGORY_GROUPS.map(g => (
+                  <div key={g.key} style={{ background: '#f8fafc', padding: '14px 18px', borderRadius: '14px', border: '1px solid #e2e8f0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', color: '#64748b', fontWeight: '750', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                      <span>{g.icon}</span>
+                      <span>{g.label.split('&')[0].trim()}</span>
+                    </div>
+                    <div style={{ fontSize: '24px', fontWeight: '850', color: g.color, marginTop: '4px' }}>
+                      {countsByCat[g.key] || 0}
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-                        <p style={{
-                          margin: '0 0 14px',
-                          fontSize: '0.84rem',
-                          color: '#475569',
-                          lineHeight: 1.45,
-                          background: '#f8fafc',
-                          padding: '10px 12px',
-                          borderRadius: '10px',
-                          border: '1px solid #f1f5f9',
-                          minHeight: '44px'
+              {/* ── BARRA DE HERRAMIENTAS: PILLS DE CATEGORÍAS & BUSCADOR ── */}
+              <div style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '12px',
+                marginBottom: '24px',
+                background: '#ffffff',
+                padding: '12px 16px',
+                borderRadius: '14px',
+                border: '1px solid #e2e8f0'
+              }}>
+                {/* Selector de Pestañas de Categoría */}
+                <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', alignItems: 'center' }}>
+                  <button
+                    type="button"
+                    onClick={() => setActiveCategoryPill('all')}
+                    style={{
+                      padding: '7px 14px',
+                      borderRadius: '8px',
+                      fontSize: '12.5px',
+                      fontWeight: activeCategoryPill === 'all' ? '800' : '650',
+                      border: activeCategoryPill === 'all' ? '1.5px solid #0fa4de' : '1px solid #cbd5e1',
+                      background: activeCategoryPill === 'all' ? '#e0f2fe' : '#ffffff',
+                      color: activeCategoryPill === 'all' ? '#0284c7' : '#475569',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}
+                  >
+                    <span>✨</span>
+                    <span>Todas ({totalBrandsInCountry})</span>
+                  </button>
+
+                  {CATEGORY_GROUPS.map(g => {
+                    const isSel = activeCategoryPill === g.key;
+                    const count = countsByCat[g.key] || 0;
+                    return (
+                      <button
+                        key={g.key}
+                        type="button"
+                        onClick={() => setActiveCategoryPill(g.key)}
+                        style={{
+                          padding: '7px 14px',
+                          borderRadius: '8px',
+                          fontSize: '12.5px',
+                          fontWeight: isSel ? '800' : '650',
+                          border: isSel ? `1.5px solid ${g.color}` : '1px solid #cbd5e1',
+                          background: isSel ? g.bg : '#ffffff',
+                          color: isSel ? g.color : '#475569',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <span>{g.icon}</span>
+                        <span>{g.label}</span>
+                        <span style={{
+                          background: isSel ? g.color : '#e2e8f0',
+                          color: isSel ? '#ffffff' : '#64748b',
+                          fontSize: '10.5px',
+                          fontWeight: '800',
+                          padding: '1px 6px',
+                          borderRadius: '999px',
+                          marginLeft: '2px'
                         }}>
-                          {b.tagline}
-                        </p>
+                          {count}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
 
-                        {/* Country badges */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', marginBottom: '16px' }}>
-                          <span style={{ fontSize: '11px', color: '#94a3b8', fontWeight: '600' }}>Cobertura:</span>
-                          {isGlobal ? (
-                            <span style={{ background: '#dcfce7', color: '#16a34a', fontSize: '10.5px', fontWeight: '700', padding: '2px 7px', borderRadius: '6px' }}>
-                              🌐 Todos los Países
-                            </span>
-                          ) : (
-                            <span style={{ background: '#e0f2fe', color: '#0369a1', fontSize: '10.5px', fontWeight: '700', padding: '2px 7px', borderRadius: '6px' }}>
-                              {b.countries.map(c => {
-                                const found = DACAS_COUNTRIES_LIST.find(x => x.code === c);
-                                return found ? found.flag : c;
-                              }).join(' ')} ({b.countries.length})
-                            </span>
-                          )}
+                {/* Buscador Rápido de Marcas */}
+                <div style={{ position: 'relative', minWidth: '220px', flex: '0 1 280px' }}>
+                  <input
+                    type="text"
+                    placeholder={`🔍 Buscar marca en ${currentCountryObj.name}...`}
+                    value={brandAdminSearch}
+                    onChange={(e) => setBrandAdminSearch(e.target.value)}
+                    style={{
+                      width: '100%',
+                      padding: '8px 30px 8px 12px',
+                      borderRadius: '8px',
+                      border: '1px solid #cbd5e1',
+                      background: '#ffffff',
+                      color: '#0f172a',
+                      fontSize: '12.5px',
+                      fontWeight: '600',
+                      boxSizing: 'border-box'
+                    }}
+                  />
+                  {brandAdminSearch && (
+                    <button
+                      onClick={() => setBrandAdminSearch('')}
+                      style={{ position: 'absolute', right: '8px', top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#94a3b8', cursor: 'pointer', fontWeight: 'bold' }}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* ── MODO 1: ASIGNADOR VISUAL POR CATEGORÍAS (AMPLIO, MODERNO E INTUITIVO) ── */}
+              {brandsViewMode === 'categories' && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                  {visibleGroups.map(group => {
+                    const rawList = (visualConfig?.categoryBrands && visualConfig.categoryBrands[group.key]) || [];
+                    const normalizedBrands = rawList.map((item, idx) => ({
+                      ...normalizeBrandItem(item, group.key),
+                      originalIdx: idx
+                    }));
+
+                    const displayedBrands = normalizedBrands.filter(b => {
+                      if (!qSearch) return true;
+                      return b.name.toLowerCase().includes(qSearch) || (b.tagline && b.tagline.toLowerCase().includes(qSearch));
+                    });
+
+                    return (
+                      <div
+                        key={group.key}
+                        style={{
+                          background: '#ffffff',
+                          borderRadius: '18px',
+                          border: `1.5px solid ${group.color}33`,
+                          padding: '22px',
+                          boxShadow: '0 4px 16px rgba(0,0,0,0.02)',
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '16px'
+                        }}
+                      >
+                        {/* Cabecera del Bloque de Categoría */}
+                        <div style={{
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          flexWrap: 'wrap',
+                          gap: '12px',
+                          borderBottom: '1px solid #f1f5f9',
+                          paddingBottom: '14px'
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{
+                              width: '38px',
+                              height: '38px',
+                              borderRadius: '10px',
+                              background: group.bg,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '20px',
+                              border: `1px solid ${group.color}44`
+                            }}>
+                              {group.icon}
+                            </div>
+                            <div>
+                              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '850', color: '#0f172a' }}>
+                                {group.label}
+                              </h3>
+                              <div style={{ fontSize: '11.5px', color: '#64748b', fontWeight: '600', marginTop: '2px' }}>
+                                {displayedBrands.length} {displayedBrands.length === 1 ? 'marca asignada' : 'marcas asignadas'} para {currentCountryObj.name}
+                              </div>
+                            </div>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setNewBrandForm({
+                                name: '',
+                                logo: '',
+                                tagline: '',
+                                color: group.color,
+                                category: group.key,
+                                isGlobal: true,
+                                countries: []
+                              });
+                              setShowNewBrandModal(true);
+                            }}
+                            style={{
+                              background: group.bg,
+                              color: group.color,
+                              border: `1.5px solid ${group.color}55`,
+                              borderRadius: '8px',
+                              padding: '7px 14px',
+                              fontSize: '12px',
+                              fontWeight: '750',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              transition: 'all 0.15s ease'
+                            }}
+                          >
+                            <span>➕</span>
+                            <span>Añadir a {group.label.split('&')[0].trim()}</span>
+                          </button>
                         </div>
-                      </div>
 
-                      {/* Bottom action row */}
-                      <div style={{ display: 'flex', gap: '8px', paddingTop: '14px', borderTop: '1px solid #f1f5f9' }}>
-                        <button
-                          type="button"
-                          onClick={() => handleOpenEditBrand(b.key, b.category, b.originalIdx)}
+                        {/* Grid de Marcas Amplio y Espacioso */}
+                        {displayedBrands.length === 0 ? (
+                          <div style={{
+                            textAlign: 'center',
+                            padding: '36px 20px',
+                            background: '#f8fafc',
+                            borderRadius: '12px',
+                            border: '1.5px dashed #cbd5e1',
+                            color: '#64748b'
+                          }}>
+                            <div style={{ fontSize: '28px', marginBottom: '6px' }}>🏷️</div>
+                            <div style={{ fontWeight: '750', fontSize: '13.5px', color: '#334155' }}>
+                              No hay marcas asignadas a {group.label} en {currentCountryObj.name}
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
+                              Haz clic en "+ Añadir a {group.label}" para asignar un fabricante a este país.
+                            </div>
+                          </div>
+                        ) : (
+                          <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))',
+                            gap: '16px'
+                          }}>
+                            {displayedBrands.map(b => {
+                              const bKey = b.name.toLowerCase().trim();
+                              const customInfo = visualConfig?.brandCustomInfo?.[bKey] || {};
+                              const defaultInfo = BRAND_INFO?.[bKey] || {};
+                              const displayName = customInfo.name || defaultInfo.name || b.name.toUpperCase();
+                              const logoSrc = customInfo.logo !== undefined ? customInfo.logo : (defaultInfo.logo || '');
+                              const tagline = customInfo.tagline || defaultInfo.tagline || `Soluciones oficiales ${displayName}`;
+                              const brandProdCount = products.filter(p => p.brand && p.brand.toLowerCase() === bKey).length;
+
+                              return (
+                                <div
+                                  key={b.originalIdx}
+                                  style={{
+                                    background: '#ffffff',
+                                    borderRadius: '14px',
+                                    border: '1.5px solid #e2e8f0',
+                                    padding: '16px',
+                                    display: 'flex',
+                                    flexDirection: 'column',
+                                    justifyContent: 'space-between',
+                                    gap: '12px',
+                                    boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
+                                    transition: 'all 0.15s ease'
+                                  }}
+                                >
+                                  <div>
+                                    {/* Cabecera de la Tarjeta */}
+                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '10px' }}>
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                                        <div style={{
+                                          width: '44px',
+                                          height: '44px',
+                                          borderRadius: '10px',
+                                          background: '#f8fafc',
+                                          border: '1px solid #e2e8f0',
+                                          display: 'flex',
+                                          alignItems: 'center',
+                                          justifyContent: 'center',
+                                          padding: '4px',
+                                          flexShrink: 0
+                                        }}>
+                                          <BrandLogoImg src={logoSrc} alt={displayName} name={displayName} color={group.color} size={28} />
+                                        </div>
+                                        <div style={{ minWidth: 0 }}>
+                                          <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: '850', color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            {displayName}
+                                          </h4>
+                                          <span style={{ fontSize: '10.5px', color: '#64748b', fontWeight: '600' }}>
+                                            {currentCountryObj.flag} Activa en {currentCountryObj.code}
+                                          </span>
+                                        </div>
+                                      </div>
+
+                                      <span style={{
+                                        background: brandProdCount > 0 ? 'rgba(16, 185, 129, 0.12)' : '#f1f5f9',
+                                        color: brandProdCount > 0 ? '#10b981' : '#94a3b8',
+                                        fontSize: '10.5px',
+                                        fontWeight: '750',
+                                        padding: '2px 8px',
+                                        borderRadius: '999px',
+                                        whiteSpace: 'nowrap'
+                                      }}>
+                                        {brandProdCount > 0 ? `📦 ${brandProdCount} prod.` : '0 prod.'}
+                                      </span>
+                                    </div>
+
+                                    {/* Tagline comercial */}
+                                    <p style={{
+                                      margin: '0 0 10px',
+                                      fontSize: '11.5px',
+                                      color: '#64748b',
+                                      lineHeight: 1.35,
+                                      minHeight: '32px',
+                                      display: '-webkit-box',
+                                      WebkitLineClamp: 2,
+                                      WebkitBoxOrient: 'vertical',
+                                      overflow: 'hidden'
+                                    }}>
+                                      {tagline}
+                                    </p>
+
+                                    {/* ── SELECTOR DIRECTO DE REASIGNACIÓN DE CATEGORÍA ── */}
+                                    <div style={{
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      justifyContent: 'space-between',
+                                      background: '#f8fafc',
+                                      padding: '6px 10px',
+                                      borderRadius: '8px',
+                                      border: '1px solid #e2e8f0',
+                                      marginTop: '6px'
+                                    }}>
+                                      <span style={{ fontSize: '11px', fontWeight: '750', color: '#64748b' }}>
+                                        📂 Categoría:
+                                      </span>
+                                      <select
+                                        value={group.key}
+                                        onChange={(e) => handleReassignBrandCategory(b.name, group.key, e.target.value)}
+                                        style={{
+                                          fontSize: '11px',
+                                          fontWeight: '750',
+                                          color: '#0f172a',
+                                          border: `1.5px solid ${group.color}`,
+                                          borderRadius: '6px',
+                                          padding: '3px 8px',
+                                          background: '#ffffff',
+                                          cursor: 'pointer'
+                                        }}
+                                        title="Cambiar categoría de esta marca en este país"
+                                      >
+                                        <option value="networking">🌐 Networking</option>
+                                        <option value="infraestructura">⚡ Infraestructura</option>
+                                        <option value="comunicaciones_unificadas">📞 Comunicaciones</option>
+                                        <option value="security">🛡️ Seguridad</option>
+                                      </select>
+                                    </div>
+                                  </div>
+
+                                  {/* Botones de Acción */}
+                                  <div style={{ display: 'flex', gap: '6px', paddingTop: '10px', borderTop: '1px solid #f1f5f9' }}>
+                                    <button
+                                      type="button"
+                                      onClick={() => handleOpenEditBrand(b.name, group.key, b.originalIdx)}
+                                      style={{
+                                        flex: 1,
+                                        background: '#f1f5f9',
+                                        color: '#0284c7',
+                                        border: '1px solid #cbd5e1',
+                                        borderRadius: '8px',
+                                        padding: '6px 10px',
+                                        fontSize: '11.5px',
+                                        fontWeight: '750',
+                                        cursor: 'pointer',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '5px'
+                                      }}
+                                    >
+                                      <span>✏️</span>
+                                      <span>Editar Logo</span>
+                                    </button>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => handleDeleteBrand(group.key, b.originalIdx, b.name)}
+                                      title={`Quitar marca de ${currentCountryObj.name}`}
+                                      style={{
+                                        background: '#fef2f2',
+                                        color: '#dc2626',
+                                        border: '1px solid #fecaca',
+                                        borderRadius: '8px',
+                                        padding: '6px 10px',
+                                        fontSize: '12px',
+                                        fontWeight: '750',
+                                        cursor: 'pointer'
+                                      }}
+                                    >
+                                      🗑️
+                                    </button>
+                                  </div>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+
+              {/* ── MODO 2: DIRECTORIO COMPLETO DE TARJETAS ── */}
+              {brandsViewMode === 'grid' && (
+                <div>
+                  {filteredAdminBrands.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '60px 20px', background: '#f8fafc', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+                      <div style={{ fontSize: '36px', marginBottom: '8px' }}>🔍</div>
+                      <h4 style={{ margin: 0, color: '#334155' }}>No se encontraron marcas en {currentCountryObj.name}</h4>
+                      <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#64748b' }}>Prueba ajustando el término de búsqueda.</p>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))', gap: '16px' }}>
+                      {filteredAdminBrands.map(b => (
+                        <div
+                          key={b.key}
                           style={{
-                            flex: 1,
-                            background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
-                            color: '#ffffff',
-                            border: 'none',
-                            borderRadius: '10px',
-                            padding: '9px 12px',
-                            fontSize: '12.5px',
-                            fontWeight: '700',
-                            cursor: 'pointer',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            gap: '6px',
-                            boxShadow: '0 2px 8px rgba(15, 164, 222, 0.25)'
+                            background: '#ffffff',
+                            borderRadius: '16px',
+                            border: '1.5px solid #e2e8f0',
+                            padding: '18px',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            justifyContent: 'space-between',
+                            boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
+                            position: 'relative'
                           }}
                         >
-                          <BrandingVectorIcon name="edit" size={13} color="#ffffff" />
-                          <span>Editar Marca & Logo</span>
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-          </section>
-        )}
+                          <div>
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                              <div style={{
+                                width: '50px',
+                                height: '50px',
+                                borderRadius: '12px',
+                                background: '#f8fafc',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                padding: '6px',
+                                border: '1px solid #e2e8f0'
+                              }}>
+                                <BrandLogoImg src={b.logo} alt={b.name} name={b.name} color={b.color} size={30} />
+                              </div>
+                              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '4px' }}>
+                                <span style={{
+                                  background: b.productCount > 0 ? 'rgba(16, 185, 129, 0.12)' : '#f1f5f9',
+                                  color: b.productCount > 0 ? '#10b981' : '#94a3b8',
+                                  fontWeight: '750',
+                                  fontSize: '11px',
+                                  padding: '2px 8px',
+                                  borderRadius: '999px'
+                                }}>
+                                  {b.productCount} {b.productCount === 1 ? 'Producto' : 'Productos'}
+                                </span>
+                                <span style={{
+                                  background: 'rgba(15, 164, 222, 0.08)',
+                                  color: '#0284c7',
+                                  fontWeight: '700',
+                                  fontSize: '10.5px',
+                                  padding: '2px 7px',
+                                  borderRadius: '6px',
+                                  textTransform: 'capitalize'
+                                }}>
+                                  {b.category.replace(/_/g, ' ')}
+                                </span>
+                              </div>
+                            </div>
 
-        {/* ═══════════════ COUNTRIES ═══════════════ */}
+                            <h3 style={{ margin: '0 0 6px', fontSize: '1.15rem', fontWeight: '850', color: '#0f172a' }}>
+                              {b.name}
+                            </h3>
+
+                            <p style={{
+                              margin: '0 0 12px',
+                              fontSize: '0.82rem',
+                              color: '#475569',
+                              lineHeight: 1.4,
+                              background: '#f8fafc',
+                              padding: '8px 10px',
+                              borderRadius: '8px',
+                              border: '1px solid #f1f5f9',
+                              minHeight: '38px'
+                            }}>
+                              {b.tagline}
+                            </p>
+
+                            {/* Dropdown de cambio rápido de categoría */}
+                            <div style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              background: '#f8fafc',
+                              padding: '6px 10px',
+                              borderRadius: '8px',
+                              border: '1px solid #e2e8f0',
+                              marginBottom: '12px'
+                            }}>
+                              <span style={{ fontSize: '11px', fontWeight: '750', color: '#64748b' }}>
+                                📂 Mover a:
+                              </span>
+                              <select
+                                value={b.category}
+                                onChange={(e) => handleReassignBrandCategory(b.name, b.category, e.target.value)}
+                                style={{
+                                  fontSize: '11px',
+                                  fontWeight: '750',
+                                  color: '#0f172a',
+                                  border: '1.5px solid #0fa4de',
+                                  borderRadius: '6px',
+                                  padding: '3px 8px',
+                                  background: '#ffffff',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                <option value="networking">🌐 Networking</option>
+                                <option value="infraestructura">⚡ Infraestructura</option>
+                                <option value="comunicaciones_unificadas">📞 Comunicaciones</option>
+                                <option value="security">🛡️ Seguridad</option>
+                              </select>
+                            </div>
+                          </div>
+
+                          <div style={{ display: 'flex', gap: '6px', paddingTop: '10px', borderTop: '1px solid #f1f5f9' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleOpenEditBrand(b.key, b.category, b.originalIdx)}
+                              style={{
+                                flex: 1,
+                                background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                                color: '#ffffff',
+                                border: 'none',
+                                borderRadius: '8px',
+                                padding: '8px 10px',
+                                fontSize: '12px',
+                                fontWeight: '750',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                gap: '5px'
+                              }}
+                            >
+                              <span>✏️</span>
+                              <span>Editar Marca</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteBrand(b.category, b.originalIdx, b.name)}
+                              title={`Quitar marca de ${currentCountryObj.name}`}
+                              style={{
+                                background: '#fef2f2',
+                                color: '#dc2626',
+                                border: '1px solid #fecaca',
+                                borderRadius: '8px',
+                                padding: '8px 10px',
+                                fontSize: '12px',
+                                fontWeight: '750',
+                                cursor: 'pointer'
+                              }}
+                            >
+                              🗑️
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
+            </section>
+          );
+        })()}        {/* ═══════════════ COUNTRIES ═══════════════ */}
         {activeTab === 'countries' && (
           <section className="board-section">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
@@ -9232,89 +9842,170 @@ function AdminEcommerce({ embedded = false }) {
                     {/* Live Slide Preview Box */}
                     {visualConfig.heroSlides && visualConfig.heroSlides.length > 0 && (() => {
                       const slide = visualConfig.heroSlides[editingSlideIdx] || visualConfig.heroSlides[0];
+                      const isImageOnly = (slide.type === 'custom_image' && slide.showOverlayText !== true) || slide.showOverlayText === false;
+                      const hasBackground = Boolean(slide.imageUrl);
+
                       return (
                         <div style={{
-                          background: '#071524',
+                          background: 'linear-gradient(135deg, #071524 0%, #0f2742 60%, #12354c 100%)',
                           borderRadius: '20px',
-                          padding: '30px',
+                          padding: isImageOnly ? '0' : '32px 36px',
                           color: '#FFFFFF',
                           marginBottom: '24px',
-                          border: '1px solid rgba(15, 164, 222, 0.3)',
-                          boxShadow: '0 10px 30px rgba(0,0,0,0.2)',
+                          border: '1px solid rgba(15, 164, 222, 0.35)',
+                          boxShadow: '0 10px 30px rgba(0,0,0,0.25)',
                           position: 'relative',
-                          overflow: 'hidden'
+                          overflow: 'hidden',
+                          minHeight: '260px',
+                          display: 'flex',
+                          alignItems: 'center'
                         }}>
+                          {/* Imagen de Fondo si está cargada */}
+                          {hasBackground && (
+                            <div style={{ position: 'absolute', inset: 0, zIndex: 0 }}>
+                              <img
+                                src={slide.imageUrl}
+                                alt="Preview Fondo"
+                                style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                              />
+                              {!isImageOnly && (
+                                <div style={{
+                                  position: 'absolute',
+                                  inset: 0,
+                                  background: slide.overlayStyle === 'strong'
+                                    ? 'linear-gradient(90deg, rgba(7, 21, 36, 0.96) 0%, rgba(7, 21, 36, 0.88) 50%, rgba(7, 21, 36, 0.72) 100%)'
+                                    : slide.overlayStyle === 'light'
+                                    ? 'linear-gradient(90deg, rgba(7, 21, 36, 0.82) 0%, rgba(7, 21, 36, 0.6) 50%, rgba(7, 21, 36, 0.25) 100%)'
+                                    : slide.overlayStyle === 'none'
+                                    ? 'transparent'
+                                    : 'linear-gradient(90deg, rgba(7, 21, 36, 0.94) 0%, rgba(7, 21, 36, 0.82) 48%, rgba(7, 21, 36, 0.55) 75%, rgba(7, 21, 36, 0.35) 100%)'
+                                }} />
+                              )}
+                            </div>
+                          )}
+
+                          {/* Badge de Estado del Slide */}
                           <div style={{
                             position: 'absolute',
                             top: '12px',
                             right: '16px',
-                            background: 'rgba(15, 164, 222, 0.2)',
+                            background: 'rgba(7, 21, 36, 0.88)',
+                            backdropFilter: 'blur(8px)',
+                            border: '1px solid rgba(15, 164, 222, 0.4)',
                             color: '#38bdf8',
                             fontSize: '11px',
                             fontWeight: '800',
-                            padding: '3px 10px',
+                            padding: '4px 12px',
                             borderRadius: '999px',
-                            letterSpacing: '0.05em'
+                            letterSpacing: '0.05em',
+                            zIndex: 10
                           }}>
-                            VISTA PREVIA EN VIVO (SLIDE #{editingSlideIdx + 1})
+                            {hasBackground ? (isImageOnly ? '🖼️ SOLO IMAGEN DE FONDO' : '✨ FONDO + TEXTOS COMBINADOS') : '📊 DISEÑO TECNOLÓGICO DACAS'} • SLIDE #{editingSlideIdx + 1}
                           </div>
 
-                          <div style={{ maxWidth: '900px' }}>
-                            <div style={{
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '6px',
-                              background: 'rgba(15, 164, 222, 0.15)',
-                              border: `1px solid ${slide.titleColor || '#0fa4de'}`,
-                              color: slide.titleColor || '#38bdf8',
-                              fontSize: '11.5px',
-                              fontWeight: '700',
-                              padding: '4px 12px',
-                              borderRadius: '999px',
-                              marginBottom: '12px'
-                            }}>
-                              <span>{slide.badgeIcon || '🛡️'}</span> {slide.badge || 'BADGE DEL BANNER'}
-                            </div>
-
-                            <h3 style={{ margin: '0 0 10px', fontSize: '1.75rem', fontWeight: '900', lineHeight: 1.2 }}>
-                              {slide.titleLine1 || 'Título Línea 1'} <br />
-                              <span style={{ color: slide.titleColor || '#0fa4de' }}>
-                                {slide.titleLine2 || 'Título Línea 2'}
-                              </span>
-                            </h3>
-
-                            <p style={{ color: '#94A3B8', fontSize: '13.5px', lineHeight: 1.5, margin: '0 0 18px', maxWidth: '650px' }}>
-                              {slide.desc || 'Descripción del slide para el cliente'}
-                            </p>
-
-                            <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
-                              {slide.primaryBtn?.text && (
+                          {/* Contenido en Modo Solo Imagen */}
+                          {isImageOnly ? (
+                            <div style={{ width: '100%', height: '260px', position: 'relative', zIndex: 1, display: 'flex', alignItems: 'flex-end', justifyContent: 'flex-end', padding: '20px' }}>
+                              {slide.primaryBtn?.enabled !== false && slide.primaryBtn?.text && (
                                 <span style={{
                                   background: 'linear-gradient(135deg, #0fa4de, #0284c7)',
                                   color: '#fff',
-                                  padding: '8px 18px',
+                                  padding: '10px 22px',
                                   borderRadius: '999px',
-                                  fontSize: '12.5px',
-                                  fontWeight: '700'
+                                  fontSize: '13px',
+                                  fontWeight: '750',
+                                  boxShadow: '0 4px 14px rgba(15, 164, 222, 0.4)'
                                 }}>
                                   {slide.primaryBtn.text} →
                                 </span>
                               )}
-                              {slide.secondaryBtn?.text && (
-                                <span style={{
-                                  background: 'rgba(255,255,255,0.1)',
-                                  border: '1px solid rgba(15, 164, 222, 0.3)',
-                                  color: '#fff',
-                                  padding: '8px 18px',
-                                  borderRadius: '999px',
-                                  fontSize: '12.5px',
-                                  fontWeight: '600'
-                                }}>
-                                  {slide.secondaryBtn.text}
-                                </span>
-                              )}
                             </div>
-                          </div>
+                          ) : (
+                            /* Contenido en Modo Combinado o Estándar */
+                            <div style={{ maxWidth: '100%', width: '100%', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '30px', position: 'relative', zIndex: 1, flexWrap: 'wrap' }}>
+                              <div style={{ flex: 1, minWidth: '320px' }}>
+                                <div style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '6px',
+                                  background: 'rgba(15, 164, 222, 0.2)',
+                                  border: `1px solid ${slide.titleColor || '#0fa4de'}`,
+                                  color: slide.titleColor || '#38bdf8',
+                                  fontSize: '11.5px',
+                                  fontWeight: '700',
+                                  padding: '4px 12px',
+                                  borderRadius: '999px',
+                                  marginBottom: '12px',
+                                  backdropFilter: 'blur(6px)'
+                                }}>
+                                  <span>{slide.badgeIcon || '🛡️'}</span> {slide.badge || 'BADGE DEL BANNER'}
+                                </div>
+
+                                <h3 style={{ margin: '0 0 10px', fontSize: '1.75rem', fontWeight: '900', lineHeight: 1.2, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
+                                  {slide.titleLine1 || 'Título Línea 1'} <br />
+                                  <span style={{ color: slide.titleColor || '#0fa4de' }}>
+                                    {slide.titleLine2 || 'Título Línea 2'}
+                                  </span>
+                                </h3>
+
+                                <p style={{ color: '#E2E8F0', fontSize: '13.5px', lineHeight: 1.5, margin: '0 0 18px', maxWidth: '650px', textShadow: '0 1px 6px rgba(0,0,0,0.6)' }}>
+                                  {slide.desc || 'Descripción del slide para el cliente'}
+                                </p>
+
+                                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
+                                  {slide.primaryBtn?.enabled !== false && slide.primaryBtn?.text && (
+                                    <span style={{
+                                      background: 'linear-gradient(135deg, #0fa4de, #0284c7)',
+                                      color: '#fff',
+                                      padding: '10px 22px',
+                                      borderRadius: '999px',
+                                      fontSize: '13px',
+                                      fontWeight: '750',
+                                      boxShadow: '0 4px 14px rgba(15, 164, 222, 0.4)'
+                                    }}>
+                                      {slide.primaryBtn.text} →
+                                    </span>
+                                  )}
+                                  {slide.secondaryBtn?.enabled !== false && slide.secondaryBtn?.text && (
+                                    <span style={{
+                                      background: 'rgba(255,255,255,0.12)',
+                                      border: '1px solid rgba(15, 164, 222, 0.35)',
+                                      backdropFilter: 'blur(6px)',
+                                      color: '#fff',
+                                      padding: '10px 22px',
+                                      borderRadius: '999px',
+                                      fontSize: '13px',
+                                      fontWeight: '600'
+                                    }}>
+                                      {slide.secondaryBtn.text}
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+
+                              {/* KPIs laterales en la preview */}
+                              <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                                {(Array.isArray(slide?.metrics) ? slide.metrics : []).slice(0, 3).map((m, mIdx) => (
+                                  <div key={mIdx} style={{
+                                    textAlign: 'center',
+                                    background: 'rgba(15, 39, 66, 0.85)',
+                                    backdropFilter: 'blur(12px)',
+                                    border: '1px solid rgba(15, 164, 222, 0.3)',
+                                    borderRadius: '12px',
+                                    padding: '12px 16px',
+                                    minWidth: '95px'
+                                  }}>
+                                    <div style={{ fontSize: '1.25rem', fontWeight: '900', color: slide.titleColor || '#0fa4de' }}>
+                                      {m.value || '--'}
+                                    </div>
+                                    <div style={{ fontSize: '11px', color: '#CBD5E1', marginTop: '2px', fontWeight: '600' }}>
+                                      {m.label || '--'}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       );
                     })()}
@@ -9449,8 +10140,9 @@ function AdminEcommerce({ embedded = false }) {
                           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '14px' }}>
                             {visualConfig.heroSlides.map((s, idx) => {
                               const isSelected = editingSlideIdx === idx;
-                              const slideKey = `hero-slide-item-${s.id !== undefined && s.id !== null ? s.id : idx}`;
-                              const typeBadge = s.type === 'custom_image' ? '🖼️ Gráfico' : s.type === 'animated_stats' ? '⚡ Animado' : '📊 Título + KPIs';
+                              const isImageOnlySlide = (s.type === 'custom_image' && s.showOverlayText !== true) || s.showOverlayText === false;
+                              const typeBadge = isImageOnlySlide ? '🖼️ Solo Imagen' : s.imageUrl ? '✨ Fondo + Textos' : s.type === 'animated_stats' ? '⚡ Animado' : '📊 Título + KPIs';
+                              const slideKey = `hero-slide-item-${s?.id !== undefined && s?.id !== null ? s.id : idx}`;
                               
                               return (
                                 <div
@@ -9596,46 +10288,61 @@ function AdminEcommerce({ embedded = false }) {
                               </label>
                               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
                                 {[
-                                  { id: 'metrics', label: '📊 Título + Métricas', desc: 'Tipográfico con 3 KPIs laterales y botones' },
-                                  { id: 'custom_image', label: '🖼️ Banner Gráfico Completo', desc: 'Diseño 100% en Imagen (oculta textos sobreimpresos)' },
-                                  { id: 'animated_stats', label: '⚡ Animado Core DACAS', desc: 'Contadores automáticos y acentos tecnológicos' }
+                                  { id: 'metrics', label: '📊 Título + 3 KPIs Laterales', desc: 'Textos, botones y 3 métricas destacadas (admite imagen de fondo)' },
+                                  { id: 'animated_stats', label: '⚡ Animado Core DACAS', desc: 'Textos, botones y contadores tecnológicos (admite imagen de fondo)' },
+                                  { id: 'custom_image', label: '🖼️ Solo Imagen (Sin Textos)', desc: 'Para banners prediseñados donde no requieres textos sobreimpresos' }
                                 ].map(t => {
-                                  const active = (cur.type || 'metrics') === t.id;
+                                  const isSelected = t.id === 'custom_image'
+                                    ? (cur.type === 'custom_image' && cur.showOverlayText !== true) || cur.showOverlayText === false
+                                    : (cur.type || 'metrics') === t.id && cur.showOverlayText !== false;
                                   return (
                                     <button
                                       key={t.id}
                                       type="button"
-                                      onClick={() => handleUpdateSlideField(editingSlideIdx, 'type', t.id)}
+                                      onClick={() => {
+                                        if (t.id === 'custom_image') {
+                                          handleUpdateSlideField(editingSlideIdx, 'type', 'custom_image');
+                                          handleUpdateSlideField(editingSlideIdx, 'showOverlayText', false);
+                                        } else {
+                                          handleUpdateSlideField(editingSlideIdx, 'type', t.id);
+                                          handleUpdateSlideField(editingSlideIdx, 'showOverlayText', true);
+                                        }
+                                      }}
                                       style={{
                                         padding: '12px 14px',
                                         borderRadius: '10px',
                                         textAlign: 'left',
-                                        background: active ? '#0284c7' : '#FFFFFF',
-                                        color: active ? '#FFFFFF' : '#334155',
-                                        border: `2px solid ${active ? '#0284c7' : '#CBD5E1'}`,
+                                        background: isSelected ? '#0284c7' : '#FFFFFF',
+                                        color: isSelected ? '#FFFFFF' : '#334155',
+                                        border: `2px solid ${isSelected ? '#0284c7' : '#CBD5E1'}`,
                                         cursor: 'pointer',
                                         fontSize: '12.5px',
                                         fontWeight: '750',
-                                        boxShadow: active ? '0 4px 12px rgba(2, 132, 199, 0.22)' : 'none',
+                                        boxShadow: isSelected ? '0 4px 12px rgba(2, 132, 199, 0.22)' : 'none',
                                         transition: 'all 0.15s'
                                       }}
                                     >
                                       <div style={{ fontSize: '13px', marginBottom: '3px' }}>{t.label}</div>
-                                      <div style={{ fontSize: '11px', opacity: active ? 0.95 : 0.75, fontWeight: '500' }}>{t.desc}</div>
+                                      <div style={{ fontSize: '11px', opacity: isSelected ? 0.95 : 0.75, fontWeight: '500' }}>{t.desc}</div>
                                     </button>
                                   );
                                 })}
                               </div>
                             </div>
 
-                            {/* 2. Imagen del Banner (Carga desde PC / URL) */}
+                            {/* 2. Imagen de Fondo del Banner (Cubre el 100% del Slide) */}
                             <div style={{ marginBottom: '22px', background: '#F0F9FF', padding: '18px 20px', borderRadius: '14px', border: '1.5px solid #BAE6FD' }}>
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
-                                <label style={{ fontSize: '13px', fontWeight: '800', color: '#0369A1', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                  <span>🖼️</span> 2. Imagen del Banner (Cargar desde la PC o URL)
-                                </label>
-                                <span style={{ fontSize: '11.5px', color: '#0284c7', fontWeight: '750' }}>
-                                  Resolución Oficial Recomendada: 1920 × 500 px
+                                <div>
+                                  <label style={{ fontSize: '13.5px', fontWeight: '800', color: '#0369A1', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
+                                    <span>🖼️</span> 2. Imagen de Fondo del Banner (Ocupa el 100% del Slide)
+                                  </label>
+                                  <div style={{ fontSize: '11.5px', color: '#64748B', marginTop: '2px' }}>
+                                    Cubre todo el ancho y alto del slide. Puedes combinarla con textos y botones por encima.
+                                  </div>
+                                </div>
+                                <span style={{ fontSize: '11.5px', background: '#E0F2FE', color: '#0284c7', padding: '4px 10px', borderRadius: '6px', fontWeight: '800' }}>
+                                  Resolución Oficial: 1920 × 500 px
                                 </span>
                               </div>
 
@@ -9697,7 +10404,7 @@ function AdminEcommerce({ embedded = false }) {
                                   style={{
                                     border: '2px dashed #93C5FD',
                                     borderRadius: '12px',
-                                    padding: '28px 20px',
+                                    padding: '24px 20px',
                                     textAlign: 'center',
                                     cursor: 'pointer',
                                     background: 'rgba(255, 255, 255, 0.75)',
@@ -9708,40 +10415,103 @@ function AdminEcommerce({ embedded = false }) {
                                 >
                                   <div style={{ fontSize: '2.2rem', marginBottom: '6px' }}>☁️</div>
                                   <div style={{ fontWeight: '800', fontSize: '13.5px', color: '#0369A1' }}>
-                                    Haz clic aquí o arrastra tu banner para subirlo desde la PC
+                                    Haz clic aquí o arrastra tu imagen para cubrir el fondo del banner
                                   </div>
                                   <div style={{ fontSize: '11.5px', color: '#64748B', marginTop: '3px' }}>
-                                    Formatos: WebP, PNG, JPG • Máximo 15 MB • Se adaptará automáticamente
+                                    Formatos: WebP, PNG, JPG • Máximo 15 MB • Se adaptará a pantalla completa (1920×500 px)
                                   </div>
                                 </div>
                               ) : (
-                                <div style={{ marginTop: '10px', borderRadius: '12px', overflow: 'hidden', border: '1.5px solid #CBD5E1', position: 'relative', background: '#071524' }}>
-                                  <img 
-                                    src={cur.imageUrl} 
-                                    alt="Banner Preview" 
-                                    style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' }} 
-                                  />
-                                  <div style={{
-                                    position: 'absolute',
-                                    bottom: '10px',
-                                    left: '12px',
-                                    background: 'rgba(7, 21, 36, 0.88)',
-                                    color: '#38bdf8',
-                                    padding: '4px 10px',
-                                    borderRadius: '6px',
-                                    fontSize: '11px',
-                                    fontWeight: '750',
-                                    backdropFilter: 'blur(6px)',
-                                    border: '1px solid rgba(56, 189, 248, 0.3)'
-                                  }}>
-                                    ✓ Banner Cargado (1920×500 px)
+                                <div style={{ marginTop: '10px' }}>
+                                  <div style={{ borderRadius: '12px', overflow: 'hidden', border: '1.5px solid #CBD5E1', position: 'relative', background: '#071524' }}>
+                                    <img 
+                                      src={cur.imageUrl} 
+                                      alt="Banner Preview" 
+                                      style={{ width: '100%', maxHeight: '200px', objectFit: 'cover', display: 'block' }} 
+                                    />
+                                    <div style={{
+                                      position: 'absolute',
+                                      bottom: '10px',
+                                      left: '12px',
+                                      background: 'rgba(7, 21, 36, 0.88)',
+                                      color: '#38bdf8',
+                                      padding: '4px 10px',
+                                      borderRadius: '6px',
+                                      fontSize: '11px',
+                                      fontWeight: '750',
+                                      backdropFilter: 'blur(6px)',
+                                      border: '1px solid rgba(56, 189, 248, 0.3)'
+                                    }}>
+                                      ✓ Imagen de Fondo Cargada (1920×500 px)
+                                    </div>
+                                  </div>
+
+                                  {/* Controles Interactivos de Combinación */}
+                                  <div style={{ marginTop: '14px', background: '#FFFFFF', padding: '14px 16px', borderRadius: '10px', border: '1px solid #BAE6FD', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                    <label style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', margin: 0 }}>
+                                      <input
+                                        type="checkbox"
+                                        checked={(cur.showOverlayText !== false && cur.type !== 'custom_image') || cur.showOverlayText === true}
+                                        onChange={(e) => {
+                                          const checked = e.target.checked;
+                                          handleUpdateSlideField(editingSlideIdx, 'showOverlayText', checked);
+                                          if (checked && cur.type === 'custom_image') {
+                                            handleUpdateSlideField(editingSlideIdx, 'type', 'metrics');
+                                          } else if (!checked) {
+                                            handleUpdateSlideField(editingSlideIdx, 'type', 'custom_image');
+                                          }
+                                        }}
+                                        style={{ width: '18px', height: '18px', accentColor: '#0284c7', cursor: 'pointer' }}
+                                      />
+                                      <div>
+                                        <div style={{ fontSize: '13px', fontWeight: '800', color: '#0369A1' }}>
+                                          ✨ Superponer textos, botones y métricas sobre la imagen de fondo (Modo Combinado)
+                                        </div>
+                                        <div style={{ fontSize: '11.5px', color: '#64748B' }}>
+                                          Mantén activo para ver títulos, descripción, botones de acción y 3 KPIs sobre la fotografía.
+                                        </div>
+                                      </div>
+                                    </label>
+
+                                    {((cur.showOverlayText !== false && cur.type !== 'custom_image') || cur.showOverlayText === true) && (
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', paddingTop: '8px', borderTop: '1px solid #F1F5F9' }}>
+                                        <span style={{ fontSize: '12px', fontWeight: '750', color: '#475569' }}>
+                                          🌓 Contraste / Oscurecimiento para lectura:
+                                        </span>
+                                        {[
+                                          { id: 'medium', label: 'Equilibrado (Recomendado)' },
+                                          { id: 'strong', label: 'Fuerte (Más oscuro)' },
+                                          { id: 'light', label: 'Suave' },
+                                          { id: 'none', label: 'Sin oscurecimiento' }
+                                        ].map(lvl => (
+                                          <button
+                                            key={lvl.id}
+                                            type="button"
+                                            onClick={() => handleUpdateSlideField(editingSlideIdx, 'overlayStyle', lvl.id)}
+                                            style={{
+                                              background: (cur.overlayStyle || 'medium') === lvl.id ? '#0284c7' : '#F8FAFC',
+                                              color: (cur.overlayStyle || 'medium') === lvl.id ? '#FFFFFF' : '#334155',
+                                              border: `1.5px solid ${(cur.overlayStyle || 'medium') === lvl.id ? '#0284c7' : '#CBD5E1'}`,
+                                              padding: '5px 11px',
+                                              borderRadius: '6px',
+                                              fontSize: '11.5px',
+                                              fontWeight: '700',
+                                              cursor: 'pointer',
+                                              transition: 'all 0.15s'
+                                            }}
+                                          >
+                                            {lvl.label}
+                                          </button>
+                                        ))}
+                                      </div>
+                                    )}
                                   </div>
                                 </div>
                               )}
                             </div>
 
                             {/* 3. Textos, Badges, Colores y Botones (Distribuido a lo ancho de la pantalla) */}
-                            {cur.type !== 'custom_image' ? (
+                            {((cur.type !== 'custom_image' && cur.showOverlayText !== false) || cur.showOverlayText === true) ? (
                               <>
                                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: '22px', marginBottom: '22px' }}>
                                   
@@ -9868,53 +10638,157 @@ function AdminEcommerce({ embedded = false }) {
                                       />
                                     </div>
 
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px' }}>
-                                      <div style={{ background: '#FFFFFF', padding: '12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-                                        <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '800', color: '#0284c7', marginBottom: '6px' }}>
-                                          🔘 Botón Primario
-                                        </label>
-                                        <input
-                                          type="text"
-                                          value={cur.primaryBtn?.text || ''}
-                                          onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'primaryBtn', 'text', e.target.value)}
-                                          placeholder="Texto botón (ej: Ver Catálogo)"
-                                          style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', marginBottom: '6px' }}
-                                        />
-                                        <select
-                                          value={cur.primaryBtn?.cat || 'all'}
-                                          onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'primaryBtn', 'cat', e.target.value)}
-                                          style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px' }}
-                                        >
-                                          <option value="all">Ir a: Todo el Catálogo</option>
-                                          <option value="networking">Ir a: Networking</option>
-                                          <option value="infraestructura">Ir a: Infraestructura</option>
-                                          <option value="comunicaciones_unificadas">Ir a: Comunicaciones Unificadas</option>
-                                          <option value="security">Ir a: Seguridad</option>
-                                        </select>
+                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                                      {/* Botón Primario */}
+                                      <div style={{
+                                        background: cur.primaryBtn?.enabled !== false ? '#FFFFFF' : '#F1F5F9',
+                                        padding: '12px',
+                                        borderRadius: '10px',
+                                        border: cur.primaryBtn?.enabled !== false ? '1.5px solid #BAE6FD' : '1px solid #CBD5E1',
+                                        transition: 'all 0.2s ease'
+                                      }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: '800', color: cur.primaryBtn?.enabled !== false ? '#0284c7' : '#64748B', margin: 0 }}>
+                                            <span>🔘</span> Botón Primario
+                                          </label>
+                                          <label style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontSize: '11px', fontWeight: '700', color: cur.primaryBtn?.enabled !== false ? '#0369A1' : '#64748B' }}>
+                                            <input
+                                              type="checkbox"
+                                              checked={cur.primaryBtn?.enabled !== false}
+                                              onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'primaryBtn', 'enabled', e.target.checked)}
+                                              style={{ cursor: 'pointer', accentColor: '#0284c7', width: '14px', height: '14px' }}
+                                            />
+                                            {cur.primaryBtn?.enabled !== false ? 'Habilitado' : 'Deshabilitado'}
+                                          </label>
+                                        </div>
+
+                                        <div style={{ opacity: cur.primaryBtn?.enabled !== false ? 1 : 0.45, pointerEvents: cur.primaryBtn?.enabled !== false ? 'auto' : 'none' }}>
+                                          <div style={{ marginBottom: '6px' }}>
+                                            <label style={{ display: 'block', fontSize: '10.5px', fontWeight: '700', color: '#64748B', marginBottom: '3px' }}>
+                                              Texto del Botón
+                                            </label>
+                                            <input
+                                              type="text"
+                                              value={cur.primaryBtn?.text || ''}
+                                              onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'primaryBtn', 'text', e.target.value)}
+                                              placeholder="Texto botón (ej: Ver Seguridad)"
+                                              style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF' }}
+                                            />
+                                          </div>
+                                          <div>
+                                            <label style={{ display: 'block', fontSize: '10.5px', fontWeight: '700', color: '#64748B', marginBottom: '3px' }}>
+                                              🔗 Hipervínculo / Destino (URL)
+                                            </label>
+                                            <input
+                                              type="text"
+                                              value={cur.primaryBtn?.link !== undefined ? cur.primaryBtn.link : (cur.primaryBtn?.cat ? (cur.primaryBtn.cat === 'all' ? '/shop' : `/shop?cat=${cur.primaryBtn.cat}`) : '')}
+                                              onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'primaryBtn', 'link', e.target.value)}
+                                              placeholder="https://... o /shop?cat=security"
+                                              style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF' }}
+                                            />
+                                          </div>
+                                          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '6px' }}>
+                                            {[
+                                              { label: 'Catálogo', link: '/shop' },
+                                              { label: 'Seguridad', link: '/shop?cat=security' },
+                                              { label: 'Networking', link: '/shop?cat=networking' }
+                                            ].map(s => (
+                                              <button
+                                                key={s.label}
+                                                type="button"
+                                                onClick={() => handleUpdateSlideBtn(editingSlideIdx, 'primaryBtn', 'link', s.link)}
+                                                style={{
+                                                  background: '#F0F9FF',
+                                                  border: '1px solid #BAE6FD',
+                                                  borderRadius: '4px',
+                                                  padding: '1px 6px',
+                                                  fontSize: '9.5px',
+                                                  color: '#0369A1',
+                                                  cursor: 'pointer',
+                                                  fontWeight: '700'
+                                                }}
+                                              >
+                                                {s.label}
+                                              </button>
+                                            ))}
+                                          </div>
+                                        </div>
                                       </div>
 
-                                      <div style={{ background: '#FFFFFF', padding: '12px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-                                        <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '800', color: '#64748B', marginBottom: '6px' }}>
-                                          🔘 Botón Secundario
-                                        </label>
-                                        <input
-                                          type="text"
-                                          value={cur.secondaryBtn?.text || ''}
-                                          onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'secondaryBtn', 'text', e.target.value)}
-                                          placeholder="Texto botón (ej: Consultar Stock)"
-                                          style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', marginBottom: '6px' }}
-                                        />
-                                        <select
-                                          value={cur.secondaryBtn?.cat || 'all'}
-                                          onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'secondaryBtn', 'cat', e.target.value)}
-                                          style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px' }}
-                                        >
-                                          <option value="all">Ir a: Todo el Catálogo</option>
-                                          <option value="networking">Ir a: Networking</option>
-                                          <option value="infraestructura">Ir a: Infraestructura</option>
-                                          <option value="comunicaciones_unificadas">Ir a: Comunicaciones Unificadas</option>
-                                          <option value="security">Ir a: Seguridad</option>
-                                        </select>
+                                      {/* Botón Secundario */}
+                                      <div style={{
+                                        background: cur.secondaryBtn?.enabled !== false ? '#FFFFFF' : '#F1F5F9',
+                                        padding: '12px',
+                                        borderRadius: '10px',
+                                        border: cur.secondaryBtn?.enabled !== false ? '1.5px solid #CBD5E1' : '1px solid #E2E8F0',
+                                        transition: 'all 0.2s ease'
+                                      }}>
+                                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                                          <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: '800', color: cur.secondaryBtn?.enabled !== false ? '#334155' : '#64748B', margin: 0 }}>
+                                            <span>🔘</span> Botón Secundario
+                                          </label>
+                                          <label style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontSize: '11px', fontWeight: '700', color: cur.secondaryBtn?.enabled !== false ? '#334155' : '#64748B' }}>
+                                            <input
+                                              type="checkbox"
+                                              checked={cur.secondaryBtn?.enabled !== false}
+                                              onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'secondaryBtn', 'enabled', e.target.checked)}
+                                              style={{ cursor: 'pointer', accentColor: '#475569', width: '14px', height: '14px' }}
+                                            />
+                                            {cur.secondaryBtn?.enabled !== false ? 'Habilitado' : 'Deshabilitado'}
+                                          </label>
+                                        </div>
+
+                                        <div style={{ opacity: cur.secondaryBtn?.enabled !== false ? 1 : 0.45, pointerEvents: cur.secondaryBtn?.enabled !== false ? 'auto' : 'none' }}>
+                                          <div style={{ marginBottom: '6px' }}>
+                                            <label style={{ display: 'block', fontSize: '10.5px', fontWeight: '700', color: '#64748B', marginBottom: '3px' }}>
+                                              Texto del Botón
+                                            </label>
+                                            <input
+                                              type="text"
+                                              value={cur.secondaryBtn?.text || ''}
+                                              onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'secondaryBtn', 'text', e.target.value)}
+                                              placeholder="Texto botón (ej: Consultar Stock)"
+                                              style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF' }}
+                                            />
+                                          </div>
+                                          <div>
+                                            <label style={{ display: 'block', fontSize: '10.5px', fontWeight: '700', color: '#64748B', marginBottom: '3px' }}>
+                                              🔗 Hipervínculo / Destino (URL)
+                                            </label>
+                                            <input
+                                              type="text"
+                                              value={cur.secondaryBtn?.link !== undefined ? cur.secondaryBtn.link : (cur.secondaryBtn?.cat ? (cur.secondaryBtn.cat === 'all' ? '/shop' : `/shop?cat=${cur.secondaryBtn.cat}`) : '')}
+                                              onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'secondaryBtn', 'link', e.target.value)}
+                                              placeholder="https://... o /shop o /contacto"
+                                              style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF' }}
+                                            />
+                                          </div>
+                                          <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '6px' }}>
+                                            {[
+                                              { label: 'Catálogo', link: '/shop' },
+                                              { label: 'Infraestructura', link: '/shop?cat=infraestructura' },
+                                              { label: 'Contacto', link: '/contacto' }
+                                            ].map(s => (
+                                              <button
+                                                key={s.label}
+                                                type="button"
+                                                onClick={() => handleUpdateSlideBtn(editingSlideIdx, 'secondaryBtn', 'link', s.link)}
+                                                style={{
+                                                  background: '#F1F5F9',
+                                                  border: '1px solid #CBD5E1',
+                                                  borderRadius: '4px',
+                                                  padding: '1px 6px',
+                                                  fontSize: '9.5px',
+                                                  color: '#334155',
+                                                  cursor: 'pointer',
+                                                  fontWeight: '700'
+                                                }}
+                                              >
+                                                {s.label}
+                                              </button>
+                                            ))}
+                                          </div>
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
@@ -9961,8 +10835,38 @@ function AdminEcommerce({ embedded = false }) {
                                 </div>
                               </>
                             ) : (
-                              <div style={{ background: '#F8FAFC', padding: '16px 20px', borderRadius: '12px', border: '1.5px dashed #CBD5E1', fontSize: '13px', color: '#475569', marginBottom: '22px' }}>
-                                💡 <em>En modo <strong>"Banner Gráfico Completo"</strong>, la imagen se presenta limpia sin textos sobreimpresos ni botones de métricas en la home del Shop. Si deseas agregar textos y KPIs dinámicos, selecciona la opción <strong>"Título + Métricas"</strong> o <strong>"Animado Core DACAS"</strong> en la sección 1 arriba.</em>
+                              <div style={{ background: '#F0F9FF', padding: '18px 22px', borderRadius: '14px', border: '1.5px dashed #38BDF8', fontSize: '13px', color: '#0369A1', marginBottom: '22px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
+                                <div>
+                                  <div style={{ fontWeight: '800', fontSize: '14px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '7px' }}>
+                                    <span>🖼️</span> Modo "Solo Imagen" Activo
+                                  </div>
+                                  <div style={{ fontSize: '12.5px', color: '#475569' }}>
+                                    En este modo la imagen de fondo se presenta limpia sin textos sobreimpresos ni botones de métricas. ¿Deseas combinar esta imagen con títulos, botones y métricas?
+                                  </div>
+                                </div>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    handleUpdateSlideField(editingSlideIdx, 'type', 'metrics');
+                                    handleUpdateSlideField(editingSlideIdx, 'showOverlayText', true);
+                                  }}
+                                  style={{
+                                    background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                                    color: '#FFFFFF',
+                                    border: 'none',
+                                    borderRadius: '10px',
+                                    padding: '10px 20px',
+                                    fontSize: '12.5px',
+                                    fontWeight: '800',
+                                    cursor: 'pointer',
+                                    boxShadow: '0 3px 10px rgba(2, 132, 199, 0.25)',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px'
+                                  }}
+                                >
+                                  <span>✨</span> Combinar Imagen con Textos y Botones
+                                </button>
                               </div>
                             )}
 
@@ -10712,12 +11616,12 @@ function AdminEcommerce({ embedded = false }) {
                       </div>
                     </div>
 
-                    {/* Country Filter Banner */}
+                    {/* Scope Activo Banner (Sin filtro redundante de países) */}
                     <div style={{
-                      background: '#F8FAFC',
-                      border: '1px solid #E2E8F0',
+                      background: 'rgba(15, 164, 222, 0.06)',
+                      border: '1px solid #bae6fd',
                       borderRadius: '12px',
-                      padding: '12px 16px',
+                      padding: '12px 18px',
                       marginBottom: '24px',
                       display: 'flex',
                       alignItems: 'center',
@@ -10725,60 +11629,40 @@ function AdminEcommerce({ embedded = false }) {
                       flexWrap: 'wrap',
                       gap: '12px'
                     }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span style={{ fontSize: '13px', fontWeight: '700', color: '#334155' }}>
-                          🌍 Filtrar Vista por País:
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        <span style={{ fontSize: '20px' }}>
+                          {DACAS_COUNTRIES_LIST.find(c => c.code === selectedCountryScope)?.flag || '🇦🇷'}
                         </span>
-                        <span style={{ fontSize: '12px', color: '#64748B' }}>
-                          (Verifica qué marcas están activas para clientes de cada región)
-                        </span>
+                        <div>
+                          <div style={{ fontSize: '13px', fontWeight: '800', color: '#0284c7' }}>
+                            Scope Activo: {DACAS_COUNTRIES_LIST.find(c => c.code === selectedCountryScope)?.name || selectedCountryScope || 'Argentina'} ({selectedCountryScope || 'AR'})
+                          </div>
+                          <div style={{ fontSize: '11px', color: '#64748b' }}>
+                            Las marcas corresponden exclusivamente al país seleccionado en el panel izquierdo.
+                          </div>
+                        </div>
                       </div>
 
-                      <div style={{ display: 'flex', gap: '6px', overflowX: 'auto', maxWidth: '100%', paddingBottom: '2px' }}>
-                        <button
-                          type="button"
-                          onClick={() => setBrandCountryFilter('all')}
-                          style={{
-                            background: brandCountryFilter === 'all' ? '#0284c7' : '#FFFFFF',
-                            color: brandCountryFilter === 'all' ? '#FFFFFF' : '#475569',
-                            border: `1px solid ${brandCountryFilter === 'all' ? '#0284c7' : '#CBD5E1'}`,
-                            borderRadius: '8px',
-                            padding: '5px 12px',
-                            fontSize: '12px',
-                            fontWeight: '700',
-                            cursor: 'pointer',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
-                          🌐 Todos los Países (Global)
-                        </button>
-                        {DACAS_COUNTRIES_LIST.map(c => {
-                          const isSelected = brandCountryFilter === c.code;
-                          return (
-                            <button
-                              key={c.code}
-                              type="button"
-                              onClick={() => setBrandCountryFilter(c.code)}
-                              style={{
-                                background: isSelected ? '#0284c7' : '#FFFFFF',
-                                color: isSelected ? '#FFFFFF' : '#475569',
-                                border: `1px solid ${isSelected ? '#0284c7' : '#CBD5E1'}`,
-                                borderRadius: '8px',
-                                padding: '5px 10px',
-                                fontSize: '12px',
-                                fontWeight: isSelected ? '700' : '600',
-                                cursor: 'pointer',
-                                whiteSpace: 'nowrap',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '4px'
-                              }}
-                            >
-                              <span>{c.flag}</span> {c.code}
-                            </button>
-                          );
-                        })}
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() => setActiveTab('brands')}
+                        style={{
+                          background: '#ffffff',
+                          color: '#0284c7',
+                          border: '1px solid #0fa4de',
+                          borderRadius: '8px',
+                          padding: '6px 14px',
+                          fontSize: '12px',
+                          fontWeight: '750',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <span>🏷️</span>
+                        <span>Abrir en Módulo Marcas ➔</span>
+                      </button>
                     </div>
 
                     {/* Categories Grid */}

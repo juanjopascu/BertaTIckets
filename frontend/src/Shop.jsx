@@ -1199,13 +1199,27 @@ function BrandsDirectoryView({
   visualSettings = null
 }) {
   const brandList = useMemo(() => {
-    const keysSet = new Set(Object.keys(BRAND_INFO));
+    const keysSet = new Set();
+    Object.values(categoryBrandsMap || {}).forEach(list => {
+      if (Array.isArray(list)) {
+        list.forEach(item => {
+          const name = typeof item === 'string' ? item : item?.name;
+          if (name) keysSet.add(name.toLowerCase().trim());
+        });
+      }
+    });
+
+    // Fallback inicial si categoryBrandsMap aún no está listo
+    if (keysSet.size === 0) {
+      Object.keys(BRAND_INFO).forEach(k => keysSet.add(k.toLowerCase().trim()));
+    }
+
     if (visualSettings?.brandCustomInfo) {
-      Object.keys(visualSettings.brandCustomInfo).forEach(k => keysSet.add(k.toLowerCase()));
+      Object.keys(visualSettings.brandCustomInfo).forEach(k => keysSet.add(k.toLowerCase().trim()));
     }
     products.forEach(p => {
       if (p.brand && !DISALLOWED_BRANDS.includes(p.brand.toLowerCase())) {
-        keysSet.add(p.brand.toLowerCase());
+        keysSet.add(p.brand.toLowerCase().trim());
       }
     });
 
@@ -2099,6 +2113,51 @@ function ShopMain() {
     setActiveCategory(catKey);
     setSelectedBrand(null);
     setSearch('');
+  };
+
+  const handleSlideLinkClick = (btn) => {
+    if (!btn) return;
+    const link = (btn.link || '').trim();
+    if (link) {
+      if (link.startsWith('http://') || link.startsWith('https://')) {
+        window.open(link, '_blank', 'noopener,noreferrer');
+        return;
+      }
+      if (link.startsWith('#')) {
+        const el = document.querySelector(link);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+        return;
+      }
+      if (link.startsWith('/shop?cat=')) {
+        const cat = link.split('?cat=')[1]?.split('&')[0];
+        if (cat) {
+          handleSelectCategory(cat);
+          return;
+        }
+      }
+      if (link === '/shop' || link === '/shop/') {
+        handleSelectCategory('all');
+        return;
+      }
+      if (link.startsWith('/')) {
+        window.location.href = link;
+        return;
+      }
+      const catMatch = categories.find(c => c.key === link);
+      if (catMatch) {
+        handleSelectCategory(catMatch.key);
+        return;
+      }
+      if (link.includes('.') && !link.includes(' ')) {
+        window.open(`https://${link}`, '_blank', 'noopener,noreferrer');
+        return;
+      }
+      handleSelectCategory(link);
+      return;
+    }
+    if (btn.cat) {
+      handleSelectCategory(btn.cat);
+    }
   };
 
   const currentCategoryObj = categories.find((c) => c.key === activeCategory) || categories[0];
@@ -3053,6 +3112,8 @@ function ShopMain() {
           {heroSlides.length > 0 && (() => {
         const slideIndex = currentHeroSlide >= heroSlides.length ? 0 : currentHeroSlide;
         const currentSlideObj = heroSlides[slideIndex] || heroSlides[0] || HERO_SLIDES[0];
+        const isImageOnly = (currentSlideObj.type === 'custom_image' && currentSlideObj.showOverlayText !== true) || currentSlideObj.showOverlayText === false;
+        const hasBackground = Boolean(currentSlideObj.imageUrl);
 
         return (
           <div
@@ -3061,7 +3122,7 @@ function ShopMain() {
             style={{
               background: 'linear-gradient(135deg, #071524 0%, #0f2742 60%, #12354c 100%)',
               color: '#fff',
-              padding: '30px 20px 42px',
+              padding: isImageOnly ? '0' : '30px 20px 42px',
               position: 'relative',
               overflow: 'hidden',
               height: '420px',
@@ -3072,17 +3133,70 @@ function ShopMain() {
               alignItems: 'center'
             }}
           >
-            {/* Glow dinámico de fondo */}
-            <div style={{
-              position: 'absolute',
-              top: '-50%',
-              right: '-10%',
-              width: '650px',
-              height: '650px',
-              background: `radial-gradient(circle, ${currentSlideObj.titleColor || '#0fa4de'}2E 0%, rgba(0,0,0,0) 70%)`,
-              pointerEvents: 'none',
-              transition: 'background 0.8s ease'
-            }} />
+            {/* ── Imagen de fondo a pantalla completa (Ocupa el 100% del Slide) ── */}
+            {hasBackground && (
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  zIndex: 0,
+                  overflow: 'hidden',
+                  pointerEvents: isImageOnly ? 'auto' : 'none',
+                  cursor: (isImageOnly && currentSlideObj.primaryBtn?.enabled !== false && (currentSlideObj.primaryBtn?.link || currentSlideObj.primaryBtn?.cat)) ? 'pointer' : 'default'
+                }}
+                onClick={() => {
+                  if (isImageOnly && currentSlideObj.primaryBtn?.enabled !== false && (currentSlideObj.primaryBtn?.link || currentSlideObj.primaryBtn?.cat)) {
+                    handleSlideLinkClick(currentSlideObj.primaryBtn);
+                  }
+                }}
+              >
+                <img
+                  src={currentSlideObj.imageUrl}
+                  alt={currentSlideObj.titleLine1 || 'Banner Background DACAS'}
+                  style={{
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'cover',
+                    objectPosition: currentSlideObj.imagePosition || 'center',
+                    display: 'block'
+                  }}
+                />
+                {/* Capa de contraste y oscurecimiento para garantizar lectura perfecta de textos sobreimpresos */}
+                {!isImageOnly && (
+                  <div
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      background: currentSlideObj.overlayStyle === 'strong'
+                        ? 'linear-gradient(90deg, rgba(7, 21, 36, 0.96) 0%, rgba(7, 21, 36, 0.88) 50%, rgba(7, 21, 36, 0.72) 100%)'
+                        : currentSlideObj.overlayStyle === 'light'
+                        ? 'linear-gradient(90deg, rgba(7, 21, 36, 0.82) 0%, rgba(7, 21, 36, 0.6) 50%, rgba(7, 21, 36, 0.25) 100%)'
+                        : currentSlideObj.overlayStyle === 'none'
+                        ? 'transparent'
+                        : 'linear-gradient(90deg, rgba(7, 21, 36, 0.94) 0%, rgba(7, 21, 36, 0.82) 48%, rgba(7, 21, 36, 0.55) 75%, rgba(7, 21, 36, 0.35) 100%)',
+                      pointerEvents: 'none'
+                    }}
+                  />
+                )}
+              </div>
+            )}
+
+            {/* Glow dinámico de fondo (activo cuando no hay foto de fondo) */}
+            {!hasBackground && (
+              <div style={{
+                position: 'absolute',
+                top: '-50%',
+                right: '-10%',
+                width: '650px',
+                height: '650px',
+                background: `radial-gradient(circle, ${currentSlideObj.titleColor || '#0fa4de'}2E 0%, rgba(0,0,0,0) 70%)`,
+                pointerEvents: 'none',
+                transition: 'background 0.8s ease',
+                zIndex: 0
+              }} />
+            )}
 
             {/* Carousel Navigation Arrows */}
             {heroSlides.length > 1 && (
@@ -3095,8 +3209,8 @@ function ShopMain() {
                     left: '16px',
                     top: '50%',
                     transform: 'translateY(-50%)',
-                    background: 'rgba(15, 39, 66, 0.7)',
-                    border: '1px solid rgba(15, 164, 222, 0.3)',
+                    background: 'rgba(15, 39, 66, 0.75)',
+                    border: '1px solid rgba(15, 164, 222, 0.35)',
                     borderRadius: '50%',
                     width: '42px',
                     height: '42px',
@@ -3111,7 +3225,7 @@ function ShopMain() {
                     boxShadow: '0 4px 14px rgba(0,0,0,0.3)'
                   }}
                   onMouseEnter={(e) => { e.currentTarget.style.background = '#0fa4de'; e.currentTarget.style.borderColor = '#38bdf8'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(15, 39, 66, 0.7)'; e.currentTarget.style.borderColor = 'rgba(15, 164, 222, 0.3)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(15, 39, 66, 0.75)'; e.currentTarget.style.borderColor = 'rgba(15, 164, 222, 0.35)'; }}
                 >
                   ‹
                 </button>
@@ -3124,8 +3238,8 @@ function ShopMain() {
                     right: '16px',
                     top: '50%',
                     transform: 'translateY(-50%)',
-                    background: 'rgba(15, 39, 66, 0.7)',
-                    border: '1px solid rgba(15, 164, 222, 0.3)',
+                    background: 'rgba(15, 39, 66, 0.75)',
+                    border: '1px solid rgba(15, 164, 222, 0.35)',
                     borderRadius: '50%',
                     width: '42px',
                     height: '42px',
@@ -3140,182 +3254,151 @@ function ShopMain() {
                     boxShadow: '0 4px 14px rgba(0,0,0,0.3)'
                   }}
                   onMouseEnter={(e) => { e.currentTarget.style.background = '#0fa4de'; e.currentTarget.style.borderColor = '#38bdf8'; }}
-                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(15, 39, 66, 0.7)'; e.currentTarget.style.borderColor = 'rgba(15, 164, 222, 0.3)'; }}
+                  onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(15, 39, 66, 0.75)'; e.currentTarget.style.borderColor = 'rgba(15, 164, 222, 0.35)'; }}
                 >
                   ›
                 </button>
               </>
             )}
 
-            {/* Slide Content Container */}
-            <div style={{ maxWidth: '1320px', width: '100%', height: '100%', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'nowrap', gap: '30px', position: 'relative', zIndex: 1, padding: '0 40px', boxSizing: 'border-box' }}>
-
-              {currentSlideObj.type === 'custom_image' && currentSlideObj.imageUrl ? (
-                /* ── Renderizado de Banner Gráfico Completo del Diseñador ── */
-                <div
-                  onClick={() => currentSlideObj.primaryBtn?.cat && handleSelectCategory(currentSlideObj.primaryBtn.cat)}
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    cursor: currentSlideObj.primaryBtn?.cat ? 'pointer' : 'default',
-                    position: 'relative',
-                    overflow: 'hidden',
-                    borderRadius: '18px'
+            {/* ── Botón CTA Flotante en Modo Solo Imagen ── */}
+            {isImageOnly && currentSlideObj.primaryBtn?.enabled !== false && currentSlideObj.primaryBtn?.text && (
+              <div style={{ position: 'absolute', bottom: '24px', right: '36px', zIndex: 5 }}>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleSlideLinkClick(currentSlideObj.primaryBtn);
                   }}
+                  style={{
+                    background: 'linear-gradient(135deg, #0fa4de, #0284c7)',
+                    color: '#fff',
+                    border: 'none',
+                    borderRadius: '999px',
+                    padding: '12px 26px',
+                    fontWeight: '700',
+                    fontSize: '14px',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 18px rgba(15, 164, 222, 0.5)',
+                    transition: 'transform 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
                 >
-                  <img
-                    src={currentSlideObj.imageUrl}
-                    alt={currentSlideObj.titleLine1 || 'Banner Promocional DACAS'}
-                    style={{
-                      width: '100%',
-                      height: '100%',
-                      maxHeight: '348px',
-                      objectFit: 'cover',
-                      objectPosition: 'center',
-                      borderRadius: '18px',
-                      boxShadow: '0 12px 36px rgba(0,0,0,0.35)',
-                      border: '1px solid rgba(15, 164, 222, 0.25)',
-                      transition: 'transform 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => { if (currentSlideObj.primaryBtn?.cat) e.currentTarget.style.transform = 'scale(1.005)'; }}
-                    onMouseLeave={(e) => { e.currentTarget.style.transform = 'none'; }}
-                  />
-                  {currentSlideObj.primaryBtn?.text && (
-                    <div style={{ position: 'absolute', bottom: '18px', right: '24px', zIndex: 2 }}>
+                  {currentSlideObj.primaryBtn.text} →
+                </button>
+              </div>
+            )}
+
+            {/* ── Slide Content Container: Textos, Títulos, Botones y KPIs (Modo Combinado o Estándar) ── */}
+            {!isImageOnly && (
+              <div style={{ maxWidth: '1320px', width: '100%', height: '100%', margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'nowrap', gap: '30px', position: 'relative', zIndex: 1, padding: '0 40px', boxSizing: 'border-box' }}>
+                {/* Left Text / CTAs */}
+                <div style={{ flex: 1, minWidth: '300px', transition: 'all 0.4s ease' }}>
+                  <div style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    background: 'rgba(15, 164, 222, 0.2)',
+                    border: '1px solid rgba(15, 164, 222, 0.45)',
+                    backdropFilter: 'blur(8px)',
+                    color: currentSlideObj.titleColor || '#38bdf8',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    padding: '6px 14px',
+                    borderRadius: '999px',
+                    marginBottom: '18px',
+                    letterSpacing: '0.05em'
+                  }}>
+                    <BrandingVectorIcon name={currentSlideObj.badgeIcon || 'shield'} size={14} color={currentSlideObj.titleColor || '#38bdf8'} />
+                    <span>{currentSlideObj.badge}</span>
+                  </div>
+                  <h1 style={{ margin: '0 0 12px', fontSize: 'clamp(1.75rem, 3.2vw, 2.5rem)', fontWeight: '900', letterSpacing: '-0.03em', lineHeight: 1.15, textShadow: '0 2px 14px rgba(0,0,0,0.45)' }}>
+                    {currentSlideObj.titleLine1} <br />
+                    <span style={{ color: currentSlideObj.titleColor || '#0fa4de' }}>
+                      {currentSlideObj.titleLine2}
+                    </span>
+                  </h1>
+                  <p style={{ margin: '0 0 20px', color: '#E2E8F0', fontSize: '0.95rem', lineHeight: 1.5, maxWidth: '520px', textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>
+                    {currentSlideObj.desc}
+                  </p>
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                    {currentSlideObj.primaryBtn?.enabled !== false && currentSlideObj.primaryBtn?.text && (
                       <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleSelectCategory(currentSlideObj.primaryBtn.cat);
-                        }}
+                        onClick={() => handleSlideLinkClick(currentSlideObj.primaryBtn)}
                         style={{
                           background: 'linear-gradient(135deg, #0fa4de, #0284c7)',
                           color: '#fff',
                           border: 'none',
                           borderRadius: '999px',
-                          padding: '10px 22px',
+                          padding: '12px 26px',
                           fontWeight: '700',
-                          fontSize: '13px',
+                          fontSize: '14px',
                           cursor: 'pointer',
-                          boxShadow: '0 4px 14px rgba(15, 164, 222, 0.4)'
+                          boxShadow: '0 4px 20px rgba(15, 164, 222, 0.45)',
+                          transition: 'transform 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
+                      >
+                        {currentSlideObj.primaryBtn.text}
+                      </button>
+                    )}
+                    {currentSlideObj.secondaryBtn?.enabled !== false && currentSlideObj.secondaryBtn?.text && (
+                      <button
+                        onClick={() => handleSlideLinkClick(currentSlideObj.secondaryBtn)}
+                        style={{
+                          background: 'rgba(255,255,255,0.12)',
+                          backdropFilter: 'blur(8px)',
+                          color: '#fff',
+                          border: '1px solid rgba(15, 164, 222, 0.4)',
+                          borderRadius: '999px',
+                          padding: '12px 26px',
+                          fontWeight: '600',
+                          fontSize: '14px',
+                          cursor: 'pointer',
+                          transition: 'background 0.2s'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(15, 164, 222, 0.25)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.12)'}
+                      >
+                        {currentSlideObj.secondaryBtn.text}
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Right Visual / Animated Stats */}
+                {currentSlideObj.type === 'animated_stats' ? (
+                  <AnimatedHeroStats active={true} metrics={currentSlideObj.metrics} />
+                ) : (
+                  <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
+                    {currentSlideObj.metrics?.map((metric, mIdx) => (
+                      <div
+                        key={metric.label || mIdx}
+                        style={{
+                          textAlign: 'center',
+                          background: 'rgba(15, 39, 66, 0.85)',
+                          backdropFilter: 'blur(16px)',
+                          border: '1px solid rgba(15, 164, 222, 0.35)',
+                          borderRadius: '16px',
+                          padding: '18px 22px',
+                          minWidth: '110px',
+                          boxShadow: '0 8px 24px rgba(0,0,0,0.3)',
+                          transition: 'all 0.3s ease'
                         }}
                       >
-                        {currentSlideObj.primaryBtn.text} →
-                      </button>
-                    </div>
-                  )}
-                </div>
-              ) : (
-                /* ── Renderizado Estándar Tipográfico & Métricas ── */
-                <>
-                  {/* Left Text / CTAs */}
-                  <div style={{ flex: 1, minWidth: '300px', transition: 'all 0.4s ease' }}>
-                    <div style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      background: 'rgba(15, 164, 222, 0.15)',
-                      border: '1px solid rgba(15, 164, 222, 0.4)',
-                      color: currentSlideObj.titleColor || '#38bdf8',
-                      fontSize: '12px',
-                      fontWeight: '700',
-                      padding: '6px 14px',
-                      borderRadius: '999px',
-                      marginBottom: '18px',
-                      letterSpacing: '0.05em'
-                    }}>
-                      <BrandingVectorIcon name={currentSlideObj.badgeIcon || 'shield'} size={14} color={currentSlideObj.titleColor || '#38bdf8'} />
-                      <span>{currentSlideObj.badge}</span>
-                    </div>
-                    <h1 style={{ margin: '0 0 12px', fontSize: 'clamp(1.75rem, 3.2vw, 2.5rem)', fontWeight: '900', letterSpacing: '-0.03em', lineHeight: 1.15 }}>
-                      {currentSlideObj.titleLine1} <br />
-                      <span style={{ color: currentSlideObj.titleColor || '#0fa4de' }}>
-                        {currentSlideObj.titleLine2}
-                      </span>
-                    </h1>
-                    <p style={{ margin: '0 0 20px', color: '#94A3B8', fontSize: '0.95rem', lineHeight: 1.5, maxWidth: '520px' }}>
-                      {currentSlideObj.desc}
-                    </p>
-                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                      {currentSlideObj.primaryBtn?.text && (
-                        <button
-                          onClick={() => handleSelectCategory(currentSlideObj.primaryBtn.cat)}
-                          style={{
-                            background: 'linear-gradient(135deg, #0fa4de, #0284c7)',
-                            color: '#fff',
-                            border: 'none',
-                            borderRadius: '999px',
-                            padding: '12px 26px',
-                            fontWeight: '700',
-                            fontSize: '14px',
-                            cursor: 'pointer',
-                            boxShadow: '0 4px 20px rgba(15, 164, 222, 0.4)',
-                            transition: 'transform 0.2s'
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-2px)'}
-                          onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
-                        >
-                          {currentSlideObj.primaryBtn.text}
-                        </button>
-                      )}
-                      {currentSlideObj.secondaryBtn?.text && (
-                        <button
-                          onClick={() => handleSelectCategory(currentSlideObj.secondaryBtn.cat)}
-                          style={{
-                            background: 'rgba(255,255,255,0.08)',
-                            color: '#fff',
-                            border: '1px solid rgba(15, 164, 222, 0.3)',
-                            borderRadius: '999px',
-                            padding: '12px 26px',
-                            fontWeight: '600',
-                            fontSize: '14px',
-                            cursor: 'pointer',
-                            transition: 'background 0.2s'
-                          }}
-                          onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(15, 164, 222, 0.18)'}
-                          onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-                        >
-                          {currentSlideObj.secondaryBtn.text}
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Right Visual / Animated Stats */}
-                  {currentSlideObj.type === 'animated_stats' ? (
-                    <AnimatedHeroStats active={true} metrics={currentSlideObj.metrics} />
-                  ) : (
-                    <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
-                      {currentSlideObj.metrics?.map((metric, mIdx) => (
-                        <div
-                          key={metric.label || mIdx}
-                          style={{
-                            textAlign: 'center',
-                            background: 'rgba(15, 39, 66, 0.75)',
-                            backdropFilter: 'blur(12px)',
-                            border: '1px solid rgba(15, 164, 222, 0.25)',
-                            borderRadius: '16px',
-                            padding: '18px 22px',
-                            minWidth: '110px',
-                            boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-                            transition: 'all 0.3s ease'
-                          }}
-                        >
-                          <div style={{ fontSize: '1.8rem', fontWeight: '900', color: currentSlideObj.titleColor || '#0fa4de' }}>
-                            {metric.value}
-                          </div>
-                          <div style={{ fontSize: '13px', color: '#94A3B8', marginTop: '4px', fontWeight: '600' }}>
-                            {metric.label}
-                          </div>
+                        <div style={{ fontSize: '1.8rem', fontWeight: '900', color: currentSlideObj.titleColor || '#0fa4de' }}>
+                          {metric.value}
                         </div>
-                      ))}
-                    </div>
-                  )}
-                </>
-              )}
-            </div>
+                        <div style={{ fontSize: '13px', color: '#CBD5E1', marginTop: '4px', fontWeight: '600' }}>
+                          {metric.label}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Carousel Bottom Indicator Dots */}
             {heroSlides.length > 1 && (

@@ -1,5 +1,468 @@
 [
   {
+    "id": 316,
+    "timestamp": "2026-10-06T03:27:09.579Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $2.150,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791257229579",
+      "itemsCount": 1,
+      "total": 2150,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Vertiv Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA ($2150.00)",
+      "items": [
+        {
+          "id": 4,
+          "name": "Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA",
+          "brand": "Vertiv",
+          "sku": "GXT5-3000IRT2UXLE",
+          "qty": 1,
+          "price": 2150,
+          "subtotal": 2150
+        }
+      ],
+      "timestamp": "2026-10-06T03:27:09.579Z"
+    }
+  },
+  {
+    "id": 315,
+    "timestamp": "2026-10-06T03:26:11.039Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $2.150,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791257171024",
+      "itemsCount": 1,
+      "total": 2150,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Vertiv Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA ($2150.00)",
+      "items": [
+        {
+          "id": 4,
+          "name": "Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA",
+          "brand": "Vertiv",
+          "sku": "GXT5-3000IRT2UXLE",
+          "qty": 1,
+          "price": 2150,
+          "subtotal": 2150
+        }
+      ],
+      "timestamp": "2026-10-06T03:26:11.024Z"
+    }
+  },
+  {
+    "id": 314,
+    "timestamp": "2026-10-06T03:25:37.857Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "3bdb5d3a1a39e37cb0121b7d7f7f24670988473843e82832fbc0f6d2a25b71ee"
+    }
+  },
+  {
+    "id": 313,
+    "timestamp": "2026-10-06T03:25:32.574Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $2.150,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791257132572",
+      "itemsCount": 1,
+      "total": 2150,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Vertiv Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA ($2150.00)",
+      "items": [
+        {
+          "id": 4,
+          "name": "Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA",
+          "brand": "Vertiv",
+          "sku": "GXT5-3000IRT2UXLE",
+          "qty": 1,
+          "price": 2150,
+          "subtotal": 2150
+        }
+      ],
+      "timestamp": "2026-10-06T03:25:32.573Z"
+    }
+  },
+  {
+    "id": 312,
+    "timestamp": "2026-10-06T02:42:30.810Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "7e982d31ec711ee43d000268b6bcec571e2572f7ce20c260c06194bffeb19c15"
+    }
+  },
+  {
+    "id": 311,
+    "timestamp": "2026-10-06T02:16:37.503Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $2.150,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791252997502",
+      "itemsCount": 1,
+      "total": 2150,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Vertiv Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA ($2150.00)",
+      "items": [
+        {
+          "id": 4,
+          "name": "Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA",
+          "brand": "Vertiv",
+          "sku": "GXT5-3000IRT2UXLE",
+          "qty": 1,
+          "price": 2150,
+          "subtotal": 2150
+        }
+      ],
+      "timestamp": "2026-10-06T02:16:37.503Z"
+    }
+  },
+  {
+    "id": 310,
+    "timestamp": "2026-10-06T02:12:17.893Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "400846aa858563264c31e34fa849b408dc4c96e8dec4052958fbff3ac6e041b3"
+    }
+  },
+  {
+    "id": 309,
+    "timestamp": "2026-10-06T02:12:16.806Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $2.150,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791252736806",
+      "itemsCount": 1,
+      "total": 2150,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Vertiv Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA ($2150.00)",
+      "items": [
+        {
+          "id": 4,
+          "name": "Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA",
+          "brand": "Vertiv",
+          "sku": "GXT5-3000IRT2UXLE",
+          "qty": 1,
+          "price": 2150,
+          "subtotal": 2150
+        }
+      ],
+      "timestamp": "2026-10-06T02:12:16.806Z"
+    }
+  },
+  {
+    "id": 308,
+    "timestamp": "2026-10-06T01:53:06.012Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $2.150,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791251586012",
+      "itemsCount": 1,
+      "total": 2150,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Vertiv Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA ($2150.00)",
+      "items": [
+        {
+          "id": 4,
+          "name": "Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA",
+          "brand": "Vertiv",
+          "sku": "GXT5-3000IRT2UXLE",
+          "qty": 1,
+          "price": 2150,
+          "subtotal": 2150
+        }
+      ],
+      "timestamp": "2026-10-06T01:53:06.012Z"
+    }
+  },
+  {
+    "id": 307,
+    "timestamp": "2026-10-06T01:52:53.897Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "23fefea8ece49d03a74faeea938623c5b10bc505f0a9a451a598e74d33af3f9e"
+    }
+  },
+  {
+    "id": 306,
+    "timestamp": "2026-10-05T20:17:59.431Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $195,00 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791231479429",
+      "itemsCount": 1,
+      "total": 195,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Aruba Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22 ($195.00)",
+      "items": [
+        {
+          "id": 3,
+          "name": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
+          "brand": "Aruba",
+          "sku": "R4W02A-AP22",
+          "qty": 1,
+          "price": 195,
+          "subtotal": 195
+        }
+      ],
+      "timestamp": "2026-10-05T20:17:59.431Z"
+    }
+  },
+  {
+    "id": 305,
+    "timestamp": "2026-10-05T20:17:37.728Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Rodrigo Cascata\" (rodrigo@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Rodrigo Cascata",
+      "email": "rodrigo@dacas.com",
+      "rol": "admin",
+      "id": 9
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "da01504108cfcad4e9e618f318d8adece55f17b5505b2c6cfd25c0a0ab4107c6"
+    }
+  },
+  {
+    "id": 304,
+    "timestamp": "2026-10-05T20:15:40.858Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Aruba Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22 (SKU: R4W02A-AP22, Cat: networking, USD $195.00).",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 3,
+      "productName": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
+      "sku": "R4W02A-AP22",
+      "brand": "Aruba",
+      "price": "195.00",
+      "category": "networking",
+      "timestamp": "2026-10-05T20:15:40.857Z"
+    }
+  },
+  {
+    "id": 303,
+    "timestamp": "2026-10-05T19:50:41.309Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Rodrigo Cascata\" (rodrigo@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Rodrigo Cascata",
+      "email": "rodrigo@dacas.com",
+      "rol": "admin",
+      "id": 9
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "bd0fd32f19119675fab8709aa76f063d28419eff589ba9e431990dae0ff4a00a"
+    }
+  },
+  {
+    "id": 302,
+    "timestamp": "2026-10-05T19:50:31.436Z",
+    "origen": "dashboard",
+    "tipo": "SUCCESS",
+    "accion": "USUARIO_CREADO",
+    "descripcion": "Usuario \"Rodrigo Cascata\" (rodrigo@dacas.com) creado con rol admin",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "usuarioId": 9,
+      "rol": "admin",
+      "email": "rodrigo@dacas.com"
+    }
+  },
+  {
+    "id": 301,
+    "timestamp": "2026-10-05T18:29:30.243Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "3f760a6b24227d84a29a75d52d5e5f6a219bfe823f7c17b799cf47dee133b273"
+    }
+  },
+  {
+    "id": 300,
+    "timestamp": "2026-10-05T18:05:57.749Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router (SKU: CRS328-24P-4S, Cat: networking, USD $480.00).",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 2,
+      "productName": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+      "sku": "CRS328-24P-4S",
+      "brand": "MikroTik",
+      "price": "480.00",
+      "category": "networking",
+      "timestamp": "2026-10-05T18:05:57.748Z"
+    }
+  },
+  {
+    "id": 299,
+    "timestamp": "2026-10-05T17:54:12.682Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Vertiv Zapatilla De 6 tomas rackeable PDU con protección de sobretensión (SKU: PDU-6T-RACK-AR, Cat: infraestructura, USD $145.00).",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 7,
+      "productName": "Zapatilla De 6 tomas rackeable PDU con protección de sobretensión",
+      "sku": "PDU-6T-RACK-AR",
+      "brand": "Vertiv",
+      "price": "145.00",
+      "category": "infraestructura",
+      "timestamp": "2026-10-05T17:54:12.682Z"
+    }
+  },
+  {
     "id": 298,
     "timestamp": "2026-10-05T17:29:27.162Z",
     "origen": "ecommerce",
