@@ -377,6 +377,15 @@ export default function BrandingVectorIcon({
           <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
         </svg>
       );
+    case 'bar-chart':
+    case 'chart':
+      return (
+        <svg {...svgProps}>
+          <line x1="12" x2="12" y1="20" y2="10" />
+          <line x1="18" x2="18" y1="20" y2="4" />
+          <line x1="6" x2="6" y1="20" y2="16" />
+        </svg>
+      );
     case 'star':
       return (
         <svg {...svgProps}>
@@ -817,6 +826,13 @@ export default function BrandingVectorIcon({
         <svg {...svgProps}>
           <line x1="5" y1="12" x2="19" y2="12" />
           <polyline points="12 5 19 12 12 19" />
+        </svg>
+      );
+    case 'arrow-left':
+      return (
+        <svg {...svgProps}>
+          <line x1="19" y1="12" x2="5" y2="12" />
+          <polyline points="12 19 5 12 12 5" />
         </svg>
       );
     default:

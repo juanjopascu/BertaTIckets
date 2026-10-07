@@ -55,6 +55,7 @@ CREATE TABLE IF NOT EXISTS ecommerce_users (
     -- Compatibility legacy fields
     address TEXT,
     company VARCHAR(150),
+    cuenta_corriente_habilitada BOOLEAN DEFAULT FALSE,
     
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

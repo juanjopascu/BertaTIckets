@@ -761,25 +761,58 @@ class ShopErrorBoundary extends React.Component {
           <p style={{ color: '#64748B', maxWidth: '480px', margin: '0 0 20px', fontSize: '14px' }}>
             Se ha actualizado la configuración regional del catálogo. Presioná el botón a continuación para recargar la vista.
           </p>
-          <button
-            onClick={() => {
-              this.setState({ hasError: false });
-              window.location.reload();
-            }}
-            style={{
-              background: '#0FA4DE',
-              color: '#ffffff',
-              border: 'none',
-              borderRadius: '12px',
-              padding: '12px 28px',
-              fontWeight: 800,
-              fontSize: '14px',
-              cursor: 'pointer',
-              boxShadow: '0 4px 14px rgba(15, 164, 222, 0.35)'
-            }}
-          >
-            Recargar Catálogo DACAS 🔄
-          </button>
+          <div style={{ display: 'flex', gap: '10px', marginBottom: '16px', flexWrap: 'wrap', justifyContent: 'center' }}>
+            <button
+              onClick={() => {
+                this.setState({ hasError: false, error: null });
+                window.location.reload();
+              }}
+              style={{
+                background: '#0FA4DE',
+                color: '#ffffff',
+                border: 'none',
+                borderRadius: '12px',
+                padding: '12px 28px',
+                fontWeight: 800,
+                fontSize: '14px',
+                cursor: 'pointer',
+                boxShadow: '0 4px 14px rgba(15, 164, 222, 0.35)'
+              }}
+            >
+              Recargar Catálogo DACAS 🔄
+            </button>
+            <button
+              onClick={() => {
+                try {
+                  localStorage.removeItem('dacas_client_user');
+                  localStorage.removeItem('dacas_client_token');
+                  localStorage.removeItem('shop_user');
+                  localStorage.removeItem('shop_token');
+                } catch (_) {}
+                this.setState({ hasError: false, error: null });
+                window.location.reload();
+              }}
+              style={{
+                background: '#F1F5F9',
+                color: '#475569',
+                border: '1px solid #CBD5E1',
+                borderRadius: '12px',
+                padding: '12px 20px',
+                fontWeight: 700,
+                fontSize: '13px',
+                cursor: 'pointer'
+              }}
+            >
+              Reiniciar Sesión
+            </button>
+          </div>
+          {this.state.error && (
+            <pre style={{ marginTop: '16px', padding: '12px 16px', background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '10px', color: '#991B1B', fontSize: '12px', maxWidth: '750px', textAlign: 'left', whiteSpace: 'pre-wrap', overflowX: 'auto' }}>
+              <strong>Error:</strong> {this.state.error.message || String(this.state.error)}
+              {'\n\n'}
+              {this.state.error.stack}
+            </pre>
+          )}
         </div>
       );
     }
@@ -1845,6 +1878,13 @@ function ShopMain() {
   const [authError, setAuthError] = useState(null);
   const [authSuccessMessage, setAuthSuccessMessage] = useState(null);
   const [authLoading, setAuthLoading] = useState(false);
+  const [clientTypes, setClientTypes] = useState([
+    { id: 1, name: 'Integrador IT / Reseller' },
+    { id: 2, name: 'Proveedor de Internet (ISP / WISP)' },
+    { id: 3, name: 'Consultora IT / Ciberseguridad' },
+    { id: 4, name: 'Empresa Corporativa' },
+    { id: 5, name: 'Organismo Público' }
+  ]);
   const [authForm, setAuthForm] = useState({
     name: '',
     email: '',
@@ -1874,7 +1914,14 @@ function ShopMain() {
 
   useEffect(() => {
     fetchCountries();
+    fetchClientTypes();
   }, []);
+
+  useEffect(() => {
+    if (authModalOpen) {
+      fetchClientTypes();
+    }
+  }, [authModalOpen]);
 
   useEffect(() => {
     fetchProducts(selectedCountryCode);
@@ -1912,6 +1959,24 @@ function ShopMain() {
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
           setCountries(data);
+        }
+      }
+    } catch (_) { }
+  };
+
+  const fetchClientTypes = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/client-types`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) {
+          setClientTypes(data);
+          setAuthForm(prev => {
+            if (!prev.tipo_cliente || !data.some(ct => ct.name === prev.tipo_cliente)) {
+              return { ...prev, tipo_cliente: data[0].name };
+            }
+            return prev;
+          });
         }
       }
     } catch (_) { }
@@ -2699,7 +2764,7 @@ function ShopMain() {
                       </div>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', marginBottom: '12px' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '12px' }}>
                       <button
                         onClick={() => { setUserDropdownOpen(false); navigate('/shop/portal'); }}
                         style={{
@@ -2720,72 +2785,6 @@ function ShopMain() {
                       >
                         <BrandingVectorIcon name="layout" size={14} color="#0369A1" />
                         <span>Mi Portal de Cliente B2B</span>
-                      </button>
-
-                      <button
-                        onClick={() => { setUserDropdownOpen(false); navigate('/shop/portal'); }}
-                        style={{
-                          width: '100%',
-                          background: '#FFFFFF',
-                          border: '1px solid #E2E8F0',
-                          color: '#334155',
-                          padding: '9px 14px',
-                          borderRadius: '10px',
-                          fontWeight: '700',
-                          fontSize: '12.5px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          textAlign: 'left'
-                        }}
-                      >
-                        <BrandingVectorIcon name="box" size={14} color="#334155" />
-                        <span>Mis Compras y Estado</span>
-                      </button>
-
-                      <button
-                        onClick={() => { setUserDropdownOpen(false); navigate('/shop/portal'); }}
-                        style={{
-                          width: '100%',
-                          background: '#FFFFFF',
-                          border: '1px solid #E2E8F0',
-                          color: '#334155',
-                          padding: '9px 14px',
-                          borderRadius: '10px',
-                          fontWeight: '700',
-                          fontSize: '12.5px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          textAlign: 'left'
-                        }}
-                      >
-                        <BrandingVectorIcon name="building" size={14} color="#334155" />
-                        <span>Mi Ficha & Solicitar Cambios</span>
-                      </button>
-
-                      <button
-                        onClick={() => { setUserDropdownOpen(false); navigate('/admin/erp'); }}
-                        style={{
-                          width: '100%',
-                          background: 'linear-gradient(135deg, #071524 0%, #1e293b 100%)',
-                          border: 'none',
-                          color: '#38BDF8',
-                          padding: '10px 14px',
-                          borderRadius: '10px',
-                          fontWeight: '800',
-                          fontSize: '12.5px',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '8px',
-                          textAlign: 'left'
-                        }}
-                      >
-                        <BrandingVectorIcon name="database" size={14} color="#38BDF8" />
-                        <span>Módulo ERP & Administración</span>
                       </button>
                     </div>
 
@@ -4164,6 +4163,7 @@ function ShopMain() {
           success={authSuccessMessage}
           loading={authLoading}
           countries={countries}
+          clientTypes={clientTypes}
         />
       )}
 
@@ -7396,7 +7396,8 @@ function AuthModal({
   error,
   success,
   loading,
-  countries
+  countries,
+  clientTypes = []
 }) {
   useEffect(() => {
     function handleKeyDown(e) {
@@ -7747,11 +7748,15 @@ function AuthModal({
                       onChange={e => setAuthForm({ ...authForm, tipo_cliente: e.target.value })}
                       style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13px', outline: 'none', boxSizing: 'border-box', background: '#fff' }}
                     >
-                      <option value="Integrador IT / Reseller">Integrador IT / Reseller</option>
-                      <option value="Proveedor de Internet (ISP / WISP)">Proveedor de Internet (ISP / WISP)</option>
-                      <option value="Consultora IT / Ciberseguridad">Consultora IT / Ciberseguridad</option>
-                      <option value="Empresa Corporativa">Empresa Corporativa</option>
-                      <option value="Organismo Público">Organismo Público</option>
+                      {clientTypes && clientTypes.length > 0 ? (
+                        clientTypes.map(ct => (
+                          <option key={ct.id || ct.name} value={ct.name}>
+                            {ct.name}
+                          </option>
+                        ))
+                      ) : (
+                        <option value="Integrador IT / Reseller">Integrador IT / Reseller</option>
+                      )}
                     </select>
                   </div>
                 </div>

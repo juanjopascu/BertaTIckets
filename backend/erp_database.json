@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
   "architecture": "DACAS OneWorld Multi-Subsidiary & Multi-Currency",
-  "updated_at": "2026-10-06T01:59:50.640Z",
+  "updated_at": "2026-10-06T19:56:14.732Z",
   "subsidiaries": [
     {
       "id": 1,
@@ -357,17 +357,17 @@
       "categoria": "Wireless Enterprise",
       "precio_mayorista": 395,
       "costo_promedio": 260,
-      "stock_disponible": 106,
+      "stock_disponible": 90,
       "stock_por_almacen": {
         "LOC-BUE": 50,
         "LOC-SCL": 30,
-        "LOC-MIA": 16,
+        "LOC-MIA": 0,
         "LOC-BOG": 10
       },
       "lead_time_days": 5,
       "moneda": "USD",
       "precio_mayorista_usd": 480,
-      "updated_at": "2026-10-02T18:58:52.037Z"
+      "updated_at": "2026-10-06T19:56:14.732Z"
     },
     {
       "id": 3,
@@ -379,15 +379,17 @@
       "categoria": "Enterprise Switching",
       "precio_mayorista": 4120,
       "costo_promedio": 2950,
-      "stock_disponible": 18,
+      "stock_disponible": 53,
       "stock_por_almacen": {
         "LOC-BUE": 8,
         "LOC-SCL": 4,
-        "LOC-MIA": 4,
+        "LOC-MIA": 39,
         "LOC-BOG": 2
       },
       "lead_time_days": 14,
-      "moneda": "USD"
+      "moneda": "USD",
+      "precio_mayorista_usd": 195,
+      "updated_at": "2026-10-06T14:17:41.861Z"
     },
     {
       "id": 4,
@@ -419,17 +421,17 @@
       "categoria": "Routing & Security",
       "precio_mayorista": 980,
       "costo_promedio": 690,
-      "stock_disponible": 34,
+      "stock_disponible": 33,
       "stock_por_almacen": {
         "LOC-BUE": 12,
         "LOC-SCL": 6,
-        "LOC-MIA": 14,
+        "LOC-MIA": 13,
         "LOC-BOG": 2
       },
       "lead_time_days": 10,
       "moneda": "USD",
       "precio_mayorista_usd": 680,
-      "updated_at": "2026-10-02T17:48:26.522Z"
+      "updated_at": "2026-10-06T19:44:13.259Z"
     },
     {
       "id": 6,
@@ -871,6 +873,42 @@
     }
   ],
   "inventory_adjustments": [
+    {
+      "id": 1791316574732,
+      "sku": "AP-505-RW",
+      "item_name": "Aruba AP-505 Campus Unified Access Point Wi-Fi 6",
+      "location": "LOC-MIA",
+      "adjustment": 0,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-06T19:56:14.732Z"
+    },
+    {
+      "id": 1791316556315,
+      "sku": "AP-505-RW",
+      "item_name": "Aruba AP-505 Campus Unified Access Point Wi-Fi 6",
+      "location": "LOC-MIA",
+      "adjustment": 0,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-06T19:55:56.315Z"
+    },
+    {
+      "id": 1791315853259,
+      "sku": "SRX300-SYS-JB",
+      "item_name": "Juniper SRX300 Services Gateway with Junos Software Base",
+      "location": "LOC-MIA",
+      "adjustment": 13,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-06T19:44:13.259Z"
+    },
+    {
+      "id": 1791296261861,
+      "sku": "C9300-24T-A",
+      "item_name": "Cisco Catalyst 9300 24-Port Data Only, Network Advantage",
+      "location": "LOC-MIA",
+      "adjustment": 39,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-06T14:17:41.861Z"
+    },
     {
       "id": 1790969420976,
       "sku": "zpa5",

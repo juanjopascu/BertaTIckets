@@ -1,5 +1,786 @@
 [
   {
+    "id": 355,
+    "timestamp": "2026-10-06T21:19:36.784Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "536f9d42589b84ae6425aa8f7bb102dc25de157d105f1a3d8a1ebf74ca589ed6"
+    }
+  },
+  {
+    "id": 354,
+    "timestamp": "2026-10-06T21:16:23.501Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"demo@dacas.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {
+      "emailIntentado": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 353,
+    "timestamp": "2026-10-06T20:53:31.363Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "0553b907efe73894d266a8f1f1e2ace2e3637d13463613da4c20e8df0ccde664"
+    }
+  },
+  {
+    "id": 352,
+    "timestamp": "2026-10-06T20:19:46.214Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "c2e50f6c7c0c46c24852099371f61772eee1fd135a7816b647c6d3626a8a51a9"
+    }
+  },
+  {
+    "id": 351,
+    "timestamp": "2026-10-06T20:11:22.777Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "f100d994674c764b6c35d6cafb1ee6b14cf7228b3c7ace8cdf87d12c95e67cbe"
+    }
+  },
+  {
+    "id": 350,
+    "timestamp": "2026-10-06T20:10:23.423Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 349,
+    "timestamp": "2026-10-06T20:10:23.397Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 348,
+    "timestamp": "2026-10-06T20:10:23.381Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "4425d257fa1e4e1c8a75c575fe43365d73c36ff79eee07c2c0302bccc66d4459"
+    }
+  },
+  {
+    "id": 347,
+    "timestamp": "2026-10-06T20:10:23.250Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1090 registrado por \"Usuario Demo\" por USD $0.00.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1090,
+      "total": "0.00",
+      "payment_method": "Cuenta Corriente B2B (30 días)",
+      "itemsCount": 0
+    }
+  },
+  {
+    "id": 346,
+    "timestamp": "2026-10-06T20:06:58.327Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #2 (\"Carlos Mendoza\" / carlos@redesnet.com.ar) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "2",
+      "email": "carlos@redesnet.com.ar"
+    }
+  },
+  {
+    "id": 345,
+    "timestamp": "2026-10-06T20:06:58.181Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #2 (\"Carlos Mendoza\" / carlos@redesnet.com.ar) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "2",
+      "email": "carlos@redesnet.com.ar"
+    }
+  },
+  {
+    "id": 344,
+    "timestamp": "2026-10-06T20:06:58.123Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "3ea0fc5c8630fc0e36250598546f1623a63e4b6a495f0ca24b1d8dd499e3e43b"
+    }
+  },
+  {
+    "id": 343,
+    "timestamp": "2026-10-06T20:02:33.250Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #2 (\"Carlos Mendoza\" / carlos@redesnet.com.ar) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "2",
+      "email": "carlos@redesnet.com.ar"
+    }
+  },
+  {
+    "id": 342,
+    "timestamp": "2026-10-06T20:02:33.133Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #2 (\"Carlos Mendoza\" / carlos@redesnet.com.ar) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "2",
+      "email": "carlos@redesnet.com.ar"
+    }
+  },
+  {
+    "id": 341,
+    "timestamp": "2026-10-06T20:02:33.103Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "742cdaab964d56b5fc296f3bbec17dcdbd9c7a7fa218308fa1a05c717544261c"
+    }
+  },
+  {
+    "id": 340,
+    "timestamp": "2026-10-06T20:01:46.081Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "d6d27b8f730653e34d154c4a7e0452a9986d9eebc756c988366d35c9026252fa"
+    }
+  },
+  {
+    "id": 339,
+    "timestamp": "2026-10-06T20:01:37.227Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "54d5c75e0cb48630f78a59ad17f9d7d1156c55218558635d4c84916326586e44"
+    }
+  },
+  {
+    "id": 338,
+    "timestamp": "2026-10-06T19:59:58.950Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"admin@dacas.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {
+      "emailIntentado": "admin@dacas.com"
+    }
+  },
+  {
+    "id": 337,
+    "timestamp": "2026-10-06T19:56:34.277Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router (SKU: CRS328-24P-4S, Cat: networking, USD $480.00).",
+    "usuario": {
+      "nombre": "Rodrigo Cascata",
+      "email": "rodrigo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 2,
+      "productName": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+      "sku": "CRS328-24P-4S",
+      "brand": "MikroTik",
+      "price": "480.00",
+      "category": "networking",
+      "timestamp": "2026-10-06T19:56:34.272Z"
+    }
+  },
+  {
+    "id": 336,
+    "timestamp": "2026-10-06T19:56:14.720Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_ACTUALIZADO",
+    "descripcion": "Producto #2 (\"Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router\") modificado por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": "2",
+      "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+      "price": "480.00",
+      "stock": 0
+    }
+  },
+  {
+    "id": 335,
+    "timestamp": "2026-10-06T19:55:56.306Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_ACTUALIZADO",
+    "descripcion": "Producto #2 (\"Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router\") modificado por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": "2",
+      "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+      "price": "480.00",
+      "stock": 0
+    }
+  },
+  {
+    "id": 334,
+    "timestamp": "2026-10-06T19:55:42.311Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "a027c8abee362a271d4bac8239cd1747a830a83823ef421080dd1fb6a599b51a"
+    }
+  },
+  {
+    "id": 333,
+    "timestamp": "2026-10-06T19:50:16.407Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "1442b9ef7f1326051934271b94ffe277efe5ce91f25f17cc9f2729a20a58138b"
+    }
+  },
+  {
+    "id": 332,
+    "timestamp": "2026-10-06T19:44:13.274Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1090 registrado por \"Racas\" por USD $690.20.",
+    "usuario": {
+      "nombre": "Rodrigo Cascata",
+      "email": "rodrigo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1090,
+      "total": "690.20",
+      "payment_method": "E-Cheq / Cheque de Pago Diferido",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 331,
+    "timestamp": "2026-10-06T19:42:49.116Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router (SKU: CRS328-24P-4S, Cat: networking, USD $480.00).",
+    "usuario": {
+      "nombre": "Rodrigo Cascata",
+      "email": "rodrigo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 2,
+      "productName": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+      "sku": "CRS328-24P-4S",
+      "brand": "MikroTik",
+      "price": "480.00",
+      "category": "networking",
+      "timestamp": "2026-10-06T19:42:49.115Z"
+    }
+  },
+  {
+    "id": 330,
+    "timestamp": "2026-10-06T18:24:07.072Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "2ac229460f6ffdb4ca481e19239f08a187c9bdbeada14a1f79237be77921262c"
+    }
+  },
+  {
+    "id": 329,
+    "timestamp": "2026-10-06T18:03:06.972Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"admin@dacas.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {
+      "emailIntentado": "admin@dacas.com"
+    }
+  },
+  {
+    "id": 328,
+    "timestamp": "2026-10-06T15:51:51.386Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "d7a18c5a59f1dfe30497c972a665d7990fde2a7a606a1a891a0200f83f88847e"
+    }
+  },
+  {
+    "id": 327,
+    "timestamp": "2026-10-06T14:17:41.874Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1090 registrado por \"Rodrigo Cascata\" por USD $197.92.",
+    "usuario": {
+      "id": 12,
+      "nombre": "Rodrigo Cascata",
+      "email": "rodrigo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1090,
+      "total": "197.92",
+      "payment_method": "E-Cheq / Cheque de Pago Diferido",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 326,
+    "timestamp": "2026-10-06T13:58:33.338Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ECOMMERCE_CLIENTE_APROBADO",
+    "descripcion": "Cliente / Usuario #12 (\"Rodrigo Cascata\" / rodrigo@dacas.com) aprobado y activado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "12"
+    }
+  },
+  {
+    "id": 325,
+    "timestamp": "2026-10-06T13:23:48.153Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #8 marcado como DESTACADO ⭐ por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 8,
+      "is_featured": true
+    }
+  },
+  {
+    "id": 324,
+    "timestamp": "2026-10-06T13:23:47.378Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #6 marcado como DESTACADO ⭐ por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 6,
+      "is_featured": true
+    }
+  },
+  {
+    "id": 323,
+    "timestamp": "2026-10-06T13:23:46.902Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #7 marcado como DESTACADO ⭐ por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 7,
+      "is_featured": true
+    }
+  },
+  {
+    "id": 322,
+    "timestamp": "2026-10-06T13:23:46.259Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #6 marcado como NORMAL por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 6,
+      "is_featured": false
+    }
+  },
+  {
+    "id": 321,
+    "timestamp": "2026-10-06T13:23:45.473Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #7 marcado como NORMAL por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 7,
+      "is_featured": false
+    }
+  },
+  {
+    "id": 320,
+    "timestamp": "2026-10-06T13:23:44.971Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_DESTACADO_TOGGLE",
+    "descripcion": "Producto #8 marcado como NORMAL por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 8,
+      "is_featured": false
+    }
+  },
+  {
+    "id": 319,
+    "timestamp": "2026-10-06T12:54:01.605Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $2.150,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791291241605",
+      "itemsCount": 1,
+      "total": 2150,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Vertiv Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA ($2150.00)",
+      "items": [
+        {
+          "id": 4,
+          "name": "Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA",
+          "brand": "Vertiv",
+          "sku": "GXT5-3000IRT2UXLE",
+          "qty": 1,
+          "price": 2150,
+          "subtotal": 2150
+        }
+      ],
+      "timestamp": "2026-10-06T12:54:01.605Z"
+    }
+  },
+  {
+    "id": 318,
+    "timestamp": "2026-10-06T03:40:49.326Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $2.150,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791258049326",
+      "itemsCount": 1,
+      "total": 2150,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Vertiv Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA ($2150.00)",
+      "items": [
+        {
+          "id": 4,
+          "name": "Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA",
+          "brand": "Vertiv",
+          "sku": "GXT5-3000IRT2UXLE",
+          "qty": 1,
+          "price": 2150,
+          "subtotal": 2150
+        }
+      ],
+      "timestamp": "2026-10-06T03:40:49.326Z"
+    }
+  },
+  {
+    "id": 317,
+    "timestamp": "2026-10-06T03:40:23.664Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $2.150,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791258023664",
+      "itemsCount": 1,
+      "total": 2150,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Vertiv Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA ($2150.00)",
+      "items": [
+        {
+          "id": 4,
+          "name": "Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA",
+          "brand": "Vertiv",
+          "sku": "GXT5-3000IRT2UXLE",
+          "qty": 1,
+          "price": 2150,
+          "subtotal": 2150
+        }
+      ],
+      "timestamp": "2026-10-06T03:40:23.664Z"
+    }
+  },
+  {
     "id": 316,
     "timestamp": "2026-10-06T03:27:09.579Z",
     "origen": "ecommerce",

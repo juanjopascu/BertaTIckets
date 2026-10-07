@@ -940,9 +940,28 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
         </div>
       )}
 
-      <main className="crm-main-grid">
+      <main 
+        className={`crm-main-grid ${isMaximized ? 'crm-main-grid-maximized' : ''}`}
+        style={isMaximized ? {
+          position: 'fixed',
+          inset: 0,
+          zIndex: 9999,
+          background: theme === 'dark' ? '#0b0f19' : '#f8fafc',
+          overflowY: 'auto',
+          padding: '20px 28px',
+          display: 'flex',
+          flexDirection: 'row',
+          gap: '24px',
+          width: '100vw',
+          height: '100vh',
+          boxSizing: 'border-box'
+        } : {}}
+      >
         {/* BARRA LATERAL DE DEPARTAMENTOS Y ADMINISTRACION */}
-        <aside className="sidebar-depts sidebar-left">
+        <aside 
+          className="sidebar-depts sidebar-left"
+          style={isMaximized ? { position: 'sticky', top: 0, maxHeight: 'calc(100vh - 40px)', overflowY: 'auto', flexShrink: 0 } : {}}
+        >
           {activeAdminView === 'ecommerce' ? (
             /* ── SIDEBAR DEDICADO E-COMMERCE (Administración y CRM ocultos) ── */
             <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '14px', animation: 'fadeIn 0.2s ease-out' }}>
@@ -972,7 +991,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                 }}
                 title="Regresar al Portal General de Administración y Tickets"
               >
-                <span style={{ fontSize: '15px', fontWeight: '800' }}>←</span>
+                <BrandingVectorIcon name="arrow-left" size={15} color="#0284c7" />
                 <span>Volver a Administración</span>
               </button>
 
@@ -990,7 +1009,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                   fontSize: '18px',
                   boxShadow: '0 4px 10px rgba(15, 164, 222, 0.3)'
                 }}>
-                  🛒
+                  <BrandingVectorIcon name="shopping-cart" size={18} color="#ffffff" />
                 </div>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '0.98rem', fontWeight: '800', color: 'var(--text-main, #0f172a)' }}>
@@ -1037,7 +1056,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                   >
                     {(DACAS_COUNTRIES_LIST || []).map(c => (
                       <option key={c.code} value={c.code}>
-                        {c.flag} {c.name} ({c.code})
+                        {c.name} ({c.code})
                       </option>
                     ))}
                   </select>
@@ -1053,17 +1072,18 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                   Módulos E-commerce
                 </div>
                 {[
-                  { id: 'products', label: 'Productos', icon: '📦' },
-                  { id: 'brands', label: 'Marcas', icon: '🏷️' },
-                  { id: 'countries', label: 'Países y Sedes', icon: '🌎' },
-                  { id: 'rules', label: 'Cupones & Reglas', icon: '🎟️' },
-                  { id: 'users', label: 'Clientes Mayoristas', icon: '👥' },
-                  { id: 'orders', label: 'Órdenes de Compra', icon: '📑' },
-                  { id: 'reportes', label: 'Reportería & Métricas', icon: '📊' },
-                  { id: 'pagos_envios', label: 'Pagos y Envíos', icon: '💳' },
-                  { id: 'visual', label: 'Diseño & Banners', icon: '🎨' },
-                  { id: 'n8n_bot', label: 'Bot n8n B2B', icon: '🤖' },
-                  { id: 'apli', label: 'Conexión Apli', icon: '⚡' }
+                  { id: 'products', label: 'Productos', icon: 'box' },
+                  { id: 'brands', label: 'Marcas', icon: 'tag' },
+                  { id: 'countries', label: 'Países y Sedes', icon: 'globe' },
+                  { id: 'rules', label: 'Cupones & Reglas', icon: 'ticket' },
+                  { id: 'users', label: 'Clientes Mayoristas', icon: 'users' },
+                  { id: 'orders', label: 'Órdenes de Compra', icon: 'file-text' },
+                  { id: 'reportes', label: 'Reportería & Métricas', icon: 'bar-chart' },
+                  { id: 'envios', label: 'Métodos de Envío', icon: 'truck' },
+                  { id: 'pagos', label: 'Métodos de Pago', icon: 'credit-card' },
+                  { id: 'visual', label: 'Diseño & Banners', icon: 'palette' },
+                  { id: 'n8n_bot', label: 'Bot n8n B2B', icon: 'bot' },
+                  { id: 'apli', label: 'Conexión Apli', icon: 'zap' }
                 ].map(item => {
                   const isSelected = ecommerceSubTab === item.id;
                   return (
@@ -1089,7 +1109,9 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                       }}
                     >
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontSize: '15px' }}>{item.icon}</span>
+                        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                          <BrandingVectorIcon name={item.icon} size={16} color={isSelected ? '#ffffff' : '#0284c7'} />
+                        </span>
                         <span>{item.label}</span>
                       </div>
                     </button>
@@ -1623,29 +1645,14 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
         {/* VISTAS EMBEBIDAS DE ADMINISTRACIÓN O TABLERO PRINCIPAL DE TICKETS */}
         {activeAdminView ? (
           <div
-            style={
-              isMaximized
-                ? {
-                    position: 'fixed',
-                    inset: 0,
-                    zIndex: 9999,
-                    background: theme === 'dark' ? '#0b0f19' : '#f8fafc',
-                    overflowY: 'auto',
-                    padding: '20px 28px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '16px',
-                    animation: 'fadeIn 0.2s ease-out'
-                  }
-                : {
-                    flex: 1,
-                    minWidth: 0,
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '16px',
-                    animation: 'fadeIn 0.2s ease-out'
-                  }
-            }
+            style={{
+              flex: 1,
+              minWidth: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+              animation: 'fadeIn 0.2s ease-out'
+            }}
           >
             {/* Top Toolbar for Embedded View */}
             <div
@@ -1706,6 +1713,8 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                             users: 'Clientes Mayoristas',
                             orders: 'Órdenes de Compra',
                             reportes: 'Reportería & Métricas',
+                            envios: 'Métodos de Envío',
+                            pagos: 'Métodos de Pago',
                             pagos_envios: 'Pagos y Envíos',
                             visual: 'Diseño & Banners',
                             n8n_bot: 'Bot n8n B2B',

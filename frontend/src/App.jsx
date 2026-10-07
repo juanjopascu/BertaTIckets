@@ -89,6 +89,46 @@ function ProtectedRoute({ children, rolesPermitidos, usuario }) {
   return children;
 }
 
+class GlobalErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, errorInfo) {
+    console.error("GLOBAL ERROR CAUGHT:", error, errorInfo);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div style={{ padding: '30px', background: '#FEF2F2', minHeight: '100vh', fontFamily: 'sans-serif', boxSizing: 'border-box' }}>
+          <div style={{ maxWidth: '800px', margin: '0 auto', background: '#FFFFFF', padding: '24px', borderRadius: '16px', border: '1px solid #FECACA', boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }}>
+            <h2 style={{ color: '#991B1B', margin: '0 0 10px' }}>⚠️ Error en la visualización</h2>
+            <p style={{ color: '#475569', fontSize: '14px' }}>Se produjo un error al renderizar la vista.</p>
+            <pre style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '14px', borderRadius: '8px', fontSize: '12px', color: '#B91C1C', whiteSpace: 'pre-wrap', overflowX: 'auto' }}>
+              {this.state.error?.message || String(this.state.error)}
+              {'\n\n'}
+              {this.state.error?.stack}
+            </pre>
+            <button
+              onClick={() => {
+                this.setState({ hasError: false, error: null });
+                window.location.reload();
+              }}
+              style={{ background: '#0FA4DE', color: '#FFFFFF', border: 'none', borderRadius: '8px', padding: '10px 18px', fontWeight: '700', cursor: 'pointer', marginTop: '12px' }}
+            >
+              Recargar Vista
+            </button>
+          </div>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
 function App() {
   const [usuario, setUsuario] = useState(() => {
     try {
@@ -149,7 +189,8 @@ function App() {
   return (
     <Router>
       <DynamicFaviconAndTitle />
-      <Routes>
+      <GlobalErrorBoundary>
+        <Routes>
         <Route
           path="/login"
           element={!usuario ? <Login setUsuario={setUsuario} initialError={sessionError} clearInitialError={() => setSessionError('')} theme={theme} toggleTheme={toggleTheme} /> : <Navigate to={usuario.rol === 'admin_erp' ? '/admin/erp' : usuario.rol === 'admin_ecommerce' ? '/admin/ecommerce' : (usuario.rol === 'admin' || usuario.rol === 'staff') ? '/' : '/mis-tickets'} />}
@@ -300,7 +341,8 @@ function App() {
             </ProtectedRoute>
           }
         />
-      </Routes>
+        </Routes>
+      </GlobalErrorBoundary>
       <FloatingHelpButton usuario={usuario} />
     </Router>
   );

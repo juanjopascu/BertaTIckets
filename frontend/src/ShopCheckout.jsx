@@ -86,6 +86,13 @@ const DEFAULT_CHECKOUT_METHODS = {
   terms_conditions_text: 'Acepto las condiciones comerciales de DACAS B2B, términos de garantía oficial de fabricante de 12/36 meses y la emisión de la orden de compra con carácter vinculante para reserva de stock.'
 };
 
+const isCuentaCorrienteMethod = (m) => {
+  if (!m) return false;
+  const idStr = String(m.id || '').toLowerCase();
+  const titleStr = String(m.title || '').toLowerCase();
+  return idStr.includes('cuenta_corriente') || idStr.includes('ctacte') || titleStr.includes('cuenta corriente');
+};
+
 function ShopCheckoutContent() {
   const navigate = useNavigate();
 
@@ -148,7 +155,10 @@ function ShopCheckoutContent() {
           }
           const activePay = (data.payment || []).filter(p => p.enabled !== false);
           if (activePay.length > 0 && !activePay.some(p => p.id === paymentMethod)) {
-            setPaymentMethod(activePay[0].id);
+            const allowedPay = isCuentaCorrienteHabilitada
+              ? activePay
+              : activePay.filter(p => !isCuentaCorrienteMethod(p));
+            setPaymentMethod((allowedPay[0] || activePay[0]).id);
           }
         }
       })
@@ -225,6 +235,15 @@ function ShopCheckoutContent() {
   // ── Auth State synced with localStorage ──
   const [shopUser, setShopUser] = useState(() => getActiveUser());
   const [shopToken, setShopToken] = useState(() => localStorage.getItem('dacas_client_token') || localStorage.getItem('shop_token') || localStorage.getItem('token') || null);
+
+  const isCuentaCorrienteHabilitada = Boolean(
+    shopUser && (
+      shopUser.cuenta_corriente_habilitada === true ||
+      shopUser.cuenta_corriente_habilitada === 'true' ||
+      shopUser.cuenta_corriente_habilitada === 1 ||
+      shopUser.cuenta_corriente_habilitada === '1'
+    )
+  );
 
   const userCountryCode = (
     shopUser?.country_code ||
@@ -596,9 +615,35 @@ function ShopCheckoutContent() {
   };
 
   // ── Step 5: Payment & Commercial Conditions ──
-  const [paymentMethod, setPaymentMethod] = useState('cuenta_corriente'); // 'cuenta_corriente' | 'transferencia' | 'tarjeta' | 'echeq'
+  const [paymentMethod, setPaymentMethod] = useState(() => {
+    const user = getActiveUser();
+    const ccOk = Boolean(
+      user && (
+        user.cuenta_corriente_habilitada === true ||
+        user.cuenta_corriente_habilitada === 'true' ||
+        user.cuenta_corriente_habilitada === 1 ||
+        user.cuenta_corriente_habilitada === '1'
+      )
+    );
+    return ccOk ? 'cuenta_corriente' : 'transferencia';
+  });
   const [ccTerms, setCcTerms] = useState('30_dias');
   const [acceptTerms, setAcceptTerms] = useState(true);
+
+  // Auto-switch payment method away from CC if client is not enabled for Cuenta Corriente
+  useEffect(() => {
+    const activePayments = (checkoutMethods?.payment || []).filter(m => m.enabled !== false);
+    if (activePayments.length === 0) return;
+
+    if (!isCuentaCorrienteHabilitada && isCuentaCorrienteMethod({ id: paymentMethod })) {
+      const fallback = activePayments.find(p => !isCuentaCorrienteMethod(p));
+      if (fallback) {
+        setPaymentMethod(fallback.id);
+      } else {
+        setPaymentMethod('transferencia');
+      }
+    }
+  }, [isCuentaCorrienteHabilitada, paymentMethod, checkoutMethods]);
 
   // Fetch client profile on mount if token is available
   useEffect(() => {
@@ -738,6 +783,12 @@ function ShopCheckoutContent() {
       return;
     }
 
+    if (isCuentaCorrienteMethod({ id: paymentMethod }) && !isCuentaCorrienteHabilitada) {
+      setError('El método de pago Cuenta Corriente está bloqueado para tu cuenta comercial. Seleccioná otra opción o comunicate con administración.');
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     setError('');
 
@@ -747,11 +798,11 @@ function ShopCheckoutContent() {
         ? `Expreso ${shipping.expreso_nombre || 'Contratado'} - ${shipping.calle} ${shipping.numero}, ${shipping.ciudad} (${shipping.codigo_postal})`
         : `${shipping.calle} ${shipping.numero} ${shipping.piso_depto ? `Piso ${shipping.piso_depto}` : ''}, ${shipping.ciudad} (${shipping.codigo_postal}), ${shipping.provincia}`;
 
-    const paymentMethodLabel = paymentMethod === 'cuenta_corriente'
-      ? `Cuenta Corriente B2B (${ccTerms === '30_dias' ? '30 días fecha factura' : '60 días fecha factura'})`
-      : paymentMethod === 'transferencia'
+    const paymentMethodLabel = isCuentaCorrienteMethod({ id: paymentMethod })
+      ? `Cuenta Corriente B2B (${ccTerms === '30_dias' ? '30 días fecha factura' : ccTerms === '60_dias' ? '60 días fecha factura' : '90 días fecha factura'})`
+      : (paymentMethod || '').includes('transferencia')
         ? 'Transferencia Bancaria Inmediata (CBU / SWIFT)'
-        : paymentMethod === 'tarjeta'
+        : (paymentMethod || '').includes('tarjeta')
           ? 'Tarjeta de Crédito Corporativa (Stripe SSL)'
           : 'E-Cheq / Cheque de Pago Diferido';
 
@@ -789,6 +840,10 @@ function ShopCheckoutContent() {
           setCreatedOrder(data.order);
           clearCart();
           setStep('success');
+          return;
+        } else if (!res.ok) {
+          setError(data.error || 'No se pudo generar la orden de compra.');
+          setLoading(false);
           return;
         }
       } catch (backendErr) {
@@ -901,6 +956,11 @@ function ShopCheckoutContent() {
                   <div style={{ color: '#0fa4de', fontSize: '10px', fontWeight: '600' }}>
                     {shopUser.cuit || shopUser.numero_nit || shopUser.tax_id ? `CUIT: ${shopUser.cuit || shopUser.numero_nit || shopUser.tax_id} · ` : ''}
                     Nivel {shopUser.nivel || 'Mayorista B2B'}
+                    {isCuentaCorrienteHabilitada ? (
+                      <span style={{ color: '#86EFAC', marginLeft: '6px', fontWeight: '700' }}>• CC Habilitada</span>
+                    ) : (
+                      <span style={{ color: '#94A3B8', marginLeft: '6px' }}>• Sin CC</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -2278,42 +2338,160 @@ function ShopCheckoutContent() {
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '24px' }}>
                         {activePayments.map(m => {
                           const isSel = paymentMethod === m.id;
+                          const isCC = isCuentaCorrienteMethod(m);
+                          const isBlocked = isCC && !isCuentaCorrienteHabilitada;
+
                           return (
                             <div
                               key={m.id}
-                              onClick={() => setPaymentMethod(m.id)}
+                              onClick={() => {
+                                if (isBlocked) {
+                                  setError('La Cuenta Corriente no está habilitada para tu cuenta comercial. Comunicate con DACAS para solicitar calificación crediticia.');
+                                  return;
+                                }
+                                setError('');
+                                setPaymentMethod(m.id);
+                              }}
                               style={{
-                                border: `2px solid ${isSel ? '#0fa4de' : '#E2E8F0'}`,
-                                background: isSel ? '#F0F9FF' : '#FFFFFF',
+                                border: isBlocked 
+                                  ? '1.5px dashed #CBD5E1' 
+                                  : `2px solid ${isSel ? '#0fa4de' : '#E2E8F0'}`,
+                                background: isBlocked 
+                                  ? '#F8FAFC' 
+                                  : isSel ? '#F0F9FF' : '#FFFFFF',
                                 borderRadius: '16px',
                                 padding: '18px 20px',
-                                cursor: 'pointer',
+                                cursor: isBlocked ? 'not-allowed' : 'pointer',
+                                opacity: isBlocked ? 0.7 : 1,
                                 transition: 'all 0.2s',
                               }}
                             >
                               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                                  <div style={{ width: '42px', height: '42px', borderRadius: '12px', background: isSel ? 'rgba(15, 164, 222, 0.15)' : '#F1F5F9', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                                    <BrandingVectorIcon name={m.icon || 'credit-card'} size={22} color={isSel ? '#0fa4de' : '#64748B'} />
+                                  <div style={{
+                                    width: '42px',
+                                    height: '42px',
+                                    borderRadius: '12px',
+                                    background: isBlocked
+                                      ? '#F1F5F9'
+                                      : isSel ? 'rgba(15, 164, 222, 0.15)' : '#F1F5F9',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    flexShrink: 0
+                                  }}>
+                                    <BrandingVectorIcon
+                                      name={isBlocked ? 'lock' : (m.icon || 'credit-card')}
+                                      size={22}
+                                      color={isBlocked ? '#94A3B8' : isSel ? '#0fa4de' : '#64748B'}
+                                    />
                                   </div>
                                   <div>
-                                    <div style={{ fontWeight: '800', fontSize: '14px', color: '#071524' }}>
-                                      {m.title}
+                                    <div style={{
+                                      fontWeight: '800',
+                                      fontSize: '14px',
+                                      color: isBlocked ? '#64748B' : '#071524',
+                                      display: 'flex',
+                                      alignItems: 'center',
+                                      gap: '8px'
+                                    }}>
+                                      <span>{m.title}</span>
+                                      {isBlocked && (
+                                        <span style={{
+                                          fontSize: '10.5px',
+                                          fontWeight: '700',
+                                          background: '#FEE2E2',
+                                          color: '#991B1B',
+                                          padding: '2px 8px',
+                                          borderRadius: '6px'
+                                        }}>
+                                          No Habilitada
+                                        </span>
+                                      )}
                                     </div>
                                     <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
                                       {m.subtitle || m.description || ''}
                                     </div>
                                   </div>
                                 </div>
-                                {m.badge && m.badge.toLowerCase() !== 'crédito aprobado' && m.badge.toLowerCase() !== 'credito aprobado' && (
-                                  <span style={{ background: isSel ? '#0fa4de' : '#10B981', color: '#fff', fontSize: '11px', fontWeight: '800', padding: '4px 10px', borderRadius: '20px', flexShrink: 0 }}>
-                                    {m.badge}
+
+                                {isBlocked ? (
+                                  <span style={{
+                                    background: '#FEF2F2',
+                                    color: '#DC2626',
+                                    border: '1px solid #FECACA',
+                                    fontSize: '11px',
+                                    fontWeight: '800',
+                                    padding: '4px 10px',
+                                    borderRadius: '20px',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '5px',
+                                    flexShrink: 0
+                                  }}>
+                                    <BrandingVectorIcon name="lock" size={11} color="#DC2626" />
+                                    <span>Bloqueada</span>
                                   </span>
+                                ) : isCC && isCuentaCorrienteHabilitada ? (
+                                  <span style={{
+                                    background: '#DCFCE7',
+                                    color: '#166534',
+                                    border: '1px solid #BBF7D0',
+                                    fontSize: '11px',
+                                    fontWeight: '800',
+                                    padding: '4px 10px',
+                                    borderRadius: '20px',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '5px',
+                                    flexShrink: 0
+                                  }}>
+                                    <BrandingVectorIcon name="check" size={12} color="#166534" />
+                                    <span>Crédito Aprobado</span>
+                                  </span>
+                                ) : (
+                                  m.badge && m.badge.toLowerCase() !== 'crédito aprobado' && m.badge.toLowerCase() !== 'credito aprobado' && (
+                                    <span style={{
+                                      background: isSel ? '#0fa4de' : '#10B981',
+                                      color: '#fff',
+                                      fontSize: '11px',
+                                      fontWeight: '800',
+                                      padding: '4px 10px',
+                                      borderRadius: '20px',
+                                      flexShrink: 0
+                                    }}>
+                                      {m.badge}
+                                    </span>
+                                  )
                                 )}
                               </div>
 
-                              {/* ── CUENTA CORRIENTE TERMS ── */}
-                              {isSel && m.id === 'cuenta_corriente' && (
+                              {/* Alert message if Cuenta Corriente is blocked */}
+                              {isBlocked && (
+                                <div style={{
+                                  marginTop: '12px',
+                                  padding: '10px 14px',
+                                  background: '#FFF1F2',
+                                  border: '1px solid #FFE4E6',
+                                  borderRadius: '10px',
+                                  fontSize: '12px',
+                                  color: '#9F1239',
+                                  display: 'flex',
+                                  alignItems: 'flex-start',
+                                  gap: '8px',
+                                  lineHeight: '1.4'
+                                }}>
+                                  <div style={{ marginTop: '2px', flexShrink: 0 }}>
+                                    <BrandingVectorIcon name="alert-triangle" size={14} color="#E11D48" />
+                                  </div>
+                                  <div>
+                                    <strong>Línea de crédito no habilitada:</strong> Tu cuenta mayorista no posee habilitada la Cuenta Corriente para compras a plazo. Para solicitar calificación y apertura de línea crediticia a 30/60 días, contactá a tu ejecutivo comercial en DACAS.
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* ── CUENTA CORRIENTE TERMS (ONLY IF HABILITADA) ── */}
+                              {!isBlocked && isSel && isCC && (
                                 <div style={{ marginTop: '16px', paddingTop: '14px', borderTop: '1px solid #BAE6FD' }}>
                                   <div style={{ display: 'flex', gap: '16px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '8px' }}>
                                     <label style={{ fontSize: '13px', fontWeight: '700', color: '#0369A1' }}>

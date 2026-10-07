@@ -1029,6 +1029,282 @@ function CarouselEditorCard({
   );
 }
 
+function EcommerceLayoutWrapper({
+  embedded,
+  activeTab,
+  setActiveTab,
+  selectedCountryScope,
+  handleCountryScopeChange,
+  users = [],
+  usuario,
+  children
+}) {
+  if (embedded) {
+    return (
+      <main className="crm-main-embedded" style={{ width: '100%', maxWidth: '100%', padding: 0, margin: 0 }}>
+        {children}
+      </main>
+    );
+  }
+
+  return (
+    <div className="crm-container" style={{ padding: '24px 32px', maxWidth: '1680px', margin: '0 auto', boxSizing: 'border-box' }}>
+      <main className="crm-main-grid" style={{ display: 'flex', flexDirection: 'row', gap: '24px', alignItems: 'flex-start' }}>
+        {/* SIDEBAR DEDICADO E-COMMERCE */}
+        <aside className="sidebar-depts sidebar-left" style={{ position: 'sticky', top: '20px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '14px' }}>
+            {/* Botón Volver a Administración */}
+            <button
+              type="button"
+              onClick={() => { window.location.href = '/'; }}
+              className="sidebar-menu-btn"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px',
+                fontWeight: '750',
+                padding: '10px 14px',
+                width: '100%',
+                borderRadius: '12px',
+                border: '1.5px solid var(--border-color, #cbd5e1)',
+                background: 'var(--card-bg, #ffffff)',
+                color: '#0284c7',
+                cursor: 'pointer',
+                fontSize: '0.85rem',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
+                transition: 'all 0.15s ease'
+              }}
+              title="Regresar al Portal General de Administración y Tickets"
+            >
+              <BrandingVectorIcon name="arrow-left" size={15} color="#0284c7" />
+              <span>Volver a Administración</span>
+            </button>
+
+            {/* Encabezado E-commerce */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 4px' }}>
+              <div style={{
+                width: '36px',
+                height: '36px',
+                borderRadius: '10px',
+                background: 'linear-gradient(135deg, #0fa4de, #0284c7)',
+                color: '#ffffff',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: '0 4px 10px rgba(15, 164, 222, 0.3)'
+              }}>
+                <BrandingVectorIcon name="shopping-cart" size={18} color="#ffffff" />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '0.98rem', fontWeight: '800', color: 'var(--text-main, #0f172a)' }}>
+                  Gestión E-commerce
+                </h3>
+                <span style={{ fontSize: '11px', color: 'var(--text-muted, #64748b)', fontWeight: '600' }}>
+                  Control Regional DACAS
+                </span>
+              </div>
+            </div>
+
+            {/* Selector de Scope Activo */}
+            <div style={{
+              background: 'var(--card-bg, #ffffff)',
+              borderRadius: '14px',
+              border: '1.5px solid #cbd5e1',
+              padding: '12px 14px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                <span style={{ fontSize: '10.5px', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                  Scope Activo
+                </span>
+                <span style={{ fontSize: '9px', background: 'linear-gradient(135deg, #0fa4de, #0284c7)', color: '#ffffff', padding: '2px 7px', borderRadius: '4px', fontWeight: '800' }}>
+                  PRIMARY KEY
+                </span>
+              </div>
+              <div style={{ position: 'relative' }}>
+                <select
+                  value={selectedCountryScope}
+                  onChange={(e) => handleCountryScopeChange(e.target.value)}
+                  style={{
+                    width: '100%',
+                    padding: '8px 10px',
+                    borderRadius: '8px',
+                    border: '1.5px solid #0fa4de',
+                    background: '#f8fafc',
+                    fontSize: '12.5px',
+                    fontWeight: '750',
+                    color: '#0f172a',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {DACAS_COUNTRIES_LIST.map(c => (
+                    <option key={c.code} value={c.code}>
+                      {c.name} ({c.code})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div style={{ fontSize: '10.5px', color: '#64748b', marginTop: '6px', lineHeight: 1.3 }}>
+                Catálogo, stock y precios filtrados para este país.
+              </div>
+            </div>
+
+            {/* Menú de Navegación Vertical de E-commerce */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1, overflowY: 'auto' }}>
+              <div style={{ fontSize: '11px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '4px 8px', marginBottom: '2px' }}>
+                Módulos E-commerce
+              </div>
+              {[
+                { id: 'products', label: 'Productos', icon: 'box' },
+                { id: 'brands', label: 'Marcas', icon: 'tag' },
+                { id: 'countries', label: 'Países y Sedes', icon: 'globe' },
+                { id: 'rules', label: 'Cupones & Reglas', icon: 'ticket' },
+                { id: 'users', label: 'Clientes Mayoristas', icon: 'users', badge: (users || []).filter(u => u.status === 'pendiente').length },
+                { id: 'orders', label: 'Órdenes de Compra', icon: 'file-text' },
+                { id: 'reportes', label: 'Reportería & Métricas', icon: 'bar-chart' },
+                { id: 'envios', label: 'Métodos de Envío', icon: 'truck' },
+                { id: 'pagos', label: 'Métodos de Pago', icon: 'credit-card' },
+                { id: 'visual', label: 'Diseño & Banners', icon: 'palette' },
+                { id: 'n8n_bot', label: 'Bot n8n B2B', icon: 'bot' },
+                { id: 'apli', label: 'Conexión Apli', icon: 'zap' }
+              ].map(item => {
+                const isSelected = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    onClick={() => setActiveTab(item.id)}
+                    className={`sidebar-menu-btn ${isSelected ? 'active' : ''}`}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '10px 14px',
+                      fontSize: '0.88rem',
+                      borderRadius: '10px',
+                      fontWeight: isSelected ? '800' : '650',
+                      background: isSelected ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : 'transparent',
+                      color: isSelected ? '#ffffff' : 'var(--text-main, #334155)',
+                      border: isSelected ? 'none' : '1px solid transparent',
+                      boxShadow: isSelected ? '0 4px 12px rgba(15, 164, 222, 0.3)' : 'none',
+                      cursor: 'pointer',
+                      transition: 'all 0.15s ease'
+                    }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                        <BrandingVectorIcon name={item.icon} size={16} color={isSelected ? '#ffffff' : '#0284c7'} />
+                      </span>
+                      <span>{item.label}</span>
+                    </div>
+                    {item.badge > 0 && (
+                      <span style={{
+                        background: isSelected ? '#ffffff' : '#f59e0b',
+                        color: isSelected ? '#0284c7' : '#ffffff',
+                        fontSize: '10.5px',
+                        fontWeight: '800',
+                        padding: '1px 6px',
+                        borderRadius: '999px'
+                      }}>
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </aside>
+
+        {/* CONTENIDO PRINCIPAL A LA DERECHA */}
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {/* Barra Superior de Toolbar Breadcrumb */}
+          <div style={{
+            background: 'var(--card-bg, #ffffff)',
+            border: '1px solid var(--border-color, #e2e8f0)',
+            borderRadius: '16px',
+            padding: '10px 18px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '12px',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.05)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <button
+                type="button"
+                onClick={() => { window.location.href = '/'; }}
+                style={{
+                  background: 'var(--pill-bg, #f1f5f9)',
+                  border: '1px solid var(--border-color, #cbd5e1)',
+                  color: 'var(--text-main, #0f172a)',
+                  borderRadius: '10px',
+                  padding: '7px 13px',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontSize: '0.86rem',
+                  fontWeight: '700'
+                }}
+                title="Volver a Home / Panel Principal"
+              >
+                <BrandingVectorIcon name="home" size={15} color="#0fa4de" />
+                <span>Home</span>
+              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ display: 'inline-flex', alignItems: 'center', color: '#0fa4de' }}>
+                  <BrandingVectorIcon name="shopping-cart" size={20} color="#0fa4de" />
+                </span>
+                <h3 style={{ margin: 0, fontSize: '1.1rem', fontWeight: '800', color: 'var(--text-main)' }}>
+                  Gestión E-commerce
+                  <span style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-muted)', marginLeft: '8px' }}>
+                    • {
+                      {
+                        products: 'Catálogo de Productos',
+                        brands: 'Marcas',
+                        countries: 'Países y Sedes',
+                        rules: 'Cupones & Reglas',
+                        users: 'Clientes Mayoristas',
+                        orders: 'Órdenes de Compra',
+                        reportes: 'Reportería & Métricas',
+                        envios: 'Métodos de Envío',
+                        pagos: 'Métodos de Pago',
+                        pagos_envios: 'Pagos y Envíos',
+                        visual: 'Diseño & Banners',
+                        n8n_bot: 'Bot n8n B2B',
+                        apli: 'Conexión Apli'
+                      }[activeTab] || 'Gestión'
+                    }
+                  </span>
+                </h3>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <NotificationBell 
+                usuario={typeof usuario !== 'undefined' ? usuario : { rol: 'admin_ecommerce', nombre: 'Admin E-Commerce' }}
+                onNavigate={(targetView) => {
+                  if (targetView === 'erp') window.location.href = '/admin/erp';
+                  else if (targetView === 'crm') window.location.href = '/';
+                }}
+              />
+              {activeTab === 'reportes' && (
+                <button className="nav-btn" onClick={() => window.print()} style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
+                  🖨️ Imprimir / PDF
+                </button>
+              )}
+            </div>
+          </div>
+
+          {children}
+        </div>
+      </main>
+    </div>
+  );
+}
+
 function AdminEcommerce({
   embedded = false,
   hideTopBars = false,
@@ -1294,6 +1570,7 @@ function AdminEcommerce({
   const initialUserForm = {
     name: '', email: '', password: '', status: 'activo', cargo: 'Encargado de Compras',
     razon_social: '', tipo_cliente: 'Reseller / Integrador IT', direccion_legal: '', localidad: '', codigo_postal: '', ciudad: '', country_id: '', phone: '', fecha_limite_facturacion: '', web: '',
+    cuenta_corriente_habilitada: false,
     report_to_country_id: '', vendedor: '', direccion_entrega: '', localidad_entrega: '', codigo_postal_entrega: '', ciudad_entrega: '', pais_entrega_id: '', tipo_iva: '', numero_nit: '',
     nombre_compras: '', telefono_compras: '', email_compras: '',
     nombre_pagos: '', telefono_pagos: '', email_pagos: '',
@@ -1313,6 +1590,19 @@ function AdminEcommerce({
   };
   const [userForm, setUserForm] = useState(initialUserForm);
   const [userFormSection, setUserFormSection] = useState(1);
+
+  // 🏷️ ABM TIPOS DE CLIENTE (Segmentación B2B)
+  const [clientTypes, setClientTypes] = useState([
+    { id: 1, name: 'Integrador IT / Reseller', description: 'Empresas integradoras de soluciones de conectividad y valor agregado', color: '#0284c7' },
+    { id: 2, name: 'Proveedor de Internet (ISP / WISP)', description: 'Proveedores de servicios de internet y carriers de telecomunicaciones', color: '#10b981' },
+    { id: 3, name: 'Consultora IT / Ciberseguridad', description: 'Firmas especializadas en seguridad informática e infraestructura', color: '#8b5cf6' },
+    { id: 4, name: 'Empresa Corporativa', description: 'Clientes directos del segmento corporativo y enterprise', color: '#f59e0b' },
+    { id: 5, name: 'Organismo Público', description: 'Entidades gubernamentales, educación y sector público', color: '#64748b' }
+  ]);
+  const [clientTypesModalOpen, setClientTypesModalOpen] = useState(false);
+  const [editingClientType, setEditingClientType] = useState(null);
+  const [clientTypeForm, setClientTypeForm] = useState({ name: '', description: '', color: '#0284c7' });
+  const [savingClientType, setSavingClientType] = useState(false);
 
   const handlePercepcionChange = (provKey, field, val) => {
     setUserForm(prev => ({
@@ -1470,6 +1760,31 @@ function AdminEcommerce({
     countries: []
   });
 
+  // ── Estado de Desplegables para Marcas por Categoría ──
+  const [expandedCategoryKeys, setExpandedCategoryKeys] = useState({
+    networking: true,
+    infraestructura: false,
+    comunicaciones_unificadas: false,
+    security: false
+  });
+  const [selectedBrandToAssign, setSelectedBrandToAssign] = useState({});
+
+  const toggleCategoryExpand = (catKey) => {
+    setExpandedCategoryKeys(prev => ({
+      ...prev,
+      [catKey]: !prev[catKey]
+    }));
+  };
+
+  const handleExpandAllCategories = (expand = true) => {
+    setExpandedCategoryKeys({
+      networking: expand,
+      infraestructura: expand,
+      comunicaciones_unificadas: expand,
+      security: expand
+    });
+  };
+
   const allAdminBrands = useMemo(() => {
     const keysMap = new Map(); // key -> { catKey, originalIdx, countries }
     Object.entries(visualConfig?.categoryBrands || {}).forEach(([cat, list]) => {
@@ -1487,28 +1802,20 @@ function AdminEcommerce({
       }
     });
 
-    // Fallback si categoryBrands no cargó aún
-    if (keysMap.size === 0) {
-      Object.keys(BRAND_INFO || {}).forEach(k => {
-        keysMap.set(k.toLowerCase().trim(), { catKey: 'networking', originalIdx: -1, countries: [] });
+    // Incluir marcas registradas en este país que hayan sido creadas o personalizadas (incluso si no tienen categoría asignada actualmente)
+    if (visualConfig?.brandCustomInfo) {
+      Object.keys(visualConfig.brandCustomInfo).forEach(k => {
+        const cleanK = k ? k.toLowerCase().trim() : '';
+        if (cleanK && !keysMap.has(cleanK)) {
+          keysMap.set(cleanK, { catKey: 'unassigned', originalIdx: -1, countries: [] });
+        }
       });
     }
 
-    // Agregar marcas que tengan productos en inventario
-    products.forEach(p => {
-      if (p.brand) {
-        const k = p.brand.toLowerCase().trim();
-        if (!keysMap.has(k)) {
-          keysMap.set(k, { catKey: 'networking', originalIdx: -1, countries: [] });
-        }
-      }
-    });
-
-    if (visualConfig?.brandCustomInfo) {
-      Object.keys(visualConfig.brandCustomInfo).forEach(k => {
-        if (k && !keysMap.has(k.toLowerCase().trim())) {
-          keysMap.set(k.toLowerCase().trim(), { catKey: 'networking', originalIdx: -1, countries: [] });
-        }
+    // Fallback únicamente si el país no tiene ninguna marca configurada aún
+    if (keysMap.size === 0) {
+      Object.keys(BRAND_INFO || {}).forEach(k => {
+        keysMap.set(k.toLowerCase().trim(), { catKey: 'networking', originalIdx: -1, countries: [] });
       });
     }
 
@@ -1672,6 +1979,7 @@ function AdminEcommerce({
 
   useEffect(() => {
     fetchCountries();
+    fetchClientTypes();
     fetchApliSettings();
     fetchApliLogs();
     fetchN8nSettings();
@@ -2875,6 +3183,104 @@ function AdminEcommerce({
     }
   };
 
+  const handleAssignBrandToCategory = async (catKey, brandKey) => {
+    if (!brandKey || !catKey) return;
+    const cleanKey = brandKey.toLowerCase().trim();
+    const currentList = visualConfig?.categoryBrands?.[catKey] || [];
+
+    // Check if already exists in this category
+    const exists = currentList.some(item => {
+      const b = normalizeBrandItem(item, catKey);
+      return b.name.toLowerCase() === cleanKey;
+    });
+
+    if (exists) {
+      alert(`La marca "${brandKey.toUpperCase()}" ya se encuentra asignada a esta categoría.`);
+      return;
+    }
+
+    const currentScope = (selectedCountryScope && selectedCountryScope !== 'all') ? selectedCountryScope : 'AR';
+
+    let brandCountries = [];
+    if (visualConfig?.brandCountries && Array.isArray(visualConfig.brandCountries[cleanKey])) {
+      brandCountries = visualConfig.brandCountries[cleanKey];
+    } else {
+      brandCountries = [currentScope];
+    }
+
+    const newBrandItem = {
+      name: cleanKey,
+      countries: brandCountries
+    };
+
+    const updatedList = [...currentList, newBrandItem];
+    const newConfig = {
+      ...visualConfig,
+      categoryBrands: {
+        ...(visualConfig?.categoryBrands || {}),
+        [catKey]: updatedList
+      }
+    };
+
+    setVisualConfig(newConfig);
+    setSelectedBrandToAssign(prev => ({ ...prev, [catKey]: '' }));
+
+    try {
+      await fetch(`${API_BASE_URL}/api/ecommerce/settings/visual?country=${currentScope}`, {
+        method: 'PUT',
+        headers: getAuthHeader(),
+        body: JSON.stringify(newConfig)
+      });
+    } catch (err) {
+      console.error('Error guardando asignación de marca:', err);
+      alert('Error guardando asignación de marca: ' + err.message);
+    }
+  };
+
+  const handleUnassignBrandFromCategory = async (catKey, brandIdx, brandName, catTitle) => {
+    const scopeName = DACAS_COUNTRIES_LIST.find(c => c.code === selectedCountryScope)?.name || selectedCountryScope || 'este país';
+    if (!window.confirm(`¿Deseas desvincular la marca "${(brandName || '').toUpperCase()}" de la categoría "${catTitle || catKey}" para ${scopeName}?\n\n(La marca seguirá existiendo en el catálogo oficial de Marcas)`)) {
+      return;
+    }
+    const currentList = visualConfig?.categoryBrands?.[catKey] || [];
+    const targetItem = currentList[brandIdx];
+    const cleanKey = (typeof targetItem === 'string' ? targetItem : targetItem?.name || brandName || '').toLowerCase().trim();
+    const updatedList = currentList.filter((_, idx) => idx !== brandIdx);
+
+    const masterBrand = allAdminBrands.find(mb => mb.key === cleanKey) || {};
+    const existingCustom = visualConfig?.brandCustomInfo?.[cleanKey] || {};
+    const updatedCustomInfo = {
+      ...(visualConfig?.brandCustomInfo || {}),
+      [cleanKey]: {
+        name: existingCustom.name || masterBrand.name || (cleanKey.charAt(0).toUpperCase() + cleanKey.slice(1)),
+        logo: existingCustom.logo !== undefined ? existingCustom.logo : (masterBrand.logo || ''),
+        tagline: existingCustom.tagline || masterBrand.tagline || '',
+        color: existingCustom.color || masterBrand.color || '#0fa4de'
+      }
+    };
+
+    const newConfig = {
+      ...visualConfig,
+      categoryBrands: {
+        ...(visualConfig?.categoryBrands || {}),
+        [catKey]: updatedList
+      },
+      brandCustomInfo: updatedCustomInfo
+    };
+    setVisualConfig(newConfig);
+
+    try {
+      const targetCountry = (selectedCountryScope && selectedCountryScope !== 'all') ? selectedCountryScope : 'AR';
+      await fetch(`${API_BASE_URL}/api/ecommerce/settings/visual?country=${targetCountry}`, {
+        method: 'PUT',
+        headers: getAuthHeader(),
+        body: JSON.stringify(newConfig)
+      });
+    } catch (err) {
+      console.error('Error desvinculando marca de categoría:', err);
+    }
+  };
+
   const handleSaveBrandCountries = (catKey, brandIdx, newCountries) => {
     const currentList = visualConfig?.categoryBrands?.[catKey] || [];
     const targetItem = currentList[brandIdx];
@@ -2969,6 +3375,77 @@ function AdminEcommerce({
       setCountries(Array.isArray(data) ? data : MOCK_COUNTRIES);
     } catch {
       setCountries(MOCK_COUNTRIES);
+    }
+  };
+
+  const fetchClientTypes = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/client-types`);
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data) && data.length > 0) setClientTypes(data);
+      }
+    } catch (err) {
+      console.error('Error cargando tipos de cliente:', err);
+    }
+  };
+
+  const handleSaveClientType = async (e) => {
+    if (e && e.preventDefault) e.preventDefault();
+    if (!clientTypeForm.name || !clientTypeForm.name.trim()) {
+      alert('Ingresa el nombre del tipo de cliente');
+      return;
+    }
+    setSavingClientType(true);
+    try {
+      const isEdit = !!editingClientType;
+      const url = isEdit 
+        ? `${API_BASE_URL}/api/ecommerce/client-types/${editingClientType.id}` 
+        : `${API_BASE_URL}/api/ecommerce/client-types`;
+      const method = isEdit ? 'PUT' : 'POST';
+      const token = localStorage.getItem('dacas_admin_token') || localStorage.getItem('token');
+      const headers = {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      };
+
+      const res = await fetch(url, {
+        method,
+        headers,
+        body: JSON.stringify(clientTypeForm)
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Error al guardar tipo de cliente');
+
+      await fetchClientTypes();
+      await fetchUsers();
+      setEditingClientType(null);
+      setClientTypeForm({ name: '', description: '', color: '#0284c7' });
+    } catch (err) {
+      alert(err.message);
+    } finally {
+      setSavingClientType(false);
+    }
+  };
+
+  const handleDeleteClientType = async (typeId, typeName) => {
+    if (!window.confirm(`¿Estás seguro de eliminar el tipo de cliente "${typeName}"?`)) return;
+    try {
+      const token = localStorage.getItem('dacas_admin_token') || localStorage.getItem('token');
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/client-types/${typeId}`, {
+        method: 'DELETE',
+        headers
+      });
+      if (res.ok) {
+        await fetchClientTypes();
+        await fetchUsers();
+      } else {
+        const data = await res.json();
+        throw new Error(data.error || 'No se pudo eliminar');
+      }
+    } catch (err) {
+      alert('Error al eliminar tipo de cliente: ' + err.message);
     }
   };
 
@@ -3383,6 +3860,7 @@ function AdminEcommerce({
         safeData.iibb_tipo = data.iibb_tipo || initialUserForm.iibb_tipo;
         safeData.iibb_numero = data.iibb_numero || data.numero_nit || '';
         safeData.iibb_codigo_aceptacion = data.iibb_codigo_aceptacion !== undefined ? data.iibb_codigo_aceptacion : initialUserForm.iibb_codigo_aceptacion;
+        safeData.cuenta_corriente_habilitada = Boolean(data.cuenta_corriente_habilitada);
         setUserForm(safeData);
         setEditingUser(u);
         setUserCreateMode('existing_company');
@@ -4094,332 +4572,15 @@ function AdminEcommerce({
         .rule-badge { display:inline-block; padding:4px 8px; border-radius:6px; font-size:0.75rem; font-weight:bold; background:#e2e8f0; color:#475569; margin-right:4px; }
       `}</style>
 
-      {!embedded && (
-        <header className="crm-header">
-          <div className="header-top">
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', flexWrap: 'wrap', gap: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-                <div style={{
-                  background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
-                  color: '#ffffff',
-                  fontWeight: '900',
-                  fontSize: '1.4rem',
-                  letterSpacing: '-0.02em',
-                  padding: '8px 16px',
-                  borderRadius: '12px',
-                  boxShadow: '0 4px 15px rgba(15, 164, 222, 0.4)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '8px'
-                }}>
-                  <span>DACAS</span>
-                </div>
-                <div>
-                  <h1 style={{ margin: 0, fontSize: '1.75rem', fontWeight: '800', color: 'var(--text-main)', letterSpacing: '-0.02em' }}>
-                    Admin E-Commerce <span style={{ color: '#0fa4de' }}>&</span> Catálogo
-                  </h1>
-                  <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)', marginTop: '2px' }}>
-                    Gestión de productos, inventario, precios multinacionales y reportería
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <div className="user-controls" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  {/* Notification Bell */}
-                  <NotificationBell 
-                    usuario={typeof usuario !== 'undefined' ? usuario : { rol: 'admin_ecommerce', nombre: 'Admin E-Commerce' }}
-                    onNavigate={(targetView) => {
-                      if (targetView === 'erp') {
-                        window.location.href = '/admin/erp';
-                      } else if (targetView === 'crm') {
-                        window.location.href = '/';
-                      }
-                    }}
-                  />
-
-                  <button
-                    type="button"
-                    className="nav-btn"
-                    onClick={() => { window.location.href = '/'; }}
-                    style={{
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px',
-                      padding: '8px 14px',
-                      borderRadius: '10px',
-                      fontWeight: '700',
-                      cursor: 'pointer'
-                    }}
-                    title="Ir a Home / Panel Principal"
-                  >
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                      <polyline points="9 22 9 12 15 12 15 22" />
-                    </svg>
-                    <span>Home</span>
-                  </button>
-                  {activeTab === 'reportes' && (
-                    <button className="nav-btn" onClick={() => window.print()} style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-                      🖨️ Imprimir / PDF
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </header>
-      )}
-
-      <main className={embedded ? "crm-main-embedded" : "crm-main"} style={embedded ? { width: '100%', maxWidth: '100%', padding: 0, margin: 0 } : {}}>
-        {!hideTopBars && (
-          <>
-            {/* ── Executive Primary Key / Country Scope Bar ── */}
-        <div style={{
-          background: 'linear-gradient(135deg, #ffffff 0%, #f8fafc 100%)',
-          borderRadius: '16px',
-          border: '1px solid #cbd5e1',
-          padding: '14px 20px',
-          marginBottom: '18px',
-          boxShadow: '0 4px 16px rgba(0,0,0,0.04)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '14px'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexWrap: 'wrap' }}>
-            <div style={{
-              width: '44px',
-              height: '44px',
-              borderRadius: '12px',
-              background: '#e0f2fe',
-              border: '1.5px solid #0fa4de',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '24px',
-              flexShrink: 0
-            }}>
-              {activeCountryObj.flag || '🌎'}
-            </div>
-            <div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <strong style={{ fontSize: '15px', color: '#0f172a', fontWeight: '800' }}>
-                  Scope Activo: {activeCountryObj.name}
-                </strong>
-                <span style={{
-                  background: 'linear-gradient(135deg, #0fa4de, #0284c7)',
-                  color: '#ffffff',
-                  borderRadius: '999px',
-                  fontSize: '10px',
-                  fontWeight: '800',
-                  padding: '2px 9px',
-                  letterSpacing: '0.04em'
-                }}>
-                  PRIMARY KEY E-COMMERCE
-                </span>
-              </div>
-              <div style={{ fontSize: '12px', color: '#64748b', marginTop: '2px' }}>
-                Filtrando clientes mayoristas, stock de productos, pedidos y métodos locales para <strong>{activeCountryObj.name}</strong>.
-              </div>
-            </div>
-          </div>
-
-          {/* Country Switcher Pills */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', maxWidth: '100%', padding: '2px 0' }}>
-            <span style={{ fontSize: '11px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', marginRight: '4px' }}>
-              Seleccionar País:
-            </span>
-            {DACAS_COUNTRIES_LIST.map(c => {
-              const isSelected = selectedCountryScope === c.code;
-              return (
-                <button
-                  key={c.code}
-                  type="button"
-                  onClick={() => handleCountryScopeChange(c.code)}
-                  style={{
-                    padding: '6px 12px',
-                    borderRadius: '8px',
-                    border: isSelected ? '1.5px solid #0fa4de' : '1px solid #cbd5e1',
-                    background: isSelected ? '#0fa4de' : '#ffffff',
-                    color: isSelected ? '#ffffff' : '#334155',
-                    fontWeight: isSelected ? '800' : '600',
-                    fontSize: '12px',
-                    cursor: 'pointer',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '5px',
-                    boxShadow: isSelected ? '0 2px 8px rgba(15, 164, 222, 0.35)' : 'none',
-                    transform: isSelected ? 'scale(1.05)' : 'none',
-                    transition: 'all 0.15s ease'
-                  }}
-                  title={`Filtrar ecommerce por ${c.name}`}
-                >
-                  <span style={{ fontSize: '15px', lineHeight: 1 }}>{c.flag}</span>
-                  <span>{c.code}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="tab-buttons">
-          <button 
-            type="button"
-            className="tab-btn" 
-            onClick={() => { window.location.href = '/'; }}
-            style={{ fontWeight: '800', color: '#0fa4de', marginRight: '4px' }}
-            title="Ir a Home / Panel Principal"
-          >
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-              <polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
-            <span>Home</span>
-          </button>
-          <button className={`tab-btn${activeTab === 'products' ? ' active' : ''}`} onClick={() => setActiveTab('products')}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="m7.5 4.27 9 5.15" />
-              <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-              <path d="m3.3 7 8.7 5 8.7-5" />
-              <path d="M12 22V12" />
-            </svg>
-            <span>Productos</span>
-          </button>
-          <button className={`tab-btn${activeTab === 'brands' ? ' active' : ''}`} onClick={() => setActiveTab('brands')}>
-            <BrandingVectorIcon name="award" size={17} />
-            <span>Marcas</span>
-          </button>
-          <button className={`tab-btn${activeTab === 'countries' ? ' active' : ''}`} onClick={() => setActiveTab('countries')}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="12" cy="12" r="10" />
-              <line x1="2" y1="12" x2="22" y2="12" />
-              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
-            </svg>
-            <span>Países</span>
-          </button>
-          <button className={`tab-btn${activeTab === 'rules' ? ' active' : ''}`} onClick={() => setActiveTab('rules')}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="4" y1="21" x2="4" y2="14" />
-              <line x1="4" y1="10" x2="4" y2="3" />
-              <line x1="12" y1="21" x2="12" y2="12" />
-              <line x1="12" y1="8" x2="12" y2="3" />
-              <line x1="20" y1="21" x2="20" y2="16" />
-              <line x1="20" y1="12" x2="20" y2="3" />
-              <line x1="1" y1="14" x2="7" y2="14" />
-              <line x1="9" y1="8" x2="15" y2="8" />
-              <line x1="17" y1="16" x2="23" y2="16" />
-            </svg>
-            <span>Cupones y Reglas</span>
-          </button>
-          <button className={`tab-btn${activeTab === 'users' ? ' active' : ''}`} onClick={() => setActiveTab('users')}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
-              <circle cx="9" cy="7" r="4" />
-              <path d="M22 21v-2a4 4 0 0 0-3-3.87" />
-              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
-            </svg>
-            <span>Clientes</span>
-            {users.filter(u => u.status === 'pendiente').length > 0 && (
-              <span style={{
-                background: activeTab === 'users' ? '#ffffff' : '#f59e0b',
-                color: activeTab === 'users' ? '#d97706' : '#ffffff',
-                fontSize: '11px',
-                fontWeight: '800',
-                padding: '2px 8px',
-                borderRadius: '999px',
-                display: 'inline-flex',
-                alignItems: 'center',
-                whiteSpace: 'nowrap',
-                lineHeight: 1.2,
-                boxShadow: '0 2px 6px rgba(0, 0, 0, 0.15)',
-                transition: 'all 0.2s'
-              }}>
-                {users.filter(u => u.status === 'pendiente').length} pend.
-              </span>
-            )}
-          </button>
-          <button className={`tab-btn${activeTab === 'orders' ? ' active' : ''}`} onClick={() => setActiveTab('orders')}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
-              <path d="M3 6h18" />
-              <path d="M16 10a4 4 0 0 1-8 0" />
-            </svg>
-            <span>Órdenes</span>
-          </button>
-          <button className={`tab-btn${activeTab === 'reportes' ? ' active' : ''}`} onClick={() => setActiveTab('reportes')}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="20" x2="18" y2="10" />
-              <line x1="12" y1="20" x2="12" y2="4" />
-              <line x1="6" y1="20" x2="6" y2="14" />
-            </svg>
-            <span>Reportería</span>
-          </button>
-          <button className={`tab-btn${activeTab === 'pagos_envios' ? ' active' : ''}`} onClick={() => setActiveTab('pagos_envios')}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="5" width="20" height="14" rx="2" />
-              <line x1="2" y1="10" x2="22" y2="10" />
-            </svg>
-            <span>Pagos y Envíos</span>
-          </button>
-          <button className={`tab-btn${activeTab === 'visual' ? ' active' : ''}`} onClick={() => setActiveTab('visual')}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="13.5" cy="6.5" r=".5" fill="currentColor" />
-              <circle cx="17.5" cy="10.5" r=".5" fill="currentColor" />
-              <circle cx="8.5" cy="7.5" r=".5" fill="currentColor" />
-              <circle cx="6.5" cy="12.5" r=".5" fill="currentColor" />
-              <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.563-2.512 5.563-5.563C22 6.5 17.5 2 12 2z" />
-            </svg>
-            <span>Personalización Shop</span>
-          </button>
-          <button className={`tab-btn${activeTab === 'apli' ? ' active' : ''}`} onClick={() => setActiveTab('apli')}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="2" width="20" height="8" rx="2" />
-              <rect x="2" y="14" width="20" height="8" rx="2" />
-              <line x1="6" y1="6" x2="6.01" y2="6" />
-              <line x1="6" y1="18" x2="6.01" y2="18" />
-            </svg>
-            <span>Conexión Apli</span>
-            <span style={{
-              background: apliConfig?.enabled ? (activeTab === 'apli' ? '#FFFFFF' : '#10B981') : '#64748B',
-              color: apliConfig?.enabled ? (activeTab === 'apli' ? '#047857' : '#FFFFFF') : '#FFFFFF',
-              fontSize: '10px',
-              fontWeight: '800',
-              padding: '1.5px 6px',
-              borderRadius: '999px',
-              marginLeft: '4px',
-              transition: 'all 0.2s'
-            }}>
-              {apliConfig?.enabled ? 'Activo' : 'Off'}
-            </span>
-          </button>
-          <button className={`tab-btn${activeTab === 'n8n_bot' ? ' active' : ''}`} onClick={() => setActiveTab('n8n_bot')}>
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="11" width="18" height="10" rx="2" />
-              <circle cx="12" cy="5" r="2" />
-              <path d="M12 7v4" />
-              <line x1="8" y1="16" x2="8.01" y2="16" />
-              <line x1="16" y1="16" x2="16.01" y2="16" />
-            </svg>
-            <span>Bot n8n B2B</span>
-            <span style={{
-              background: n8nConfig?.enabled ? (activeTab === 'n8n_bot' ? '#FFFFFF' : '#0fa4de') : '#64748B',
-              color: n8nConfig?.enabled ? (activeTab === 'n8n_bot' ? '#0284c7' : '#FFFFFF') : '#FFFFFF',
-              fontSize: '10px',
-              fontWeight: '800',
-              padding: '1.5px 6px',
-              borderRadius: '999px',
-              marginLeft: '4px',
-              transition: 'all 0.2s'
-            }}>
-              {n8nConfig?.enabled ? 'IA' : 'Off'}
-            </span>
-          </button>
-        </div>
-          </>
-        )}
-
+      <EcommerceLayoutWrapper
+        embedded={embedded}
+        activeTab={activeTab}
+        setActiveTab={setActiveTab}
+        selectedCountryScope={selectedCountryScope}
+        handleCountryScopeChange={handleCountryScopeChange}
+        users={users}
+        usuario={typeof usuario !== 'undefined' ? usuario : { rol: 'admin_ecommerce', nombre: 'Admin E-Commerce' }}
+      >
         {error && <div style={{ color: 'red', marginBottom: '20px' }}>{error}</div>}
 
         {/* ═══════════════ PRODUCTS ═══════════════ */}
@@ -5573,10 +5734,29 @@ function AdminEcommerce({
                 </div>
               </div>
 
-              {/* ── MODO 1: ASIGNADOR VISUAL POR CATEGORÍAS (AMPLIO, MODERNO E INTUITIVO) ── */}
+              {/* ── MODO 1: ASIGNADOR VISUAL POR CATEGORÍAS (DESPLEGABLE / SIN RUIDO / SOLO MARCAS DE MARCAS) ── */}
               {brandsViewMode === 'categories' && (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                  {/* Controles de expansión rápida */}
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginBottom: '4px' }}>
+                    <button
+                      type="button"
+                      onClick={() => handleExpandAllCategories(true)}
+                      style={{ background: '#f8fafc', color: '#475569', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '6px 12px', fontSize: '11.5px', fontWeight: '700', cursor: 'pointer' }}
+                    >
+                      🔽 Desplegar Todas
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleExpandAllCategories(false)}
+                      style={{ background: '#f8fafc', color: '#475569', border: '1px solid #cbd5e1', borderRadius: '8px', padding: '6px 12px', fontSize: '11.5px', fontWeight: '700', cursor: 'pointer' }}
+                    >
+                      🔼 Colapsar Todas
+                    </button>
+                  </div>
+
                   {visibleGroups.map(group => {
+                    const isExpanded = Boolean(expandedCategoryKeys[group.key]);
                     const rawList = (visualConfig?.categoryBrands && visualConfig.categoryBrands[group.key]) || [];
                     const normalizedBrands = rawList.map((item, idx) => ({
                       ...normalizeBrandItem(item, group.key),
@@ -5588,145 +5768,246 @@ function AdminEcommerce({
                       return b.name.toLowerCase().includes(qSearch) || (b.tagline && b.tagline.toLowerCase().includes(qSearch));
                     });
 
+                    // Master brands available to assign to this category
+                    const availableBrandsToAssign = (allAdminBrands || []).filter(mb => {
+                      const inScope = !mb.countries || mb.countries.length === 0 || mb.countries.includes(currentScopeCode);
+                      if (!inScope) return false;
+                      const alreadyAssigned = normalizedBrands.some(a => a.name.toLowerCase().trim() === mb.key);
+                      return !alreadyAssigned;
+                    }).sort((a, b) => a.name.localeCompare(b.name));
+
                     return (
                       <div
                         key={group.key}
                         style={{
                           background: '#ffffff',
-                          borderRadius: '18px',
-                          border: `1.5px solid ${group.color}33`,
-                          padding: '22px',
-                          boxShadow: '0 4px 16px rgba(0,0,0,0.02)',
-                          display: 'flex',
-                          flexDirection: 'column',
-                          gap: '16px'
+                          borderRadius: '16px',
+                          border: isExpanded ? `1.5px solid ${group.color}` : '1.5px solid #e2e8f0',
+                          boxShadow: isExpanded ? '0 6px 20px rgba(0,0,0,0.04)' : '0 1px 3px rgba(0,0,0,0.02)',
+                          transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                          overflow: 'hidden'
                         }}
                       >
-                        {/* Cabecera del Bloque de Categoría */}
-                        <div style={{
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          flexWrap: 'wrap',
-                          gap: '12px',
-                          borderBottom: '1px solid #f1f5f9',
-                          paddingBottom: '14px'
-                        }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                        {/* Cabecera del Bloque de Categoría (Desplegable Clickeable) */}
+                        <div
+                          onClick={() => toggleCategoryExpand(group.key)}
+                          style={{
+                            padding: '16px 20px',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center',
+                            background: isExpanded ? `${group.bg}` : '#ffffff',
+                            userSelect: 'none',
+                            transition: 'background 0.15s ease'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0, flex: 1 }}>
                             <div style={{
-                              width: '38px',
-                              height: '38px',
-                              borderRadius: '10px',
-                              background: group.bg,
+                              width: '42px',
+                              height: '42px',
+                              borderRadius: '12px',
+                              background: isExpanded ? '#ffffff' : group.bg,
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
                               fontSize: '20px',
-                              border: `1px solid ${group.color}44`
+                              border: `1px solid ${group.color}44`,
+                              flexShrink: 0
                             }}>
                               {group.icon}
                             </div>
                             <div>
-                              <h3 style={{ margin: 0, fontSize: '1.15rem', fontWeight: '850', color: '#0f172a' }}>
-                                {group.label}
-                              </h3>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '850', color: '#0f172a' }}>
+                                  {group.label}
+                                </h3>
+                                <span style={{
+                                  background: displayedBrands.length > 0 ? (isExpanded ? group.color : '#e0f2fe') : '#f1f5f9',
+                                  color: displayedBrands.length > 0 ? (isExpanded ? '#ffffff' : '#0369a1') : '#64748b',
+                                  fontSize: '11px',
+                                  fontWeight: '800',
+                                  padding: '2px 9px',
+                                  borderRadius: '999px',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '5px'
+                                }}>
+                                  <span>{displayedBrands.length > 0 ? '●' : '○'}</span>
+                                  <span>{displayedBrands.length} {displayedBrands.length === 1 ? 'marca asignada' : 'marcas asignadas'}</span>
+                                </span>
+                              </div>
                               <div style={{ fontSize: '11.5px', color: '#64748b', fontWeight: '600', marginTop: '2px' }}>
-                                {displayedBrands.length} {displayedBrands.length === 1 ? 'marca asignada' : 'marcas asignadas'} para {currentCountryObj.name}
+                                {currentCountryObj.flag} Categoría activa para clientes de {currentCountryObj.name}
                               </div>
                             </div>
                           </div>
 
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setNewBrandForm({
-                                name: '',
-                                logo: '',
-                                tagline: '',
-                                color: group.color,
-                                category: group.key,
-                                isGlobal: true,
-                                countries: []
-                              });
-                              setShowNewBrandModal(true);
-                            }}
-                            style={{
-                              background: group.bg,
-                              color: group.color,
-                              border: `1.5px solid ${group.color}55`,
-                              borderRadius: '8px',
-                              padding: '7px 14px',
-                              fontSize: '12px',
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                            <span style={{
+                              fontSize: '11.5px',
                               fontWeight: '750',
-                              cursor: 'pointer',
+                              color: isExpanded ? group.color : '#64748b',
+                              background: isExpanded ? '#ffffff' : '#f1f5f9',
+                              border: isExpanded ? `1px solid ${group.color}44` : '1px solid #cbd5e1',
+                              padding: '5px 12px',
+                              borderRadius: '8px',
                               display: 'inline-flex',
                               alignItems: 'center',
-                              gap: '6px',
-                              transition: 'all 0.15s ease'
-                            }}
-                          >
-                            <span>➕</span>
-                            <span>Añadir a {group.label.split('&')[0].trim()}</span>
-                          </button>
+                              gap: '6px'
+                            }}>
+                              <span>{isExpanded ? '▲ Ocultar marcas' : '▼ Ver marcas'}</span>
+                            </span>
+                          </div>
                         </div>
 
-                        {/* Grid de Marcas Amplio y Espacioso */}
-                        {displayedBrands.length === 0 ? (
+                        {/* Cuerpo Desplegado */}
+                        {isExpanded && (
                           <div style={{
-                            textAlign: 'center',
-                            padding: '36px 20px',
-                            background: '#f8fafc',
-                            borderRadius: '12px',
-                            border: '1.5px dashed #cbd5e1',
-                            color: '#64748b'
+                            padding: '18px 20px',
+                            borderTop: '1px solid #e2e8f0',
+                            background: '#f8fafc'
                           }}>
-                            <div style={{ fontSize: '28px', marginBottom: '6px' }}>🏷️</div>
-                            <div style={{ fontWeight: '750', fontSize: '13.5px', color: '#334155' }}>
-                              No hay marcas asignadas a {group.label} en {currentCountryObj.name}
-                            </div>
-                            <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '4px' }}>
-                              Haz clic en "+ Añadir a {group.label}" para asignar un fabricante a este país.
-                            </div>
-                          </div>
-                        ) : (
-                          <div style={{
-                            display: 'grid',
-                            gridTemplateColumns: 'repeat(auto-fill, minmax(290px, 1fr))',
-                            gap: '16px'
-                          }}>
-                            {displayedBrands.map(b => {
-                              const bKey = b.name.toLowerCase().trim();
-                              const customInfo = visualConfig?.brandCustomInfo?.[bKey] || {};
-                              const defaultInfo = BRAND_INFO?.[bKey] || {};
-                              const displayName = customInfo.name || defaultInfo.name || b.name.toUpperCase();
-                              const logoSrc = customInfo.logo !== undefined ? customInfo.logo : (defaultInfo.logo || '');
-                              const tagline = customInfo.tagline || defaultInfo.tagline || `Soluciones oficiales ${displayName}`;
-                              const brandProdCount = products.filter(p => p.brand && p.brand.toLowerCase() === bKey).length;
+                            {/* Barra de Asignación de Marca (SOLO elegir marcas de marcas) */}
+                            <div style={{
+                              background: '#ffffff',
+                              padding: '14px 18px',
+                              borderRadius: '12px',
+                              border: '1px solid #cbd5e1',
+                              marginBottom: '16px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              flexWrap: 'wrap',
+                              gap: '12px'
+                            }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                <span style={{ fontSize: '18px' }}>➕</span>
+                                <div>
+                                  <div style={{ fontSize: '12.5px', fontWeight: '800', color: '#0f172a' }}>
+                                    Asignar Marca de Marcas a {group.label}
+                                  </div>
+                                  <div style={{ fontSize: '11px', color: '#64748b' }}>
+                                    Selecciona de los fabricantes ya registrados en el catálogo oficial para {currentCountryObj.name}.
+                                  </div>
+                                </div>
+                              </div>
 
-                              return (
-                                <div
-                                  key={b.originalIdx}
-                                  style={{
-                                    background: '#ffffff',
-                                    borderRadius: '14px',
-                                    border: '1.5px solid #e2e8f0',
-                                    padding: '16px',
-                                    display: 'flex',
-                                    flexDirection: 'column',
-                                    justifyContent: 'space-between',
-                                    gap: '12px',
-                                    boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
-                                    transition: 'all 0.15s ease'
-                                  }}
-                                >
-                                  <div>
-                                    {/* Cabecera de la Tarjeta */}
-                                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', marginBottom: '10px' }}>
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                {availableBrandsToAssign.length > 0 ? (
+                                  <>
+                                    <select
+                                      value={selectedBrandToAssign[group.key] || ''}
+                                      onChange={(e) => setSelectedBrandToAssign(prev => ({ ...prev, [group.key]: e.target.value }))}
+                                      style={{
+                                        padding: '8px 12px',
+                                        borderRadius: '8px',
+                                        border: '1.5px solid #0284c7',
+                                        background: '#ffffff',
+                                        fontSize: '12.5px',
+                                        fontWeight: '700',
+                                        color: '#0f172a',
+                                        minWidth: '240px',
+                                        cursor: 'pointer'
+                                      }}
+                                    >
+                                      <option value="">
+                                        {availableBrandsToAssign.length === 0
+                                          ? `(Todas las marcas de ${currentCountryObj.name || currentScopeCode} ya están asignadas)`
+                                          : `-- Seleccionar de marcas de ${currentCountryObj.name || currentScopeCode} (${availableBrandsToAssign.length} disponibles) --`}
+                                      </option>
+                                      {availableBrandsToAssign.map(b => (
+                                        <option key={b.key} value={b.key}>
+                                          {b.name.toUpperCase()} {b.productCount > 0 ? `(${b.productCount} prods)` : ''}
+                                        </option>
+                                      ))}
+                                    </select>
+
+                                    <button
+                                      type="button"
+                                      onClick={() => handleAssignBrandToCategory(group.key, selectedBrandToAssign[group.key])}
+                                      disabled={!selectedBrandToAssign[group.key]}
+                                      style={{
+                                        background: selectedBrandToAssign[group.key] ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : '#e2e8f0',
+                                        color: selectedBrandToAssign[group.key] ? '#ffffff' : '#94a3b8',
+                                        border: 'none',
+                                        borderRadius: '8px',
+                                        padding: '8px 15px',
+                                        fontSize: '12.5px',
+                                        fontWeight: '800',
+                                        cursor: selectedBrandToAssign[group.key] ? 'pointer' : 'not-allowed',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '5px'
+                                      }}
+                                    >
+                                      <span>✓</span>
+                                      <span>Asignar</span>
+                                    </button>
+                                  </>
+                                ) : (
+                                  <div style={{ fontSize: '11.5px', color: '#16a34a', fontWeight: '700', background: '#dcfce7', padding: '5px 10px', borderRadius: '6px' }}>
+                                    ✓ Todas las marcas oficiales ya están asignadas a {group.label}
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+
+                            {/* Grid de Marcas Asignadas */}
+                            {displayedBrands.length === 0 ? (
+                              <div style={{
+                                textAlign: 'center',
+                                padding: '30px 16px',
+                                background: '#ffffff',
+                                borderRadius: '12px',
+                                border: '1.5px dashed #cbd5e1',
+                                color: '#64748b'
+                              }}>
+                                <div style={{ fontSize: '24px', marginBottom: '4px' }}>🏷️</div>
+                                <div style={{ fontWeight: '750', fontSize: '13px', color: '#334155' }}>
+                                  No hay marcas asignadas a {group.label} en {currentCountryObj.name}
+                                </div>
+                                <div style={{ fontSize: '11.5px', color: '#94a3b8', marginTop: '3px' }}>
+                                  Elige un fabricante en el selector superior para mostrarlo en el Shop.
+                                </div>
+                              </div>
+                            ) : (
+                              <div style={{
+                                display: 'grid',
+                                gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+                                gap: '10px'
+                              }}>
+                                {displayedBrands.map(b => {
+                                  const bKey = b.name.toLowerCase().trim();
+                                  const masterBrand = allAdminBrands.find(mb => mb.key === bKey) || {
+                                    key: bKey,
+                                    name: b.name.toUpperCase(),
+                                    logo: '',
+                                    color: group.color,
+                                    tagline: ''
+                                  };
+
+                                  return (
+                                    <div
+                                      key={b.originalIdx}
+                                      style={{
+                                        background: '#ffffff',
+                                        borderRadius: '12px',
+                                        border: '1px solid #e2e8f0',
+                                        padding: '10px 14px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'space-between',
+                                        gap: '10px',
+                                        boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+                                        transition: 'all 0.15s ease'
+                                      }}
+                                    >
+                                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: 1 }}>
                                         <div style={{
-                                          width: '44px',
-                                          height: '44px',
-                                          borderRadius: '10px',
+                                          width: '36px',
+                                          height: '36px',
+                                          borderRadius: '8px',
                                           background: '#f8fafc',
                                           border: '1px solid #e2e8f0',
                                           display: 'flex',
@@ -5735,129 +6016,70 @@ function AdminEcommerce({
                                           padding: '4px',
                                           flexShrink: 0
                                         }}>
-                                          <BrandLogoImg src={logoSrc} alt={displayName} name={displayName} color={group.color} size={28} />
+                                          <BrandLogoImg
+                                            src={masterBrand.logo}
+                                            alt={masterBrand.name}
+                                            name={masterBrand.name}
+                                            color={masterBrand.color || group.color}
+                                            size={24}
+                                          />
                                         </div>
-                                        <div style={{ minWidth: 0 }}>
-                                          <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: '850', color: '#0f172a', textTransform: 'uppercase', letterSpacing: '0.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                            {displayName}
-                                          </h4>
-                                          <span style={{ fontSize: '10.5px', color: '#64748b', fontWeight: '600' }}>
-                                            {currentCountryObj.flag} Activa en {currentCountryObj.code}
-                                          </span>
+
+                                        <div style={{ minWidth: 0, flex: 1 }}>
+                                          <div style={{
+                                            fontWeight: '800',
+                                            fontSize: '12.5px',
+                                            color: '#0f172a',
+                                            textTransform: 'uppercase',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis'
+                                          }}>
+                                            {masterBrand.name}
+                                          </div>
+                                          <div style={{
+                                            fontSize: '10.5px',
+                                            color: '#64748b',
+                                            whiteSpace: 'nowrap',
+                                            overflow: 'hidden',
+                                            textOverflow: 'ellipsis'
+                                          }}>
+                                            {masterBrand.tagline || 'Fabricante Oficial'}
+                                          </div>
                                         </div>
                                       </div>
 
-                                      <span style={{
-                                        background: brandProdCount > 0 ? 'rgba(16, 185, 129, 0.12)' : '#f1f5f9',
-                                        color: brandProdCount > 0 ? '#10b981' : '#94a3b8',
-                                        fontSize: '10.5px',
-                                        fontWeight: '750',
-                                        padding: '2px 8px',
-                                        borderRadius: '999px',
-                                        whiteSpace: 'nowrap'
-                                      }}>
-                                        {brandProdCount > 0 ? `📦 ${brandProdCount} prod.` : '0 prod.'}
-                                      </span>
-                                    </div>
-
-                                    {/* Tagline comercial */}
-                                    <p style={{
-                                      margin: '0 0 10px',
-                                      fontSize: '11.5px',
-                                      color: '#64748b',
-                                      lineHeight: 1.35,
-                                      minHeight: '32px',
-                                      display: '-webkit-box',
-                                      WebkitLineClamp: 2,
-                                      WebkitBoxOrient: 'vertical',
-                                      overflow: 'hidden'
-                                    }}>
-                                      {tagline}
-                                    </p>
-
-                                    {/* ── SELECTOR DIRECTO DE REASIGNACIÓN DE CATEGORÍA ── */}
-                                    <div style={{
-                                      display: 'flex',
-                                      alignItems: 'center',
-                                      justifyContent: 'space-between',
-                                      background: '#f8fafc',
-                                      padding: '6px 10px',
-                                      borderRadius: '8px',
-                                      border: '1px solid #e2e8f0',
-                                      marginTop: '6px'
-                                    }}>
-                                      <span style={{ fontSize: '11px', fontWeight: '750', color: '#64748b' }}>
-                                        📂 Categoría:
-                                      </span>
-                                      <select
-                                        value={group.key}
-                                        onChange={(e) => handleReassignBrandCategory(b.name, group.key, e.target.value)}
+                                      {/* Botón Quitar de Categoría */}
+                                      <button
+                                        type="button"
+                                        onClick={() => handleUnassignBrandFromCategory(group.key, b.originalIdx, masterBrand.name, group.label)}
+                                        title={`Quitar ${masterBrand.name} de ${group.label}`}
                                         style={{
+                                          background: '#fef2f2',
+                                          color: '#dc2626',
+                                          border: '1px solid #fecaca',
+                                          borderRadius: '7px',
+                                          padding: '5px 9px',
                                           fontSize: '11px',
                                           fontWeight: '750',
-                                          color: '#0f172a',
-                                          border: `1.5px solid ${group.color}`,
-                                          borderRadius: '6px',
-                                          padding: '3px 8px',
-                                          background: '#ffffff',
-                                          cursor: 'pointer'
+                                          cursor: 'pointer',
+                                          display: 'inline-flex',
+                                          alignItems: 'center',
+                                          gap: '4px',
+                                          flexShrink: 0,
+                                          transition: 'all 0.12s ease'
                                         }}
-                                        title="Cambiar categoría de esta marca en este país"
+                                        onMouseEnter={(e) => { e.currentTarget.style.background = '#dc2626'; e.currentTarget.style.color = '#ffffff'; }}
+                                        onMouseLeave={(e) => { e.currentTarget.style.background = '#fef2f2'; e.currentTarget.style.color = '#dc2626'; }}
                                       >
-                                        <option value="networking">🌐 Networking</option>
-                                        <option value="infraestructura">⚡ Infraestructura</option>
-                                        <option value="comunicaciones_unificadas">📞 Comunicaciones</option>
-                                        <option value="security">🛡️ Seguridad</option>
-                                      </select>
+                                        <span>✕</span>
+                                        <span>Quitar</span>
+                                      </button>
                                     </div>
-                                  </div>
-
-                                  {/* Botones de Acción */}
-                                  <div style={{ display: 'flex', gap: '6px', paddingTop: '10px', borderTop: '1px solid #f1f5f9' }}>
-                                    <button
-                                      type="button"
-                                      onClick={() => handleOpenEditBrand(b.name, group.key, b.originalIdx)}
-                                      style={{
-                                        flex: 1,
-                                        background: '#f1f5f9',
-                                        color: '#0284c7',
-                                        border: '1px solid #cbd5e1',
-                                        borderRadius: '8px',
-                                        padding: '6px 10px',
-                                        fontSize: '11.5px',
-                                        fontWeight: '750',
-                                        cursor: 'pointer',
-                                        display: 'inline-flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                        gap: '5px'
-                                      }}
-                                    >
-                                      <span>✏️</span>
-                                      <span>Editar Logo</span>
-                                    </button>
-
-                                    <button
-                                      type="button"
-                                      onClick={() => handleDeleteBrand(group.key, b.originalIdx, b.name)}
-                                      title={`Quitar marca de ${currentCountryObj.name}`}
-                                      style={{
-                                        background: '#fef2f2',
-                                        color: '#dc2626',
-                                        border: '1px solid #fecaca',
-                                        borderRadius: '8px',
-                                        padding: '6px 10px',
-                                        fontSize: '12px',
-                                        fontWeight: '750',
-                                        cursor: 'pointer'
-                                      }}
-                                    >
-                                      🗑️
-                                    </button>
-                                  </div>
-                                </div>
-                              );
-                            })}
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>
@@ -6491,13 +6713,11 @@ function AdminEcommerce({
                         style={{ color: '#0F172A', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '600' }}
                       >
                         <option value="">Todos los segmentos de clientes</option>
-                        <option value="Integrador IT / Reseller">Integrador IT / Reseller</option>
-                        <option value="Empresa / Reseller">Empresa / Reseller</option>
-                        <option value="Proveedor de Internet (ISP / WISP)">Proveedor de Internet (ISP / WISP)</option>
-                        <option value="Empresa Corporativa">Empresa Corporativa</option>
-                        <option value="Consultora IT / Ciberseguridad">Consultora IT / Ciberseguridad</option>
-                        <option value="Entidad Gubernamental / Educación">Entidad Gubernamental / Educación</option>
-                        <option value="Otro">Otro Tipo</option>
+                        {clientTypes.map(ct => (
+                          <option key={ct.id || ct.name} value={ct.name}>
+                            {ct.name}
+                          </option>
+                        ))}
                       </select>
                     </div>
 
@@ -6871,10 +7091,42 @@ function AdminEcommerce({
                   Revisa las solicitudes de registro enviadas desde el Shop, aprueba clientes mayoristas y gestiona condiciones comerciales.
                 </p>
               </div>
-              <button className="dacas-action-pill primary" onClick={() => { resetUserForm(); setShowUserForm(true); }}>
-                <BrandingVectorIcon name="plus" size={14} color="#ffffff" />
-                <span>Crear Cliente Manualmente</span>
-              </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditingClientType(null);
+                    setClientTypeForm({ name: '', description: '', color: '#0284c7' });
+                    setClientTypesModalOpen(true);
+                  }}
+                  style={{
+                    background: '#f0f9ff',
+                    color: '#0284c7',
+                    border: '1.5px solid #bae6fd',
+                    padding: '8px 16px',
+                    borderRadius: '10px',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '7px',
+                    boxShadow: '0 2px 6px rgba(2, 132, 199, 0.08)',
+                    transition: 'all 0.15s ease'
+                  }}
+                  title="Abrir ABM de Tipos de Cliente para segmentación"
+                >
+                  <span style={{ fontSize: '15px' }}>🏷️</span>
+                  <span>Tipos de Cliente (ABM)</span>
+                  <span style={{ background: '#0284c7', color: '#ffffff', fontSize: '10.5px', fontWeight: '800', padding: '1px 7px', borderRadius: '999px' }}>
+                    {clientTypes.length}
+                  </span>
+                </button>
+                <button className="dacas-action-pill primary" onClick={() => { resetUserForm(); setShowUserForm(true); }}>
+                  <BrandingVectorIcon name="plus" size={14} color="#ffffff" />
+                  <span>Crear Cliente Manualmente</span>
+                </button>
+              </div>
             </div>
 
             {/* Country Scope Notice (Aislamiento Total) */}
@@ -7080,21 +7332,78 @@ function AdminEcommerce({
                   </div>
                 )}
                 
-                <div className="stepper" style={{ marginBottom: '20px' }}>
-                  <div className={`step ${userFormSection === 1 ? 'active' : ''}`} onClick={() => setUserFormSection(1)}>1. Datos Usuario & Auth</div>
-                  <div className={`step ${userFormSection === 2 ? 'active' : ''}`} onClick={() => setUserFormSection(2)}>2. Ship To / Fiscal</div>
-                  <div className={`step ${userFormSection === 3 ? 'active' : ''}`} onClick={() => setUserFormSection(3)}>3. Contactos Empresa</div>
-                  <div className={`step ${userFormSection === 4 ? 'active' : ''}`} onClick={() => setUserFormSection(4)}>4. Mails Notificaciones</div>
-                  {(!userForm.country_id || parseInt(userForm.country_id) === 2 || String(userForm.country_id).toLowerCase() === 'ar' || userForm.country_id === '') && (
-                    <div className={`step ${userFormSection === 5 ? 'active' : ''}`} onClick={() => setUserFormSection(5)} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span>🇦🇷</span> 5. Perc/Ret IIBB
+                {/* Banner Ficha Continua */}
+                <div style={{
+                  background: 'linear-gradient(135deg, rgba(15, 164, 222, 0.08) 0%, rgba(2, 132, 199, 0.04) 100%)',
+                  border: '1px solid rgba(15, 164, 222, 0.25)',
+                  padding: '12px 18px',
+                  borderRadius: '12px',
+                  marginBottom: '20px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  flexWrap: 'wrap',
+                  gap: '10px'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                    <span style={{ fontSize: '20px' }}>📋</span>
+                    <div>
+                      <div style={{ fontWeight: '800', fontSize: '13px', color: '#0369a1' }}>
+                        Ficha Corporativa de Cliente (Pantalla Unificada Vertical)
+                      </div>
+                      <div style={{ fontSize: '11.5px', color: '#64748b' }}>
+                        Todos los bloques del cliente distribuidos continuamente hacia abajo: autenticación, perfil comercial, fiscal, entrega, IIBB y contactos.
+                      </div>
                     </div>
-                  )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditingClientType(null);
+                      setClientTypeForm({ name: '', description: '', color: '#0284c7' });
+                      setClientTypesModalOpen(true);
+                    }}
+                    style={{
+                      background: '#ffffff',
+                      color: '#0284c7',
+                      border: '1.5px solid #0284c7',
+                      borderRadius: '8px',
+                      padding: '6px 14px',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      boxShadow: '0 1px 4px rgba(2, 132, 199, 0.1)'
+                    }}
+                  >
+                    <span>🏷️</span>
+                    <span>ABM Tipos de Cliente</span>
+                  </button>
                 </div>
 
-                <form onSubmit={handleUserSubmit} className="crm-form">
-                  {/* SECCION 1 */}
-                  {userFormSection === 1 && (
+                <form onSubmit={handleUserSubmit} className="crm-form" style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
+                  
+                  {/* BLOQUE 1: DATOS DE ACCESO & CUENTA */}
+                  <div style={{ background: '#ffffff', borderRadius: '14px', padding: '20px 22px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '18px' }}>👤</span>
+                        <div>
+                          <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: '800', color: '#0f172a' }}>
+                            1. Datos de Acceso & Cuenta de Usuario (Auth & Operador)
+                          </h4>
+                          <span style={{ fontSize: '11.5px', color: '#64748b' }}>
+                            Credenciales para iniciar sesión en el Shop, estado y rol dentro de la empresa.
+                          </span>
+                        </div>
+                      </div>
+                      <span style={{ background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0', fontSize: '10.5px', fontWeight: '800', padding: '2px 8px', borderRadius: '6px' }}>
+                        ACCESO SHOP
+                      </span>
+                    </div>
+
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
                       <div className="form-group">
                         <label>Estado de Cuenta *</label>
@@ -7111,16 +7420,18 @@ function AdminEcommerce({
                           <option value="inactivo">🔴 Inactivo / Bloqueado</option>
                         </select>
                       </div>
+
                       <div className="form-group">
                         <label>Nombre y Apellido del Usuario *</label>
                         <input type="text" placeholder="Ej: Laura Gómez" value={userForm.name} onChange={e => setUserForm({ ...userForm, name: e.target.value })} required />
                       </div>
+
                       <div className="form-group">
                         <label>Cargo / Rol en la Empresa</label>
                         <input 
                           type="text" 
                           list="cargos-list"
-                          placeholder="Ej: Encargado de Compras, Gerente, Finanzas..." 
+                          placeholder="Ej: Encargado de Compras, Gerente..." 
                           value={userForm.cargo || ''} 
                           onChange={e => setUserForm({ ...userForm, cargo: e.target.value })} 
                         />
@@ -7134,18 +7445,44 @@ function AdminEcommerce({
                           <option value="Operaciones / Logística" />
                         </datalist>
                       </div>
+
                       <div className="form-group">
                         <label>Email de Log-In (Shop) *</label>
                         <input type="email" placeholder="usuario@empresa.com" value={userForm.email} onChange={e => setUserForm({ ...userForm, email: e.target.value })} required />
                       </div>
+
                       <div className="form-group">
-                        <label>Contraseña {editingUser && '(Dejar vacío para no cambiar)'} {!editingUser && '*'}</label>
+                        <label>Contraseña {editingUser ? '(Dejar vacío para mantener)' : '*'}</label>
                         <input type="password" placeholder="••••••••" value={userForm.password} onChange={e => setUserForm({ ...userForm, password: e.target.value })} required={!editingUser} />
                       </div>
+
                       <div className="form-group">
                         <label>Teléfono Directo / WhatsApp</label>
-                        <input type="text" placeholder="+54 11 ..." value={userForm.phone} onChange={e => setUserForm({ ...userForm, phone: e.target.value })} />
+                        <input type="text" placeholder="+54 11 4000-1234" value={userForm.phone} onChange={e => setUserForm({ ...userForm, phone: e.target.value })} />
                       </div>
+                    </div>
+                  </div>
+
+                  {/* BLOQUE 2: PERFIL COMERCIAL & LEGAL */}
+                  <div style={{ background: '#ffffff', borderRadius: '14px', padding: '20px 22px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '18px' }}>📊</span>
+                        <div>
+                          <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: '800', color: '#0f172a' }}>
+                            2. Perfil Comercial & Legal (Segmentación B2B)
+                          </h4>
+                          <span style={{ fontSize: '11.5px', color: '#64748b' }}>
+                            Razón social, categorización comercial para listas de precios y datos web corporativos.
+                          </span>
+                        </div>
+                      </div>
+                      <span style={{ background: '#e0f2fe', color: '#0369a1', border: '1px solid #bae6fd', fontSize: '10.5px', fontWeight: '800', padding: '2px 8px', borderRadius: '6px' }}>
+                        FICHA PORTAL
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
                       <div className="form-group">
                         <label>Razón Social / Empresa *</label>
                         <input 
@@ -7155,71 +7492,278 @@ function AdminEcommerce({
                           required 
                           disabled={!editingUser && userCreateMode === 'existing_company'}
                           style={{ background: !editingUser && userCreateMode === 'existing_company' ? 'rgba(0,0,0,0.04)' : undefined }}
+                          placeholder="Ej: Soluciones Tecnológicas S.A."
                         />
                       </div>
+
+                      {/* TIPO DE CLIENTE (CON SELECT DINÁMICO DEL ABM) */}
                       <div className="form-group">
-                        <label>Tipo de Cliente</label>
-                        <input type="text" value={userForm.tipo_cliente} onChange={e => setUserForm({ ...userForm, tipo_cliente: e.target.value })} placeholder="Ej: Integrador IT, Reseller, Corporativo" />
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                          <label style={{ margin: 0 }}>Tipo de Cliente / Actividad *</label>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingClientType(null);
+                              setClientTypeForm({ name: '', description: '', color: '#0284c7' });
+                              setClientTypesModalOpen(true);
+                            }}
+                            style={{
+                              background: '#f0f9ff',
+                              color: '#0284c7',
+                              border: '1px solid #bae6fd',
+                              borderRadius: '6px',
+                              padding: '2px 7px',
+                              fontSize: '11px',
+                              fontWeight: '700',
+                              cursor: 'pointer',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                            title="Gestionar lista de Tipos de Cliente (ABM)"
+                          >
+                            <span>⚙️ ABM Tipos</span>
+                          </button>
+                        </div>
+                        <select
+                          value={userForm.tipo_cliente || ''}
+                          onChange={e => setUserForm({ ...userForm, tipo_cliente: e.target.value })}
+                          required
+                          style={{
+                            width: '100%',
+                            padding: '9px 12px',
+                            borderRadius: '8px',
+                            border: '1.5px solid #cbd5e1',
+                            fontSize: '13px',
+                            fontWeight: '700',
+                            color: '#0f172a',
+                            background: '#ffffff'
+                          }}
+                        >
+                          <option value="">-- Seleccionar Tipo de Cliente --</option>
+                          {userForm.tipo_cliente && !clientTypes.some(ct => ct.name === userForm.tipo_cliente) && (
+                            <option value={userForm.tipo_cliente}>{userForm.tipo_cliente} (Personalizado)</option>
+                          )}
+                          {clientTypes.map(ct => (
+                            <option key={ct.id || ct.name} value={ct.name}>
+                              {ct.name}
+                            </option>
+                          ))}
+                        </select>
                       </div>
+
                       <div className="form-group">
-                        <label>Sitio Web</label>
-                        <input type="text" value={userForm.web} onChange={e => setUserForm({ ...userForm, web: e.target.value })} placeholder="https://..." />
-                      </div>
-                      <div className="form-group">
-                        <label>Fecha Límite Facturación</label>
-                        <input type="date" value={userForm.fecha_limite_facturacion} onChange={e => setUserForm({ ...userForm, fecha_limite_facturacion: e.target.value })} />
-                      </div>
-                      <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                        <label>Dirección Legal</label>
-                        <textarea value={userForm.direccion_legal} onChange={e => setUserForm({ ...userForm, direccion_legal: e.target.value })} rows="2" />
-                      </div>
-                      <div className="form-group">
-                        <label>Ciudad</label>
-                        <input type="text" value={userForm.ciudad} onChange={e => setUserForm({ ...userForm, ciudad: e.target.value })} />
-                      </div>
-                      <div className="form-group">
-                        <label>Código Postal</label>
-                        <input type="text" value={userForm.codigo_postal} onChange={e => setUserForm({ ...userForm, codigo_postal: e.target.value })} />
-                      </div>
-                      <div className="form-group">
-                        <label>País Legal</label>
+                        <label>País Legal / Operación</label>
                         <select value={userForm.country_id} onChange={e => setUserForm({ ...userForm, country_id: e.target.value })}>
                           <option value="">Selecciona País...</option>
                           {countries.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                       </div>
-                    </div>
-                  )}
 
-                  {/* SECCION 2 */}
-                  {userFormSection === 2 && (
+                      <div className="form-group">
+                        <label>Sitio Web Corporativo</label>
+                        <input type="text" value={userForm.web} onChange={e => setUserForm({ ...userForm, web: e.target.value })} placeholder="https://www.empresa.com" />
+                      </div>
+
+                      <div className="form-group">
+                        <label>Fecha Límite Facturación</label>
+                        <input type="date" value={userForm.fecha_limite_facturacion} onChange={e => setUserForm({ ...userForm, fecha_limite_facturacion: e.target.value })} />
+                      </div>
+
+                      {/* CASILLA CUENTA CORRIENTE HABILITADA */}
+                      <div style={{
+                        gridColumn: '1 / -1',
+                        background: userForm.cuenta_corriente_habilitada ? 'rgba(16, 185, 129, 0.08)' : 'rgba(241, 245, 249, 0.7)',
+                        border: `1.5px solid ${userForm.cuenta_corriente_habilitada ? '#10b981' : '#cbd5e1'}`,
+                        borderRadius: '12px',
+                        padding: '14px 18px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '16px',
+                        transition: 'all 0.2s ease',
+                        cursor: 'pointer'
+                      }}
+                      onClick={() => setUserForm(prev => ({ ...prev, cuenta_corriente_habilitada: !prev.cuenta_corriente_habilitada }))}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
+                          <div style={{
+                            width: '42px',
+                            height: '42px',
+                            borderRadius: '12px',
+                            background: userForm.cuenta_corriente_habilitada ? '#10b981' : '#e2e8f0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0,
+                            boxShadow: userForm.cuenta_corriente_habilitada ? '0 4px 12px rgba(16, 185, 129, 0.3)' : 'none'
+                          }}>
+                            <BrandingVectorIcon 
+                              name="credit-card" 
+                              size={22} 
+                              color={userForm.cuenta_corriente_habilitada ? '#ffffff' : '#64748b'} 
+                            />
+                          </div>
+                          <div>
+                            <div style={{ fontWeight: '800', fontSize: '13.5px', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                              <span>Cuenta Corriente Habilitada</span>
+                              <span style={{
+                                fontSize: '11px',
+                                fontWeight: '800',
+                                padding: '2px 9px',
+                                borderRadius: '999px',
+                                background: userForm.cuenta_corriente_habilitada ? '#dcfce7' : '#f1f5f9',
+                                color: userForm.cuenta_corriente_habilitada ? '#15803d' : '#64748b',
+                                border: `1px solid ${userForm.cuenta_corriente_habilitada ? '#86efac' : '#cbd5e1'}`
+                              }}>
+                                {userForm.cuenta_corriente_habilitada ? '✓ Habilitada para Checkout' : '🔒 Bloqueada en Checkout'}
+                              </span>
+                            </div>
+                            <div style={{ fontSize: '12px', color: '#64748b', marginTop: '3px' }}>
+                              Al marcar esta casilla, el cliente podrá seleccionar y pagar con <strong>Cuenta Corriente Comercial B2B</strong> en el Checkout del Shop. Si se desmarca, dicho método quedará bloqueado.
+                            </div>
+                          </div>
+                        </div>
+
+                        <input 
+                          type="checkbox" 
+                          checked={!!userForm.cuenta_corriente_habilitada}
+                          onChange={e => {
+                            e.stopPropagation();
+                            setUserForm({ ...userForm, cuenta_corriente_habilitada: e.target.checked });
+                          }}
+                          style={{ width: '22px', height: '22px', cursor: 'pointer', accentColor: '#10b981', flexShrink: 0 }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* BLOQUE 3: CONDICIÓN FISCAL & ASIGNACIÓN */}
+                  <div style={{ background: '#ffffff', borderRadius: '14px', padding: '20px 22px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '18px' }}>🧾</span>
+                        <div>
+                          <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: '800', color: '#0f172a' }}>
+                            3. Condición Fiscal & Asignación Comercial
+                          </h4>
+                          <span style={{ fontSize: '11.5px', color: '#64748b' }}>
+                            Identificación tributaria, condición IVA y ejecutivo comercial asignado.
+                          </span>
+                        </div>
+                      </div>
+                      <span style={{ background: '#fef3c7', color: '#92400e', border: '1px solid #fde68a', fontSize: '10.5px', fontWeight: '800', padding: '2px 8px', borderRadius: '6px' }}>
+                        PROTEGIDO EN PORTAL
+                      </span>
+                    </div>
+
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
                       <div className="form-group">
-                        <label>Report To (País de Reporte)</label>
+                        <label>Número de CUIT / RUT / NIT *</label>
+                        <input type="text" value={userForm.numero_nit} onChange={e => setUserForm({ ...userForm, numero_nit: e.target.value })} placeholder="Ej: 30-71234567-8" />
+                      </div>
+
+                      <div className="form-group">
+                        <label>Tipo de IVA / Condición Fiscal</label>
+                        <input 
+                          type="text" 
+                          list="iva-types-list"
+                          value={userForm.tipo_iva} 
+                          onChange={e => setUserForm({ ...userForm, tipo_iva: e.target.value })} 
+                          placeholder="IVA Responsable Inscripto, Exento..." 
+                        />
+                        <datalist id="iva-types-list">
+                          <option value="IVA Responsable Inscripto" />
+                          <option value="IVA Exento" />
+                          <option value="Responsable Monotributo" />
+                          <option value="Consumidor Final" />
+                          <option value="Cliente del Exterior" />
+                        </datalist>
+                      </div>
+
+                      <div className="form-group">
+                        <label>Vendedor Asignado (Ejecutivo Comercial DACAS)</label>
+                        <input type="text" value={userForm.vendedor} onChange={e => setUserForm({ ...userForm, vendedor: e.target.value })} placeholder="Ej: Juan Pérez" />
+                      </div>
+
+                      <div className="form-group">
+                        <label>Report To (País de Reporte Comercial)</label>
                         <select value={userForm.report_to_country_id} onChange={e => setUserForm({ ...userForm, report_to_country_id: e.target.value })}>
                           <option value="">Selecciona País...</option>
                           {countries.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                       </div>
-                      <div className="form-group">
-                        <label>Vendedor Asignado (Ejecutivo DACAS)</label>
-                        <input type="text" value={userForm.vendedor} onChange={e => setUserForm({ ...userForm, vendedor: e.target.value })} placeholder="Ej: Juan Pérez" />
+                    </div>
+                  </div>
+
+                  {/* BLOQUE 4: DOMICILIO LEGAL / FISCAL */}
+                  <div style={{ background: '#ffffff', borderRadius: '14px', padding: '20px 22px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '18px' }}>🏛️</span>
+                        <div>
+                          <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: '800', color: '#0f172a' }}>
+                            4. Domicilio Legal / Fiscal
+                          </h4>
+                          <span style={{ fontSize: '11.5px', color: '#64748b' }}>
+                            Dirección oficial de radicación de la persona jurídica para facturación legal.
+                          </span>
+                        </div>
                       </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
                       <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-                        <label>Dirección de Entrega</label>
-                        <textarea value={userForm.direccion_entrega} onChange={e => setUserForm({ ...userForm, direccion_entrega: e.target.value })} rows="2" />
+                        <label>Dirección Legal (Calle, Altura, Piso / Depto)</label>
+                        <textarea value={userForm.direccion_legal} onChange={e => setUserForm({ ...userForm, direccion_legal: e.target.value })} rows="2" placeholder="Ej: Av. Corrientes 1234, Piso 8" />
+                      </div>
+                      <div className="form-group">
+                        <label>Localidad / Barrio</label>
+                        <input type="text" value={userForm.localidad} onChange={e => setUserForm({ ...userForm, localidad: e.target.value })} placeholder="Ej: San Nicolás" />
+                      </div>
+                      <div className="form-group">
+                        <label>Ciudad / Provincia</label>
+                        <input type="text" value={userForm.ciudad} onChange={e => setUserForm({ ...userForm, ciudad: e.target.value })} placeholder="Ej: Buenos Aires" />
+                      </div>
+                      <div className="form-group">
+                        <label>Código Postal Legal</label>
+                        <input type="text" value={userForm.codigo_postal} onChange={e => setUserForm({ ...userForm, codigo_postal: e.target.value })} placeholder="Ej: C1043AAS" />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* BLOQUE 5: DIRECCIÓN DE ENTREGA / DESPACHO */}
+                  <div style={{ background: '#ffffff', borderRadius: '14px', padding: '20px 22px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '18px' }}>🚚</span>
+                        <div>
+                          <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: '800', color: '#0f172a' }}>
+                            5. Dirección de Entrega / Despacho (Ship-To)
+                          </h4>
+                          <span style={{ fontSize: '11.5px', color: '#64748b' }}>
+                            Destino físico para remitos de entrega, depósitos o retiro logístico.
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px' }}>
+                      <div className="form-group" style={{ gridColumn: '1 / -1' }}>
+                        <label>Dirección de Entrega (Calle, Depósito, Altura)</label>
+                        <textarea value={userForm.direccion_entrega} onChange={e => setUserForm({ ...userForm, direccion_entrega: e.target.value })} rows="2" placeholder="Ej: Av. del Libertador 4500, Depósito 2" />
                       </div>
                       <div className="form-group">
                         <label>Localidad Entrega</label>
-                        <input type="text" value={userForm.localidad_entrega} onChange={e => setUserForm({ ...userForm, localidad_entrega: e.target.value })} />
+                        <input type="text" value={userForm.localidad_entrega} onChange={e => setUserForm({ ...userForm, localidad_entrega: e.target.value })} placeholder="Ej: Palermo" />
                       </div>
                       <div className="form-group">
                         <label>Ciudad Entrega</label>
-                        <input type="text" value={userForm.ciudad_entrega} onChange={e => setUserForm({ ...userForm, ciudad_entrega: e.target.value })} />
+                        <input type="text" value={userForm.ciudad_entrega} onChange={e => setUserForm({ ...userForm, ciudad_entrega: e.target.value })} placeholder="Ej: Buenos Aires" />
                       </div>
                       <div className="form-group">
                         <label>Cód Postal Entrega</label>
-                        <input type="text" value={userForm.codigo_postal_entrega} onChange={e => setUserForm({ ...userForm, codigo_postal_entrega: e.target.value })} />
+                        <input type="text" value={userForm.codigo_postal_entrega} onChange={e => setUserForm({ ...userForm, codigo_postal_entrega: e.target.value })} placeholder="Ej: C1426BWW" />
                       </div>
                       <div className="form-group">
                         <label>País de Entrega</label>
@@ -7228,130 +7772,40 @@ function AdminEcommerce({
                           {countries.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                         </select>
                       </div>
-                      <div className="form-group">
-                        <label>Tipo de IVA / Condición Fiscal</label>
-                        <input type="text" value={userForm.tipo_iva} onChange={e => setUserForm({ ...userForm, tipo_iva: e.target.value })} placeholder="Resp. Inscripto, Exento..." />
-                      </div>
-                      <div className="form-group">
-                        <label>Número de CUIT / RUT / NIT</label>
-                        <input type="text" value={userForm.numero_nit} onChange={e => setUserForm({ ...userForm, numero_nit: e.target.value })} placeholder="30-XXXXXXXX-X" />
-                      </div>
                     </div>
-                  )}
+                  </div>
 
-                  {/* SECCION 3 */}
-                  {userFormSection === 3 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                      <div style={{ background: 'rgba(0,0,0,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                        <h4 style={{ margin: '0 0 10px 0', color: 'var(--text-main)' }}>Encargado de Compras</h4>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px' }}>
-                          <div className="form-group"><label>Nombre</label><input type="text" value={userForm.nombre_compras} onChange={e => setUserForm({ ...userForm, nombre_compras: e.target.value })} /></div>
-                          <div className="form-group"><label>Teléfono</label><input type="text" value={userForm.telefono_compras} onChange={e => setUserForm({ ...userForm, telefono_compras: e.target.value })} /></div>
-                          <div className="form-group"><label>Email</label><input type="email" value={userForm.email_compras} onChange={e => setUserForm({ ...userForm, email_compras: e.target.value })} /></div>
+                  {/* BLOQUE 6: PERCEPCIONES / RETENCIONES IIBB (ARGENTINA) */}
+                  <div style={{ background: '#ffffff', borderRadius: '14px', padding: '20px 22px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '18px' }}>🏛️</span>
+                        <div>
+                          <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: '800', color: '#0f172a' }}>
+                            6. Percepciones & Retenciones IIBB (Ingresos Brutos - Argentina)
+                          </h4>
+                          <span style={{ fontSize: '11.5px', color: '#64748b' }}>
+                            Alícuotas impositivas oficiales aplicables automáticamente al momento del Checkout.
+                          </span>
                         </div>
                       </div>
-                      <div style={{ background: 'rgba(0,0,0,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                        <h4 style={{ margin: '0 0 10px 0', color: 'var(--text-main)' }}>Encargado de Pagos</h4>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px' }}>
-                          <div className="form-group"><label>Nombre</label><input type="text" value={userForm.nombre_pagos} onChange={e => setUserForm({ ...userForm, nombre_pagos: e.target.value })} /></div>
-                          <div className="form-group"><label>Teléfono</label><input type="text" value={userForm.telefono_pagos} onChange={e => setUserForm({ ...userForm, telefono_pagos: e.target.value })} /></div>
-                          <div className="form-group"><label>Email</label><input type="email" value={userForm.email_pagos} onChange={e => setUserForm({ ...userForm, email_pagos: e.target.value })} /></div>
-                        </div>
-                      </div>
-                      <div style={{ background: 'rgba(0,0,0,0.02)', padding: '16px', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                        <h4 style={{ margin: '0 0 10px 0', color: 'var(--text-main)' }}>Encargado de Administración</h4>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px' }}>
-                          <div className="form-group"><label>Nombre</label><input type="text" value={userForm.nombre_admin} onChange={e => setUserForm({ ...userForm, nombre_admin: e.target.value })} /></div>
-                          <div className="form-group"><label>Teléfono</label><input type="text" value={userForm.telefono_admin} onChange={e => setUserForm({ ...userForm, telefono_admin: e.target.value })} /></div>
-                          <div className="form-group"><label>Email</label><input type="email" value={userForm.email_admin} onChange={e => setUserForm({ ...userForm, email_admin: e.target.value })} /></div>
-                        </div>
-                      </div>
+                      <span style={{ background: '#e0f2fe', color: '#0369a1', border: '1px solid #bae6fd', fontSize: '10.5px', fontWeight: '800', padding: '2px 8px', borderRadius: '6px' }}>
+                        ARGENTINA EXCLUSIVO
+                      </span>
                     </div>
-                  )}
 
-                  {/* SECCION 4 */}
-                  {userFormSection === 4 && (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                      <div className="form-group">
-                        <label>Envío de Factura Electrónica (Email)</label>
-                        <input type="email" value={userForm.email_factura_electronica} onChange={e => setUserForm({ ...userForm, email_factura_electronica: e.target.value })} />
-                      </div>
-                      <div className="form-group">
-                        <label>Contacto de Compras (Email)</label>
-                        <input type="email" value={userForm.email_contacto_compras} onChange={e => setUserForm({ ...userForm, email_contacto_compras: e.target.value })} />
-                      </div>
-                      <div className="form-group">
-                        <label>Email para recepción de cotizaciones automáticas</label>
-                        <input type="email" value={userForm.email_cotizaciones_automaticas} onChange={e => setUserForm({ ...userForm, email_cotizaciones_automaticas: e.target.value })} />
-                      </div>
-                    </div>
-                  )}
-
-                  {/* SECCION 5: PERCEPCIONES / RETENCIONES IIBB (ARGENTINA) */}
-                  {userFormSection === 5 && (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                      {/* Banner Informativo */}
-                      <div style={{
-                        background: 'linear-gradient(135deg, rgba(15, 164, 222, 0.08) 0%, rgba(2, 132, 199, 0.03) 100%)',
-                        border: '1px solid rgba(15, 164, 222, 0.25)',
-                        borderRadius: '12px',
-                        padding: '14px 18px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        gap: '12px',
-                        flexWrap: 'wrap'
-                      }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <span style={{ fontSize: '24px' }}>🏛️</span>
-                          <div>
-                            <div style={{ fontWeight: '800', fontSize: '13.5px', color: '#0369a1' }}>
-                              Solapa de Perc/Ret IIBB (Ingresos Brutos - Argentina)
-                            </div>
-                            <div style={{ fontSize: '12px', color: '#64748b' }}>
-                              Las percepciones activas se calcularán automáticamente sobre el <strong>valor neto de productos</strong> al momento del Checkout/Pago.
-                            </div>
-                          </div>
-                        </div>
-                        <span style={{
-                          background: '#e0f2fe',
-                          color: '#0369a1',
-                          padding: '4px 10px',
-                          borderRadius: '8px',
-                          fontSize: '11px',
-                          fontWeight: '800',
-                          letterSpacing: '0.04em'
-                        }}>
-                          ARGENTINA EXCLUSIVO
-                        </span>
-                      </div>
-
                       {/* Top Row: Jurisdicción & Nro Inscripcion IIBB */}
                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
                         {/* Box 1: Jurisdicción */}
-                        <div style={{
-                          border: '1.5px solid #cbd5e1',
-                          borderRadius: '10px',
-                          padding: '14px 16px',
-                          background: '#ffffff',
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
-                        }}>
+                        <div style={{ border: '1.5px solid #cbd5e1', borderRadius: '10px', padding: '14px 16px', background: '#f8fafc' }}>
                           <label style={{ fontSize: '12px', fontWeight: '800', color: '#1e293b', marginBottom: '8px', display: 'block' }}>
                             Jurisdicción
                           </label>
                           <select
                             value={userForm.iibb_jurisdiccion || '901 - Capital Federal'}
                             onChange={e => setUserForm({ ...userForm, iibb_jurisdiccion: e.target.value })}
-                            style={{
-                              width: '100%',
-                              padding: '9px 12px',
-                              borderRadius: '8px',
-                              border: '1.5px solid #cbd5e1',
-                              fontSize: '13px',
-                              fontWeight: '600',
-                              color: '#0f172a',
-                              background: '#f8fafc'
-                            }}
+                            style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '13px', fontWeight: '600', color: '#0f172a', background: '#ffffff' }}
                           >
                             <option value="901 - Capital Federal">901 - Capital Federal</option>
                             <option value="902 - Buenos Aires">902 - Buenos Aires</option>
@@ -7381,13 +7835,7 @@ function AdminEcommerce({
                         </div>
 
                         {/* Box 2: Nro Inscripcion IIBB */}
-                        <div style={{
-                          border: '1.5px solid #cbd5e1',
-                          borderRadius: '10px',
-                          padding: '14px 16px',
-                          background: '#ffffff',
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
-                        }}>
+                        <div style={{ border: '1.5px solid #cbd5e1', borderRadius: '10px', padding: '14px 16px', background: '#f8fafc' }}>
                           <label style={{ fontSize: '12px', fontWeight: '800', color: '#1e293b', marginBottom: '8px', display: 'block' }}>
                             Nro Inscripcion IIBB
                           </label>
@@ -7395,15 +7843,7 @@ function AdminEcommerce({
                             <select
                               value={userForm.iibb_tipo || 'C.M.'}
                               onChange={e => setUserForm({ ...userForm, iibb_tipo: e.target.value })}
-                              style={{
-                                padding: '9px 10px',
-                                borderRadius: '8px',
-                                border: '1.5px solid #cbd5e1',
-                                fontSize: '13px',
-                                fontWeight: '700',
-                                color: '#0f172a',
-                                background: '#f8fafc'
-                              }}
+                              style={{ padding: '9px 10px', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '13px', fontWeight: '700', color: '#0f172a', background: '#ffffff' }}
                             >
                               <option value="C.M.">C.M.</option>
                               <option value="Local">Local</option>
@@ -7415,30 +7855,17 @@ function AdminEcommerce({
                               placeholder="Ej: 9017223280"
                               value={userForm.iibb_numero || ''}
                               onChange={e => setUserForm({ ...userForm, iibb_numero: e.target.value })}
-                              style={{
-                                padding: '9px 12px',
-                                borderRadius: '8px',
-                                border: '1.5px solid #cbd5e1',
-                                fontSize: '13px',
-                                fontWeight: '600',
-                                color: '#0f172a'
-                              }}
+                              style={{ padding: '9px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '13px', fontWeight: '600', color: '#0f172a', background: '#ffffff' }}
                             />
                           </div>
                         </div>
                       </div>
 
-                      {/* Percepciones Grid: 5 Boxes matching ERP Reference Image */}
-                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '16px' }}>
+                      {/* Percepciones Grid: 5 Boxes */}
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '14px' }}>
                         {/* 1. Perc CABA */}
-                        <div style={{
-                          border: '1.5px solid #cbd5e1',
-                          borderRadius: '10px',
-                          padding: '14px 16px',
-                          background: userForm.percepciones?.caba?.enabled ? 'rgba(15, 164, 222, 0.04)' : '#ffffff',
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
-                        }}>
-                          <div style={{ fontSize: '12px', fontWeight: '800', color: '#1e293b', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ border: '1.5px solid #cbd5e1', borderRadius: '10px', padding: '12px 14px', background: userForm.percepciones?.caba?.enabled ? 'rgba(15, 164, 222, 0.04)' : '#ffffff' }}>
+                          <div style={{ fontSize: '12px', fontWeight: '800', color: '#1e293b', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span>Perc CABA</span>
                             {userForm.percepciones?.caba?.enabled && <span style={{ fontSize: '11px', color: '#0284c7', fontWeight: '700' }}>Activa</span>}
                           </div>
@@ -7460,7 +7887,7 @@ function AdminEcommerce({
                                 placeholder="1,5000"
                                 value={userForm.percepciones?.caba?.alicuota !== undefined ? userForm.percepciones?.caba?.alicuota : 1.5}
                                 onChange={e => handlePercepcionChange('caba', 'alicuota', parseFloat(e.target.value) || 0)}
-                                style={{ width: '75px', padding: '7px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12.5px', fontWeight: '700', textAlign: 'right', background: '#ffffff' }}
+                                style={{ width: '75px', padding: '6px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12.5px', fontWeight: '700', textAlign: 'right', background: '#ffffff' }}
                               />
                               <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '700' }}>%</span>
                             </div>
@@ -7468,20 +7895,14 @@ function AdminEcommerce({
                               type="date"
                               value={userForm.percepciones?.caba?.vigencia || '2026-10-01'}
                               onChange={e => handlePercepcionChange('caba', 'vigencia', e.target.value)}
-                              style={{ width: '135px', padding: '7px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px', color: '#334155', background: '#ffffff', marginLeft: 'auto' }}
+                              style={{ width: '130px', padding: '6px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '11.5px', color: '#334155', background: '#ffffff', marginLeft: 'auto' }}
                             />
                           </div>
                         </div>
 
                         {/* 2. Perc Salta */}
-                        <div style={{
-                          border: '1.5px solid #cbd5e1',
-                          borderRadius: '10px',
-                          padding: '14px 16px',
-                          background: userForm.percepciones?.salta?.enabled ? 'rgba(15, 164, 222, 0.04)' : '#ffffff',
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
-                        }}>
-                          <div style={{ fontSize: '12px', fontWeight: '800', color: '#1e293b', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ border: '1.5px solid #cbd5e1', borderRadius: '10px', padding: '12px 14px', background: userForm.percepciones?.salta?.enabled ? 'rgba(15, 164, 222, 0.04)' : '#ffffff' }}>
+                          <div style={{ fontSize: '12px', fontWeight: '800', color: '#1e293b', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span>Perc Salta</span>
                             {userForm.percepciones?.salta?.enabled && <span style={{ fontSize: '11px', color: '#0284c7', fontWeight: '700' }}>Activa</span>}
                           </div>
@@ -7503,7 +7924,7 @@ function AdminEcommerce({
                                 placeholder="0,0000"
                                 value={userForm.percepciones?.salta?.alicuota !== undefined ? userForm.percepciones?.salta?.alicuota : 0}
                                 onChange={e => handlePercepcionChange('salta', 'alicuota', parseFloat(e.target.value) || 0)}
-                                style={{ width: '75px', padding: '7px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12.5px', fontWeight: '700', textAlign: 'right', background: '#ffffff' }}
+                                style={{ width: '75px', padding: '6px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12.5px', fontWeight: '700', textAlign: 'right', background: '#ffffff' }}
                               />
                               <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '700' }}>%</span>
                             </div>
@@ -7511,21 +7932,15 @@ function AdminEcommerce({
                               type="date"
                               value={userForm.percepciones?.salta?.vigencia || '2019-08-01'}
                               onChange={e => handlePercepcionChange('salta', 'vigencia', e.target.value)}
-                              style={{ width: '135px', padding: '7px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px', color: '#334155', background: '#ffffff', marginLeft: 'auto' }}
+                              style={{ width: '130px', padding: '6px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '11.5px', color: '#334155', background: '#ffffff', marginLeft: 'auto' }}
                             />
                           </div>
                         </div>
 
                         {/* 3. Perc Bs As */}
-                        <div style={{
-                          border: '1.5px solid #cbd5e1',
-                          borderRadius: '10px',
-                          padding: '14px 16px',
-                          background: userForm.percepciones?.bsas?.enabled ? 'rgba(15, 164, 222, 0.04)' : '#ffffff',
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
-                        }}>
-                          <div style={{ fontSize: '12px', fontWeight: '800', color: '#1e293b', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span>Perc Bs As</span>
+                        <div style={{ border: '1.5px solid #cbd5e1', borderRadius: '10px', padding: '12px 14px', background: userForm.percepciones?.bsas?.enabled ? 'rgba(15, 164, 222, 0.04)' : '#ffffff' }}>
+                          <div style={{ fontSize: '12px', fontWeight: '800', color: '#1e293b', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span>Perc Bs As (ARBA)</span>
                             {userForm.percepciones?.bsas?.enabled && <span style={{ fontSize: '11px', color: '#0284c7', fontWeight: '700' }}>Activa</span>}
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
@@ -7546,7 +7961,7 @@ function AdminEcommerce({
                                 placeholder="0,0000"
                                 value={userForm.percepciones?.bsas?.alicuota !== undefined ? userForm.percepciones?.bsas?.alicuota : 0}
                                 onChange={e => handlePercepcionChange('bsas', 'alicuota', parseFloat(e.target.value) || 0)}
-                                style={{ width: '75px', padding: '7px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12.5px', fontWeight: '700', textAlign: 'right', background: '#ffffff' }}
+                                style={{ width: '75px', padding: '6px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12.5px', fontWeight: '700', textAlign: 'right', background: '#ffffff' }}
                               />
                               <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '700' }}>%</span>
                             </div>
@@ -7554,20 +7969,14 @@ function AdminEcommerce({
                               type="date"
                               value={userForm.percepciones?.bsas?.vigencia || '2026-10-01'}
                               onChange={e => handlePercepcionChange('bsas', 'vigencia', e.target.value)}
-                              style={{ width: '135px', padding: '7px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px', color: '#334155', background: '#ffffff', marginLeft: 'auto' }}
+                              style={{ width: '130px', padding: '6px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '11.5px', color: '#334155', background: '#ffffff', marginLeft: 'auto' }}
                             />
                           </div>
                         </div>
 
                         {/* 4. Perc Misiones */}
-                        <div style={{
-                          border: '1.5px solid #cbd5e1',
-                          borderRadius: '10px',
-                          padding: '14px 16px',
-                          background: userForm.percepciones?.misiones?.enabled ? 'rgba(15, 164, 222, 0.04)' : '#ffffff',
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
-                        }}>
-                          <div style={{ fontSize: '12px', fontWeight: '800', color: '#1e293b', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <div style={{ border: '1.5px solid #cbd5e1', borderRadius: '10px', padding: '12px 14px', background: userForm.percepciones?.misiones?.enabled ? 'rgba(15, 164, 222, 0.04)' : '#ffffff' }}>
+                          <div style={{ fontSize: '12px', fontWeight: '800', color: '#1e293b', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span>Perc Misiones</span>
                             {userForm.percepciones?.misiones?.enabled && <span style={{ fontSize: '11px', color: '#0284c7', fontWeight: '700' }}>Activa</span>}
                           </div>
@@ -7589,7 +7998,7 @@ function AdminEcommerce({
                                 placeholder="0,000"
                                 value={userForm.percepciones?.misiones?.alicuota !== undefined ? userForm.percepciones?.misiones?.alicuota : 0}
                                 onChange={e => handlePercepcionChange('misiones', 'alicuota', parseFloat(e.target.value) || 0)}
-                                style={{ width: '75px', padding: '7px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12.5px', fontWeight: '700', textAlign: 'right', background: '#ffffff' }}
+                                style={{ width: '75px', padding: '6px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12.5px', fontWeight: '700', textAlign: 'right', background: '#ffffff' }}
                               />
                               <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '700' }}>%</span>
                             </div>
@@ -7597,22 +8006,15 @@ function AdminEcommerce({
                               type="date"
                               value={userForm.percepciones?.misiones?.vigencia || '2023-05-01'}
                               onChange={e => handlePercepcionChange('misiones', 'vigencia', e.target.value)}
-                              style={{ width: '135px', padding: '7px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px', color: '#334155', background: '#ffffff', marginLeft: 'auto' }}
+                              style={{ width: '130px', padding: '6px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '11.5px', color: '#334155', background: '#ffffff', marginLeft: 'auto' }}
                             />
                           </div>
                         </div>
 
                         {/* 5. Perc Tucuman */}
-                        <div style={{
-                          border: '1.5px solid #cbd5e1',
-                          borderRadius: '10px',
-                          padding: '14px 16px',
-                          background: userForm.percepciones?.tucuman?.enabled ? 'rgba(15, 164, 222, 0.04)' : '#ffffff',
-                          boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
-                          gridColumn: '1 / -1'
-                        }}>
-                          <div style={{ fontSize: '12px', fontWeight: '800', color: '#1e293b', marginBottom: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                            <span>Perc Tucuman</span>
+                        <div style={{ border: '1.5px solid #cbd5e1', borderRadius: '10px', padding: '12px 14px', background: userForm.percepciones?.tucuman?.enabled ? 'rgba(15, 164, 222, 0.04)' : '#ffffff', gridColumn: '1 / -1' }}>
+                          <div style={{ fontSize: '12px', fontWeight: '800', color: '#1e293b', marginBottom: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                            <span>Perc Tucumán</span>
                             {userForm.percepciones?.tucuman?.enabled && <span style={{ fontSize: '11px', color: '#0284c7', fontWeight: '700' }}>Activa</span>}
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '12px', flexWrap: 'wrap' }}>
@@ -7623,7 +8025,7 @@ function AdminEcommerce({
                                 onChange={e => handlePercepcionChange('tucuman', 'enabled', e.target.checked)}
                                 style={{ width: '16px', height: '16px', accentColor: '#0fa4de', cursor: 'pointer' }}
                               />
-                              <span>Tucuman</span>
+                              <span>Tucumán</span>
                             </label>
                             
                             <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -7635,7 +8037,7 @@ function AdminEcommerce({
                                 placeholder="0,0000"
                                 value={userForm.percepciones?.tucuman?.coef !== undefined ? userForm.percepciones?.tucuman?.coef : 0}
                                 onChange={e => handlePercepcionChange('tucuman', 'coef', parseFloat(e.target.value) || 0)}
-                                style={{ width: '80px', padding: '7px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12.5px', fontWeight: '700', textAlign: 'right' }}
+                                style={{ width: '75px', padding: '6px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12.5px', fontWeight: '700', textAlign: 'right', background: '#ffffff' }}
                               />
                             </div>
 
@@ -7648,7 +8050,7 @@ function AdminEcommerce({
                                 placeholder="0,0000"
                                 value={userForm.percepciones?.tucuman?.alicuota !== undefined ? userForm.percepciones?.tucuman?.alicuota : 0}
                                 onChange={e => handlePercepcionChange('tucuman', 'alicuota', parseFloat(e.target.value) || 0)}
-                                style={{ width: '80px', padding: '7px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12.5px', fontWeight: '700', textAlign: 'right' }}
+                                style={{ width: '75px', padding: '6px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12.5px', fontWeight: '700', textAlign: 'right', background: '#ffffff' }}
                               />
                               <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>%</span>
                             </div>
@@ -7659,26 +8061,23 @@ function AdminEcommerce({
                                 type="date"
                                 value={userForm.percepciones?.tucuman?.vigencia || '2025-06-01'}
                                 onChange={e => handlePercepcionChange('tucuman', 'vigencia', e.target.value)}
-                                style={{ width: '100%', padding: '7px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '12px', color: '#334155' }}
+                                style={{ width: '100%', padding: '6px 8px', borderRadius: '6px', border: '1px solid #cbd5e1', fontSize: '11.5px', color: '#334155', background: '#ffffff' }}
                               />
                             </div>
                           </div>
                         </div>
                       </div>
 
-                      {/* Divider */}
-                      <hr style={{ border: 'none', borderTop: '1.5px solid #cbd5e1', margin: '4px 0' }} />
-
                       {/* Checkbox Codigo de Aceptacion */}
                       <div style={{ padding: '4px 2px' }}>
-                        <label style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', fontSize: '13.5px', fontWeight: '800', color: '#0f172a', cursor: 'pointer' }}>
+                        <label style={{ display: 'inline-flex', alignItems: 'center', gap: '10px', fontSize: '13px', fontWeight: '800', color: '#0f172a', cursor: 'pointer' }}>
                           <input
                             type="checkbox"
                             checked={!!userForm.iibb_codigo_aceptacion}
                             onChange={e => setUserForm({ ...userForm, iibb_codigo_aceptacion: e.target.checked })}
                             style={{ width: '18px', height: '18px', accentColor: '#0fa4de', cursor: 'pointer' }}
                           />
-                          <span>Codigo de Aceptacion</span>
+                          <span>Código de Aceptación / Homologación Tributaria</span>
                         </label>
                       </div>
 
@@ -7698,7 +8097,7 @@ function AdminEcommerce({
                         const totalPerc = activeList.reduce((acc, x) => acc + x.amount, 0);
 
                         return (
-                          <div style={{ background: '#f8fafc', border: '1px dashed #0284c7', borderRadius: '12px', padding: '14px 18px', fontSize: '12px', color: '#334155' }}>
+                          <div style={{ background: '#f8fafc', border: '1px dashed #0284c7', borderRadius: '12px', padding: '12px 16px', fontSize: '12px', color: '#334155' }}>
                             <div style={{ fontWeight: '800', color: '#0284c7', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                               <span>💡</span> Simulación sobre compra neta de $1,000.00 USD:
                             </div>
@@ -7706,15 +8105,15 @@ function AdminEcommerce({
                               <div style={{ color: '#64748b', fontStyle: 'italic' }}>No hay percepciones activas con alícuota mayor a 0%. Este cliente no pagará percepciones adicionales.</div>
                             ) : (
                               <div>
-                                <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', marginBottom: '8px' }}>
                                   {activeList.map(x => (
-                                    <span key={x.name} style={{ background: '#e0f2fe', color: '#0369a1', padding: '4px 10px', borderRadius: '6px', fontWeight: '700' }}>
+                                    <span key={x.name} style={{ background: '#e0f2fe', color: '#0369a1', padding: '3px 8px', borderRadius: '6px', fontWeight: '700', fontSize: '11px' }}>
                                       {x.name} ({x.ali}%): +${x.amount.toFixed(2)} USD
                                     </span>
                                   ))}
                                 </div>
                                 <div style={{ fontWeight: '800', color: '#0f172a' }}>
-                                  Total final a liquidar en Checkout: ${(exampleNet + totalPerc).toFixed(2)} USD (Neto: $1,000.00 + Percepciones: ${totalPerc.toFixed(2)})
+                                  Total a liquidar en Checkout: ${(exampleNet + totalPerc).toFixed(2)} USD (Neto: $1,000.00 + Percepciones: ${totalPerc.toFixed(2)})
                                 </div>
                               </div>
                             )}
@@ -7722,11 +8121,136 @@ function AdminEcommerce({
                         );
                       })()}
                     </div>
-                  )}
+                  </div>
 
-                  <div style={{ display: 'flex', gap: '10px', marginTop: '24px', borderTop: '1px solid var(--border-color)', paddingTop: '20px' }}>
-                    <button type="submit" className="btn-submit">{editingUser ? 'Actualizar Usuario' : (userCreateMode === 'existing_company' ? 'Crear y Habilitar Usuario para esta Empresa' : 'Guardar y Habilitar Empresa B2B')}</button>
-                    <button type="button" className="btn-delete" onClick={resetUserForm}>Cancelar</button>
+                  {/* BLOQUE 7: CONTACTOS CLAVE DESIGNADOS */}
+                  <div style={{ background: '#ffffff', borderRadius: '14px', padding: '20px 22px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '18px' }}>👥</span>
+                        <div>
+                          <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: '800', color: '#0f172a' }}>
+                            7. Contactos Clave Designados en la Empresa
+                          </h4>
+                          <span style={{ fontSize: '11.5px', color: '#64748b' }}>
+                            Responsables de Compras, Pagos/Tesorería y Administración (mismo formato del Portal B2B).
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      {/* Compras */}
+                      <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
+                          <span style={{ fontSize: '16px' }}>🛒</span>
+                          <span style={{ fontWeight: '800', fontSize: '12px', color: '#0284c7', textTransform: 'uppercase' }}>Encargado de Compras</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          <div className="form-group"><label>Nombre Completo</label><input type="text" placeholder="Ej: Laura Gómez" value={userForm.nombre_compras} onChange={e => setUserForm({ ...userForm, nombre_compras: e.target.value })} /></div>
+                          <div className="form-group"><label>Teléfono / WhatsApp</label><input type="text" placeholder="+54 11 ..." value={userForm.telefono_compras} onChange={e => setUserForm({ ...userForm, telefono_compras: e.target.value })} /></div>
+                          <div className="form-group"><label>Email de Compras</label><input type="email" placeholder="compras@empresa.com" value={userForm.email_compras} onChange={e => setUserForm({ ...userForm, email_compras: e.target.value })} /></div>
+                        </div>
+                      </div>
+
+                      {/* Pagos / Tesorería */}
+                      <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
+                          <span style={{ fontSize: '16px' }}>💳</span>
+                          <span style={{ fontWeight: '800', fontSize: '12px', color: '#166534', textTransform: 'uppercase' }}>Encargado de Pagos / Tesorería</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          <div className="form-group"><label>Nombre Completo</label><input type="text" placeholder="Ej: Martín Rossi" value={userForm.nombre_pagos} onChange={e => setUserForm({ ...userForm, nombre_pagos: e.target.value })} /></div>
+                          <div className="form-group"><label>Teléfono / WhatsApp</label><input type="text" placeholder="+54 11 ..." value={userForm.telefono_pagos} onChange={e => setUserForm({ ...userForm, telefono_pagos: e.target.value })} /></div>
+                          <div className="form-group"><label>Email de Pagos</label><input type="email" placeholder="pagos@empresa.com" value={userForm.email_pagos} onChange={e => setUserForm({ ...userForm, email_pagos: e.target.value })} /></div>
+                        </div>
+                      </div>
+
+                      {/* Administración */}
+                      <div style={{ background: '#f8fafc', padding: '16px', borderRadius: '12px', border: '1px solid #e2e8f0' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '12px' }}>
+                          <span style={{ fontSize: '16px' }}>📁</span>
+                          <span style={{ fontWeight: '800', fontSize: '12px', color: '#475569', textTransform: 'uppercase' }}>Encargado de Administración</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                          <div className="form-group"><label>Nombre Completo</label><input type="text" placeholder="Ej: Carolina Díaz" value={userForm.nombre_admin} onChange={e => setUserForm({ ...userForm, nombre_admin: e.target.value })} /></div>
+                          <div className="form-group"><label>Teléfono / WhatsApp</label><input type="text" placeholder="+54 11 ..." value={userForm.telefono_admin} onChange={e => setUserForm({ ...userForm, telefono_admin: e.target.value })} /></div>
+                          <div className="form-group"><label>Email de Administración</label><input type="email" placeholder="admin@empresa.com" value={userForm.email_admin} onChange={e => setUserForm({ ...userForm, email_admin: e.target.value })} /></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* BLOQUE 8: MAILS PARA NOTIFICACIONES OPERATIVAS / FACTURACIÓN */}
+                  <div style={{ background: '#ffffff', borderRadius: '14px', padding: '20px 22px', border: '1px solid #e2e8f0', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #f1f5f9', paddingBottom: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '18px' }}>✉️</span>
+                        <div>
+                          <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: '800', color: '#0f172a' }}>
+                            8. Mails para Notificaciones Operativas / Facturación
+                          </h4>
+                          <span style={{ fontSize: '11.5px', color: '#64748b' }}>
+                            Direcciones electrónicas para recepción automatizada de facturas y avisos de despacho.
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                      <div className="form-group">
+                        <label>Envío de Factura Electrónica (Email)</label>
+                        <input type="email" placeholder="facturacion@empresa.com" value={userForm.email_factura_electronica} onChange={e => setUserForm({ ...userForm, email_factura_electronica: e.target.value })} />
+                      </div>
+                      <div className="form-group">
+                        <label>Contacto de Compras (Email)</label>
+                        <input type="email" placeholder="compras@empresa.com" value={userForm.email_contacto_compras} onChange={e => setUserForm({ ...userForm, email_contacto_compras: e.target.value })} />
+                      </div>
+                      <div className="form-group">
+                        <label>Email para recepción de cotizaciones automáticas</label>
+                        <input type="email" placeholder="cotizaciones@empresa.com" value={userForm.email_cotizaciones_automaticas} onChange={e => setUserForm({ ...userForm, email_cotizaciones_automaticas: e.target.value })} />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* BOTONES DE ACCIÓN */}
+                  <div style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginTop: '8px',
+                    borderTop: '1.5px solid var(--border-color)',
+                    paddingTop: '20px',
+                    flexWrap: 'wrap',
+                    gap: '12px'
+                  }}>
+                    <div style={{ fontSize: '12px', color: '#64748b' }}>
+                      * Campos obligatorios para guardar la ficha y permitir operaciones comerciales.
+                    </div>
+                    <div style={{ display: 'flex', gap: '12px' }}>
+                      <button 
+                        type="button" 
+                        className="btn-delete" 
+                        onClick={resetUserForm}
+                        style={{ padding: '10px 20px', borderRadius: '10px', fontWeight: '700', cursor: 'pointer' }}
+                      >
+                        Cancelar
+                      </button>
+                      <button 
+                        type="submit" 
+                        className="btn-submit"
+                        style={{
+                          padding: '10px 26px',
+                          borderRadius: '10px',
+                          fontWeight: '800',
+                          cursor: 'pointer',
+                          background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                          boxShadow: '0 4px 14px rgba(15, 164, 222, 0.35)'
+                        }}
+                      >
+                        {editingUser ? '✓ Actualizar Usuario' : (userCreateMode === 'existing_company' ? '✓ Crear y Habilitar Usuario para esta Empresa' : '✓ Guardar y Habilitar Empresa B2B')}
+                      </button>
+                    </div>
                   </div>
                 </form>
               </div>
@@ -7819,25 +8343,65 @@ function AdminEcommerce({
                           </div>
                         </td>
 
-                        {/* 4. CUIT / NIT */}
+                        {/* 4. CUIT / NIT & Cuenta Corriente */}
                         <td style={{ padding: '4px 10px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                          <span style={{ fontSize: '11px', color: '#475569', fontFamily: 'monospace', fontWeight: '700', background: '#f8fafc', padding: '2px 6px', borderRadius: '4px', border: '1px solid #e2e8f0' }} title={u.numero_nit || 'Sin CUIT'}>
-                            {u.numero_nit || 'Sin CUIT'}
-                          </span>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+                            <span style={{ fontSize: '11px', color: '#475569', fontFamily: 'monospace', fontWeight: '700', background: '#f8fafc', padding: '1px 5px', borderRadius: '4px', border: '1px solid #e2e8f0', width: 'fit-content' }} title={u.numero_nit || 'Sin CUIT'}>
+                              {u.numero_nit || 'Sin CUIT'}
+                            </span>
+                            {u.cuenta_corriente_habilitada ? (
+                              <span style={{
+                                background: '#ecfdf5',
+                                color: '#059669',
+                                border: '1px solid #a7f3d0',
+                                padding: '1px 5px',
+                                borderRadius: '4px',
+                                fontSize: '9.5px',
+                                fontWeight: '800',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px',
+                                width: 'fit-content'
+                              }} title="Cuenta Corriente habilitada para compras">
+                                <BrandingVectorIcon name="credit-card" size={9} color="#059669" />
+                                CC Habilitada
+                              </span>
+                            ) : (
+                              <span style={{
+                                background: '#f8fafc',
+                                color: '#94a3b8',
+                                border: '1px solid #e2e8f0',
+                                padding: '1px 5px',
+                                borderRadius: '4px',
+                                fontSize: '9.5px',
+                                fontWeight: '700',
+                                width: 'fit-content'
+                              }} title="Sin Cuenta Corriente (bloqueada en checkout)">
+                                Sin CC
+                              </span>
+                            )}
+                          </div>
                         </td>
 
                         {/* 5. Tipo / Segmento */}
                         <td style={{ padding: '4px 10px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
-                          <span style={{
-                            background: '#f1f5f9',
-                            color: '#475569',
-                            padding: '2px 7px',
-                            borderRadius: '4px',
-                            fontSize: '10.5px',
-                            fontWeight: '600'
-                          }}>
-                            {u.tipo_cliente || 'Mayorista'}
-                          </span>
+                          {(() => {
+                            const matchedType = clientTypes.find(ct => (ct.name || '').trim().toLowerCase() === (u.tipo_cliente || '').trim().toLowerCase());
+                            const color = matchedType?.color || '#0284c7';
+                            return (
+                              <span style={{
+                                background: matchedType ? `${color}15` : '#f1f5f9',
+                                color: matchedType ? color : '#475569',
+                                border: matchedType ? `1px solid ${color}35` : '1px solid #e2e8f0',
+                                padding: '2px 7px',
+                                borderRadius: '4px',
+                                fontSize: '10.5px',
+                                fontWeight: '700'
+                              }}>
+                                {u.tipo_cliente || 'Mayorista'}
+                              </span>
+                            );
+                          })()}
                         </td>
 
                         {/* 6. Estado */}
@@ -8524,8 +9088,8 @@ function AdminEcommerce({
           </>
         )}
 
-        {/* ═══════════════ GESTIÓN PAGOS Y ENVÍOS ═══════════════ */}
-        {activeTab === 'pagos_envios' && (
+        {/* ═══════════════ GESTIÓN MÉTODOS DE ENVÍO ═══════════════ */}
+        {(activeTab === 'envios' || (activeTab === 'pagos_envios' && checkoutSubTab === 'shipping')) && (
           <section className="board-section" style={{ maxWidth: '1280px', margin: '0 auto' }}>
             
             {/* ── Header & Action Toolbar ── */}
@@ -8544,12 +9108,11 @@ function AdminEcommerce({
             }}>
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px', background: 'rgba(15, 164, 222, 0.1)', padding: '6px 10px', borderRadius: '12px' }}>
-                    <BrandingVectorIcon name="truck" size={20} color="#0fa4de" />
-                    <BrandingVectorIcon name="credit-card" size={20} color="#0284c7" />
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15, 164, 222, 0.12)', width: '38px', height: '38px', borderRadius: '12px' }}>
+                    <BrandingVectorIcon name="truck" size={22} color="#0fa4de" />
                   </div>
                   <h2 style={{ margin: 0, fontSize: '1.45rem', fontWeight: '900', color: 'var(--text-main, #0F172A)', letterSpacing: '-0.02em' }}>
-                    Gestión de Métodos de Envío & Formas de Pago
+                    Gestión de Métodos de Envío & Logística
                   </h2>
                   <span style={{
                     background: 'linear-gradient(135deg, rgba(15, 164, 222, 0.15), rgba(2, 132, 199, 0.2))',
@@ -8563,9 +9126,19 @@ function AdminEcommerce({
                   }}>
                     {activeCountryObj.flag} {activeCountryObj.name}
                   </span>
+                  <span style={{
+                    background: 'rgba(15, 164, 222, 0.1)',
+                    color: '#0284c7',
+                    padding: '3px 10px',
+                    borderRadius: '999px',
+                    fontSize: '11px',
+                    fontWeight: '800'
+                  }}>
+                    {(checkoutMethods?.shipping || []).filter(s => s.enabled).length} Activos
+                  </span>
                 </div>
                 <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted, #64748B)', maxWidth: '700px' }}>
-                  Configuración para <strong>{activeCountryObj.name} ({activeCountryObj.code})</strong>. Habilitá, deshabilitá o personalizá los métodos de despacho locales (HUBs, Expresos) y opciones de pago corporativo (CBU/Alias, E-Cheqs diferidos, CC o Stripe) para las operaciones de este país.
+                  Configuración de logística y despacho para <strong>{activeCountryObj.name} ({activeCountryObj.code})</strong>. Habilitá, deshabilitá o personalizá los métodos de despacho locales (HUBs, Expresos y Entregas Puerta a Puerta) para las operaciones de este país.
                 </p>
               </div>
 
@@ -8637,99 +9210,11 @@ function AdminEcommerce({
                 animation: 'fadeIn 0.3s ease-out'
               }}>
                 <BrandingVectorIcon name="check" size={18} color="#059669" />
-                <span>¡Configuración de pagos y envíos guardada exitosamente! Los cambios ya están activos en el Checkout.</span>
+                <span>¡Configuración de envíos guardada exitosamente! Los cambios ya están activos en el Checkout.</span>
               </div>
             )}
 
-            {/* ── Subtabs Navigation ── */}
-            <div style={{
-              display: 'flex',
-              gap: '12px',
-              background: 'var(--card-bg, #FFFFFF)',
-              padding: '8px',
-              borderRadius: '16px',
-              border: '1px solid var(--border-color, #E2E8F0)',
-              marginBottom: '24px',
-              overflowX: 'auto'
-            }}>
-              <button
-                type="button"
-                onClick={() => setCheckoutSubTab('shipping')}
-                className={`dacas-pill-btn ${checkoutSubTab === 'shipping' ? 'active' : ''}`}
-                style={{
-                  flex: 1,
-                  padding: '12px 20px',
-                  borderRadius: '12px',
-                  border: checkoutSubTab === 'shipping' ? 'none' : '1px solid var(--border-color, #E2E8F0)',
-                  background: checkoutSubTab === 'shipping' ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : '#FFFFFF',
-                  color: checkoutSubTab === 'shipping' ? '#FFFFFF' : 'var(--text-muted, #64748B)',
-                  fontWeight: '800',
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '10px',
-                  whiteSpace: 'nowrap',
-                  boxShadow: checkoutSubTab === 'shipping' ? '0 4px 12px rgba(15, 164, 222, 0.25)' : 'none'
-                }}
-              >
-                <BrandingVectorIcon name="truck" size={18} color={checkoutSubTab === 'shipping' ? '#FFFFFF' : '#64748B'} />
-                <span>Métodos de Envío y Logística</span>
-                <span style={{
-                  background: checkoutSubTab === 'shipping' ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.06)',
-                  color: checkoutSubTab === 'shipping' ? '#FFFFFF' : 'var(--text-main, #0F172A)',
-                  padding: '2px 8px',
-                  borderRadius: '10px',
-                  fontSize: '11px',
-                  fontWeight: '800'
-                }}>
-                  {(checkoutMethods?.shipping || []).filter(s => s.enabled).length} Activos
-                </span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setCheckoutSubTab('payment')}
-                className={`dacas-pill-btn ${checkoutSubTab === 'payment' ? 'active' : ''}`}
-                style={{
-                  flex: 1,
-                  padding: '12px 20px',
-                  borderRadius: '12px',
-                  border: checkoutSubTab === 'payment' ? 'none' : '1px solid var(--border-color, #E2E8F0)',
-                  background: checkoutSubTab === 'payment' ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : '#FFFFFF',
-                  color: checkoutSubTab === 'payment' ? '#FFFFFF' : 'var(--text-muted, #64748B)',
-                  fontWeight: '800',
-                  fontSize: '13px',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '10px',
-                  whiteSpace: 'nowrap',
-                  boxShadow: checkoutSubTab === 'payment' ? '0 4px 12px rgba(15, 164, 222, 0.25)' : 'none'
-                }}
-              >
-                <BrandingVectorIcon name="credit-card" size={18} color={checkoutSubTab === 'payment' ? '#FFFFFF' : '#64748B'} />
-                <span>Formas de Pago & Financiación</span>
-                <span style={{
-                  background: checkoutSubTab === 'payment' ? 'rgba(255,255,255,0.25)' : 'rgba(0,0,0,0.06)',
-                  color: checkoutSubTab === 'payment' ? '#FFFFFF' : 'var(--text-main, #0F172A)',
-                  padding: '2px 8px',
-                  borderRadius: '10px',
-                  fontSize: '11px',
-                  fontWeight: '800'
-                }}>
-                  {(checkoutMethods?.payment || []).filter(p => p.enabled).length} Activos
-                </span>
-              </button>
-            </div>
-
-            {/* ══════════════ SUBTAB 1: MÉTODOS DE ENVÍO ══════════════ */}
-            {checkoutSubTab === 'shipping' && (
-              <div>
+            <div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '20px', marginBottom: '24px' }}>
                   {(checkoutMethods?.shipping || []).map((method, idx) => (
                     <div
@@ -8995,10 +9480,136 @@ function AdminEcommerce({
                   </button>
                 </div>
               </div>
-            )}
-            {/* ══════════════ SUBTAB 2: FORMAS DE PAGO ══════════════ */}
-            {checkoutSubTab === 'payment' && (
+          </section>
+        )}
+
+        {/* ═══════════════ GESTIÓN FORMAS DE PAGO ═══════════════ */}
+        {(activeTab === 'pagos' || (activeTab === 'pagos_envios' && checkoutSubTab === 'payment')) && (
+          <section className="board-section" style={{ maxWidth: '1280px', margin: '0 auto' }}>
+            
+            {/* ── Header & Action Toolbar ── */}
+            <div style={{
+              background: 'var(--card-bg, #FFFFFF)',
+              borderRadius: '20px',
+              padding: '24px 28px',
+              border: '1px solid var(--border-color, #E2E8F0)',
+              boxShadow: '0 4px 20px rgba(0,0,0,0.03)',
+              marginBottom: '24px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              gap: '20px',
+              flexWrap: 'wrap'
+            }}>
               <div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(2, 132, 199, 0.12)', width: '38px', height: '38px', borderRadius: '12px' }}>
+                    <BrandingVectorIcon name="credit-card" size={22} color="#0284c7" />
+                  </div>
+                  <h2 style={{ margin: 0, fontSize: '1.45rem', fontWeight: '900', color: 'var(--text-main, #0F172A)', letterSpacing: '-0.02em' }}>
+                    Gestión de Métodos de Pago & Financiación
+                  </h2>
+                  <span style={{
+                    background: 'linear-gradient(135deg, rgba(15, 164, 222, 0.15), rgba(2, 132, 199, 0.2))',
+                    color: '#0284c7',
+                    fontWeight: '800',
+                    fontSize: '11px',
+                    padding: '3px 10px',
+                    borderRadius: '999px',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.04em'
+                  }}>
+                    {activeCountryObj.flag} {activeCountryObj.name}
+                  </span>
+                  <span style={{
+                    background: 'rgba(2, 132, 199, 0.1)',
+                    color: '#0284c7',
+                    padding: '3px 10px',
+                    borderRadius: '999px',
+                    fontSize: '11px',
+                    fontWeight: '800'
+                  }}>
+                    {(checkoutMethods?.payment || []).filter(p => p.enabled).length} Activos
+                  </span>
+                </div>
+                <p style={{ margin: 0, fontSize: '13px', color: 'var(--text-muted, #64748B)', maxWidth: '700px' }}>
+                  Configuración financiera y pasarelas de pago para <strong>{activeCountryObj.name} ({activeCountryObj.code})</strong>. Habilitá, deshabilitá o personalizá las opciones de pago corporativo (CBU/Alias, E-Cheqs diferidos, Tarjeta de Crédito, Cuenta Corriente o Stripe) para las operaciones de este país.
+                </p>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <button
+                  type="button"
+                  onClick={handleResetCheckoutMethods}
+                  disabled={isSavingCheckout}
+                  className="dacas-pill-btn"
+                  style={{
+                    background: '#FFFFFF',
+                    border: '1px solid var(--border-color, #CBD5E1)',
+                    color: 'var(--text-muted, #64748B)',
+                    borderRadius: '12px',
+                    padding: '10px 18px',
+                    fontWeight: '700',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <BrandingVectorIcon name="rotate-ccw" size={15} color="#64748B" />
+                  <span>Restablecer Oficiales</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSaveCheckoutMethods}
+                  disabled={isSavingCheckout}
+                  className="dacas-pill-btn active"
+                  style={{
+                    background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                    color: '#FFFFFF',
+                    border: 'none',
+                    borderRadius: '12px',
+                    padding: '10px 24px',
+                    fontWeight: '800',
+                    fontSize: '13px',
+                    cursor: 'pointer',
+                    boxShadow: '0 4px 14px rgba(15, 164, 222, 0.35)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    transition: 'all 0.2s'
+                  }}
+                >
+                  <BrandingVectorIcon name="save" size={16} color="#FFFFFF" />
+                  <span>{isSavingCheckout ? 'Guardando...' : 'Guardar Configuración'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Success feedback alert */}
+            {checkoutSaveSuccess && (
+              <div style={{
+                background: '#ECFDF5',
+                border: '1px solid #A7F3D0',
+                color: '#065F46',
+                borderRadius: '14px',
+                padding: '14px 20px',
+                marginBottom: '20px',
+                fontSize: '13px',
+                fontWeight: '700',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '10px',
+                animation: 'fadeIn 0.3s ease-out'
+              }}>
+                <BrandingVectorIcon name="check" size={18} color="#059669" />
+                <span>¡Configuración de pagos guardada exitosamente! Los cambios ya están activos en el Checkout.</span>
+              </div>
+            )}
+
+            <div>
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(380px, 1fr))', gap: '20px', marginBottom: '24px' }}>
                   {(checkoutMethods?.payment || []).map((method, idx) => (
                     <div
@@ -9635,7 +10246,6 @@ function AdminEcommerce({
                   </div>
                 </div>
               </div>
-            )}
 
           </section>
         )}
@@ -11570,300 +12180,514 @@ function AdminEcommerce({
                   </div>
                 )}
 
-                {/* ── SUBTAB 4: BRANDS PER CATEGORY & COUNTRY ── */}
-                {visualSubTab === 'brands' && (
-                  <div style={{ background: '#FFFFFF', padding: '30px', borderRadius: '22px', border: '1px solid rgba(15, 164, 222, 0.18)', boxShadow: '0 12px 36px rgba(7, 21, 36, 0.05)' }}>
-                    {/* Header & Controls */}
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '22px', borderBottom: '1px solid #F1F5F9', paddingBottom: '18px' }}>
-                      <div>
-                        <h3 style={{ margin: '0 0 6px', fontSize: '1.25rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '-0.02em' }}>
-                          <span>🏭</span> Gestión de Marcas y Cobertura por País
-                        </h3>
-                        <p style={{ margin: 0, color: '#64748B', fontSize: '13.5px', maxWidth: '700px', lineHeight: 1.4 }}>
-                          Crea nuevas marcas, elimínalas y define en qué países opera cada fabricante. Las marcas solo aparecerán en el Shop cuando el cliente navegue desde un país autorizado.
-                        </p>
-                      </div>
+                {/* ── SUBTAB 4: BRANDS PER CATEGORY & COUNTRY (DESPLEGABLE / SIN RUIDO / SOLO MARCAS DE MARCAS) ── */}
+                {visualSubTab === 'brands' && (() => {
+                  const currentScopeCode = (selectedCountryScope && selectedCountryScope !== 'all') ? selectedCountryScope : 'AR';
+                  const currentCountryObj = DACAS_COUNTRIES_LIST.find(c => c.code === currentScopeCode) || {
+                    code: currentScopeCode,
+                    name: currentScopeCode,
+                    flag: '🇦🇷'
+                  };
 
-                      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setNewBrandForm({
-                              name: '',
-                              category: 'networking',
-                              isGlobal: true,
-                              countries: []
-                            });
-                            setShowNewBrandModal(true);
-                          }}
-                          style={{
-                            background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
-                            color: '#FFFFFF',
-                            border: 'none',
-                            borderRadius: '10px',
-                            padding: '10px 18px',
-                            fontSize: '13px',
-                            fontWeight: '700',
-                            cursor: 'pointer',
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '8px',
-                            boxShadow: '0 3px 10px rgba(15, 164, 222, 0.3)'
-                          }}
-                        >
-                          <span>➕</span> Crear Nueva Marca
-                        </button>
-                      </div>
-                    </div>
+                  const CATEGORIES_DEF = [
+                    {
+                      key: 'networking',
+                      title: 'Networking',
+                      icon: '🌐',
+                      desc: 'Switches gestionables, Routers empresariales, Wi-Fi 6 y Conectividad',
+                      color: '#0284c7',
+                      bg: 'rgba(2, 132, 199, 0.08)'
+                    },
+                    {
+                      key: 'infraestructura',
+                      title: 'Infraestructura',
+                      icon: '⚡',
+                      desc: 'Energía Crítica UPS Online, Racks 42U y Cableado Estructurado',
+                      color: '#d97706',
+                      bg: 'rgba(245, 158, 11, 0.08)'
+                    },
+                    {
+                      key: 'comunicaciones_unificadas',
+                      title: 'Comunicaciones Unificadas',
+                      icon: '📞',
+                      desc: 'Gateways de Voz, SBCs, Telefonía IP Microsoft Teams & Salas Avaya',
+                      color: '#059669',
+                      bg: 'rgba(16, 185, 129, 0.08)'
+                    },
+                    {
+                      key: 'security',
+                      title: 'Seguridad & Ciberseguridad',
+                      icon: '🛡️',
+                      desc: 'Next-Gen Firewalls FortiGate, Sandboxing con IA y Protección de Datos',
+                      color: '#dc2626',
+                      bg: 'rgba(239, 68, 68, 0.08)'
+                    }
+                  ];
 
-                    {/* Scope Activo Banner (Sin filtro redundante de países) */}
-                    <div style={{
-                      background: 'rgba(15, 164, 222, 0.06)',
-                      border: '1px solid #bae6fd',
-                      borderRadius: '12px',
-                      padding: '12px 18px',
-                      marginBottom: '24px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      flexWrap: 'wrap',
-                      gap: '12px'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ fontSize: '20px' }}>
-                          {DACAS_COUNTRIES_LIST.find(c => c.code === selectedCountryScope)?.flag || '🇦🇷'}
-                        </span>
+                  return (
+                    <div style={{ background: '#FFFFFF', padding: '28px 32px', borderRadius: '22px', border: '1px solid rgba(15, 164, 222, 0.18)', boxShadow: '0 8px 30px rgba(7, 21, 36, 0.04)' }}>
+                      
+                      {/* Cabecera Principal */}
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '22px', borderBottom: '1px solid #F1F5F9', paddingBottom: '18px' }}>
                         <div>
-                          <div style={{ fontSize: '13px', fontWeight: '800', color: '#0284c7' }}>
-                            Scope Activo: {DACAS_COUNTRIES_LIST.find(c => c.code === selectedCountryScope)?.name || selectedCountryScope || 'Argentina'} ({selectedCountryScope || 'AR'})
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <span style={{ fontSize: '24px' }}>📁</span>
+                            <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: '850', color: '#0F172A', letterSpacing: '-0.02em' }}>
+                              Marcas por Categoría Tecnológica
+                            </h3>
+                            <span style={{
+                              background: '#E0F2FE',
+                              color: '#0284c7',
+                              fontWeight: '800',
+                              fontSize: '11.5px',
+                              padding: '3px 10px',
+                              borderRadius: '6px'
+                            }}>
+                              {currentCountryObj.flag} {currentCountryObj.name} ({currentCountryObj.code})
+                            </span>
                           </div>
-                          <div style={{ fontSize: '11px', color: '#64748b' }}>
-                            Las marcas corresponden exclusivamente al país seleccionado en el panel izquierdo.
-                          </div>
+                          <p style={{ margin: '6px 0 0', color: '#64748B', fontSize: '13px', maxWidth: '780px', lineHeight: 1.45 }}>
+                            Asigna y organiza qué fabricantes oficiales se visualizan dentro de cada una de las 4 categorías tecnológicas del Shop.
+                            <strong style={{ color: '#0F172A' }}> Las marcas no se crean aquí</strong>; selecciona únicamente de las marcas existentes creadas en el módulo Marcas.
+                          </p>
+                        </div>
+
+                        {/* Botones de Control y Enlace a Marcas */}
+                        <div style={{ display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleExpandAllCategories(true)}
+                            style={{
+                              background: '#F8FAFC',
+                              color: '#475569',
+                              border: '1px solid #CBD5E1',
+                              borderRadius: '8px',
+                              padding: '7px 12px',
+                              fontSize: '11.5px',
+                              fontWeight: '700',
+                              cursor: 'pointer'
+                            }}
+                            title="Desplegar todas las categorías"
+                          >
+                            🔽 Desplegar Todas
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => handleExpandAllCategories(false)}
+                            style={{
+                              background: '#F8FAFC',
+                              color: '#475569',
+                              border: '1px solid #CBD5E1',
+                              borderRadius: '8px',
+                              padding: '7px 12px',
+                              fontSize: '11.5px',
+                              fontWeight: '700',
+                              cursor: 'pointer'
+                            }}
+                            title="Colapsar todas las categorías"
+                          >
+                            🔼 Colapsar Todas
+                          </button>
+
+                          <button
+                            type="button"
+                            onClick={() => setActiveTab('brands')}
+                            style={{
+                              background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                              color: '#FFFFFF',
+                              border: 'none',
+                              borderRadius: '9px',
+                              padding: '8px 16px',
+                              fontSize: '12px',
+                              fontWeight: '750',
+                              cursor: 'pointer',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              boxShadow: '0 3px 10px rgba(15, 164, 222, 0.25)'
+                            }}
+                            title="Ir al módulo Marcas para crear nuevos fabricantes o editar logotipos"
+                          >
+                            <span>🏷️</span>
+                            <span>Módulo Marcas (Crear / Editar Logos) ➔</span>
+                          </button>
                         </div>
                       </div>
 
-                      <button
-                        type="button"
-                        onClick={() => setActiveTab('brands')}
-                        style={{
-                          background: '#ffffff',
-                          color: '#0284c7',
-                          border: '1px solid #0fa4de',
-                          borderRadius: '8px',
-                          padding: '6px 14px',
-                          fontSize: '12px',
-                          fontWeight: '750',
-                          cursor: 'pointer',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '6px'
-                        }}
-                      >
-                        <span>🏷️</span>
-                        <span>Abrir en Módulo Marcas ➔</span>
-                      </button>
-                    </div>
+                      {/* Notificación informativa sobre el flujo */}
+                      <div style={{
+                        background: 'rgba(15, 164, 222, 0.05)',
+                        border: '1px solid #BAE6FD',
+                        borderRadius: '12px',
+                        padding: '10px 16px',
+                        marginBottom: '20px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        gap: '12px',
+                        fontSize: '12px',
+                        color: '#0369A1'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '15px' }}>💡</span>
+                          <span>
+                            <strong>Modo ordenado sin ruido visual:</strong> Haz clic en cualquier categoría para desplegarla. Para asignar una marca, selecciónala en el desplegable de esa categoría.
+                          </span>
+                        </div>
+                        <span style={{ fontSize: '11px', fontWeight: '800', background: '#FFFFFF', padding: '3px 8px', borderRadius: '6px', border: '1px solid #BAE6FD', whiteSpace: 'nowrap' }}>
+                          4 Categorías
+                        </span>
+                      </div>
 
-                    {/* Categories Grid */}
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '22px' }}>
-                      {[
-                        { key: 'networking', title: 'Networking', icon: '🌐' },
-                        { key: 'infraestructura', title: 'Infraestructura', icon: '⚡' },
-                        { key: 'comunicaciones_unificadas', title: 'Comunicaciones Unificadas', icon: '📞' },
-                        { key: 'security', title: 'Seguridad & Ciberseguridad', icon: '🛡️' }
-                      ].map(group => {
-                        const rawList = (visualConfig?.categoryBrands && visualConfig.categoryBrands[group.key]) || [];
-                        const normalizedBrands = rawList.map((item, idx) => ({
-                          ...normalizeBrandItem(item, group.key),
-                          originalIdx: idx
-                        }));
+                      {/* Lista de Categorías en Modo Desplegable (Accordion) */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                        {CATEGORIES_DEF.map(group => {
+                          const isExpanded = Boolean(expandedCategoryKeys[group.key]);
+                          const rawList = (visualConfig?.categoryBrands && visualConfig.categoryBrands[group.key]) || [];
+                          
+                          // Normalize assigned brands
+                          const assignedBrands = rawList.map((item, idx) => ({
+                            ...normalizeBrandItem(item, group.key),
+                            originalIdx: idx
+                          }));
 
-                        // Filter based on country filter if active
-                        const displayedBrands = normalizedBrands.filter(b => {
-                          if (brandCountryFilter === 'all') return true;
-                          if (!b.countries || b.countries.length === 0) return true; // Global
-                          return b.countries.includes(brandCountryFilter);
-                        });
+                          // Filter based on scope
+                          const displayedAssignedBrands = assignedBrands.filter(b => {
+                            if (!b.countries || b.countries.length === 0) return true; // Global
+                            return b.countries.includes(currentScopeCode);
+                          });
 
-                        return (
-                          <div
-                            key={group.key}
-                            style={{
-                              background: '#F8FAFC',
-                              borderRadius: '16px',
-                              border: '1px solid #E2E8F0',
-                              padding: '20px',
-                              display: 'flex',
-                              flexDirection: 'column'
-                            }}
-                          >
-                            {/* Category Header */}
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #E2E8F0', paddingBottom: '10px' }}>
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ fontSize: '18px' }}>{group.icon}</span>
-                                <div>
-                                  <h4 style={{ margin: 0, fontSize: '14px', fontWeight: '800', color: '#0F172A' }}>
-                                    {group.title}
-                                  </h4>
-                                  <div style={{ fontSize: '11px', color: '#64748B' }}>
-                                    {displayedBrands.length} {displayedBrands.length === 1 ? 'marca activa' : 'marcas activas'}
-                                    {brandCountryFilter !== 'all' && ` en ${brandCountryFilter}`}
+                          // Compute which master brands can be assigned to this category
+                          const availableBrandsToAssign = (allAdminBrands || []).filter(mb => {
+                            // Check scope
+                            const inScope = !mb.countries || mb.countries.length === 0 || mb.countries.includes(currentScopeCode);
+                            if (!inScope) return false;
+                            // Check not already assigned
+                            const alreadyAssigned = assignedBrands.some(a => a.name.toLowerCase().trim() === mb.key);
+                            return !alreadyAssigned;
+                          }).sort((a, b) => a.name.localeCompare(b.name));
+
+                          return (
+                            <div
+                              key={group.key}
+                              style={{
+                                background: '#FFFFFF',
+                                borderRadius: '16px',
+                                border: isExpanded ? `1.5px solid ${group.color}` : '1.5px solid #E2E8F0',
+                                boxShadow: isExpanded ? '0 6px 20px rgba(0,0,0,0.04)' : '0 1px 3px rgba(0,0,0,0.02)',
+                                transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
+                                overflow: 'hidden'
+                              }}
+                            >
+                              {/* Barra de Categoría (Header Desplegable Clickeable) */}
+                              <div
+                                onClick={() => toggleCategoryExpand(group.key)}
+                                style={{
+                                  padding: '16px 20px',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  background: isExpanded ? `${group.bg}` : '#FFFFFF',
+                                  userSelect: 'none',
+                                  transition: 'background 0.15s ease'
+                                }}
+                              >
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0, flex: 1 }}>
+                                  <div style={{
+                                    width: '42px',
+                                    height: '42px',
+                                    borderRadius: '12px',
+                                    background: isExpanded ? '#FFFFFF' : group.bg,
+                                    border: `1px solid ${group.color}44`,
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    fontSize: '20px',
+                                    flexShrink: 0,
+                                    boxShadow: isExpanded ? '0 2px 6px rgba(0,0,0,0.06)' : 'none'
+                                  }}>
+                                    {group.icon}
                                   </div>
+
+                                  <div style={{ minWidth: 0, flex: 1 }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                                      <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '850', color: '#0F172A' }}>
+                                        {group.title}
+                                      </h4>
+                                      <span style={{
+                                        background: displayedAssignedBrands.length > 0 ? (isExpanded ? group.color : '#E0F2FE') : '#F1F5F9',
+                                        color: displayedAssignedBrands.length > 0 ? (isExpanded ? '#FFFFFF' : '#0369A1') : '#64748B',
+                                        fontSize: '11px',
+                                        fontWeight: '800',
+                                        padding: '2px 9px',
+                                        borderRadius: '999px',
+                                        display: 'inline-flex',
+                                        alignItems: 'center',
+                                        gap: '5px'
+                                      }}>
+                                        <span>{displayedAssignedBrands.length > 0 ? '●' : '○'}</span>
+                                        <span>{displayedAssignedBrands.length} {displayedAssignedBrands.length === 1 ? 'marca asignada' : 'marcas asignadas'}</span>
+                                      </span>
+                                    </div>
+                                    <div style={{ fontSize: '11.5px', color: '#64748B', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                      {group.desc}
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Flecha Indicadora del Desplegable */}
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 }}>
+                                  <span style={{
+                                    fontSize: '11.5px',
+                                    fontWeight: '750',
+                                    color: isExpanded ? group.color : '#64748B',
+                                    background: isExpanded ? '#FFFFFF' : '#F1F5F9',
+                                    border: isExpanded ? `1px solid ${group.color}44` : '1px solid #CBD5E1',
+                                    padding: '5px 12px',
+                                    borderRadius: '8px',
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    gap: '6px',
+                                    transition: 'all 0.15s ease'
+                                  }}>
+                                    <span>{isExpanded ? '▲ Ocultar marcas' : '▼ Ver marcas'}</span>
+                                  </span>
                                 </div>
                               </div>
 
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  setNewBrandForm({
-                                    name: '',
-                                    category: group.key,
-                                    isGlobal: true,
-                                    countries: []
-                                  });
-                                  setShowNewBrandModal(true);
-                                }}
-                                style={{
-                                  background: '#E0F2FE',
-                                  color: '#0369A1',
-                                  border: '1px solid #BAE6FD',
-                                  borderRadius: '8px',
-                                  padding: '5px 10px',
-                                  fontSize: '11.5px',
-                                  fontWeight: '700',
-                                  cursor: 'pointer',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '4px'
-                                }}
-                              >
-                                + Añadir
-                              </button>
-                            </div>
-
-                            {/* Brands List */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', flex: 1, minHeight: '120px' }}>
-                              {displayedBrands.length === 0 ? (
-                                <div style={{ textAlign: 'center', padding: '30px 10px', color: '#94A3B8', fontSize: '12.5px', background: '#FFFFFF', borderRadius: '10px', border: '1px dashed #CBD5E1' }}>
-                                  No hay marcas asignadas para esta categoría {brandCountryFilter !== 'all' ? `en ${brandCountryFilter}` : ''}
-                                </div>
-                              ) : (
-                                displayedBrands.map(b => {
-                                  const isGlobal = !b.countries || b.countries.length === 0;
-                                  return (
-                                    <div
-                                      key={b.originalIdx}
-                                      style={{
-                                        background: '#FFFFFF',
-                                        border: '1px solid #E2E8F0',
-                                        borderRadius: '10px',
-                                        padding: '10px 12px',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'space-between',
-                                        gap: '10px',
-                                        boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
-                                        transition: 'all 0.15s'
-                                      }}
-                                    >
-                                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', minWidth: 0 }}>
-                                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                          <span style={{ fontWeight: '800', fontSize: '13px', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.02em' }}>
-                                            {b.name}
-                                          </span>
+                              {/* Contenido Desplegado (Marcas Asignadas + Selector) */}
+                              {isExpanded && (
+                                <div style={{
+                                  padding: '18px 20px',
+                                  borderTop: '1px solid #E2E8F0',
+                                  background: '#F8FAFC'
+                                }}>
+                                  {/* Barra de Asignación: SOLO elegir de las marcas creadas en marcas */}
+                                  <div style={{
+                                    background: '#FFFFFF',
+                                    padding: '14px 18px',
+                                    borderRadius: '12px',
+                                    border: '1px solid #CBD5E1',
+                                    marginBottom: '16px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'space-between',
+                                    flexWrap: 'wrap',
+                                    gap: '12px',
+                                    boxShadow: '0 1px 4px rgba(0,0,0,0.02)'
+                                  }}>
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                                      <span style={{ fontSize: '18px' }}>➕</span>
+                                      <div>
+                                        <div style={{ fontSize: '12.5px', fontWeight: '800', color: '#0F172A' }}>
+                                          Asignar Marca de Marcas a {group.title}
                                         </div>
-
-                                        {/* Country Badges */}
-                                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', alignItems: 'center' }}>
-                                          {isGlobal ? (
-                                            <span style={{
-                                              background: '#DCFCE7',
-                                              color: '#15803D',
-                                              fontSize: '10.5px',
-                                              fontWeight: '700',
-                                              padding: '2px 8px',
-                                              borderRadius: '999px',
-                                              display: 'inline-flex',
-                                              alignItems: 'center',
-                                              gap: '4px'
-                                            }}>
-                                              🌐 Todos los Países (Global)
-                                            </span>
-                                          ) : (
-                                            <span style={{
-                                              background: '#E0F2FE',
-                                              color: '#0369A1',
-                                              fontSize: '10.5px',
-                                              fontWeight: '700',
-                                              padding: '2px 8px',
-                                              borderRadius: '999px',
-                                              display: 'inline-flex',
-                                              alignItems: 'center',
-                                              gap: '4px'
-                                            }}>
-                                              <span>{b.countries.map(cCode => {
-                                                const found = DACAS_COUNTRIES_LIST.find(c => c.code === cCode);
-                                                return found ? found.flag : cCode;
-                                              }).join(' ')}</span>
-                                              <span>({b.countries.length} {b.countries.length === 1 ? 'país' : 'países'})</span>
-                                            </span>
-                                          )}
+                                        <div style={{ fontSize: '11px', color: '#64748B' }}>
+                                          Elige un fabricante ya registrado en el catálogo para agregarlo a esta categoría.
                                         </div>
-                                      </div>
-
-                                      {/* Brand Actions */}
-                                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexShrink: 0 }}>
-                                        <button
-                                          type="button"
-                                          onClick={() => handleOpenEditBrand(b.name, group.key, b.originalIdx)}
-                                          title="Editar logotipo, descripción y cobertura de esta marca"
-                                          style={{
-                                            background: '#F1F5F9',
-                                            color: '#0284c7',
-                                            border: '1px solid #CBD5E1',
-                                            borderRadius: '6px',
-                                            padding: '5px 9px',
-                                            fontSize: '11px',
-                                            fontWeight: '700',
-                                            cursor: 'pointer',
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            gap: '4px'
-                                          }}
-                                        >
-                                          ✏️ Editar Marca & Logo
-                                        </button>
-
-                                        <button
-                                          type="button"
-                                          onClick={() => handleDeleteBrand(group.key, b.originalIdx, b.name)}
-                                          title="Eliminar marca"
-                                          style={{
-                                            background: '#FEF2F2',
-                                            color: '#DC2626',
-                                            border: '1px solid #FECACA',
-                                            borderRadius: '6px',
-                                            padding: '5px 8px',
-                                            fontSize: '11px',
-                                            fontWeight: '700',
-                                            cursor: 'pointer'
-                                          }}
-                                        >
-                                          🗑️
-                                        </button>
                                       </div>
                                     </div>
-                                  );
-                                })
+
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                                      {availableBrandsToAssign.length > 0 ? (
+                                        <>
+                                          <select
+                                            value={selectedBrandToAssign[group.key] || ''}
+                                            onChange={(e) => setSelectedBrandToAssign(prev => ({ ...prev, [group.key]: e.target.value }))}
+                                            style={{
+                                              padding: '8px 12px',
+                                              borderRadius: '8px',
+                                              border: '1.5px solid #0284c7',
+                                              background: '#FFFFFF',
+                                              fontSize: '12.5px',
+                                              fontWeight: '700',
+                                              color: '#0F172A',
+                                              minWidth: '240px',
+                                              cursor: 'pointer'
+                                            }}
+                                          >
+                                            <option value="">
+                                              {availableBrandsToAssign.length === 0
+                                                ? `(Todas las marcas de ${currentCountryObj?.name || currentScopeCode} ya están asignadas)`
+                                                : `-- Seleccionar de marcas de ${currentCountryObj?.name || currentScopeCode} (${availableBrandsToAssign.length} disponibles) --`}
+                                            </option>
+                                            {availableBrandsToAssign.map(b => (
+                                              <option key={b.key} value={b.key}>
+                                                {b.name.toUpperCase()} {b.productCount > 0 ? `(${b.productCount} prods)` : ''}
+                                              </option>
+                                            ))}
+                                          </select>
+
+                                          <button
+                                            type="button"
+                                            onClick={() => handleAssignBrandToCategory(group.key, selectedBrandToAssign[group.key])}
+                                            disabled={!selectedBrandToAssign[group.key]}
+                                            style={{
+                                              background: selectedBrandToAssign[group.key] ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : '#E2E8F0',
+                                              color: selectedBrandToAssign[group.key] ? '#FFFFFF' : '#94A3B8',
+                                              border: 'none',
+                                              borderRadius: '8px',
+                                              padding: '8px 15px',
+                                              fontSize: '12.5px',
+                                              fontWeight: '800',
+                                              cursor: selectedBrandToAssign[group.key] ? 'pointer' : 'not-allowed',
+                                              display: 'inline-flex',
+                                              alignItems: 'center',
+                                              gap: '5px',
+                                              boxShadow: selectedBrandToAssign[group.key] ? '0 3px 10px rgba(15, 164, 222, 0.25)' : 'none',
+                                              transition: 'all 0.15s ease'
+                                            }}
+                                          >
+                                            <span>✓</span>
+                                            <span>Asignar</span>
+                                          </button>
+                                        </>
+                                      ) : (
+                                        <div style={{ fontSize: '11.5px', color: '#16A34A', fontWeight: '700', background: '#DCFCE7', padding: '5px 10px', borderRadius: '6px' }}>
+                                          ✓ Todas las marcas registradas ya están asignadas a {group.title}
+                                        </div>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  {/* Listado de Marcas Asignadas en esta Categoría */}
+                                  {displayedAssignedBrands.length === 0 ? (
+                                    <div style={{
+                                      textAlign: 'center',
+                                      padding: '30px 16px',
+                                      background: '#FFFFFF',
+                                      borderRadius: '12px',
+                                      border: '1.5px dashed #CBD5E1',
+                                      color: '#64748B'
+                                    }}>
+                                      <div style={{ fontSize: '26px', marginBottom: '4px' }}>🏷️</div>
+                                      <div style={{ fontWeight: '750', fontSize: '13px', color: '#334155' }}>
+                                        No hay marcas asignadas a {group.title} en {currentCountryObj.name}
+                                      </div>
+                                      <div style={{ fontSize: '11.5px', color: '#94A3B8', marginTop: '3px' }}>
+                                        Utiliza el selector desplegable de arriba para elegir una de las marcas creadas en el catálogo.
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div style={{
+                                      display: 'grid',
+                                      gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+                                      gap: '10px'
+                                    }}>
+                                      {displayedAssignedBrands.map(b => {
+                                        const bKey = b.name.toLowerCase().trim();
+                                        const masterBrand = allAdminBrands.find(mb => mb.key === bKey) || {
+                                          key: bKey,
+                                          name: b.name.toUpperCase(),
+                                          logo: '',
+                                          color: group.color,
+                                          tagline: ''
+                                        };
+
+                                        return (
+                                          <div
+                                            key={b.originalIdx}
+                                            style={{
+                                              background: '#FFFFFF',
+                                              borderRadius: '12px',
+                                              border: '1px solid #E2E8F0',
+                                              padding: '10px 14px',
+                                              display: 'flex',
+                                              alignItems: 'center',
+                                              justifyContent: 'space-between',
+                                              gap: '10px',
+                                              boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+                                              transition: 'all 0.15s ease'
+                                            }}
+                                          >
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0, flex: 1 }}>
+                                              <div style={{
+                                                width: '36px',
+                                                height: '36px',
+                                                borderRadius: '8px',
+                                                background: '#F8FAFC',
+                                                border: '1px solid #E2E8F0',
+                                                display: 'flex',
+                                                alignItems: 'center',
+                                                justifyContent: 'center',
+                                                padding: '4px',
+                                                flexShrink: 0
+                                              }}>
+                                                <BrandLogoImg
+                                                  src={masterBrand.logo}
+                                                  alt={masterBrand.name}
+                                                  name={masterBrand.name}
+                                                  color={masterBrand.color || group.color}
+                                                  size={24}
+                                                />
+                                              </div>
+
+                                              <div style={{ minWidth: 0, flex: 1 }}>
+                                                <div style={{
+                                                  fontWeight: '800',
+                                                  fontSize: '12.5px',
+                                                  color: '#0F172A',
+                                                  textTransform: 'uppercase',
+                                                  whiteSpace: 'nowrap',
+                                                  overflow: 'hidden',
+                                                  textOverflow: 'ellipsis'
+                                                }}>
+                                                  {masterBrand.name}
+                                                </div>
+                                                <div style={{
+                                                  fontSize: '10.5px',
+                                                  color: '#64748B',
+                                                  whiteSpace: 'nowrap',
+                                                  overflow: 'hidden',
+                                                  textOverflow: 'ellipsis'
+                                                }}>
+                                                  {masterBrand.tagline || 'Fabricante Oficial'}
+                                                </div>
+                                              </div>
+                                            </div>
+
+                                            {/* Botón Quitar de Categoría (Sin opción de crear ni editar aquí) */}
+                                            <button
+                                              type="button"
+                                              onClick={() => handleUnassignBrandFromCategory(group.key, b.originalIdx, masterBrand.name, group.title)}
+                                              title={`Quitar ${masterBrand.name} de ${group.title}`}
+                                              style={{
+                                                background: '#FEF2F2',
+                                                color: '#DC2626',
+                                                border: '1px solid #FECACA',
+                                                borderRadius: '7px',
+                                                padding: '5px 9px',
+                                                fontSize: '11px',
+                                                fontWeight: '750',
+                                                cursor: 'pointer',
+                                                display: 'inline-flex',
+                                                alignItems: 'center',
+                                                gap: '4px',
+                                                flexShrink: 0,
+                                                transition: 'all 0.12s ease'
+                                              }}
+                                              onMouseEnter={(e) => { e.currentTarget.style.background = '#DC2626'; e.currentTarget.style.color = '#FFFFFF'; }}
+                                              onMouseLeave={(e) => { e.currentTarget.style.background = '#FEF2F2'; e.currentTarget.style.color = '#DC2626'; }}
+                                            >
+                                              <span>✕</span>
+                                              <span>Quitar</span>
+                                            </button>
+                                          </div>
+                                        );
+                                      })}
+                                    </div>
+                                  )}
+                                </div>
                               )}
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* ── SUBTAB 5: CONTACT & WHATSAPP ── */}
                 {visualSubTab === 'contact' && (
@@ -13561,7 +14385,7 @@ function AdminEcommerce({
           </section>
         )}
 
-      </main>
+      </EcommerceLayoutWrapper>
 
       {/* ── USER PROFILE MODAL: FICHA CORPORATIVA B2B ── */}
       {showUserModal && selectedUser && (
@@ -13747,6 +14571,23 @@ function AdminEcommerce({
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '7px' }}>
                       <span style={{ color: '#64748B', fontWeight: '600' }}>Sitio Web:</span>
                       <strong style={{ color: '#0F172A', fontWeight: '700' }}>{selectedUser.web ? <a href={selectedUser.web.startsWith('http') ? selectedUser.web : `https://${selectedUser.web}`} target="_blank" rel="noreferrer" style={{ color: '#0fa4de', textDecoration: 'none', fontWeight: '700' }}>{selectedUser.web}</a> : '—'}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '7px' }}>
+                      <span style={{ color: '#64748B', fontWeight: '600' }}>Cuenta Corriente:</span>
+                      <span style={{
+                        background: selectedUser.cuenta_corriente_habilitada ? '#DCFCE7' : '#FEE2E2',
+                        color: selectedUser.cuenta_corriente_habilitada ? '#166534' : '#991B1B',
+                        border: `1px solid ${selectedUser.cuenta_corriente_habilitada ? '#86EFAC' : '#FCA5A5'}`,
+                        padding: '2px 8px',
+                        borderRadius: '6px',
+                        fontWeight: '800',
+                        fontSize: '11px',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '5px'
+                      }}>
+                        {selectedUser.cuenta_corriente_habilitada ? '✓ Habilitada para Checkout' : '🔒 Bloqueada en Checkout'}
+                      </span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '2px' }}>
                       <span style={{ color: '#64748B', fontWeight: '600' }}>Límite Facturación:</span>
@@ -15352,6 +16193,281 @@ function AdminEcommerce({
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL: ABM DE TIPOS DE CLIENTE (SEGMENTACIÓN B2B) ── */}
+      {clientTypesModalOpen && (
+        <div className="modal-overlay" onClick={() => setClientTypesModalOpen(false)} style={{ backdropFilter: 'blur(8px)', background: 'rgba(7, 21, 36, 0.75)', zIndex: 9999 }}>
+          <div
+            className="modal-content"
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              maxWidth: '820px',
+              width: '95%',
+              borderRadius: '20px',
+              padding: '0',
+              overflow: 'hidden',
+              boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.15)',
+              background: '#ffffff',
+              maxHeight: '90vh',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+          >
+            {/* Header */}
+            <div style={{
+              background: 'linear-gradient(135deg, #071524 0%, #0d233a 100%)',
+              color: '#ffffff',
+              padding: '20px 24px',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '26px' }}>🏷️</span>
+                <div>
+                  <h3 style={{ margin: 0, fontSize: '18px', fontWeight: '800', color: '#ffffff' }}>
+                    ABM: Tipos de Cliente (Segmentación B2B)
+                  </h3>
+                  <div style={{ fontSize: '12px', color: '#94a3b8', marginTop: '2px' }}>
+                    Crea y administra los tipos de cliente para segmentar listas de precios, descuentos automáticos y filtros.
+                  </div>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setClientTypesModalOpen(false)}
+                style={{ background: 'rgba(255,255,255,0.1)', border: 'none', borderRadius: '50%', width: '32px', height: '32px', color: '#ffffff', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div style={{ padding: '24px', overflowY: 'auto', flex: 1, display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              
+              {/* Form Crear / Editar */}
+              <div style={{
+                background: '#f8fafc',
+                border: '1.5px solid #e2e8f0',
+                borderRadius: '14px',
+                padding: '18px 20px'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                  <div style={{ fontWeight: '800', fontSize: '13.5px', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span>{editingClientType ? '✏️' : '➕'}</span>
+                    <span>{editingClientType ? `Editar Tipo: ${editingClientType.name}` : 'Crear Nuevo Tipo de Cliente'}</span>
+                  </div>
+                  {editingClientType && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingClientType(null);
+                        setClientTypeForm({ name: '', description: '', color: '#0284c7' });
+                      }}
+                      style={{ background: '#e2e8f0', border: 'none', borderRadius: '6px', padding: '4px 8px', fontSize: '11px', fontWeight: '700', color: '#475569', cursor: 'pointer' }}
+                    >
+                      Cancelar Edición
+                    </button>
+                  )}
+                </div>
+
+                <form onSubmit={handleSaveClientType} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '12px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '800', color: '#334155', marginBottom: '5px' }}>
+                        Nombre del Tipo de Cliente *
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="Ej: Integrador IT / Reseller, Carrier ISP..."
+                        value={clientTypeForm.name}
+                        onChange={e => setClientTypeForm({ ...clientTypeForm, name: e.target.value })}
+                        style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '13px', boxSizing: 'border-box' }}
+                      />
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '800', color: '#334155', marginBottom: '5px' }}>
+                        Color / Distintivo
+                      </label>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                          type="color"
+                          value={clientTypeForm.color || '#0284c7'}
+                          onChange={e => setClientTypeForm({ ...clientTypeForm, color: e.target.value })}
+                          style={{ width: '42px', height: '38px', padding: '2px', borderRadius: '8px', border: '1.5px solid #cbd5e1', cursor: 'pointer', background: '#ffffff' }}
+                        />
+                        <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap' }}>
+                          {['#0284c7', '#10b981', '#8b5cf6', '#f59e0b', '#ef4444', '#64748b'].map(c => (
+                            <button
+                              key={c}
+                              type="button"
+                              onClick={() => setClientTypeForm({ ...clientTypeForm, color: c })}
+                              style={{
+                                width: '22px',
+                                height: '22px',
+                                borderRadius: '50%',
+                                background: c,
+                                border: clientTypeForm.color === c ? '2.5px solid #0f172a' : '1px solid rgba(0,0,0,0.15)',
+                                cursor: 'pointer',
+                                padding: 0
+                              }}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '800', color: '#334155', marginBottom: '5px' }}>
+                      Descripción / Alcance (Opcional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Ej: Empresas y canales con foco en integración de networking y ciberseguridad"
+                      value={clientTypeForm.description}
+                      onChange={e => setClientTypeForm({ ...clientTypeForm, description: e.target.value })}
+                      style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1.5px solid #cbd5e1', fontSize: '12.5px', boxSizing: 'border-box' }}
+                    />
+                  </div>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '4px' }}>
+                    <button
+                      type="submit"
+                      disabled={savingClientType}
+                      style={{
+                        background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                        color: '#ffffff',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '9px 18px',
+                        fontSize: '13px',
+                        fontWeight: '800',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                        boxShadow: '0 2px 8px rgba(15, 164, 222, 0.3)'
+                      }}
+                    >
+                      <span>{savingClientType ? '⏳ Guardando...' : (editingClientType ? '✓ Actualizar Tipo' : '➕ Crear Tipo de Cliente')}</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              {/* Tabla de Tipos Actuales */}
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+                  <div style={{ fontWeight: '800', fontSize: '13px', color: '#0f172a' }}>
+                    Tipos de Cliente Registrados ({clientTypes.length})
+                  </div>
+                  <div style={{ fontSize: '11.5px', color: '#64748b' }}>
+                    Estos tipos aparecerán disponibles en la lista desplegable al crear o editar clientes.
+                  </div>
+                </div>
+
+                <div style={{ border: '1px solid #e2e8f0', borderRadius: '12px', overflow: 'hidden' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12.5px' }}>
+                    <thead>
+                      <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left' }}>
+                        <th style={{ padding: '8px 12px', fontWeight: '800', color: '#475569' }}>Nombre / Tipo</th>
+                        <th style={{ padding: '8px 12px', fontWeight: '800', color: '#475569' }}>Descripción</th>
+                        <th style={{ padding: '8px 12px', fontWeight: '800', color: '#475569', textAlign: 'center', width: '90px' }}>Clientes</th>
+                        <th style={{ padding: '8px 12px', fontWeight: '800', color: '#475569', textAlign: 'right', width: '130px' }}>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {clientTypes.length === 0 ? (
+                        <tr>
+                          <td colSpan={4} style={{ padding: '24px', textAlign: 'center', color: '#64748b' }}>
+                            No hay tipos de clientes definidos todavía.
+                          </td>
+                        </tr>
+                      ) : (
+                        clientTypes.map(ct => {
+                          const clientCount = users.filter(u => (u.tipo_cliente || '').trim().toLowerCase() === (ct.name || '').trim().toLowerCase()).length;
+                          return (
+                            <tr key={ct.id || ct.name} style={{ borderBottom: '1px solid #f1f5f9', background: editingClientType?.id === ct.id ? '#eff6ff' : '#ffffff' }}>
+                              <td style={{ padding: '10px 12px' }}>
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <span style={{ width: '10px', height: '10px', borderRadius: '50%', background: ct.color || '#0284c7', flexShrink: 0 }}></span>
+                                  <strong style={{ color: '#0f172a' }}>{ct.name}</strong>
+                                </div>
+                              </td>
+                              <td style={{ padding: '10px 12px', color: '#64748b' }}>
+                                {ct.description || <span style={{ fontStyle: 'italic', color: '#94a3b8' }}>Sin descripción</span>}
+                              </td>
+                              <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                                <span style={{ background: '#f1f5f9', color: '#334155', padding: '2px 8px', borderRadius: '999px', fontSize: '11px', fontWeight: '700' }}>
+                                  {clientCount}
+                                </span>
+                              </td>
+                              <td style={{ padding: '10px 12px', textAlign: 'right' }}>
+                                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      setEditingClientType(ct);
+                                      setClientTypeForm({ name: ct.name, description: ct.description || '', color: ct.color || '#0284c7' });
+                                    }}
+                                    style={{
+                                      background: '#f0f9ff',
+                                      color: '#0284c7',
+                                      border: '1px solid #bae6fd',
+                                      borderRadius: '6px',
+                                      padding: '3px 8px',
+                                      fontSize: '11px',
+                                      fontWeight: '700',
+                                      cursor: 'pointer'
+                                    }}
+                                  >
+                                    Editar
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteClientType(ct.id, ct.name)}
+                                    style={{
+                                      background: '#fef2f2',
+                                      color: '#ef4444',
+                                      border: '1px solid #fecaca',
+                                      borderRadius: '6px',
+                                      padding: '3px 8px',
+                                      fontSize: '11px',
+                                      fontWeight: '700',
+                                      cursor: 'pointer'
+                                    }}
+                                  >
+                                    Eliminar
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+            </div>
+
+            {/* Footer */}
+            <div style={{ padding: '14px 24px', background: '#f8fafc', borderTop: '1px solid #e2e8f0', display: 'flex', justifyContent: 'flex-end' }}>
+              <button
+                type="button"
+                onClick={() => setClientTypesModalOpen(false)}
+                style={{ background: '#ffffff', border: '1px solid #cbd5e1', color: '#334155', borderRadius: '8px', padding: '8px 18px', fontSize: '13px', fontWeight: '700', cursor: 'pointer' }}
+              >
+                Cerrar
+              </button>
+            </div>
           </div>
         </div>
       )}

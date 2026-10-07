@@ -101,6 +101,7 @@ rawPool.connect()
         ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS condition VARCHAR(100) DEFAULT 'Nuevo Sellado';
         ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS related_ids JSONB;
         ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS related_skus JSONB;
+        ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS cuenta_corriente_habilitada BOOLEAN DEFAULT false;
       `);
     } catch (_) {}
     client.release();
@@ -997,7 +998,37 @@ function loadProductsFromFile(defaultProducts) {
   return defaultProducts;
 }
 
+const CLIENT_TYPES_FILE = path.join(__dirname, 'ecommerce_client_types.json');
+const DEFAULT_CLIENT_TYPES = [
+  { id: 1, name: 'Integrador IT / Reseller', description: 'Empresas integradoras de soluciones de conectividad y valor agregado', color: '#0284c7' },
+  { id: 2, name: 'Proveedor de Internet (ISP / WISP)', description: 'Proveedores de servicios de internet y carriers de telecomunicaciones', color: '#10b981' },
+  { id: 3, name: 'Consultora IT / Ciberseguridad', description: 'Firmas especializadas en seguridad informática e infraestructura', color: '#8b5cf6' },
+  { id: 4, name: 'Empresa Corporativa', description: 'Clientes directos del segmento corporativo y enterprise', color: '#f59e0b' },
+  { id: 5, name: 'Organismo Público', description: 'Entidades gubernamentales, educación y sector público', color: '#64748b' }
+];
+
+function loadClientTypesFromFile() {
+  try {
+    if (fs.existsSync(CLIENT_TYPES_FILE)) {
+      const data = JSON.parse(fs.readFileSync(CLIENT_TYPES_FILE, 'utf-8'));
+      if (Array.isArray(data) && data.length > 0) return data;
+    }
+  } catch (err) {
+    console.error('Error cargando ecommerce_client_types.json:', err);
+  }
+  return DEFAULT_CLIENT_TYPES;
+}
+
+function saveClientTypesToFile(types) {
+  try {
+    fs.writeFileSync(CLIENT_TYPES_FILE, JSON.stringify(types, null, 2), 'utf-8');
+  } catch (err) {
+    console.error('Error guardando ecommerce_client_types.json:', err);
+  }
+}
+
 const inMem = {
+  client_types: loadClientTypesFromFile(),
   visualSettingsByCountry: loadVisualSettingsFromFile(),
   get visualSettings() {
     return (this.visualSettingsByCountry && this.visualSettingsByCountry['AR']) || DEFAULT_VISUAL_SETTINGS;
@@ -1052,6 +1083,7 @@ const inMem = {
         misiones: { enabled: false, alicuota: 0.0, vigencia: '2023-05-01' },
         tucuman: { enabled: false, alicuota: 0.0, coef: 0.0, vigencia: '2025-06-01' }
       },
+      cuenta_corriente_habilitada: true,
       created_at: new Date().toISOString()
     },
     {
@@ -1081,6 +1113,7 @@ const inMem = {
         misiones: { enabled: false, alicuota: 0.0, vigencia: '2023-05-01' },
         tucuman: { enabled: false, alicuota: 0.0, coef: 0.0, vigencia: '2025-06-01' }
       },
+      cuenta_corriente_habilitada: false,
       created_at: new Date(Date.now() - 3600000).toISOString()
     },
     {
@@ -1969,7 +2002,8 @@ function executeInMemoryQuery(sql, params = []) {
         telefono_pagos: params[26], email_pagos: params[27], nombre_admin: params[28], telefono_admin: params[29],
         email_admin: params[30], email_factura_electronica: params[31], email_contacto_compras: params[32],
         email_cotizaciones_automaticas: params[33], address: params[34], company: params[35],
-        status: params[36] || 'activo',
+        cuenta_corriente_habilitada: params[36] !== undefined ? Boolean(params[36]) : false,
+        status: params[37] || 'activo',
         created_at: new Date().toISOString()
       };
     }
@@ -2011,7 +2045,9 @@ function executeInMemoryQuery(sql, params = []) {
         nombre_pagos: params[24], telefono_pagos: params[25], email_pagos: params[26], nombre_admin: params[27],
         telefono_admin: params[28], email_admin: params[29], email_factura_electronica: params[30], email_contacto_compras: params[31],
         email_cotizaciones_automaticas: params[32], address: params[33], company: params[34],
-        status: params[35] !== undefined && typeof params[35] === 'string' && ['activo', 'pendiente', 'inactivo'].includes(params[35]) ? params[35] : inMem.users[idx].status
+        cargo: params[35] || inMem.users[idx].cargo || 'Contacto / Usuario',
+        cuenta_corriente_habilitada: params[36] !== undefined ? Boolean(params[36]) : (inMem.users[idx].cuenta_corriente_habilitada || false),
+        status: params[37] !== undefined && typeof params[37] === 'string' && ['activo', 'pendiente', 'inactivo'].includes(params[37]) ? params[37] : inMem.users[idx].status
       };
       if (/password_hash\s*=\s*\$/i.test(norm)) {
         inMem.users[idx].password_hash = params[params.length - 2];
@@ -2703,6 +2739,7 @@ router.post('/auth/login', async (req, res) => {
       safeUser.cuit = safeUser.numero_nit || safeUser.cuit || '30-12345678-9';
       safeUser.tipo_iva = safeUser.tipo_iva || 'IVA Responsable Inscripto';
       safeUser.tipo_factura = safeUser.tipo_factura || 'Factura A (Responsable Inscripto)';
+      safeUser.cuenta_corriente_habilitada = Boolean(user.cuenta_corriente_habilitada);
       const targetCountry = resolveCountry(safeUser.country_code || safeUser.country_id || safeUser.country_name || 'AR') || { id: 2, code: 'AR', name: 'Argentina' };
       safeUser.country_id = targetCountry.id;
       safeUser.country_code = targetCountry.code;
@@ -3211,22 +3248,36 @@ router.get('/my-orders', authenticateToken, async (req, res) => {
 // 1. Obtener perfil completo del cliente autenticado
 router.get('/client/profile', authenticateToken, async (req, res) => {
   try {
-    const userRes = await pool.query(`
-      SELECT u.*, c.name as country_name, c.tax_rate, c.shipping_cost 
-      FROM ecommerce_users u 
-      LEFT JOIN ecommerce_countries c ON u.country_id = c.id 
-      WHERE u.id = $1
-    `, [req.user.id]);
+    let user;
+    if (isPgConnected) {
+      const userRes = await pool.query(`
+        SELECT u.*, c.name as country_name, c.tax_rate, c.shipping_cost,
+               rc.name as report_country_name
+        FROM ecommerce_users u 
+        LEFT JOIN ecommerce_countries c ON u.country_id = c.id 
+        LEFT JOIN ecommerce_countries rc ON u.report_to_country_id = rc.id 
+        WHERE u.id = $1
+      `, [req.user.id]);
 
-    if (userRes.rows.length === 0) {
-      return res.status(404).json({ error: 'Cliente no encontrado' });
+      if (userRes.rows.length === 0) {
+        return res.status(404).json({ error: 'Cliente no encontrado' });
+      }
+      user = userRes.rows[0];
+    } else {
+      const found = inMem.users.find(u => u.id === req.user.id);
+      if (!found) return res.status(404).json({ error: 'Cliente no encontrado' });
+      user = { ...found };
     }
 
-    const user = userRes.rows[0];
     delete user.password_hash;
     user.cuit = user.numero_nit || user.cuit || '30-12345678-9';
     user.tipo_iva = user.tipo_iva || 'IVA Responsable Inscripto';
     user.tipo_factura = user.tipo_factura || 'Factura A (Responsable Inscripto)';
+    user.cuenta_corriente_habilitada = Boolean(user.cuenta_corriente_habilitada);
+
+    if (typeof user.percepciones === 'string') {
+      try { user.percepciones = JSON.parse(user.percepciones); } catch (_) {}
+    }
 
     // Asegurar estructura de IIBB y percepciones para clientes de Argentina
     if ((user.country_id === 2 || user.country_name === 'Argentina' || !user.country_id) && !user.percepciones) {
@@ -3298,12 +3349,13 @@ router.get('/client/profile', authenticateToken, async (req, res) => {
   }
 });
 
-// 2. Actualizar datos editables del perfil (teléfono, contacto, avatar, etc.)
+// 2. Actualizar datos editables del perfil (teléfono, contacto, avatar, domicilios, etc.)
 router.put('/client/profile', authenticateToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const { 
-      name, phone, ciudad, direccion_entrega, localidad_entrega, codigo_postal_entrega,
+      name, razon_social, phone, ciudad, direccion_entrega, localidad_entrega, codigo_postal_entrega, ciudad_entrega,
+      direccion_legal, localidad, codigo_postal,
       web, avatar_url, nombre_compras, telefono_compras, email_compras,
       nombre_pagos, telefono_pagos, email_pagos
     } = req.body;
@@ -3311,6 +3363,16 @@ router.put('/client/profile', authenticateToken, async (req, res) => {
     if (isPgConnected) {
       await pool.query(`
         ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS avatar_url TEXT;
+        ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS direccion_legal TEXT;
+        ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS localidad TEXT;
+        ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS codigo_postal TEXT;
+        ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS ciudad TEXT;
+        ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS direccion_entrega TEXT;
+        ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS localidad_entrega TEXT;
+        ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS ciudad_entrega TEXT;
+        ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS codigo_postal_entrega TEXT;
+        ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS web TEXT;
+        ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS razon_social TEXT;
       `);
       const result = await pool.query(`
         UPDATE ecommerce_users SET 
@@ -3327,13 +3389,21 @@ router.put('/client/profile', authenticateToken, async (req, res) => {
           email_compras = COALESCE($11, email_compras),
           nombre_pagos = COALESCE($12, nombre_pagos),
           telefono_pagos = COALESCE($13, telefono_pagos),
-          email_pagos = COALESCE($14, email_pagos)
-        WHERE id = $15
+          email_pagos = COALESCE($14, email_pagos),
+          direccion_legal = COALESCE($15, direccion_legal),
+          localidad = COALESCE($16, localidad),
+          codigo_postal = COALESCE($17, codigo_postal),
+          ciudad_entrega = COALESCE($18, ciudad_entrega),
+          razon_social = COALESCE($19, razon_social)
+        WHERE id = $20
         RETURNING *
       `, [
         name, phone, ciudad, direccion_entrega, localidad_entrega, codigo_postal_entrega,
         web, avatar_url, nombre_compras, telefono_compras, email_compras,
-        nombre_pagos, telefono_pagos, email_pagos, userId
+        nombre_pagos, telefono_pagos, email_pagos,
+        direccion_legal, localidad, codigo_postal, ciudad_entrega,
+        razon_social,
+        userId
       ]);
 
       if (result.rows.length === 0) return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -3345,11 +3415,16 @@ router.put('/client/profile', authenticateToken, async (req, res) => {
       if (idx === -1) return res.status(404).json({ error: 'Usuario no encontrado' });
 
       if (name !== undefined) inMem.users[idx].name = name;
+      if (razon_social !== undefined) inMem.users[idx].razon_social = razon_social;
       if (phone !== undefined) inMem.users[idx].phone = phone;
       if (ciudad !== undefined) inMem.users[idx].ciudad = ciudad;
       if (direccion_entrega !== undefined) inMem.users[idx].direccion_entrega = direccion_entrega;
       if (localidad_entrega !== undefined) inMem.users[idx].localidad_entrega = localidad_entrega;
       if (codigo_postal_entrega !== undefined) inMem.users[idx].codigo_postal_entrega = codigo_postal_entrega;
+      if (ciudad_entrega !== undefined) inMem.users[idx].ciudad_entrega = ciudad_entrega;
+      if (direccion_legal !== undefined) inMem.users[idx].direccion_legal = direccion_legal;
+      if (localidad !== undefined) inMem.users[idx].localidad = localidad;
+      if (codigo_postal !== undefined) inMem.users[idx].codigo_postal = codigo_postal;
       if (web !== undefined) inMem.users[idx].web = web;
       if (avatar_url !== undefined) inMem.users[idx].avatar_url = avatar_url;
       if (nombre_compras !== undefined) inMem.users[idx].nombre_compras = nombre_compras;
@@ -4463,6 +4538,12 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
         tipo_factura: billing_info.tipo_factura || 'Factura A (Responsable Inscripto)',
         pais: 'Argentina'
       };
+    }
+
+    // Validación de Cuenta Corriente: verificar si el cliente la tiene habilitada
+    const isCcPayment = (payment_method || '').toLowerCase().includes('cuenta corriente') || (payment_method || '').toLowerCase().includes('cuenta_corriente');
+    if (isCcPayment && (!user || !user.cuenta_corriente_habilitada)) {
+      return res.status(400).json({ error: 'La forma de pago Cuenta Corriente no está habilitada para su cuenta mayorista. Por favor elija otro método de pago o consulte con su ejecutivo comercial.' });
     }
 
     if (isPgConnected) {
@@ -5748,6 +5829,149 @@ router.post('/admin/products/:id/stock', authenticateToken, requireAdmin, async 
   }
 });
 
+// ==========================================
+// CLIENT TYPES ABM (CRUD)
+// ==========================================
+router.get('/client-types', optionalAuthToken, async (req, res) => {
+  try {
+    if (isPgConnected) {
+      await pool.query(`
+        CREATE TABLE IF NOT EXISTS ecommerce_client_types (
+          id SERIAL PRIMARY KEY,
+          name VARCHAR(255) NOT NULL UNIQUE,
+          description TEXT,
+          color VARCHAR(50) DEFAULT '#0284c7',
+          created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+      `);
+      const countRes = await pool.query('SELECT COUNT(*) FROM ecommerce_client_types');
+      if (parseInt(countRes.rows[0].count) === 0) {
+        await pool.query(`
+          INSERT INTO ecommerce_client_types (name, description, color) VALUES
+          ('Integrador IT / Reseller', 'Empresas integradoras de soluciones de conectividad y valor agregado', '#0284c7'),
+          ('Proveedor de Internet (ISP / WISP)', 'Proveedores de servicios de internet y carriers de telecomunicaciones', '#10b981'),
+          ('Consultora IT / Ciberseguridad', 'Firmas especializadas en seguridad informática e infraestructura', '#8b5cf6'),
+          ('Empresa Corporativa', 'Clientes directos del segmento corporativo y enterprise', '#f59e0b'),
+          ('Organismo Público', 'Entidades gubernamentales, educación y sector público', '#64748b')
+          ON CONFLICT (name) DO NOTHING;
+        `);
+      }
+      const r = await pool.query('SELECT * FROM ecommerce_client_types ORDER BY id ASC');
+      return res.json(r.rows);
+    } else {
+      if (!inMem.client_types || inMem.client_types.length === 0) {
+        inMem.client_types = loadClientTypesFromFile();
+      }
+      return res.json(inMem.client_types);
+    }
+  } catch (error) {
+    console.error('Error al obtener tipos de cliente:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/client-types', optionalAuthToken, async (req, res) => {
+  try {
+    const { name, description, color } = req.body;
+    if (!name || !name.trim()) return res.status(400).json({ error: 'El nombre del tipo de cliente es obligatorio' });
+    const cleanName = name.trim();
+    const cleanDesc = (description || '').trim();
+    const cleanColor = color || '#0284c7';
+
+    if (isPgConnected) {
+      const exists = await pool.query('SELECT id FROM ecommerce_client_types WHERE LOWER(name) = LOWER($1)', [cleanName]);
+      if (exists.rows.length > 0) return res.status(400).json({ error: 'Ya existe un tipo de cliente con este nombre' });
+
+      const ins = await pool.query(
+        'INSERT INTO ecommerce_client_types (name, description, color) VALUES ($1, $2, $3) RETURNING *',
+        [cleanName, cleanDesc, cleanColor]
+      );
+      return res.status(201).json(ins.rows[0]);
+    } else {
+      if (!inMem.client_types) inMem.client_types = [];
+      if (inMem.client_types.some(ct => ct.name.toLowerCase() === cleanName.toLowerCase())) {
+        return res.status(400).json({ error: 'Ya existe un tipo de cliente con este nombre' });
+      }
+      const newType = {
+        id: (inMem.client_types.length > 0 ? Math.max(...inMem.client_types.map(c => c.id || 0)) + 1 : 1),
+        name: cleanName,
+        description: cleanDesc,
+        color: cleanColor,
+        created_at: new Date().toISOString()
+      };
+      inMem.client_types.push(newType);
+      saveClientTypesToFile(inMem.client_types);
+      return res.status(201).json(newType);
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.put('/client-types/:id', optionalAuthToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, description, color } = req.body;
+    if (!name || !name.trim()) return res.status(400).json({ error: 'El nombre es obligatorio' });
+    const cleanName = name.trim();
+    const cleanDesc = (description || '').trim();
+    const cleanColor = color || '#0284c7';
+
+    if (isPgConnected) {
+      const oldRes = await pool.query('SELECT name FROM ecommerce_client_types WHERE id = $1', [id]);
+      if (oldRes.rows.length === 0) return res.status(404).json({ error: 'Tipo de cliente no encontrado' });
+      const oldName = oldRes.rows[0].name;
+
+      const upd = await pool.query(
+        'UPDATE ecommerce_client_types SET name = $1, description = $2, color = $3 WHERE id = $4 RETURNING *',
+        [cleanName, cleanDesc, cleanColor, id]
+      );
+
+      if (oldName !== cleanName) {
+        await pool.query('UPDATE ecommerce_users SET tipo_cliente = $1 WHERE tipo_cliente = $2', [cleanName, oldName]);
+        await pool.query('UPDATE ecommerce_pricing_rules SET tipo_cliente = $1 WHERE tipo_cliente = $2', [cleanName, oldName]);
+      }
+      return res.json(upd.rows[0]);
+    } else {
+      const idx = inMem.client_types.findIndex(ct => ct.id === parseInt(id));
+      if (idx === -1) return res.status(404).json({ error: 'Tipo de cliente no encontrado' });
+      const oldName = inMem.client_types[idx].name;
+
+      inMem.client_types[idx].name = cleanName;
+      inMem.client_types[idx].description = cleanDesc;
+      inMem.client_types[idx].color = cleanColor;
+
+      if (oldName !== cleanName) {
+        inMem.users.forEach(u => { if (u.tipo_cliente === oldName) u.tipo_cliente = cleanName; });
+        (inMem.pricing_rules || []).forEach(r => { if (r.tipo_cliente === oldName) r.tipo_cliente = cleanName; });
+      }
+      saveClientTypesToFile(inMem.client_types);
+      return res.json(inMem.client_types[idx]);
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.delete('/client-types/:id', optionalAuthToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    if (isPgConnected) {
+      const del = await pool.query('DELETE FROM ecommerce_client_types WHERE id = $1 RETURNING *', [id]);
+      if (del.rows.length === 0) return res.status(404).json({ error: 'Tipo de cliente no encontrado' });
+      return res.json({ success: true, message: 'Tipo de cliente eliminado', deleted: del.rows[0] });
+    } else {
+      const idx = inMem.client_types.findIndex(ct => ct.id === parseInt(id));
+      if (idx === -1) return res.status(404).json({ error: 'Tipo de cliente no encontrado' });
+      const deleted = inMem.client_types.splice(idx, 1)[0];
+      saveClientTypesToFile(inMem.client_types);
+      return res.json({ success: true, message: 'Tipo de cliente eliminado', deleted });
+    }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Admin Users (Customers) - Sanitized against password_hash exposure
 router.get('/admin/users', optionalAuthToken, async (req, res) => {
   try {
@@ -5761,6 +5985,7 @@ router.get('/admin/users', optionalAuthToken, async (req, res) => {
     let users = (result.rows || []).map(u => {
       const sanitized = { ...u };
       delete sanitized.password_hash;
+      sanitized.cuenta_corriente_habilitada = Boolean(sanitized.cuenta_corriente_habilitada);
       return sanitized;
     });
 
@@ -5788,19 +6013,19 @@ router.post('/admin/users', authenticateToken, requireAdmin, async (req, res) =>
         name, email, password_hash, razon_social, tipo_cliente, direccion_legal, localidad, codigo_postal, ciudad, country_id, phone, fecha_limite_facturacion, web,
         report_to_country_id, vendedor, direccion_entrega, localidad_entrega, codigo_postal_entrega, ciudad_entrega, pais_entrega_id, tipo_iva, numero_nit,
         nombre_compras, telefono_compras, email_compras, nombre_pagos, telefono_pagos, email_pagos, nombre_admin, telefono_admin, email_admin,
-        email_factura_electronica, email_contacto_compras, email_cotizaciones_automaticas, address, company
+        email_factura_electronica, email_contacto_compras, email_cotizaciones_automaticas, address, company, cuenta_corriente_habilitada
       ) VALUES (
         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,
         $14, $15, $16, $17, $18, $19, $20, $21, $22,
         $23, $24, $25, $26, $27, $28, $29, $30, $31,
-        $32, $33, $34, $35, $36
+        $32, $33, $34, $35, $36, $37
       ) RETURNING id, name, email
     `;
     const values = [
       data.name, data.email, hashedPassword, data.razon_social, data.tipo_cliente, data.direccion_legal, data.localidad, data.codigo_postal, data.ciudad, data.country_id || null, data.phone, data.fecha_limite_facturacion || null, data.web,
       data.report_to_country_id || null, data.vendedor, data.direccion_entrega, data.localidad_entrega, data.codigo_postal_entrega, data.ciudad_entrega, data.pais_entrega_id || null, data.tipo_iva, data.numero_nit,
       data.nombre_compras, data.telefono_compras, data.email_compras, data.nombre_pagos, data.telefono_pagos, data.email_pagos, data.nombre_admin, data.telefono_admin, data.email_admin,
-      data.email_factura_electronica, data.email_contacto_compras, data.email_cotizaciones_automaticas, data.address, data.company
+      data.email_factura_electronica, data.email_contacto_compras, data.email_cotizaciones_automaticas, data.address, data.company, Boolean(data.cuenta_corriente_habilitada)
     ];
     
     const result = await pool.query(query, values);
@@ -5808,6 +6033,7 @@ router.post('/admin/users', authenticateToken, requireAdmin, async (req, res) =>
     if (createdUser) {
       const idx = inMem.users.findIndex(u => u.id === createdUser.id || u.email === data.email);
       if (idx !== -1) {
+        inMem.users[idx].cuenta_corriente_habilitada = Boolean(data.cuenta_corriente_habilitada);
         inMem.users[idx].iibb_jurisdiccion = data.iibb_jurisdiccion || '901 - Capital Federal';
         inMem.users[idx].iibb_tipo = data.iibb_tipo || 'C.M.';
         inMem.users[idx].iibb_numero = data.iibb_numero || data.numero_nit || '';
@@ -5903,30 +6129,32 @@ router.put('/admin/users/:id', authenticateToken, requireAdmin, async (req, res)
         name = $1, email = $2, razon_social = $3, tipo_cliente = $4, direccion_legal = $5, localidad = $6, codigo_postal = $7, ciudad = $8, country_id = $9, phone = $10, fecha_limite_facturacion = $11, web = $12,
         report_to_country_id = $13, vendedor = $14, direccion_entrega = $15, localidad_entrega = $16, codigo_postal_entrega = $17, ciudad_entrega = $18, pais_entrega_id = $19, tipo_iva = $20, numero_nit = $21,
         nombre_compras = $22, telefono_compras = $23, email_compras = $24, nombre_pagos = $25, telefono_pagos = $26, email_pagos = $27, nombre_admin = $28, telefono_admin = $29, email_admin = $30,
-        email_factura_electronica = $31, email_contacto_compras = $32, email_cotizaciones_automaticas = $33, address = $34, company = $35, cargo = $36
+        email_factura_electronica = $31, email_contacto_compras = $32, email_cotizaciones_automaticas = $33, address = $34, company = $35, cargo = $36, cuenta_corriente_habilitada = $37
     `;
     let values = [
       data.name, data.email, data.razon_social, data.tipo_cliente, data.direccion_legal, data.localidad, data.codigo_postal, data.ciudad, data.country_id || null, data.phone, data.fecha_limite_facturacion || null, data.web,
       data.report_to_country_id || null, data.vendedor, data.direccion_entrega, data.localidad_entrega, data.codigo_postal_entrega, data.ciudad_entrega, data.pais_entrega_id || null, data.tipo_iva, data.numero_nit,
       data.nombre_compras, data.telefono_compras, data.email_compras, data.nombre_pagos, data.telefono_pagos, data.email_pagos, data.nombre_admin, data.telefono_admin, data.email_admin,
-      data.email_factura_electronica, data.email_contacto_compras, data.email_cotizaciones_automaticas, data.address, data.company, data.cargo || 'Contacto / Usuario'
+      data.email_factura_electronica, data.email_contacto_compras, data.email_cotizaciones_automaticas, data.address, data.company, data.cargo || 'Contacto / Usuario',
+      Boolean(data.cuenta_corriente_habilitada)
     ];
     
     // Update password if provided
     if (data.password) {
         const hashedPassword = await bcrypt.hash(data.password, 10);
-        query += `, password_hash = $37 WHERE id = $38 RETURNING id, email, name`;
+        query += `, password_hash = $38 WHERE id = $39 RETURNING id, email, name`;
         values.push(hashedPassword, id);
     } else {
-        query += ` WHERE id = $37 RETURNING id, email, name`;
+        query += ` WHERE id = $38 RETURNING id, email, name`;
         values.push(id);
     }
 
     const result = await pool.query(query, values);
 
-    // Actualizar campos de percepciones IIBB en memoria y en resultado
+    // Actualizar campos de percepciones IIBB y CC en memoria y en resultado
     const idx = inMem.users.findIndex(u => u.id === parseInt(id));
     if (idx !== -1) {
+      if (data.cuenta_corriente_habilitada !== undefined) inMem.users[idx].cuenta_corriente_habilitada = Boolean(data.cuenta_corriente_habilitada);
       if (data.iibb_jurisdiccion !== undefined) inMem.users[idx].iibb_jurisdiccion = data.iibb_jurisdiccion;
       if (data.iibb_tipo !== undefined) inMem.users[idx].iibb_tipo = data.iibb_tipo;
       if (data.iibb_numero !== undefined) inMem.users[idx].iibb_numero = data.iibb_numero;

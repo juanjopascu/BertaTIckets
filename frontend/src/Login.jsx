@@ -248,6 +248,7 @@ function Login({ setUsuario, initialError, clearInitialError, theme, toggleTheme
     setError('');
 
     try {
+      // 1. Intentar login en CRM
       const response = await fetch(`${API_BASE_URL}/api/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -259,10 +260,34 @@ function Login({ setUsuario, initialError, clearInitialError, theme, toggleTheme
         setUsuario(data.usuario);
         const destination = getDestination(data.usuario.rol, location.state?.from?.pathname);
         navigate(destination, { replace: true });
-      } else {
-        setError(data.error || 'Credenciales inválidas');
-        triggerErrorAnimations();
+        return;
       }
+
+      // 2. Si no existe en CRM, intentar login en DACAS Shop (E-commerce B2B)
+      try {
+        const ecomResponse = await fetch(`${API_BASE_URL}/api/ecommerce/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, password })
+        });
+        const ecomData = await ecomResponse.json();
+
+        if (ecomResponse.ok && ecomData.user && ecomData.token) {
+          localStorage.setItem('dacas_client_user', JSON.stringify(ecomData.user));
+          localStorage.setItem('dacas_client_token', ecomData.token);
+          navigate('/shop', { replace: true });
+          return;
+        } else if (ecomData.pending) {
+          setError(ecomData.error || 'Su cuenta de cliente está pendiente de aprobación por el administrador.');
+          triggerErrorAnimations();
+          return;
+        }
+      } catch (_) {
+        // Fallback a error original del CRM si falla e-commerce
+      }
+
+      setError(data.error || 'Credenciales inválidas');
+      triggerErrorAnimations();
     } catch (err) {
       setError('Error al conectar con el servidor.');
       triggerErrorAnimations();
@@ -507,6 +532,29 @@ function Login({ setUsuario, initialError, clearInitialError, theme, toggleTheme
             </button>
           </div>
         )}
+
+        <div style={{ marginTop: '20px', paddingTop: '16px', borderTop: '1px solid #E2E8F0', textAlign: 'center' }}>
+          <button
+            type="button"
+            onClick={() => navigate('/shop')}
+            style={{
+              background: '#F0F9FF',
+              border: '1px solid #BAE6FD',
+              color: '#0284C7',
+              borderRadius: '8px',
+              padding: '8px 14px',
+              fontSize: '12.5px',
+              fontWeight: '700',
+              cursor: 'pointer',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px'
+            }}
+          >
+            <span>🛍️</span>
+            <span>¿Sos cliente mayorista B2B? Ir a <strong>DACAS Shop</strong></span>
+          </button>
+        </div>
 
         {loginCfg.footerText && (
           <div style={{ marginTop: '16px', fontSize: '11px', color: '#94a3b8', textAlign: 'center' }}>

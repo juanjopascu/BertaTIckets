@@ -1,8 +1,8 @@
 {
   "AR": {
     "announcement": {
-      "enabled": true,
-      "text": "🇦🇷 DACAS Argentina: Distribución Oficial, Stock Inmediato y Soporte Certificado en Buenos Aires e Interior",
+      "enabled": false,
+      "text": "",
       "badgeText": "DACAS ARGENTINA",
       "link": "#paises"
     },
@@ -10,7 +10,7 @@
       "shopTitle": "DACAS Argentina B2B Shop",
       "shopSubtitle": "Plataforma Corporativa de Soluciones IT, Ciberseguridad & Conectividad Enterprise para Argentina",
       "showCountryBar": true,
-      "contactPhone": "+54 11 4110-3300",
+      "contactPhone": "+54 11 4545-3900",
       "contactEmail": "ventas@dacas.com.ar",
       "whatsappNumber": "+5491141103300",
       "headerBadge": "DISTRIBUIDOR OFICIAL ARGENTINA",
@@ -27,11 +27,13 @@
         "desc": "Más de 25 años abasteciendo a los integradores líderes de Argentina con las mejores soluciones de ciberseguridad, networking y centros de datos con facturación local.",
         "primaryBtn": {
           "text": "Explorar Catálogo AR",
-          "cat": "all"
+          "cat": "all",
+          "link": "/shop"
         },
         "secondaryBtn": {
           "text": "Nuestros Países",
-          "cat": "all"
+          "cat": "all",
+          "link": "/shop"
         },
         "type": "metrics",
         "metrics": [
@@ -47,7 +49,8 @@
             "value": "24/7",
             "label": "Garantía Oficial DACAS"
           }
-        ]
+        ],
+        "showOverlayText": true
       },
       {
         "id": 1,
@@ -116,8 +119,8 @@
     ],
     "categoryBrands": {
       "comunicaciones_unificadas": [
-        "audiocodes",
-        "avaya"
+        "avaya",
+        "audiocodes"
       ],
       "security": [
         "fortinet",

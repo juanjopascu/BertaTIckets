@@ -49,13 +49,23 @@ export default function ShopClientPortal() {
   });
   const [submittingChange, setSubmittingChange] = useState(false);
 
-  // Editable quick profile
+  // Editable corporate profile state
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [savingProfile, setSavingProfile] = useState(false);
   const [editProfileOpen, setEditProfileOpen] = useState(false);
   const [editForm, setEditForm] = useState({
     name: '',
+    razon_social: '',
     phone: '',
+    web: '',
     ciudad: '',
+    localidad: '',
+    codigo_postal: '',
+    direccion_legal: '',
     direccion_entrega: '',
+    localidad_entrega: '',
+    ciudad_entrega: '',
+    codigo_postal_entrega: '',
     nombre_compras: '',
     telefono_compras: '',
     email_compras: '',
@@ -245,9 +255,17 @@ export default function ShopClientPortal() {
         // Prep edit form
         setEditForm({
           name: pData.user.name || '',
+          razon_social: pData.user.razon_social || pData.user.name || '',
           phone: pData.user.phone || '',
+          web: pData.user.web || '',
           ciudad: pData.user.ciudad || '',
+          localidad: pData.user.localidad || '',
+          codigo_postal: pData.user.codigo_postal || '',
+          direccion_legal: pData.user.direccion_legal || '',
           direccion_entrega: pData.user.direccion_entrega || '',
+          localidad_entrega: pData.user.localidad_entrega || '',
+          ciudad_entrega: pData.user.ciudad_entrega || '',
+          codigo_postal_entrega: pData.user.codigo_postal_entrega || '',
           nombre_compras: pData.user.nombre_compras || '',
           telefono_compras: pData.user.telefono_compras || '',
           email_compras: pData.user.email_compras || '',
@@ -347,7 +365,8 @@ export default function ShopClientPortal() {
 
   // Submit Profile Edit
   const handleSaveProfile = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
+    setSavingProfile(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/ecommerce/client/profile`, {
         method: 'PUT',
@@ -362,14 +381,54 @@ export default function ShopClientPortal() {
         setProfileData(data.user);
         setClientUser(data.user);
         localStorage.setItem('dacas_client_user', JSON.stringify(data.user));
+        setIsEditingProfile(false);
         setEditProfileOpen(false);
-        showToast('¡Datos de contacto actualizados correctamente!');
+        showToast('¡Ficha Corporativa actualizada con éxito!');
       } else {
         throw new Error(data.error || 'Error al actualizar perfil');
       }
     } catch (err) {
       showToast(err.message, 'error');
+    } finally {
+      setSavingProfile(false);
     }
+  };
+
+  const handleCancelEditProfile = () => {
+    if (profileData) {
+      setEditForm({
+        name: profileData.name || '',
+        razon_social: profileData.razon_social || profileData.name || '',
+        phone: profileData.phone || '',
+        web: profileData.web || '',
+        ciudad: profileData.ciudad || '',
+        localidad: profileData.localidad || '',
+        codigo_postal: profileData.codigo_postal || '',
+        direccion_legal: profileData.direccion_legal || '',
+        direccion_entrega: profileData.direccion_entrega || '',
+        localidad_entrega: profileData.localidad_entrega || '',
+        ciudad_entrega: profileData.ciudad_entrega || '',
+        codigo_postal_entrega: profileData.codigo_postal_entrega || '',
+        nombre_compras: profileData.nombre_compras || '',
+        telefono_compras: profileData.telefono_compras || '',
+        email_compras: profileData.email_compras || '',
+        nombre_pagos: profileData.nombre_pagos || '',
+        telefono_pagos: profileData.telefono_pagos || '',
+        email_pagos: profileData.email_pagos || ''
+      });
+    }
+    setIsEditingProfile(false);
+  };
+
+  const handleOpenFiscalTicket = (type = 'Cambio de Condición de Facturación / IVA') => {
+    setChangeForm(prev => ({
+      ...prev,
+      request_type: type,
+      details: type.includes('IIBB') 
+        ? 'Solicito revisión o actualización de alícuota de Ingresos Brutos en mi cuenta corporativa. Adjunto/remito certificado de exención o constancia de padrón.' 
+        : 'Solicito actualización o corrección en los datos fiscales (CUIT / Condición frente al IVA) de mi cuenta corporativa.'
+    }));
+    setChangeModalOpen(true);
   };
 
   const handleLogout = () => {
@@ -714,7 +773,7 @@ export default function ShopClientPortal() {
             }}
           >
             <BrandingVectorIcon name="box" size={16} color={activeTab === 'orders' ? '#ffffff' : '#64748B'} />
-            <span>Mis Compras y Pedidos ({orders.length})</span>
+            <span>Mis Compras ({orders.length})</span>
           </button>
 
           <button
@@ -727,20 +786,7 @@ export default function ShopClientPortal() {
             }}
           >
             <BrandingVectorIcon name="building" size={16} color={activeTab === 'profile' ? '#ffffff' : '#64748B'} />
-            <span>Mi Ficha Corporativa & Contactos</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('discounts')}
-            className={`dacas-tab-pill${activeTab === 'discounts' ? ' active' : ''}`}
-            style={{
-              padding: '10px 20px',
-              fontSize: '13.5px',
-              fontWeight: '800'
-            }}
-          >
-            <BrandingVectorIcon name="tag" size={16} color={activeTab === 'discounts' ? '#ffffff' : '#64748B'} />
-            <span>Mis Descuentos y Condiciones</span>
+            <span>Ficha Corporativa</span>
           </button>
 
           <button
@@ -753,7 +799,7 @@ export default function ShopClientPortal() {
             }}
           >
             <BrandingVectorIcon name="users" size={16} color={activeTab === 'team' ? '#ffffff' : '#64748B'} />
-            <span>Equipo & Usuarios ({teamMembers.length})</span>
+            <span>Equipo y Usuarios ({teamMembers.length})</span>
           </button>
         </div>
 
@@ -1066,95 +1112,708 @@ export default function ShopClientPortal() {
 
         {/* ── TAB 2: MI FICHA CORPORATIVA & CONTACTOS ── */}
         {activeTab === 'profile' && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: '24px', alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 340px', gap: '24px', alignItems: 'start' }}>
             
-            {/* Left: Detailed Card */}
-            <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '28px', border: '1.5px solid #E2E8F0', boxShadow: '0 4px 16px rgba(0,0,0,0.03)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', borderBottom: '1px solid #F1F5F9', paddingBottom: '14px' }}>
-                <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#071524', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <BrandingVectorIcon name="building" size={20} color="#071524" />
-                  <span>Datos de la Empresa y Facturación</span>
-                </h2>
-                <button
-                  onClick={() => setEditProfileOpen(true)}
-                  style={{
-                    background: '#E0F2FE',
-                    color: '#0369A1',
-                    border: '1px solid #BAE6FD',
-                    borderRadius: '10px',
-                    padding: '7px 14px',
-                    fontSize: '12.5px',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '6px'
-                  }}
-                >
-                  <BrandingVectorIcon name="edit" size={13} color="#0369A1" />
-                  <span>Editar Contactos Rápidos</span>
-                </button>
+            {/* Left: Detailed Client Sheet (6 Cards) */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+              
+              {/* Header / Action Bar */}
+              <div style={{
+                background: '#FFFFFF',
+                borderRadius: '16px',
+                padding: '20px 24px',
+                border: '1px solid #E2E8F0',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.03)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '14px'
+              }}>
+                <div>
+                  <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#071524', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <BrandingVectorIcon name="building" size={22} color="#0fa4de" />
+                    <span>Ficha Corporativa & Datos de la Empresa</span>
+                  </h2>
+                  <p style={{ margin: '4px 0 0', fontSize: '12.5px', color: '#64748B' }}>
+                    Visualiza y completa la información de tu cuenta. Los datos de condición fiscal y percepciones están protegidos y requieren solicitud vía Ticket.
+                  </p>
+                </div>
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  {!isEditingProfile ? (
+                    <button
+                      onClick={() => setIsEditingProfile(true)}
+                      style={{
+                        background: '#0284c7',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        borderRadius: '10px',
+                        padding: '9px 18px',
+                        fontSize: '13px',
+                        fontWeight: '800',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '7px',
+                        boxShadow: '0 4px 12px rgba(2,132,199,0.25)',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      <BrandingVectorIcon name="edit" size={14} color="#FFFFFF" />
+                      <span>Completar / Editar Mis Datos</span>
+                    </button>
+                  ) : (
+                    <>
+                      <button
+                        onClick={handleCancelEditProfile}
+                        disabled={savingProfile}
+                        style={{
+                          background: '#F1F5F9',
+                          color: '#475569',
+                          border: '1px solid #CBD5E1',
+                          borderRadius: '10px',
+                          padding: '9px 16px',
+                          fontSize: '13px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <BrandingVectorIcon name="x" size={13} color="#475569" />
+                        <span>Cancelar</span>
+                      </button>
+
+                      <button
+                        onClick={handleSaveProfile}
+                        disabled={savingProfile}
+                        style={{
+                          background: '#10B981',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          borderRadius: '10px',
+                          padding: '9px 20px',
+                          fontSize: '13px',
+                          fontWeight: '800',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '7px',
+                          boxShadow: '0 4px 12px rgba(16,185,129,0.3)'
+                        }}
+                      >
+                        <BrandingVectorIcon name="check" size={14} color="#FFFFFF" />
+                        <span>{savingProfile ? 'Guardando...' : 'Guardar Cambios'}</span>
+                      </button>
+                    </>
+                  )}
+                </div>
               </div>
 
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '18px', marginBottom: '24px' }}>
-                <div>
-                  <label style={{ fontSize: '11.5px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase' }}>Razón Social</label>
-                  <div style={{ fontSize: '14px', fontWeight: '800', color: '#071524', marginTop: '2px' }}>{profileData?.razon_social || profileData?.name || 'N/A'}</div>
+              {/* Banner when in editing mode */}
+              {isEditingProfile && (
+                <div style={{
+                  background: '#EFF6FF',
+                  border: '1px solid #BFDBFE',
+                  borderRadius: '12px',
+                  padding: '12px 18px',
+                  fontSize: '12.5px',
+                  color: '#1E40AF',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '10px'
+                }}>
+                  <span style={{ fontSize: '16px' }}>✏️</span>
+                  <span><strong>Modo de Edición Activo:</strong> Puedes completar tu Razón Social, Teléfono, Sitio Web, Domicilio Fiscal, Dirección de Entrega y Contactos Designados. La Condición Fiscal y Percepciones se gestionan exclusivamente vía ticket oficial.</span>
                 </div>
+              )}
 
-                <div>
-                  <label style={{ fontSize: '11.5px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase' }}>Identificación Fiscal (CUIT / NIT)</label>
-                  <div style={{ fontSize: '14px', fontWeight: '800', color: '#071524', marginTop: '2px' }}>{profileData?.numero_nit || 'N/A'}</div>
-                </div>
-
-                <div>
-                  <label style={{ fontSize: '11.5px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase' }}>Tipo de Cliente</label>
-                  <div style={{ fontSize: '14px', fontWeight: '800', color: '#0fa4de', marginTop: '2px' }}>{profileData?.tipo_cliente || 'Integrador IT'}</div>
-                </div>
-
-                <div>
-                  <label style={{ fontSize: '11.5px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase' }}>País y Jurisdicción</label>
-                  <div style={{ fontSize: '14px', fontWeight: '800', color: '#071524', marginTop: '2px' }}>{profileData?.country_name || 'Argentina'}</div>
-                </div>
-
-                <div>
-                  <label style={{ fontSize: '11.5px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase' }}>Dirección Legal / Fiscal</label>
-                  <div style={{ fontSize: '14px', fontWeight: '700', color: '#334155', marginTop: '2px' }}>{profileData?.direccion_legal || 'No especificada'}</div>
-                </div>
-
-                <div>
-                  <label style={{ fontSize: '11.5px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase' }}>Dirección de Entrega Predeterminada</label>
-                  <div style={{ fontSize: '14px', fontWeight: '700', color: '#334155', marginTop: '2px' }}>{profileData?.direccion_entrega || 'Depósito Central'}</div>
-                </div>
-              </div>
-
-              {/* Responsables de Sector */}
-              <h3 style={{ margin: '24px 0 14px', fontSize: '1.05rem', fontWeight: '800', color: '#071524', borderTop: '1px solid #F1F5F9', paddingTop: '18px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <BrandingVectorIcon name="users" size={18} color="#071524" />
-                <span>Contactos Designados</span>
-              </h3>
-
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '18px' }}>
-                <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
-                  <div style={{ fontSize: '12px', fontWeight: '800', color: '#0fa4de', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <BrandingVectorIcon name="box" size={13} color="#0fa4de" />
-                    <span>Responsable de Compras</span>
+              {/* Grid 1: Card 1 & Card 2 */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '18px' }}>
+                
+                {/* CARD 1: Perfil Comercial & Legal */}
+                <div style={{ background: '#FFFFFF', padding: '22px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>📊</span> Perfil Comercial & Legal
+                    </div>
+                    {!isEditingProfile && (
+                      <button
+                        onClick={() => setIsEditingProfile(true)}
+                        style={{ background: '#f0f9ff', color: '#0284c7', border: '1px solid #bae6fd', borderRadius: '6px', padding: '3px 8px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                      >
+                        <BrandingVectorIcon name="edit" size={11} color="#0284c7" />
+                        <span>Editar</span>
+                      </button>
+                    )}
                   </div>
-                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#071524' }}>{profileData?.nombre_compras || 'No especificado'}</div>
-                  <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>{profileData?.telefono_compras || ''}</div>
-                  <div style={{ fontSize: '12px', color: '#0369A1' }}>{profileData?.email_compras || ''}</div>
+
+                  {isEditingProfile ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                      <div>
+                        <label style={{ fontSize: '11px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Razón Social *</label>
+                        <input
+                          type="text"
+                          value={editForm.razon_social}
+                          onChange={e => setEditForm({ ...editForm, razon_social: e.target.value })}
+                          placeholder="Nombre o Razón Social"
+                          style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '13px', color: '#071524', boxSizing: 'border-box' }}
+                        />
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                        <div>
+                          <label style={{ fontSize: '11px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Teléfono</label>
+                          <input
+                            type="text"
+                            value={editForm.phone}
+                            onChange={e => setEditForm({ ...editForm, phone: e.target.value })}
+                            placeholder="+54 11 4000-1234"
+                            style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '13px', color: '#071524', boxSizing: 'border-box' }}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: '11px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Sitio Web</label>
+                          <input
+                            type="text"
+                            value={editForm.web}
+                            onChange={e => setEditForm({ ...editForm, web: e.target.value })}
+                            placeholder="www.empresa.com"
+                            style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '13px', color: '#071524', boxSizing: 'border-box' }}
+                          />
+                        </div>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', fontSize: '12px', color: '#64748B', paddingTop: '4px' }}>
+                        <div>
+                          <span style={{ fontWeight: '600' }}>Tipo de Cliente:</span> <strong style={{ color: '#0284c7' }}>{profileData?.tipo_cliente || 'Integrador IT'}</strong>
+                        </div>
+                        <div>
+                          <span style={{ fontWeight: '600' }}>País:</span> <strong style={{ color: '#0F172A' }}>{profileData?.country_name || 'Argentina'}</strong>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px', fontSize: '13px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '7px' }}>
+                        <span style={{ color: '#64748B', fontWeight: '600' }}>Razón Social:</span>
+                        <strong style={{ color: '#0F172A', fontWeight: '700' }}>{profileData?.razon_social || profileData?.name || '—'}</strong>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '7px' }}>
+                        <span style={{ color: '#64748B', fontWeight: '600' }}>Tipo de Cliente:</span>
+                        <strong style={{ color: '#0284c7', fontWeight: '700' }}>{profileData?.tipo_cliente || 'Integrador IT / Reseller'}</strong>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '7px' }}>
+                        <span style={{ color: '#64748B', fontWeight: '600' }}>País Operación:</span>
+                        <strong style={{ color: '#0F172A', fontWeight: '700' }}>{profileData?.country_name || 'Argentina'}</strong>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '7px' }}>
+                        <span style={{ color: '#64748B', fontWeight: '600' }}>Teléfono:</span>
+                        <strong style={{ color: '#0F172A', fontWeight: '700' }}>
+                          {profileData?.phone ? <a href={`tel:${profileData.phone}`} style={{ color: '#0fa4de', textDecoration: 'none', fontWeight: '700' }}>{profileData.phone}</a> : <span style={{ color: '#94a3b8', fontStyle: 'italic', fontWeight: '400' }}>Completar</span>}
+                        </strong>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '7px' }}>
+                        <span style={{ color: '#64748B', fontWeight: '600' }}>Sitio Web:</span>
+                        <strong style={{ color: '#0F172A', fontWeight: '700' }}>
+                          {profileData?.web ? <a href={profileData.web.startsWith('http') ? profileData.web : `https://${profileData.web}`} target="_blank" rel="noreferrer" style={{ color: '#0fa4de', textDecoration: 'none', fontWeight: '700' }}>{profileData.web}</a> : <span style={{ color: '#94a3b8', fontStyle: 'italic', fontWeight: '400' }}>Completar</span>}
+                        </strong>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '2px' }}>
+                        <span style={{ color: '#64748B', fontWeight: '600' }}>Límite Facturación:</span>
+                        <strong style={{ color: '#0F172A', fontWeight: '700' }}>{profileData?.fecha_limite_facturacion ? new Date(profileData.fecha_limite_facturacion).toLocaleDateString() : '—'}</strong>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-                <div style={{ background: '#F8FAFC', padding: '14px', borderRadius: '12px', border: '1px solid #E2E8F0' }}>
-                  <div style={{ fontSize: '12px', fontWeight: '800', color: '#10b981', marginBottom: '6px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                    <BrandingVectorIcon name="credit-card" size={13} color="#10b981" />
-                    <span>Responsable de Pagos & Finanzas</span>
+                {/* CARD 2: Condición Fiscal & Asignación (🔒 Solo editable vía Ticket) */}
+                <div style={{ background: '#FFFFFF', padding: '22px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '6px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>🧾</span> Condición Fiscal & Asignación
+                    </div>
+                    <span style={{ background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A', padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span>🔒</span> Solo editable vía ticket
+                    </span>
                   </div>
-                  <div style={{ fontSize: '13px', fontWeight: '700', color: '#071524' }}>{profileData?.nombre_pagos || 'No especificado'}</div>
-                  <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>{profileData?.telefono_pagos || ''}</div>
-                  <div style={{ fontSize: '12px', color: '#0369A1' }}>{profileData?.email_pagos || ''}</div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px', fontSize: '13px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '7px' }}>
+                      <span style={{ color: '#64748B', fontWeight: '600' }}>CUIT / NIT / RUT:</span>
+                      <span style={{ background: '#071524', color: '#38bdf8', padding: '3px 10px', borderRadius: '6px', letterSpacing: '0.05em', fontWeight: '800', fontSize: '12px' }}>
+                        {profileData?.numero_nit || profileData?.cuit || '30-12345678-9'}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '7px' }}>
+                      <span style={{ color: '#64748B', fontWeight: '600' }}>Condición IVA:</span>
+                      <strong style={{ color: '#0F172A', fontWeight: '700' }}>{profileData?.tipo_iva || 'IVA Responsable Inscripto'}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '7px' }}>
+                      <span style={{ color: '#64748B', fontWeight: '600' }}>Cuenta Corriente:</span>
+                      {profileData?.cuenta_corriente_habilitada ? (
+                        <span style={{ background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '6px', fontWeight: '800', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          ✓ Habilitada
+                        </span>
+                      ) : (
+                        <span style={{ background: '#F1F5F9', color: '#64748B', border: '1px solid #CBD5E1', padding: '2px 8px', borderRadius: '6px', fontWeight: '700', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                          🔒 No Habilitada (Bloqueada)
+                        </span>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '7px' }}>
+                      <span style={{ color: '#64748B', fontWeight: '600' }}>Vendedor Asignado:</span>
+                      <span style={{ background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '6px', fontWeight: '800', fontSize: '12px' }}>
+                        {profileData?.vendedor || 'Equipo Comercial DACAS'}
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '7px' }}>
+                      <span style={{ color: '#64748B', fontWeight: '600' }}>Reporta a País:</span>
+                      <strong style={{ color: '#0F172A', fontWeight: '700' }}>{profileData?.report_country_name || 'DACAS Casa Central'}</strong>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '2px' }}>
+                      <span style={{ color: '#64748B', fontWeight: '600' }}>Fecha Registro:</span>
+                      <strong style={{ color: '#0F172A', fontWeight: '700' }}>{profileData?.created_at ? new Date(profileData.created_at).toLocaleDateString() : '—'}</strong>
+                    </div>
+                  </div>
+
+                  {/* Ticket Action Box */}
+                  <div style={{ marginTop: '14px', padding: '12px', borderRadius: '10px', background: '#FFFBEB', border: '1px dashed #FDE68A', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ fontSize: '11.5px', color: '#92400E', fontWeight: '600' }}>
+                      🔒 Modificación de CUIT / IVA sujeta a validación
+                    </div>
+                    <button
+                      onClick={() => handleOpenFiscalTicket('Cambio de Condición de Facturación / IVA')}
+                      style={{
+                        background: '#D97706',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '6px 12px',
+                        fontSize: '11.5px',
+                        fontWeight: '800',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px'
+                      }}
+                    >
+                      <BrandingVectorIcon name="file-text" size={12} color="#fff" />
+                      <span>Pedir Modificación vía Ticket</span>
+                    </button>
+                  </div>
                 </div>
               </div>
+
+              {/* Grid 2: Card 3 (Domicilio Legal) & Card 4 (Dirección de Entrega) */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '18px' }}>
+                
+                {/* CARD 3: Domicilio Legal / Fiscal */}
+                <div style={{ background: '#FFFFFF', padding: '22px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '800', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>🏛️</span> Domicilio Legal / Fiscal
+                    </div>
+                    {!isEditingProfile && (
+                      <button
+                        onClick={() => setIsEditingProfile(true)}
+                        style={{ background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '3px 8px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                      >
+                        <BrandingVectorIcon name="edit" size={11} color="#475569" />
+                        <span>Editar</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {isEditingProfile ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div>
+                        <label style={{ fontSize: '11px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Dirección Legal (Calle, Altura, Piso/Dpto)</label>
+                        <input
+                          type="text"
+                          value={editForm.direccion_legal}
+                          onChange={e => setEditForm({ ...editForm, direccion_legal: e.target.value })}
+                          placeholder="Ej: Av. Corrientes 1234, Piso 8"
+                          style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '13px', color: '#071524', boxSizing: 'border-box' }}
+                        />
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                        <div>
+                          <label style={{ fontSize: '11px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Localidad / Barrio</label>
+                          <input
+                            type="text"
+                            value={editForm.localidad}
+                            onChange={e => setEditForm({ ...editForm, localidad: e.target.value })}
+                            placeholder="Ej: San Nicolás"
+                            style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '13px', color: '#071524', boxSizing: 'border-box' }}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: '11px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Ciudad / Provincia</label>
+                          <input
+                            type="text"
+                            value={editForm.ciudad}
+                            onChange={e => setEditForm({ ...editForm, ciudad: e.target.value })}
+                            placeholder="Ej: Buenos Aires"
+                            style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '13px', color: '#071524', boxSizing: 'border-box' }}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '11px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Código Postal</label>
+                        <input
+                          type="text"
+                          value={editForm.codigo_postal}
+                          onChange={e => setEditForm({ ...editForm, codigo_postal: e.target.value })}
+                          placeholder="Ej: C1043AAS"
+                          style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '13px', color: '#071524', boxSizing: 'border-box' }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    profileData?.direccion_legal ? (
+                      <div style={{ fontSize: '13px', color: '#334155', lineHeight: '1.6' }}>
+                        <div style={{ fontWeight: '800', color: '#0F172A', fontSize: '13.5px' }}>{profileData.direccion_legal}</div>
+                        <div style={{ color: '#64748B' }}>
+                          {[profileData.localidad, profileData.ciudad].filter(Boolean).join(', ') || 'Ciudad de Buenos Aires'}
+                          {profileData.codigo_postal ? ` (CP ${profileData.codigo_postal})` : ''}
+                        </div>
+                        <div style={{ color: '#0284c7', fontWeight: '700', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span>🌎</span> {profileData.country_name || 'Argentina'}
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ padding: '12px 0' }}>
+                        <div style={{ fontSize: '13px', color: '#94A3B8', fontStyle: 'italic', marginBottom: '8px' }}>
+                          📍 No se ha registrado domicilio fiscal específico.
+                        </div>
+                        <button
+                          onClick={() => setIsEditingProfile(true)}
+                          style={{ background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0', borderRadius: '6px', padding: '4px 10px', fontSize: '11.5px', fontWeight: '700', cursor: 'pointer' }}
+                        >
+                          + Completar Domicilio Fiscal
+                        </button>
+                      </div>
+                    )
+                  )}
+                </div>
+
+                {/* CARD 4: Dirección de Entrega / Despacho */}
+                <div style={{ background: '#FFFFFF', padding: '22px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '800', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>🚚</span> Dirección de Entrega / Despacho
+                    </div>
+                    {!isEditingProfile && (
+                      <button
+                        onClick={() => setIsEditingProfile(true)}
+                        style={{ background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '3px 8px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                      >
+                        <BrandingVectorIcon name="edit" size={11} color="#475569" />
+                        <span>Editar</span>
+                      </button>
+                    )}
+                  </div>
+
+                  {isEditingProfile ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                      <div>
+                        <label style={{ fontSize: '11px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Dirección de Entrega (Calle, Depósito, Altura)</label>
+                        <input
+                          type="text"
+                          value={editForm.direccion_entrega}
+                          onChange={e => setEditForm({ ...editForm, direccion_entrega: e.target.value })}
+                          placeholder="Ej: Av. del Libertador 4500, Depósito 2"
+                          style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '13px', color: '#071524', boxSizing: 'border-box' }}
+                        />
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                        <div>
+                          <label style={{ fontSize: '11px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Localidad Entrega</label>
+                          <input
+                            type="text"
+                            value={editForm.localidad_entrega}
+                            onChange={e => setEditForm({ ...editForm, localidad_entrega: e.target.value })}
+                            placeholder="Ej: Palermo"
+                            style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '13px', color: '#071524', boxSizing: 'border-box' }}
+                          />
+                        </div>
+                        <div>
+                          <label style={{ fontSize: '11px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Ciudad Entrega</label>
+                          <input
+                            type="text"
+                            value={editForm.ciudad_entrega}
+                            onChange={e => setEditForm({ ...editForm, ciudad_entrega: e.target.value })}
+                            placeholder="Ej: Buenos Aires"
+                            style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '13px', color: '#071524', boxSizing: 'border-box' }}
+                          />
+                        </div>
+                      </div>
+                      <div>
+                        <label style={{ fontSize: '11px', color: '#64748B', fontWeight: '700', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Código Postal Entrega</label>
+                        <input
+                          type="text"
+                          value={editForm.codigo_postal_entrega}
+                          onChange={e => setEditForm({ ...editForm, codigo_postal_entrega: e.target.value })}
+                          placeholder="Ej: C1426BWW"
+                          style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '13px', color: '#071524', boxSizing: 'border-box' }}
+                        />
+                      </div>
+                    </div>
+                  ) : (
+                    profileData?.direccion_entrega ? (
+                      <div style={{ fontSize: '13px', color: '#334155', lineHeight: '1.6' }}>
+                        <div style={{ fontWeight: '800', color: '#0F172A', fontSize: '13.5px' }}>{profileData.direccion_entrega}</div>
+                        <div style={{ color: '#64748B' }}>
+                          {[profileData.localidad_entrega, profileData.ciudad_entrega].filter(Boolean).join(', ')}
+                          {profileData.codigo_postal_entrega ? ` (CP ${profileData.codigo_postal_entrega})` : ''}
+                        </div>
+                        <div style={{ color: '#0284c7', fontWeight: '700', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span>🌎</span> {profileData.country_name || 'Argentina'}
+                        </div>
+                      </div>
+                    ) : (
+                      <div style={{ padding: '12px 0' }}>
+                        <div style={{ fontSize: '13px', color: '#94A3B8', fontStyle: 'italic', marginBottom: '8px' }}>
+                          📦 Misma que dirección legal o a convenir por pedido.
+                        </div>
+                        <button
+                          onClick={() => setIsEditingProfile(true)}
+                          style={{ background: '#f0fdf4', color: '#16a34a', border: '1px solid #bbf7d0', borderRadius: '6px', padding: '4px 10px', fontSize: '11.5px', fontWeight: '700', cursor: 'pointer' }}
+                        >
+                          + Completar Dirección de Entrega
+                        </button>
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+
+              {/* CARD 5: Percepciones y Retenciones IIBB (Argentina) (🔒 Solo editable vía ticket) */}
+              {((profileData?.country_id === 2 || profileData?.country_name === 'Argentina' || !profileData?.country_id) && (
+                <div style={{ background: '#FFFFFF', padding: '22px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
+                    <div style={{ fontSize: '12px', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>🏛️</span> Percepciones & Retenciones IIBB (Argentina)
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+                      <span style={{ background: '#e0f2fe', color: '#0369a1', fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '6px' }}>
+                        Jurisdicción: {profileData?.iibb_jurisdiccion || '901 - Capital Federal'}
+                      </span>
+                      <span style={{ background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A', padding: '3px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <span>🔒</span> Solo editable vía ticket
+                      </span>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '12px', marginBottom: '14px', fontSize: '12.5px' }}>
+                    <div style={{ background: '#f8fafc', padding: '10px 14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                      <span style={{ color: '#64748b', fontSize: '11px', display: 'block', fontWeight: '700', textTransform: 'uppercase' }}>Inscripción IIBB:</span>
+                      <strong style={{ color: '#0f172a', fontSize: '13px' }}>{profileData?.iibb_tipo || 'C.M.'} — {profileData?.iibb_numero || profileData?.numero_nit || '9017223280'}</strong>
+                    </div>
+                    <div style={{ background: '#f8fafc', padding: '10px 14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
+                      <span style={{ color: '#64748b', fontSize: '11px', display: 'block', fontWeight: '700', textTransform: 'uppercase' }}>Código de Aceptación:</span>
+                      <strong style={{ color: profileData?.iibb_codigo_aceptacion ? '#16a34a' : '#94a3b8', fontSize: '13px' }}>
+                        {profileData?.iibb_codigo_aceptacion ? '✓ Aceptado / Homologado' : '✗ No informado'}
+                      </strong>
+                    </div>
+                  </div>
+
+                  {/* Listado de Provincias */}
+                  {(() => {
+                    let percs = profileData?.percepciones;
+                    if (typeof percs === 'string') {
+                      try { percs = JSON.parse(percs); } catch (_) { percs = null; }
+                    }
+                    if (!percs) {
+                      percs = {
+                        caba: { enabled: true, alicuota: 1.5, vigencia: '2026-10-01' },
+                        bsas: { enabled: false, alicuota: 0.0, vigencia: '2026-10-01' },
+                        salta: { enabled: false, alicuota: 0.0, vigencia: '2019-08-01' },
+                        misiones: { enabled: false, alicuota: 0.0, vigencia: '2023-05-01' },
+                        tucuman: { enabled: false, alicuota: 0.0, coef: 0.0, vigencia: '2025-06-01' }
+                      };
+                    }
+                    const provs = [
+                      { key: 'caba', name: 'CABA', ...percs.caba },
+                      { key: 'bsas', name: 'Bs. As. (ARBA)', ...percs.bsas },
+                      { key: 'salta', name: 'Salta', ...percs.salta },
+                      { key: 'misiones', name: 'Misiones', ...percs.misiones },
+                      { key: 'tucuman', name: 'Tucumán', ...percs.tucuman },
+                    ];
+
+                    return (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '10px' }}>
+                        {provs.map(p => {
+                          const isActive = p.enabled && parseFloat(p.alicuota) > 0;
+                          return (
+                            <div key={p.key} style={{
+                              padding: '10px 12px',
+                              borderRadius: '8px',
+                              border: isActive ? '1.5px solid #0284c7' : '1px solid #e2e8f0',
+                              background: isActive ? '#f0f9ff' : '#ffffff'
+                            }}>
+                              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
+                                <strong style={{ fontSize: '12px', color: '#0f172a' }}>{p.name}</strong>
+                                <span style={{ fontSize: '10px', fontWeight: '800', color: isActive ? '#0284c7' : '#94a3b8' }}>
+                                  {isActive ? 'ACTIVA' : 'INACTIVA'}
+                                </span>
+                              </div>
+                              <div style={{ fontSize: '14px', fontWeight: '800', color: isActive ? '#0369a1' : '#64748b' }}>
+                                {parseFloat(p.alicuota || 0).toFixed(4)}%
+                              </div>
+                              {p.coef ? <div style={{ fontSize: '10.5px', color: '#64748b' }}>Coef: {p.coef}</div> : null}
+                              {p.vigencia ? <div style={{ fontSize: '10px', color: '#94a3b8' }}>Vto: {p.vigencia}</div> : null}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    );
+                  })()}
+
+                  {/* Notice & Button to request ticket */}
+                  <div style={{ marginTop: '16px', padding: '12px 16px', borderRadius: '10px', background: '#F8FAFC', border: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
+                    <div style={{ fontSize: '12px', color: '#475569', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <span>💡</span>
+                      <span>Alícuotas según padrones tributarios oficiales. Para presentar certificados de exención o no retención:</span>
+                    </div>
+                    <button
+                      onClick={() => handleOpenFiscalTicket('Actualización de IIBB / Certificado de Exención')}
+                      style={{
+                        background: '#0284C7',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        borderRadius: '8px',
+                        padding: '7px 14px',
+                        fontSize: '12px',
+                        fontWeight: '700',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px'
+                      }}
+                    >
+                      <BrandingVectorIcon name="file-text" size={13} color="#FFFFFF" />
+                      <span>Solicitar Revisión IIBB vía Ticket</span>
+                    </button>
+                  </div>
+                </div>
+              ))}
+
+              {/* CARD 6: Contactos Clave Designados */}
+              <div style={{ background: '#FFFFFF', padding: '22px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: '800', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>👥</span> Contactos Clave Designados
+                  </div>
+                  {!isEditingProfile && (
+                    <button
+                      onClick={() => setIsEditingProfile(true)}
+                      style={{ background: '#f8fafc', color: '#475569', border: '1px solid #e2e8f0', borderRadius: '6px', padding: '3px 8px', fontSize: '11px', fontWeight: '700', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px' }}
+                    >
+                      <BrandingVectorIcon name="edit" size={11} color="#475569" />
+                      <span>Editar</span>
+                    </button>
+                  )}
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+                  {/* Compras */}
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '16px', borderRadius: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
+                      <span style={{ fontSize: '16px' }}>🛒</span>
+                      <span style={{ fontWeight: '800', fontSize: '11.5px', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Contacto Compras</span>
+                    </div>
+
+                    {isEditingProfile ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <input
+                          type="text"
+                          placeholder="Nombre y Apellido Compras"
+                          value={editForm.nombre_compras}
+                          onChange={e => setEditForm({ ...editForm, nombre_compras: e.target.value })}
+                          style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524', boxSizing: 'border-box' }}
+                        />
+                        <input
+                          type="text"
+                          placeholder="Teléfono / WhatsApp Compras"
+                          value={editForm.telefono_compras}
+                          onChange={e => setEditForm({ ...editForm, telefono_compras: e.target.value })}
+                          style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524', boxSizing: 'border-box' }}
+                        />
+                        <input
+                          type="email"
+                          placeholder="Email Compras"
+                          value={editForm.email_compras}
+                          onChange={e => setEditForm({ ...editForm, email_compras: e.target.value })}
+                          style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524', boxSizing: 'border-box' }}
+                        />
+                      </div>
+                    ) : (
+                      <>
+                        <div style={{ fontWeight: '800', fontSize: '14px', color: '#0F172A', marginBottom: '6px' }}>
+                          {profileData?.nombre_compras || <span style={{ color: '#94a3b8', fontStyle: 'italic', fontWeight: '400' }}>Sin especificar</span>}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#475569', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          {profileData?.telefono_compras && <div>📞 <strong style={{ color: '#0F172A' }}>{profileData.telefono_compras}</strong></div>}
+                          {profileData?.email_compras && <div>✉️ <a href={`mailto:${profileData.email_compras}`} style={{ color: '#0fa4de', textDecoration: 'none', fontWeight: '600' }}>{profileData.email_compras}</a></div>}
+                          {!profileData?.telefono_compras && !profileData?.email_compras && !profileData?.nombre_compras && (
+                            <span style={{ color: '#94A3B8', fontStyle: 'italic' }}>Sin datos de contacto</span>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+
+                  {/* Pagos / Tesorería */}
+                  <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '16px', borderRadius: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '10px' }}>
+                      <span style={{ fontSize: '16px' }}>💳</span>
+                      <span style={{ fontWeight: '800', fontSize: '11.5px', color: '#166534', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Pagos / Tesorería</span>
+                    </div>
+
+                    {isEditingProfile ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <input
+                          type="text"
+                          placeholder="Nombre y Apellido Tesorería"
+                          value={editForm.nombre_pagos}
+                          onChange={e => setEditForm({ ...editForm, nombre_pagos: e.target.value })}
+                          style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524', boxSizing: 'border-box' }}
+                        />
+                        <input
+                          type="text"
+                          placeholder="Teléfono / WhatsApp Pagos"
+                          value={editForm.telefono_pagos}
+                          onChange={e => setEditForm({ ...editForm, telefono_pagos: e.target.value })}
+                          style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524', boxSizing: 'border-box' }}
+                        />
+                        <input
+                          type="email"
+                          placeholder="Email Pagos / Facturación"
+                          value={editForm.email_pagos}
+                          onChange={e => setEditForm({ ...editForm, email_pagos: e.target.value })}
+                          style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524', boxSizing: 'border-box' }}
+                        />
+                      </div>
+                    ) : (
+                      <>
+                        <div style={{ fontWeight: '800', fontSize: '14px', color: '#0F172A', marginBottom: '6px' }}>
+                          {profileData?.nombre_pagos || <span style={{ color: '#94a3b8', fontStyle: 'italic', fontWeight: '400' }}>Sin especificar</span>}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#475569', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                          {profileData?.telefono_pagos && <div>📞 <strong style={{ color: '#0F172A' }}>{profileData.telefono_pagos}</strong></div>}
+                          {profileData?.email_pagos && <div>✉️ <a href={`mailto:${profileData.email_pagos}`} style={{ color: '#0fa4de', textDecoration: 'none', fontWeight: '600' }}>{profileData.email_pagos}</a></div>}
+                          {!profileData?.telefono_pagos && !profileData?.email_pagos && !profileData?.nombre_pagos && (
+                            <span style={{ color: '#94A3B8', fontStyle: 'italic' }}>Sin datos de contacto</span>
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </div>
+              </div>
+
             </div>
 
             {/* Right: Change Requests History */}
@@ -1224,65 +1883,6 @@ export default function ShopClientPortal() {
           </div>
         )}
 
-        {/* ── TAB 3: MIS DESCUENTOS Y CONDICIONES ── */}
-        {activeTab === 'discounts' && (
-          <div style={{ background: '#FFFFFF', borderRadius: '20px', padding: '28px', border: '1.5px solid #E2E8F0', boxShadow: '0 4px 16px rgba(0,0,0,0.03)' }}>
-            <h2 style={{ margin: '0 0 8px', fontSize: '1.25rem', fontWeight: '900', color: '#071524', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <BrandingVectorIcon name="tag" size={20} color="#071524" />
-              <span>Condiciones Comerciales y Descuentos Activos</span>
-            </h2>
-            <p style={{ color: '#64748B', fontSize: '13px', margin: '0 0 24px' }}>
-              Estas son las tarifas de precios mayoristas y bonificaciones automáticas aplicadas en tu cuenta para cotizaciones y pedidos en DACAS.
-            </p>
-
-            {activeRules.length === 0 ? (
-              <div style={{ textAlign: 'center', padding: '40px 0', color: '#64748B' }}>
-                <div style={{ marginBottom: '8px', color: '#94A3B8' }}>
-                  <BrandingVectorIcon name="tag" size={32} color="#94A3B8" />
-                </div>
-                <p>Tu cuenta cuenta con la lista de precios mayorista estándar para tu categoría.</p>
-              </div>
-            ) : (
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
-                {activeRules.map(rule => (
-                  <div key={rule.id} style={{
-                    background: 'linear-gradient(135deg, #F0F9FF 0%, #FFFFFF 100%)',
-                    border: '1.5px solid #BAE6FD',
-                    borderRadius: '16px',
-                    padding: '20px',
-                    boxShadow: '0 4px 12px rgba(15,164,222,0.06)'
-                  }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '8px' }}>
-                      <span style={{
-                        background: '#0fa4de',
-                        color: '#fff',
-                        fontWeight: '900',
-                        fontSize: '14px',
-                        padding: '4px 10px',
-                        borderRadius: '8px'
-                      }}>
-                        {rule.value_type === 'percentage' ? `-${parseFloat(rule.value)}%` : `-$${parseFloat(rule.value)} USD`}
-                      </span>
-                      <span style={{ fontSize: '11px', color: '#0369A1', fontWeight: '700', background: '#E0F2FE', padding: '2px 8px', borderRadius: '999px' }}>
-                        {rule.user_id ? 'Exclusivo para tu Empresa' : 'Convenio de Categoría'}
-                      </span>
-                    </div>
-
-                    <h4 style={{ margin: '0 0 6px', fontSize: '14.5px', fontWeight: '800', color: '#071524' }}>
-                      {rule.name}
-                    </h4>
-
-                    <div style={{ fontSize: '12px', color: '#64748B', lineHeight: '1.5' }}>
-                      {rule.brand && <div>• Marca aplicable: <strong>{rule.brand}</strong></div>}
-                      {rule.tipo_cliente && <div>• Categoría: <strong>{rule.tipo_cliente}</strong></div>}
-                      <div>• Aplicación automática: <strong>En Catálogo y Carrito</strong></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
 
         {/* ── TAB 4: EQUIPO & USUARIOS DE LA EMPRESA ── */}
         {activeTab === 'team' && (
@@ -2185,11 +2785,12 @@ export default function ShopClientPortal() {
                   onChange={e => setChangeForm({ ...changeForm, request_type: e.target.value })}
                   style={{ width: '100%', padding: '10px 12px', borderRadius: '10px', border: '1.5px solid #CBD5E1', fontSize: '13px', outline: 'none', background: '#fff', color: '#071524' }}
                 >
-                  <option value="Actualización de Domicilio de Entrega">Actualización de Domicilio de Entrega</option>
+                  <option value="Cambio de Condición de Facturación / IVA">Cambio de Condición de Facturación / IVA</option>
+                  <option value="Actualización de IIBB / Certificado de Exención">Actualización de IIBB / Certificado de Exención</option>
                   <option value="Cambio de Razón Social / CUIT">Cambio de Razón Social / CUIT</option>
+                  <option value="Actualización de Domicilio de Entrega">Actualización de Domicilio de Entrega</option>
                   <option value="Actualización de Contactos de Compras / Pagos">Actualización de Contactos de Compras / Pagos</option>
                   <option value="Solicitud de Ampliación de Línea de Crédito">Solicitud de Ampliación de Línea de Crédito</option>
-                  <option value="Cambio de Condición de Facturación / IVA">Cambio de Condición de Facturación / IVA</option>
                   <option value="Otro Requerimiento Administrativo">Otro Requerimiento Administrativo</option>
                 </select>
               </div>
@@ -2281,67 +2882,161 @@ export default function ShopClientPortal() {
             <form onSubmit={handleSaveProfile} style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>Nombre Contacto Principal</label>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>Razón Social *</label>
                   <input
                     type="text"
-                    value={editForm.name}
-                    onChange={e => setEditForm({ ...editForm, name: e.target.value })}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '13px', color: '#071524' }}
+                    value={editForm.razon_social}
+                    onChange={e => setEditForm({ ...editForm, razon_social: e.target.value })}
+                    placeholder="Empresa Demo S.A."
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '13px', color: '#071524', boxSizing: 'border-box' }}
                   />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>Teléfono General</label>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>Teléfono General</label>
                   <input
                     type="text"
                     value={editForm.phone}
                     onChange={e => setEditForm({ ...editForm, phone: e.target.value })}
-                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '13px', color: '#071524' }}
+                    placeholder="+54 11 4000-1234"
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '13px', color: '#071524', boxSizing: 'border-box' }}
                   />
                 </div>
               </div>
 
-              <div>
-                <label style={{ display: 'block', fontSize: '12px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>Dirección de Entrega</label>
-                <input
-                  type="text"
-                  value={editForm.direccion_entrega}
-                  onChange={e => setEditForm({ ...editForm, direccion_entrega: e.target.value })}
-                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '13px', color: '#071524' }}
-                />
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>Sitio Web</label>
+                  <input
+                    type="text"
+                    value={editForm.web}
+                    onChange={e => setEditForm({ ...editForm, web: e.target.value })}
+                    placeholder="www.empresa.com"
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '13px', color: '#071524', boxSizing: 'border-box' }}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>Contacto Principal</label>
+                  <input
+                    type="text"
+                    value={editForm.name}
+                    onChange={e => setEditForm({ ...editForm, name: e.target.value })}
+                    placeholder="Nombre completo"
+                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '13px', color: '#071524', boxSizing: 'border-box' }}
+                  />
+                </div>
               </div>
 
+              {/* Domicilio Fiscal */}
               <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: '10px' }}>
-                <h4 style={{ margin: '0 0 10px', fontSize: '13px', color: '#0fa4de', fontWeight: '800' }}>Sector Compras</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <h4 style={{ margin: '0 0 8px', fontSize: '12.5px', color: '#071524', fontWeight: '800' }}>Domicilio Legal / Fiscal</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <input
+                    placeholder="Dirección Legal (Calle, Altura, Piso)"
+                    value={editForm.direccion_legal}
+                    onChange={e => setEditForm({ ...editForm, direccion_legal: e.target.value })}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524', boxSizing: 'border-box' }}
+                  />
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                    <input
+                      placeholder="Localidad"
+                      value={editForm.localidad}
+                      onChange={e => setEditForm({ ...editForm, localidad: e.target.value })}
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524', boxSizing: 'border-box' }}
+                    />
+                    <input
+                      placeholder="Ciudad / Prov."
+                      value={editForm.ciudad}
+                      onChange={e => setEditForm({ ...editForm, ciudad: e.target.value })}
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524', boxSizing: 'border-box' }}
+                    />
+                    <input
+                      placeholder="Código Postal"
+                      value={editForm.codigo_postal}
+                      onChange={e => setEditForm({ ...editForm, codigo_postal: e.target.value })}
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Dirección de Entrega */}
+              <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: '10px' }}>
+                <h4 style={{ margin: '0 0 8px', fontSize: '12.5px', color: '#071524', fontWeight: '800' }}>Dirección de Entrega / Despacho</h4>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <input
+                    placeholder="Dirección de Entrega (Calle, Altura, Depósito)"
+                    value={editForm.direccion_entrega}
+                    onChange={e => setEditForm({ ...editForm, direccion_entrega: e.target.value })}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524', boxSizing: 'border-box' }}
+                  />
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
+                    <input
+                      placeholder="Localidad Entrega"
+                      value={editForm.localidad_entrega}
+                      onChange={e => setEditForm({ ...editForm, localidad_entrega: e.target.value })}
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524', boxSizing: 'border-box' }}
+                    />
+                    <input
+                      placeholder="Ciudad Entrega"
+                      value={editForm.ciudad_entrega}
+                      onChange={e => setEditForm({ ...editForm, ciudad_entrega: e.target.value })}
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524', boxSizing: 'border-box' }}
+                    />
+                    <input
+                      placeholder="CP Entrega"
+                      value={editForm.codigo_postal_entrega}
+                      onChange={e => setEditForm({ ...editForm, codigo_postal_entrega: e.target.value })}
+                      style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524', boxSizing: 'border-box' }}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Contactos */}
+              <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: '10px' }}>
+                <h4 style={{ margin: '0 0 10px', fontSize: '12.5px', color: '#0fa4de', fontWeight: '800' }}>Sector Compras</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
                   <input
                     placeholder="Nombre Compras"
                     value={editForm.nombre_compras}
                     onChange={e => setEditForm({ ...editForm, nombre_compras: e.target.value })}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524' }}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524', boxSizing: 'border-box' }}
+                  />
+                  <input
+                    placeholder="Teléfono Compras"
+                    value={editForm.telefono_compras}
+                    onChange={e => setEditForm({ ...editForm, telefono_compras: e.target.value })}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524', boxSizing: 'border-box' }}
                   />
                   <input
                     placeholder="Email Compras"
                     value={editForm.email_compras}
                     onChange={e => setEditForm({ ...editForm, email_compras: e.target.value })}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524' }}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524', boxSizing: 'border-box' }}
                   />
                 </div>
               </div>
 
               <div style={{ borderTop: '1px solid #F1F5F9', paddingTop: '10px' }}>
-                <h4 style={{ margin: '0 0 10px', fontSize: '13px', color: '#10b981', fontWeight: '800' }}>Sector Pagos / Tesorería</h4>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                <h4 style={{ margin: '0 0 10px', fontSize: '12.5px', color: '#10b981', fontWeight: '800' }}>Sector Pagos / Tesorería</h4>
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
                   <input
                     placeholder="Nombre Pagos"
                     value={editForm.nombre_pagos}
                     onChange={e => setEditForm({ ...editForm, nombre_pagos: e.target.value })}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524' }}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524', boxSizing: 'border-box' }}
+                  />
+                  <input
+                    placeholder="Teléfono Pagos"
+                    value={editForm.telefono_pagos}
+                    onChange={e => setEditForm({ ...editForm, telefono_pagos: e.target.value })}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524', boxSizing: 'border-box' }}
                   />
                   <input
                     placeholder="Email Pagos"
                     value={editForm.email_pagos}
                     onChange={e => setEditForm({ ...editForm, email_pagos: e.target.value })}
-                    style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524' }}
+                    style={{ width: '100%', padding: '8px 10px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '12.5px', color: '#071524', boxSizing: 'border-box' }}
                   />
                 </div>
               </div>
@@ -2356,9 +3051,10 @@ export default function ShopClientPortal() {
                 </button>
                 <button
                   type="submit"
+                  disabled={savingProfile}
                   style={{ flex: 2, padding: '10px', borderRadius: '10px', border: 'none', background: 'linear-gradient(135deg, #0fa4de, #0284c7)', color: '#fff', fontWeight: '800', cursor: 'pointer' }}
                 >
-                  Guardar Cambios
+                  {savingProfile ? 'Guardando...' : 'Guardar Cambios'}
                 </button>
               </div>
             </form>
