@@ -236,6 +236,8 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
   }, [activeAdminView]);
 
   const [ecommerceSubTab, setEcommerceSubTab] = useState('products');
+  const [visualSubTab, setVisualSubTab] = useState('hero');
+  const [isVisualExpanded, setIsVisualExpanded] = useState(true);
   const [ecommerceCountryScope, setEcommerceCountryScope] = useState(() => {
     try {
       const saved = localStorage.getItem('dacas_admin_country_scope');
@@ -418,7 +420,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
     try {
       const res = await fetch(ESTADOS_URL);
       const data = await res.json();
-      setEstados(data);
+      setEstados(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error("Error obteniendo estados", err);
     }
@@ -428,12 +430,13 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
     try {
       const res = await fetch(DEPT_URL);
       const data = await res.json();
-      setDepartamentos(data);
-      if (data.length > 0) {
+      const list = Array.isArray(data) ? data : [];
+      setDepartamentos(list);
+      if (list.length > 0) {
         // En lugar de tomar data[0], tomamos el primero que el usuario puede ver
         const deptosPermitidos = usuario?.rol === 'staff' && usuario?.accesos?.departamentos 
-          ? data.filter(d => usuario.accesos.departamentos.includes(d.id)) 
-          : data;
+          ? list.filter(d => usuario.accesos.departamentos.includes(d.id)) 
+          : list;
         
         if (deptosPermitidos.length > 0) {
           setDepartamentoActivo(prev => (prev !== null && prev !== undefined) ? prev : deptosPermitidos[0].id);
@@ -524,18 +527,19 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
       const form = new FormData();
       form.append('creado_por', usuario.nombre || usuario.email);
       const targetDepto = (() => {
+        const safeDeptList = Array.isArray(departamentos) ? departamentos : [];
         if (ticketCategoria === 'expenses') {
           if (tipoExpense === 'reintegro') {
-            const expDept = departamentos.find(d => d.nombre.toLowerCase() === 'expenses');
+            const expDept = safeDeptList.find(d => d.nombre.toLowerCase() === 'expenses');
             if (expDept) return expDept.id;
             return 5;
           } else if (tipoExpense === 'viaje') {
-            const trvDept = departamentos.find(d => d.nombre.toLowerCase() === 'travels');
+            const trvDept = safeDeptList.find(d => d.nombre.toLowerCase() === 'travels');
             if (trvDept) return trvDept.id;
             return 6;
           }
         }
-        const opsDept = departamentos.find(d => d.nombre.toLowerCase() === 'operaciones');
+        const opsDept = safeDeptList.find(d => d.nombre.toLowerCase() === 'operaciones');
         if (opsDept) return opsDept.id;
         return departamentoActivo || 4;
       })();
@@ -749,7 +753,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
     navigate('/login');
   };
 
-  const activeDept = departamentos.find(d => d.id === departamentoActivo);
+  const activeDept = (Array.isArray(departamentos) ? departamentos : []).find(d => d.id === departamentoActivo);
   const isHomeView = !activeAdminView && !departamentoActivo;
   const activeDeptName = isHomeView ? 'Consolidado Regional' : (activeDept?.nombre || 'Seleccione un departamento');
   const clientesFiltrados = (isHomeView || activeDept?.nombre?.toLowerCase() === 'general')
@@ -1086,35 +1090,133 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                   { id: 'apli', label: 'Conexión Apli', icon: 'zap' }
                 ].map(item => {
                   const isSelected = ecommerceSubTab === item.id;
+                  const isVisualItem = item.id === 'visual';
+
                   return (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => setEcommerceSubTab(item.id)}
-                      className={`sidebar-menu-btn ${isSelected ? 'active' : ''}`}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
-                        padding: '10px 14px',
-                        fontSize: '0.88rem',
-                        borderRadius: '10px',
-                        fontWeight: isSelected ? '800' : '650',
-                        background: isSelected ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : 'transparent',
-                        color: isSelected ? '#ffffff' : 'var(--text-main, #334155)',
-                        border: isSelected ? 'none' : '1px solid transparent',
-                        boxShadow: isSelected ? '0 4px 12px rgba(15, 164, 222, 0.3)' : 'none',
-                        cursor: 'pointer',
-                        transition: 'all 0.15s ease'
-                      }}
-                    >
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-                          <BrandingVectorIcon name={item.icon} size={16} color={isSelected ? '#ffffff' : '#0284c7'} />
-                        </span>
-                        <span>{item.label}</span>
-                      </div>
-                    </button>
+                    <div key={item.id} style={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (isVisualItem) {
+                            if (ecommerceSubTab === 'visual') {
+                              setIsVisualExpanded(prev => !prev);
+                            } else {
+                              setEcommerceSubTab('visual');
+                              setIsVisualExpanded(true);
+                            }
+                          } else {
+                            setEcommerceSubTab(item.id);
+                          }
+                        }}
+                        className={`sidebar-menu-btn ${isSelected ? 'active' : ''}`}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '10px 14px',
+                          fontSize: '0.88rem',
+                          borderRadius: '10px',
+                          fontWeight: isSelected ? '800' : '650',
+                          background: isSelected ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : 'transparent',
+                          color: isSelected ? '#ffffff' : 'var(--text-main, #334155)',
+                          border: isSelected ? 'none' : '1px solid transparent',
+                          boxShadow: isSelected ? '0 4px 12px rgba(15, 164, 222, 0.3)' : 'none',
+                          cursor: 'pointer',
+                          transition: 'all 0.15s ease'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                          <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                            <BrandingVectorIcon name={item.icon} size={16} color={isSelected ? '#ffffff' : '#0284c7'} />
+                          </span>
+                          <span>{item.label}</span>
+                        </div>
+
+                        {isVisualItem && (
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              opacity: 0.9,
+                              transition: 'transform 0.2s ease',
+                              transform: (isSelected && isVisualExpanded) ? 'rotate(180deg)' : 'rotate(0deg)'
+                            }}
+                          >
+                            <BrandingVectorIcon
+                              name="chevron-down"
+                              size={14}
+                              color={isSelected ? '#ffffff' : '#64748b'}
+                            />
+                          </span>
+                        )}
+                      </button>
+
+                      {/* Submenú desplegable dentro de Diseño & Banners */}
+                      {isVisualItem && isSelected && isVisualExpanded && (
+                        <div
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '3px',
+                            marginLeft: '14px',
+                            paddingLeft: '10px',
+                            borderLeft: '2px solid rgba(15, 164, 222, 0.35)',
+                            marginTop: '4px',
+                            marginBottom: '6px'
+                          }}
+                        >
+                          {[
+                            { id: 'hero', label: 'Banners Principales (Hero)', icon: 'layers' },
+                            { id: 'brand_banners', label: 'Banners Marcas & Carruseles', icon: 'star' },
+                            { id: 'announcement', label: 'Anuncio & Barra Superior', icon: 'megaphone' },
+                            { id: 'categories', label: '4 Categorías del Shop', icon: 'tag' },
+                            { id: 'brands', label: 'Marcas por Categoría', icon: 'building' },
+                            { id: 'contact', label: 'Contacto & WhatsApp', icon: 'headphones' }
+                          ].map(sub => {
+                            const isSubActive = visualSubTab === sub.id;
+                            return (
+                              <button
+                                key={sub.id}
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEcommerceSubTab('visual');
+                                  setVisualSubTab(sub.id);
+                                }}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  padding: '7px 10px',
+                                  fontSize: '0.80rem',
+                                  borderRadius: '8px',
+                                  fontWeight: isSubActive ? '800' : '600',
+                                  background: isSubActive ? 'rgba(15, 164, 222, 0.12)' : 'transparent',
+                                  color: isSubActive ? '#0284c7' : 'var(--text-main, #475569)',
+                                  border: isSubActive ? '1px solid rgba(15, 164, 222, 0.3)' : '1px solid transparent',
+                                  cursor: 'pointer',
+                                  textAlign: 'left',
+                                  transition: 'all 0.15s ease'
+                                }}
+                                onMouseEnter={(e) => {
+                                  if (!isSubActive) e.currentTarget.style.background = 'rgba(15, 164, 222, 0.06)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  if (!isSubActive) e.currentTarget.style.background = 'transparent';
+                                }}
+                              >
+                                <span style={{ display: 'inline-flex', alignItems: 'center', opacity: isSubActive ? 1 : 0.75 }}>
+                                  <BrandingVectorIcon name={sub.icon} size={13} color={isSubActive ? '#0284c7' : '#64748b'} />
+                                </span>
+                                <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                  {sub.label}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -1716,7 +1818,14 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                             envios: 'Métodos de Envío',
                             pagos: 'Métodos de Pago',
                             pagos_envios: 'Pagos y Envíos',
-                            visual: 'Diseño & Banners',
+                            visual: `Diseño & Banners • ${{
+                              hero: 'Banners Principales (Hero)',
+                              brand_banners: 'Banners Marcas & Carruseles',
+                              announcement: 'Anuncio & Barra Superior',
+                              categories: '4 Categorías del Shop',
+                              brands: 'Marcas por Categoría',
+                              contact: 'Contacto & WhatsApp'
+                            }[visualSubTab] || 'Personalización'}`,
                             n8n_bot: 'Bot n8n B2B',
                             apli: 'Conexión Apli'
                           }[ecommerceSubTab] || 'Gestión'
@@ -1809,6 +1918,8 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                   hideTopBars={true}
                   activeTab={ecommerceSubTab}
                   onTabChange={setEcommerceSubTab}
+                  visualSubTab={visualSubTab}
+                  onVisualSubTabChange={setVisualSubTab}
                   countryScope={ecommerceCountryScope}
                   onCountryScopeChange={handleEcommerceCountryChange}
                   onBack={() => {

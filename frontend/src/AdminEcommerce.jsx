@@ -476,17 +476,25 @@ function AdminEcommerce({
   hideTopBars = false,
   activeTab: externalActiveTab,
   onTabChange: externalOnTabChange,
+  visualSubTab: externalVisualSubTab,
+  onVisualSubTabChange: externalOnVisualSubTabChange,
   countryScope: externalCountryScope,
   onCountryScopeChange: externalOnCountryScopeChange,
   onBack
 }) {
   const navigate = useNavigate();
   const [internalActiveTab, setInternalActiveTab] = useState('products');
-  const [visualSubTab, setVisualSubTab] = useState('hero');
+  const [internalVisualSubTab, setInternalVisualSubTab] = useState('hero');
   const activeTab = externalActiveTab !== undefined ? externalActiveTab : internalActiveTab;
   const setActiveTab = (tab) => {
     setInternalActiveTab(tab);
     if (externalOnTabChange) externalOnTabChange(tab);
+  };
+
+  const visualSubTab = externalVisualSubTab !== undefined ? externalVisualSubTab : internalVisualSubTab;
+  const setVisualSubTab = (subTab) => {
+    setInternalVisualSubTab(subTab);
+    if (externalOnVisualSubTabChange) externalOnVisualSubTabChange(subTab);
   };
 
   // Primary Key Country Scope
