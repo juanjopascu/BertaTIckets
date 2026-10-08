@@ -14,7 +14,8 @@
       "contactEmail": "ventas@dacas.com.ar",
       "whatsappNumber": "+5491141103300",
       "headerBadge": "DISTRIBUIDOR OFICIAL ARGENTINA",
-      "primaryColor": "#0fa4de"
+      "primaryColor": "#0fa4de",
+      "whatsappEnabled": false
     },
     "heroSlides": [
       {
@@ -68,7 +69,7 @@
           "text": "Ver Catálogo",
           "cat": "all"
         },
-        "type": "animated_stats",
+        "type": "custom_image",
         "metrics": [
           {
             "value": "1.4 Gbps",
@@ -84,7 +85,8 @@
           }
         ],
         "imageUrl": "http://localhost:3001/uploads/1791257066571-176282348-ChatGPT_Image_5_oct_2026__05_56_00_p.m..png",
-        "showOverlayText": true
+        "showOverlayText": true,
+        "overlayStyle": "strong"
       }
     ],
     "categories": [
@@ -185,11 +187,11 @@
       "list": [
         {
           "id": "car_featured",
-          "title": "🔥 Productos Destacados Argentina",
+          "title": "Productos Destacados Argentina",
           "subtitle": "Equipamiento disponible para despacho inmediato desde el centro de distribución en Buenos Aires",
           "badge": "TOP SELLERS",
           "badgeColor": "#0fa4de",
-          "icon": "star",
+          "icon": "box",
           "enabled": true,
           "selectionType": "manual",
           "targetCategory": "all",
@@ -209,7 +211,7 @@
           "id": "car_custom",
           "title": "⚡ Oportunidades & Ofertas IT",
           "subtitle": "Soluciones corporativas seleccionadas con precios mayoristas para canales argentinos",
-          "badge": "SELECCIÓN DACAS",
+          "badge": "SELECCIÓN DAC",
           "badgeColor": "#10b981",
           "icon": "shield",
           "enabled": true,
@@ -246,7 +248,7 @@
           "badgeColor": "#0fa4de",
           "icon": "star",
           "enabled": true,
-          "selectionType": "category",
+          "selectionType": "manual",
           "targetCategory": "networking",
           "targetBrand": "all",
           "productIds": []
@@ -267,14 +269,18 @@
           2,
           3,
           4,
-          5
+          5,
+          6,
+          7,
+          8,
+          9
         ]
       },
       "custom": {
         "id": "car_custom",
         "title": "⚡ Oportunidades & Ofertas IT",
         "subtitle": "Soluciones corporativas seleccionadas con precios mayoristas para canales argentinos",
-        "badge": "SELECCIÓN DACAS",
+        "badge": "SELECCIÓN DAC",
         "badgeColor": "#10b981",
         "icon": "shield",
         "enabled": true,
@@ -283,7 +289,11 @@
         "targetBrand": "all",
         "productIds": [
           6,
-          7
+          7,
+          8,
+          9,
+          10,
+          11
         ]
       }
     },

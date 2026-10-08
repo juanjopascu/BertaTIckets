@@ -1,5 +1,130 @@
 [
   {
+    "id": 387,
+    "timestamp": "2026-10-08T02:44:25.765Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "fd1804e8f326385481d15741fcb8e89c19bc5e63db2746c7ee8c0f6e15fdaa15"
+    }
+  },
+  {
+    "id": 386,
+    "timestamp": "2026-10-08T02:25:17.074Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "0a657849c22e6e284f9a150b6b40c82743ebf1ac0f7d161c4ffc35f16fd35523"
+    }
+  },
+  {
+    "id": 385,
+    "timestamp": "2026-10-08T02:09:00.481Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $680,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791425340481",
+      "itemsCount": 1,
+      "total": 680,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Avaya Sistema de Videoconferencia Avaya Collaboration Bar B109 ($680.00)",
+      "items": [
+        {
+          "id": 5,
+          "name": "Sistema de Videoconferencia Avaya Collaboration Bar B109",
+          "brand": "Avaya",
+          "sku": "AVAYA-B109-CONF",
+          "qty": 1,
+          "price": 680,
+          "subtotal": 680
+        }
+      ],
+      "timestamp": "2026-10-08T02:09:00.481Z"
+    }
+  },
+  {
+    "id": 384,
+    "timestamp": "2026-10-08T02:05:38.509Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $680,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791425138509",
+      "itemsCount": 1,
+      "total": 680,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Avaya Sistema de Videoconferencia Avaya Collaboration Bar B109 ($680.00)",
+      "items": [
+        {
+          "id": 5,
+          "name": "Sistema de Videoconferencia Avaya Collaboration Bar B109",
+          "brand": "Avaya",
+          "sku": "AVAYA-B109-CONF",
+          "qty": 1,
+          "price": 680,
+          "subtotal": 680
+        }
+      ],
+      "timestamp": "2026-10-08T02:05:38.509Z"
+    }
+  },
+  {
+    "id": 383,
+    "timestamp": "2026-10-08T02:00:42.874Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "b31ed7349aaef2b31fa76f21bbc1ce4b315c9dbb57faaeaf06683bb79002cbd0"
+    }
+  },
+  {
     "id": 382,
     "timestamp": "2026-10-08T00:58:13.294Z",
     "origen": "ecommerce",

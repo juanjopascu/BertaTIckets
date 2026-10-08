@@ -960,7 +960,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
         {/* BARRA LATERAL DE DEPARTAMENTOS Y ADMINISTRACION */}
         <aside 
           className="sidebar-depts sidebar-left"
-          style={isMaximized ? { position: 'sticky', top: 0, maxHeight: 'calc(100vh - 40px)', overflowY: 'auto', flexShrink: 0 } : {}}
+          style={activeAdminView === 'ecommerce' ? { position: 'sticky', top: '16px', maxHeight: 'calc(100vh - 32px)', height: 'calc(100vh - 32px)', display: 'flex', flexDirection: 'column', overflow: 'hidden', flexShrink: 0 } : isMaximized ? { position: 'sticky', top: 0, maxHeight: 'calc(100vh - 40px)', overflowY: 'auto', flexShrink: 0 } : {}}
         >
           {activeAdminView === 'ecommerce' ? (
             /* ── SIDEBAR DEDICADO E-COMMERCE (Administración y CRM ocultos) ── */
@@ -1067,8 +1067,8 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
               </div>
 
               {/* Menú de Navegación Vertical de E-commerce */}
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1, overflowY: 'auto' }}>
-                <div style={{ fontSize: '11px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '4px 8px', marginBottom: '2px' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', flex: 1, minHeight: 0, overflowY: 'auto', paddingRight: '3px' }}>
+                <div style={{ fontSize: '10.5px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '4px 6px', marginBottom: '2px' }}>
                   Módulos E-commerce
                 </div>
                 {[

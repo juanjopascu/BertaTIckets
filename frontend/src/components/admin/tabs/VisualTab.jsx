@@ -12,13 +12,18 @@ export default function VisualTab({
   onCountryScopeChange,
   products = [],
   onNavigateToBrands,
-  getAuthHeader
+  getAuthHeader,
+  visualSubTab: propVisualSubTab,
+  setVisualSubTab: propSetVisualSubTab
 }) {
-  const [visualSubTab, setVisualSubTab] = useState('hero');
+  const [internalSubTab, setInternalSubTab] = useState('hero');
+  const visualSubTab = propVisualSubTab !== undefined ? propVisualSubTab : internalSubTab;
+  const setVisualSubTab = propSetVisualSubTab || setInternalSubTab;
   const [editingSlideIdx, setEditingSlideIdx] = useState(0);
   const [uploadingBanner, setUploadingBanner] = useState(false);
   const [isSavingVisual, setIsSavingVisual] = useState(false);
   const [visualSaveSuccess, setVisualSaveSuccess] = useState(false);
+  const [showTechSpecs, setShowTechSpecs] = useState(false);
   const bannerFileInputRef = useRef(null);
 
   // Desplegables para asignador de marcas por categoría
@@ -186,7 +191,7 @@ export default function VisualTab({
     const newSlide = {
       id: `slide_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
       badge: 'NUEVA SOLUCIÓN DACAS',
-      badgeIcon: '🚀',
+      badgeIcon: 'rocket',
       titleLine1: 'Título de la Solución',
       titleLine2: 'Hardware & Licencias Oficiales',
       titleColor: '#0fa4de',
@@ -346,7 +351,7 @@ export default function VisualTab({
     const list = Array.isArray(visualConfig?.homeCarousels?.list) ? [...visualConfig.homeCarousels.list] : [];
     const newCarousel = {
       id: `car_${Date.now()}_${Math.random().toString(36).substr(2, 4)}`,
-      title: `⚡ Nuevo Carrusel #${list.length + 1}`,
+      title: `Nuevo Carrusel #${list.length + 1}`,
       subtitle: 'Soluciones corporativas seleccionadas para canales de distribución',
       badge: 'DESTACADO',
       badgeColor: '#0fa4de',
@@ -604,14 +609,14 @@ export default function VisualTab({
   const currentCountryObj = DACAS_COUNTRIES_LIST.find(c => c.code === currentScopeCode) || activeCountryObj || {
     code: currentScopeCode,
     name: currentScopeCode,
-    flag: '🇦🇷'
+    flag: ''
   };
 
   const CATEGORIES_DEF = [
     {
       key: 'networking',
       title: 'Networking',
-      icon: '🌐',
+      icon: 'network',
       desc: 'Switches gestionables, Routers empresariales, Wi-Fi 6 y Conectividad',
       color: '#0284c7',
       bg: 'rgba(2, 132, 199, 0.08)'
@@ -619,7 +624,7 @@ export default function VisualTab({
     {
       key: 'infraestructura',
       title: 'Infraestructura',
-      icon: '⚡',
+      icon: 'server',
       desc: 'Energía Crítica UPS Online, Racks 42U y Cableado Estructurado',
       color: '#d97706',
       bg: 'rgba(245, 158, 11, 0.08)'
@@ -627,7 +632,7 @@ export default function VisualTab({
     {
       key: 'comunicaciones_unificadas',
       title: 'Comunicaciones Unificadas',
-      icon: '📞',
+      icon: 'headphones',
       desc: 'Gateways de Voz, SBCs, Telefonía IP Microsoft Teams & Salas Avaya',
       color: '#059669',
       bg: 'rgba(16, 185, 129, 0.08)'
@@ -635,7 +640,7 @@ export default function VisualTab({
     {
       key: 'security',
       title: 'Seguridad & Ciberseguridad',
-      icon: '🛡️',
+      icon: 'shield',
       desc: 'Next-Gen Firewalls FortiGate, Sandboxing con IA y Protección de Datos',
       color: '#dc2626',
       bg: 'rgba(239, 68, 68, 0.08)'
@@ -732,31 +737,6 @@ export default function VisualTab({
         </div>
       </div>
 
-      {/* Active Country Context Indicator */}
-      <div style={{
-        background: 'linear-gradient(135deg, rgba(15, 164, 222, 0.08) 0%, rgba(2, 132, 199, 0.12) 100%)',
-        border: '1.5px solid rgba(15, 164, 222, 0.3)',
-        borderRadius: '16px',
-        padding: '14px 20px',
-        marginBottom: '20px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '12px'
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ fontSize: '30px' }}>{currentCountryObj.flag || '🌎'}</span>
-          <div>
-            <div style={{ fontSize: '14px', fontWeight: '800', color: '#0F172A' }}>
-              Editando Banners, Carruseles y Home para: <span style={{ color: '#0284c7' }}>{currentCountryObj.name} ({currentCountryObj.code})</span>
-            </div>
-            <div style={{ fontSize: '12px', color: '#64748B' }}>
-              Multi-tenancy activo: los banners, carruseles y anuncios son 100% independientes para este país.
-            </div>
-          </div>
-        </div>
-      </div>
 
       {/* Success Toast */}
       {visualSaveSuccess && (
@@ -781,61 +761,76 @@ export default function VisualTab({
 
       {visualConfig ? (
         <div>
-          {/* ── Sub-Tab Navigation Bar ── */}
-          <div style={{
-            display: 'flex',
-            gap: '10px',
-            background: '#F1F5F9',
-            padding: '8px',
-            borderRadius: '20px',
-            marginBottom: '24px',
-            overflowX: 'auto'
-          }}>
-            {[
-              { id: 'hero', icon: 'rocket', title: 'Carousel de Banners (Hero)', desc: `${(visualConfig.heroSlides || []).length} Slides Activos` },
-              { id: 'brand_banners', icon: 'star', title: 'Banners Marcas & Carruseles', desc: 'Banners 2/3 marcas y productos home' },
-              { id: 'announcement', icon: 'megaphone', title: 'Anuncio & Barra Superior', desc: 'Mensaje de cobertura' },
-              { id: 'categories', icon: 'tag', title: '4 Categorías del Shop', desc: 'Títulos, íconos y orden' },
-              { id: 'brands', icon: 'building', title: 'Marcas por Categoría', desc: 'Fabricantes autorizados' },
-              { id: 'contact', icon: 'headphones', title: 'Contacto B2B & WhatsApp', desc: 'Canales de atención' }
-            ].map(tab => {
-              const isTabActive = visualSubTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setVisualSubTab(tab.id)}
-                  style={{
-                    flex: 1,
-                    minWidth: '190px',
-                    background: isTabActive ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : '#FFFFFF',
-                    border: isTabActive ? 'none' : '1px solid #E2E8F0',
-                    borderRadius: '14px',
-                    padding: '12px 16px',
-                    cursor: 'pointer',
-                    textAlign: 'left',
-                    boxShadow: isTabActive ? '0 4px 14px rgba(15, 164, 222, 0.35)' : '0 1px 3px rgba(0,0,0,0.03)',
-                    transition: 'all 0.2s cubic-bezier(0.4, 0, 0.2, 1)',
-                    transform: isTabActive ? 'translateY(-1px)' : 'none',
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
-                    <BrandingVectorIcon
-                      name={tab.icon}
-                      size={18}
-                      color={isTabActive ? '#FFFFFF' : '#0284c7'}
-                    />
-                    <div style={{ fontWeight: '800', fontSize: '13px', color: isTabActive ? '#FFFFFF' : '#0F172A' }}>
-                      {tab.title}
+          {/* ── Encabezado Contextual de Submódulo Activo ── */}
+          {(() => {
+            const currentSubTabInfo = {
+              hero: { icon: 'layers', title: 'Banners Principales (Hero)', desc: `Administra los slides principales y carruseles del encabezado (${(visualConfig.heroSlides || []).length} slides configurados)` },
+              brand_banners: { icon: 'star', title: 'Banners Marcas & Carruseles', desc: 'Personaliza los banners promocionales y carruseles de productos por marca' },
+              announcement: { icon: 'megaphone', title: 'Anuncio & Barra Superior', desc: 'Configura la cinta superior y mensajes de alerta o cobertura para clientes' },
+              categories: { icon: 'tag', title: '4 Categorías del Shop', desc: 'Organiza los títulos, íconos y visibilidad de las 4 categorías principales' },
+              brands: { icon: 'building', title: 'Marcas por Categoría', desc: 'Asigna y clasifica las marcas autorizadas para cada categoría de productos' },
+              contact: { icon: 'headphones', title: 'Contacto & WhatsApp', desc: 'Gestiona los números de soporte técnico y canales de atención por país' }
+            }[visualSubTab] || { icon: 'palette', title: 'Diseño & Banners', desc: 'Personalización visual del ecommerce' };
+
+            return (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '12px',
+                background: '#ffffff',
+                border: '1px solid #e2e8f0',
+                borderRadius: '14px',
+                padding: '12px 18px',
+                marginBottom: '20px',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.02)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '36px',
+                    height: '36px',
+                    borderRadius: '10px',
+                    background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: '#ffffff',
+                    boxShadow: '0 2px 8px rgba(15, 164, 222, 0.25)',
+                    flexShrink: 0
+                  }}>
+                    <BrandingVectorIcon name={currentSubTabInfo.icon} size={18} color="#ffffff" />
+                  </div>
+                  <div>
+                    <div style={{ fontSize: '14px', fontWeight: '800', color: '#0f172a', lineHeight: 1.2 }}>
+                      {currentSubTabInfo.title}
+                    </div>
+                    <div style={{ fontSize: '11.5px', color: '#64748b', fontWeight: '500', marginTop: '2px' }}>
+                      {currentSubTabInfo.desc}
                     </div>
                   </div>
-                  <div style={{ fontSize: '11px', color: isTabActive ? 'rgba(255, 255, 255, 0.85)' : '#64748B', fontWeight: '500', paddingLeft: '26px' }}>
-                    {tab.desc}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+                </div>
+
+                <div style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  background: '#f8fafc',
+                  border: '1px solid #e2e8f0',
+                  padding: '5px 12px',
+                  borderRadius: '8px',
+                  fontSize: '11.5px',
+                  fontWeight: '600',
+                  color: '#475569'
+                }}>
+                  <span style={{ color: '#64748b' }}>País:</span>
+                  <span style={{ color: '#0284c7', fontWeight: '800' }}>
+                    {activeCountryObj?.name || selectedCountryScope || 'Regional'}
+                  </span>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* ── SUBTAB 1: HERO CAROUSEL ── */}
           {visualSubTab === 'hero' && (
@@ -899,9 +894,13 @@ export default function VisualTab({
                       padding: '4px 12px',
                       borderRadius: '999px',
                       letterSpacing: '0.05em',
-                      zIndex: 10
+                      zIndex: 10,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px'
                     }}>
-                      {hasBackground ? (isImageOnly ? '🖼️ SOLO IMAGEN DE FONDO' : '✨ FONDO + TEXTOS COMBINADOS') : '📊 DISEÑO TECNOLÓGICO DACAS'} • SLIDE #{editingSlideIdx + 1}
+                      <BrandingVectorIcon name={isImageOnly ? 'image' : (hasBackground ? 'layers' : 'zap')} size={13} color="#38bdf8" />
+                      <span>{hasBackground ? (isImageOnly ? 'SOLO IMAGEN DE FONDO' : 'FONDO + TEXTOS') : 'DISEÑO TECNOLÓGICO DACAS'} • SLIDE #{editingSlideIdx + 1}</span>
                     </div>
 
                     {/* Contenido en Modo Solo Imagen */}
@@ -939,7 +938,8 @@ export default function VisualTab({
                             marginBottom: '12px',
                             backdropFilter: 'blur(6px)'
                           }}>
-                            <span>{slide.badgeIcon || '🛡️'}</span> {slide.badge || 'BADGE DEL BANNER'}
+                            <BrandingVectorIcon name={slide.badgeIcon || 'shield'} size={13} color={slide.titleColor || '#38bdf8'} />
+                            <span>{slide.badge || 'BADGE DEL BANNER'}</span>
                           </div>
 
                           <h3 style={{ margin: '0 0 10px', fontSize: '1.75rem', fontWeight: '900', lineHeight: 1.2, textShadow: '0 2px 10px rgba(0,0,0,0.5)' }}>
@@ -1011,88 +1011,6 @@ export default function VisualTab({
                 );
               })()}
 
-              {/* 📐 Ficha de Especificaciones Técnicas */}
-              <div style={{
-                background: 'linear-gradient(135deg, #071524 0%, #0f2742 100%)',
-                borderRadius: '16px',
-                padding: '20px 24px',
-                color: '#FFFFFF',
-                marginBottom: '20px',
-                border: '1px solid rgba(15, 164, 222, 0.35)',
-                boxShadow: '0 8px 24px rgba(7, 21, 36, 0.15)'
-              }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '1.3rem' }}>📐</span>
-                    <div>
-                      <h4 style={{ margin: 0, fontSize: '14.5px', fontWeight: '800', color: '#FFFFFF' }}>
-                        Especificaciones Técnicas para el Diseñador Gráfico (Banners del Carousel)
-                      </h4>
-                      <span style={{ fontSize: '11px', color: '#94A3B8' }}>
-                        Parámetros oficiales para crear banners de máxima fidelidad y carga instantánea.
-                      </span>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      const specText = `ESPECIFICACIONES TÉCNICAS DE BANNERS - DACAS B2B SHOP\n` +
-                        `===================================================\n` +
-                        `• Dimensiones Recomendadas: 1920 x 500 px (Relación ~16:4.2 / 3.84:1)\n` +
-                        `• Resolución Mínima: 1440 x 420 px\n` +
-                        `• Formatos Soportados: WebP (Recomendado), PNG 24-bit, JPG/JPEG (Calidad 90%)\n` +
-                        `• Peso Máximo por Archivo: <= 400 KB (Máximo 500 KB)\n` +
-                        `• Zona Segura (Safe Zone): 1400 x 420 px central (evitar texto/logos en los primeros 120px laterales por las flechas del carrusel)\n` +
-                        `• Espacio de Color: sRGB (72 a 150 DPI)\n` +
-                        `• Estilo & Paleta DACAS: Fondo oscuro (#071524 a #0f2742), Cian (#0fa4de), Acentos de Marca Oficiales.`;
-                      navigator.clipboard.writeText(specText);
-                      alert('📋 ¡Especificaciones técnicas copiadas al portapapeles para enviar al diseñador!');
-                    }}
-                    style={{
-                      background: '#0fa4de',
-                      color: '#FFFFFF',
-                      border: 'none',
-                      borderRadius: '8px',
-                      padding: '7px 14px',
-                      fontSize: '11.5px',
-                      fontWeight: '700',
-                      cursor: 'pointer',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      gap: '6px'
-                    }}
-                  >
-                    📋 Copiar Ficha para el Diseñador
-                  </button>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: '12px', fontSize: '11.5px' }}>
-                  <div style={{ background: 'rgba(15, 39, 66, 0.65)', padding: '10px 14px', borderRadius: '10px', border: '1px solid rgba(15, 164, 222, 0.2)' }}>
-                    <span style={{ color: '#38bdf8', fontWeight: '800', display: 'block', marginBottom: '2px' }}>📏 DIMENSIONES</span>
-                    <span style={{ fontWeight: '700', color: '#FFFFFF' }}>1920 x 500 px</span>
-                    <div style={{ color: '#94A3B8', fontSize: '10.5px' }}>Aspect ratio ~3.84:1</div>
-                  </div>
-
-                  <div style={{ background: 'rgba(15, 39, 66, 0.65)', padding: '10px 14px', borderRadius: '10px', border: '1px solid rgba(15, 164, 222, 0.2)' }}>
-                    <span style={{ color: '#10b981', fontWeight: '800', display: 'block', marginBottom: '2px' }}>📁 FORMATOS</span>
-                    <span style={{ fontWeight: '700', color: '#FFFFFF' }}>WebP, PNG, JPG</span>
-                    <div style={{ color: '#94A3B8', fontSize: '10.5px' }}>WebP preferido</div>
-                  </div>
-
-                  <div style={{ background: 'rgba(15, 39, 66, 0.65)', padding: '10px 14px', borderRadius: '10px', border: '1px solid rgba(15, 164, 222, 0.2)' }}>
-                    <span style={{ color: '#f59e0b', fontWeight: '800', display: 'block', marginBottom: '2px' }}>⚖️ PESO MÁXIMO</span>
-                    <span style={{ fontWeight: '700', color: '#FFFFFF' }}>&lt; 400 KB - 500 KB</span>
-                    <div style={{ color: '#94A3B8', fontSize: '10.5px' }}>Optimizado web</div>
-                  </div>
-
-                  <div style={{ background: 'rgba(15, 39, 66, 0.65)', padding: '10px 14px', borderRadius: '10px', border: '1px solid rgba(15, 164, 222, 0.2)' }}>
-                    <span style={{ color: '#c084fc', fontWeight: '800', display: 'block', marginBottom: '2px' }}>🛡️ SAFE ZONE</span>
-                    <span style={{ fontWeight: '700', color: '#FFFFFF' }}>1400 x 420 px</span>
-                    <div style={{ color: '#94A3B8', fontSize: '10.5px' }}>Margen lateral 120px</div>
-                  </div>
-                </div>
-              </div>
-
               {/* Slides Stacked */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '22px', width: '100%' }}>
                 
@@ -1101,40 +1019,155 @@ export default function VisualTab({
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
                     <div>
                       <h4 style={{ margin: 0, fontSize: '16px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <span>🎞️</span> Diapositivas Activas del Hero ({visualConfig.heroSlides?.length || 0})
+                        <BrandingVectorIcon name="layers" size={18} color="#0284c7" />
+                        <span>Diapositivas Activas del Hero ({visualConfig.heroSlides?.length || 0})</span>
                       </h4>
                       <p style={{ margin: '4px 0 0', fontSize: '12.5px', color: '#64748B' }}>
-                        Haz clic en cualquier diapositiva para seleccionarla y editarla a pantalla completa abajo. Reordena la secuencia con ⬅️ y ➡️.
+                        Haz clic en cualquier diapositiva para seleccionarla y editarla abajo. Reordena la secuencia con las flechas.
                       </p>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleAddSlide}
-                      style={{
-                        background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
-                        color: '#FFFFFF',
-                        border: 'none',
-                        borderRadius: '10px',
-                        padding: '9px 18px',
-                        fontSize: '13px',
-                        fontWeight: '700',
-                        cursor: 'pointer',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '7px',
-                        boxShadow: '0 3px 10px rgba(2, 132, 199, 0.25)',
-                        transition: 'all 0.15s'
-                      }}
-                    >
-                      ➕ Agregar Nuevo Slide
-                    </button>
+
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                      <button
+                        type="button"
+                        onClick={() => setShowTechSpecs(prev => !prev)}
+                        style={{
+                          background: showTechSpecs ? '#0284c7' : '#F8FAFC',
+                          color: showTechSpecs ? '#FFFFFF' : '#0284c7',
+                          border: '1.5px solid #BAE6FD',
+                          borderRadius: '10px',
+                          padding: '8px 14px',
+                          fontSize: '12px',
+                          fontWeight: '750',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px',
+                          transition: 'all 0.15s ease'
+                        }}
+                        title="Ver dimensiones y formatos recomendados para diseñadores"
+                      >
+                        <BrandingVectorIcon name="file-text" size={14} color={showTechSpecs ? '#FFFFFF' : '#0284c7'} />
+                        <span>{showTechSpecs ? 'Ocultar Guía' : 'Guía de Medidas (1920 × 500 px)'}</span>
+                        <BrandingVectorIcon name={showTechSpecs ? 'chevron-up' : 'chevron-down'} size={12} color={showTechSpecs ? '#FFFFFF' : '#0284c7'} />
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={handleAddSlide}
+                        style={{
+                          background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                          color: '#FFFFFF',
+                          border: 'none',
+                          borderRadius: '10px',
+                          padding: '9px 18px',
+                          fontSize: '13px',
+                          fontWeight: '700',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '7px',
+                          boxShadow: '0 3px 10px rgba(2, 132, 199, 0.25)',
+                          transition: 'all 0.15s'
+                        }}
+                      >
+                        <BrandingVectorIcon name="plus" size={14} color="#FFFFFF" />
+                        <span>Agregar Nuevo Slide</span>
+                      </button>
+                    </div>
                   </div>
+
+                  {/* Ficha Desplegable de Especificaciones Técnicas */}
+                  {showTechSpecs && (
+                    <div style={{
+                      background: 'linear-gradient(135deg, #071524 0%, #0f2742 100%)',
+                      borderRadius: '14px',
+                      padding: '18px 20px',
+                      color: '#FFFFFF',
+                      marginBottom: '18px',
+                      border: '1px solid rgba(15, 164, 222, 0.35)',
+                      boxShadow: '0 6px 20px rgba(7, 21, 36, 0.15)'
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <BrandingVectorIcon name="file-text" size={18} color="#38bdf8" />
+                          <div>
+                            <h5 style={{ margin: 0, fontSize: '13.5px', fontWeight: '800', color: '#FFFFFF' }}>
+                              Especificaciones Técnicas para el Diseñador Gráfico
+                            </h5>
+                            <span style={{ fontSize: '11px', color: '#94A3B8' }}>
+                              Parámetros recomendados para crear banners de máxima fidelidad y carga instantánea.
+                            </span>
+                          </div>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const specText = `ESPECIFICACIONES TÉCNICAS DE BANNERS - DACAS B2B SHOP\n` +
+                              `===================================================\n` +
+                              `• Dimensiones Recomendadas: 1920 x 500 px (Relación ~16:4.2 / 3.84:1)\n` +
+                              `• Resolución Mínima: 1440 x 420 px\n` +
+                              `• Formatos Soportados: WebP (Recomendado), PNG 24-bit, JPG/JPEG (Calidad 90%)\n` +
+                              `• Peso Máximo por Archivo: <= 400 KB (Máximo 500 KB)\n` +
+                              `• Zona Segura (Safe Zone): 1400 x 420 px central (evitar texto/logos en los primeros 120px laterales por las flechas del carrusel)\n` +
+                              `• Espacio de Color: sRGB (72 a 150 DPI)\n` +
+                              `• Estilo & Paleta DACAS: Fondo oscuro (#071524 a #0f2742), Cian (#0fa4de), Acentos de Marca Oficiales.`;
+                            navigator.clipboard.writeText(specText);
+                            alert('Especificaciones técnicas copiadas al portapapeles para enviar al diseñador.');
+                          }}
+                          style={{
+                            background: '#0fa4de',
+                            color: '#FFFFFF',
+                            border: 'none',
+                            borderRadius: '8px',
+                            padding: '6px 12px',
+                            fontSize: '11.5px',
+                            fontWeight: '700',
+                            cursor: 'pointer',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          <BrandingVectorIcon name="copy" size={13} color="#FFFFFF" />
+                          <span>Copiar Ficha para el Diseñador</span>
+                        </button>
+                      </div>
+
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '10px', fontSize: '11.5px' }}>
+                        <div style={{ background: 'rgba(15, 39, 66, 0.65)', padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(15, 164, 222, 0.2)' }}>
+                          <span style={{ color: '#38bdf8', fontWeight: '800', display: 'block', marginBottom: '2px' }}>DIMENSIONES</span>
+                          <span style={{ fontWeight: '700', color: '#FFFFFF' }}>1920 x 500 px</span>
+                          <div style={{ color: '#94A3B8', fontSize: '10px' }}>Aspect ratio ~3.84:1</div>
+                        </div>
+
+                        <div style={{ background: 'rgba(15, 39, 66, 0.65)', padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(15, 164, 222, 0.2)' }}>
+                          <span style={{ color: '#10b981', fontWeight: '800', display: 'block', marginBottom: '2px' }}>FORMATOS</span>
+                          <span style={{ fontWeight: '700', color: '#FFFFFF' }}>WebP, PNG, JPG</span>
+                          <div style={{ color: '#94A3B8', fontSize: '10px' }}>WebP recomendado</div>
+                        </div>
+
+                        <div style={{ background: 'rgba(15, 39, 66, 0.65)', padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(15, 164, 222, 0.2)' }}>
+                          <span style={{ color: '#f59e0b', fontWeight: '800', display: 'block', marginBottom: '2px' }}>PESO MÁXIMO</span>
+                          <span style={{ fontWeight: '700', color: '#FFFFFF' }}>&lt; 400 KB - 500 KB</span>
+                          <div style={{ color: '#94A3B8', fontSize: '10px' }}>Optimizado para web</div>
+                        </div>
+
+                        <div style={{ background: 'rgba(15, 39, 66, 0.65)', padding: '10px 12px', borderRadius: '8px', border: '1px solid rgba(15, 164, 222, 0.2)' }}>
+                          <span style={{ color: '#c084fc', fontWeight: '800', display: 'block', marginBottom: '2px' }}>SAFE ZONE</span>
+                          <span style={{ fontWeight: '700', color: '#FFFFFF' }}>1400 x 420 px</span>
+                          <div style={{ color: '#94A3B8', fontSize: '10px' }}>Margen lateral 120px</div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {(!visualConfig.heroSlides || visualConfig.heroSlides.length === 0) ? (
                     <div style={{ padding: '30px', textAlign: 'center', background: '#F8FAFC', borderRadius: '12px', border: '1px dashed #CBD5E1' }}>
                       <p style={{ margin: '0 0 10px', color: '#64748B', fontWeight: '600' }}>No hay diapositivas activas configuradas.</p>
-                      <button type="button" onClick={handleAddSlide} style={{ background: '#0284c7', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: '700' }}>
-                        ➕ Crear Primera Diapositiva
+                      <button type="button" onClick={handleAddSlide} style={{ background: '#0284c7', color: '#fff', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: '700', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                        <BrandingVectorIcon name="plus" size={13} color="#FFFFFF" />
+                        <span>Crear Primera Diapositiva</span>
                       </button>
                     </div>
                   ) : (
@@ -1142,7 +1175,7 @@ export default function VisualTab({
                       {visualConfig.heroSlides.map((s, idx) => {
                         const isSelected = editingSlideIdx === idx;
                         const isImageOnlySlide = (s.type === 'custom_image' && s.showOverlayText !== true) || s.showOverlayText === false;
-                        const typeBadge = isImageOnlySlide ? '🖼️ Solo Imagen' : s.imageUrl ? '✨ Fondo + Textos' : s.type === 'animated_stats' ? '⚡ Animado' : '📊 Título + KPIs';
+                        const typeBadge = isImageOnlySlide ? 'Solo Imagen' : s.imageUrl ? 'Fondo + Textos' : s.type === 'animated_stats' ? 'Animado' : 'Título + KPIs';
                         const slideKey = `hero-slide-item-${s?.id !== undefined && s?.id !== null ? s.id : idx}`;
                         
                         return (
@@ -1171,16 +1204,17 @@ export default function VisualTab({
                                   style={{ width: '52px', height: '38px', objectFit: 'cover', borderRadius: '8px', border: '1px solid #CBD5E1', flexShrink: 0, background: '#071524' }} 
                                 />
                               ) : (
-                                <div style={{ width: '52px', height: '38px', borderRadius: '8px', background: 'linear-gradient(135deg, #071524 0%, #0f2742 100%)', color: '#38bdf8', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '18px', flexShrink: 0, border: '1px solid #CBD5E1' }}>
-                                  {s.badgeIcon || '🛡️'}
+                                <div style={{ width: '52px', height: '38px', borderRadius: '8px', background: 'linear-gradient(135deg, #071524 0%, #0f2742 100%)', color: '#38bdf8', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, border: '1px solid #CBD5E1' }}>
+                                  <BrandingVectorIcon name={s.badgeIcon || 'image'} size={18} color="#38bdf8" />
                                 </div>
                               )}
                               <div style={{ minWidth: 0, flex: 1 }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '800', color: s.titleColor || '#0284c7' }}>
                                   <span>SLIDE #{idx + 1}</span>
                                   {isSelected ? (
-                                    <span style={{ background: '#0284c7', color: '#FFFFFF', padding: '1px 7px', borderRadius: '5px', fontSize: '10px', fontWeight: '800' }}>
-                                      ✓ Editando
+                                    <span style={{ background: '#0284c7', color: '#FFFFFF', padding: '1px 7px', borderRadius: '5px', fontSize: '10px', fontWeight: '800', display: 'inline-flex', alignItems: 'center', gap: '3px' }}>
+                                      <BrandingVectorIcon name="check" size={10} color="#FFFFFF" />
+                                      <span>Editando</span>
                                     </span>
                                   ) : (
                                     <span style={{ background: '#E2E8F0', color: '#475569', padding: '1px 6px', borderRadius: '5px', fontSize: '9.5px', fontWeight: '600' }}>
@@ -1199,27 +1233,27 @@ export default function VisualTab({
                                 type="button"
                                 onClick={() => handleMoveSlide(idx, -1)}
                                 disabled={idx === 0}
-                                style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '7px', padding: '5px 8px', cursor: idx === 0 ? 'not-allowed' : 'pointer', fontSize: '12px', opacity: idx === 0 ? 0.35 : 1 }}
+                                style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '7px', padding: '6px 8px', cursor: idx === 0 ? 'not-allowed' : 'pointer', opacity: idx === 0 ? 0.35 : 1, display: 'inline-flex', alignItems: 'center' }}
                                 title="Mover a la izquierda / antes"
                               >
-                                ⬅️
+                                <BrandingVectorIcon name="arrow-left" size={12} color="#475569" />
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleMoveSlide(idx, 1)}
                                 disabled={idx === visualConfig.heroSlides.length - 1}
-                                style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '7px', padding: '5px 8px', cursor: idx === visualConfig.heroSlides.length - 1 ? 'not-allowed' : 'pointer', fontSize: '12px', opacity: idx === visualConfig.heroSlides.length - 1 ? 0.35 : 1 }}
+                                style={{ background: '#FFFFFF', border: '1px solid #CBD5E1', borderRadius: '7px', padding: '6px 8px', cursor: idx === visualConfig.heroSlides.length - 1 ? 'not-allowed' : 'pointer', opacity: idx === visualConfig.heroSlides.length - 1 ? 0.35 : 1, display: 'inline-flex', alignItems: 'center' }}
                                 title="Mover a la derecha / después"
                               >
-                                ➡️
+                                <BrandingVectorIcon name="arrow-right" size={12} color="#475569" />
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleDeleteSlide(idx)}
-                                style={{ background: '#FEE2E2', border: '1px solid #FECACA', color: '#DC2626', borderRadius: '7px', padding: '5px 8px', cursor: 'pointer', fontSize: '12px' }}
+                                style={{ background: '#FEE2E2', border: '1px solid #FECACA', color: '#DC2626', borderRadius: '7px', padding: '6px 8px', cursor: 'pointer', display: 'inline-flex', alignItems: 'center' }}
                                 title="Eliminar slide"
                               >
-                                🗑️
+                                <BrandingVectorIcon name="trash" size={12} color="#DC2626" />
                               </button>
                             </div>
                           </div>
@@ -1240,10 +1274,11 @@ export default function VisualTab({
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <h4 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                              <span>✏️</span> Personalizando Slide #{editingSlideIdx + 1}: {cur.titleLine1 || 'Banner Principal'}
+                              <BrandingVectorIcon name="edit" size={17} color="#0fa4de" />
+                              Personalizando Slide #{editingSlideIdx + 1}: {cur.titleLine1 || 'Banner Principal'}
                             </h4>
                             <span style={{ fontSize: '11px', background: '#E0F2FE', color: '#0369A1', padding: '3px 9px', borderRadius: '6px', fontWeight: '800' }}>
-                              📐 1920 × 500 px
+                              1920 × 500 px
                             </span>
                           </div>
                           <p style={{ margin: '4px 0 0', fontSize: '12.5px', color: '#64748B' }}>
@@ -1254,7 +1289,8 @@ export default function VisualTab({
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           {visualSaveSuccess && (
                             <span style={{ color: '#10B981', fontSize: '12.5px', fontWeight: '750', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                              ✅ ¡Cambios guardados!
+                              <BrandingVectorIcon name="check-circle" size={14} color="#10B981" />
+                              ¡Cambios guardados!
                             </span>
                           )}
                           <button
@@ -1277,21 +1313,23 @@ export default function VisualTab({
                               transition: 'all 0.15s'
                             }}
                           >
-                            <span>💾</span> {isSavingVisual ? 'Guardando...' : 'Guardar Banners'}
+                            <BrandingVectorIcon name="save" size={14} color="#FFFFFF" />
+                            {isSavingVisual ? 'Guardando...' : 'Guardar Banners'}
                           </button>
                         </div>
                       </div>
 
                       {/* 1. Selector de Modo de Banner */}
                       <div style={{ marginBottom: '22px', background: '#F8FAFC', padding: '16px 18px', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
-                        <label style={{ display: 'block', fontSize: '13px', fontWeight: '800', color: '#0F172A', marginBottom: '10px' }}>
-                          🎨 1. Tipo de Presentación del Banner
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '800', color: '#0F172A', marginBottom: '10px' }}>
+                          <BrandingVectorIcon name="layers" size={15} color="#0284c7" />
+                          1. Tipo de Presentación del Banner
                         </label>
                         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
                           {[
-                            { id: 'metrics', label: '📊 Título + 3 KPIs Laterales', desc: 'Textos, botones y 3 métricas destacadas (admite imagen de fondo)' },
-                            { id: 'animated_stats', label: '⚡ Animado Core DACAS', desc: 'Textos, botones y contadores tecnológicos (admite imagen de fondo)' },
-                            { id: 'custom_image', label: '🖼️ Solo Imagen (Sin Textos)', desc: 'Para banners prediseñados donde no requieres textos sobreimpresos' }
+                            { id: 'metrics', icon: 'layers', label: 'Título + 3 KPIs Laterales', desc: 'Textos, botones y 3 métricas destacadas (admite imagen de fondo)' },
+                            { id: 'animated_stats', icon: 'zap', label: 'Animado Core DACAS', desc: 'Textos, botones y contadores tecnológicos (admite imagen de fondo)' },
+                            { id: 'custom_image', icon: 'image', label: 'Solo Imagen (Sin Textos)', desc: 'Para banners prediseñados donde no requieres textos sobreimpresos' }
                           ].map(t => {
                             const isSelected = t.id === 'custom_image'
                               ? (cur.type === 'custom_image' && cur.showOverlayText !== true) || cur.showOverlayText === false
@@ -1323,7 +1361,10 @@ export default function VisualTab({
                                   transition: 'all 0.15s'
                                 }}
                               >
-                                <div style={{ fontSize: '13px', marginBottom: '3px' }}>{t.label}</div>
+                                <div style={{ fontSize: '13px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '7px' }}>
+                                  <BrandingVectorIcon name={t.icon} size={15} color={isSelected ? '#FFFFFF' : '#0284c7'} />
+                                  <span>{t.label}</span>
+                                </div>
                                 <div style={{ fontSize: '11px', opacity: isSelected ? 0.95 : 0.75, fontWeight: '500' }}>{t.desc}</div>
                               </button>
                             );
@@ -1335,8 +1376,9 @@ export default function VisualTab({
                       <div style={{ marginBottom: '22px', background: '#F0F9FF', padding: '18px 20px', borderRadius: '14px', border: '1.5px solid #BAE6FD' }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
                           <div>
-                            <label style={{ fontSize: '13.5px', fontWeight: '800', color: '#0369A1', display: 'flex', alignItems: 'center', gap: '6px', margin: 0 }}>
-                              <span>🖼️</span> 2. Imagen de Fondo del Banner (Ocupa el 100% del Slide)
+                            <label style={{ fontSize: '13.5px', fontWeight: '800', color: '#0369A1', display: 'flex', alignItems: 'center', gap: '7px', margin: 0 }}>
+                              <BrandingVectorIcon name="image" size={16} color="#0369A1" />
+                              2. Imagen de Fondo del Banner (Ocupa el 100% del Slide)
                             </label>
                             <div style={{ fontSize: '11.5px', color: '#64748B', marginTop: '2px' }}>
                               Cubre todo el ancho y alto del slide. Puedes combinarla con textos y botones por encima.
@@ -1375,7 +1417,8 @@ export default function VisualTab({
                               boxShadow: '0 3px 10px rgba(15, 164, 222, 0.3)'
                             }}
                           >
-                            <span>📁</span> {uploadingBanner ? 'Subiendo imagen...' : 'Cargar Foto desde la PC'}
+                            <BrandingVectorIcon name="upload" size={14} color="#FFFFFF" />
+                            {uploadingBanner ? 'Subiendo imagen...' : 'Cargar Foto desde la PC'}
                           </button>
 
                           <span style={{ fontSize: '12px', color: '#64748B', fontWeight: '700' }}>o ingresa una URL:</span>
@@ -1392,9 +1435,10 @@ export default function VisualTab({
                             <button
                               type="button"
                               onClick={() => handleUpdateSlideField(editingSlideIdx, 'imageUrl', '')}
-                              style={{ background: '#FEE2E2', border: '1px solid #FECACA', color: '#DC2626', padding: '9px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '750', cursor: 'pointer' }}
+                              style={{ background: '#FEE2E2', border: '1px solid #FECACA', color: '#DC2626', padding: '9px 14px', borderRadius: '8px', fontSize: '12px', fontWeight: '750', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
                             >
-                              🗑️ Quitar Foto
+                              <BrandingVectorIcon name="trash" size={13} color="#DC2626" />
+                              Quitar Foto
                             </button>
                           )}
                         </div>
@@ -1414,7 +1458,9 @@ export default function VisualTab({
                             onMouseEnter={(e) => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.borderColor = '#0284c7'; }}
                             onMouseLeave={(e) => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.75)'; e.currentTarget.style.borderColor = '#93C5FD'; }}
                           >
-                            <div style={{ fontSize: '2.2rem', marginBottom: '6px' }}>☁️</div>
+                            <div style={{ marginBottom: '8px', display: 'flex', justifyContent: 'center' }}>
+                              <BrandingVectorIcon name="cloud" size={36} color="#0284c7" />
+                            </div>
                             <div style={{ fontWeight: '800', fontSize: '13.5px', color: '#0369A1' }}>
                               Haz clic aquí o arrastra tu imagen para cubrir el fondo del banner
                             </div>
@@ -1441,9 +1487,13 @@ export default function VisualTab({
                                 fontSize: '11px',
                                 fontWeight: '750',
                                 backdropFilter: 'blur(6px)',
-                                border: '1px solid rgba(56, 189, 248, 0.3)'
+                                border: '1px solid rgba(56, 189, 248, 0.3)',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '6px'
                               }}>
-                                ✓ Imagen de Fondo Cargada (1920×500 px)
+                                <BrandingVectorIcon name="check-circle" size={12} color="#38bdf8" />
+                                Imagen de Fondo Cargada (1920 × 500 px)
                               </div>
                             </div>
 
@@ -1465,8 +1515,9 @@ export default function VisualTab({
                                   style={{ width: '18px', height: '18px', accentColor: '#0284c7', cursor: 'pointer' }}
                                 />
                                 <div>
-                                  <div style={{ fontSize: '13px', fontWeight: '800', color: '#0369A1' }}>
-                                    ✨ Superponer textos, botones y métricas sobre la imagen de fondo (Modo Combinado)
+                                  <div style={{ fontSize: '13px', fontWeight: '800', color: '#0369A1', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    <BrandingVectorIcon name="sparkles" size={14} color="#0284c7" />
+                                    Superponer textos, botones y métricas sobre la imagen de fondo (Modo Combinado)
                                   </div>
                                   <div style={{ fontSize: '11.5px', color: '#64748B' }}>
                                     Mantén activo para ver títulos, descripción, botones de acción y 3 KPIs sobre la fotografía.
@@ -1477,7 +1528,7 @@ export default function VisualTab({
                               {((cur.showOverlayText !== false && cur.type !== 'custom_image') || cur.showOverlayText === true) && (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap', paddingTop: '8px', borderTop: '1px solid #F1F5F9' }}>
                                   <span style={{ fontSize: '12px', fontWeight: '750', color: '#475569' }}>
-                                    🌓 Contraste / Oscurecimiento para lectura:
+                                    Contraste / Oscurecimiento para lectura:
                                   </span>
                                   {[
                                     { id: 'medium', label: 'Equilibrado (Recomendado)' },
@@ -1518,21 +1569,22 @@ export default function VisualTab({
                             
                             {/* Columna Izquierda: Badges, Títulos y Color */}
                             <div style={{ background: '#F8FAFC', padding: '18px 20px', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
-                              <h5 style={{ margin: '0 0 14px', fontSize: '13px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <span>🏷️</span> Identidad Visual & Títulos
+                              <h5 style={{ margin: '0 0 14px', fontSize: '13px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '7px' }}>
+                                <BrandingVectorIcon name="tag" size={14} color="#0284c7" />
+                                Identidad Visual & Títulos
                               </h5>
 
                               <div style={{ display: 'grid', gridTemplateColumns: '110px 1fr', gap: '10px', marginBottom: '12px' }}>
                                 <div>
                                   <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '750', color: '#475569', marginBottom: '5px' }}>
-                                    Ícono / Emoji
+                                    Ícono Vectorial
                                   </label>
                                   <input
                                     type="text"
                                     value={cur.badgeIcon || ''}
                                     onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'badgeIcon', e.target.value)}
                                     style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', textAlign: 'center' }}
-                                    placeholder="🛡️"
+                                    placeholder="shield"
                                   />
                                 </div>
                                 <div>
@@ -1622,8 +1674,9 @@ export default function VisualTab({
 
                             {/* Columna Derecha: Descripción & Botones de Acción */}
                             <div style={{ background: '#F8FAFC', padding: '18px 20px', borderRadius: '14px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column' }}>
-                              <h5 style={{ margin: '0 0 14px', fontSize: '13px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <span>🔘</span> Descripción & Botones de Acción
+                              <h5 style={{ margin: '0 0 14px', fontSize: '13px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '7px' }}>
+                                <BrandingVectorIcon name="layers" size={14} color="#0284c7" />
+                                Descripción & Botones de Acción
                               </h5>
 
                               <div style={{ marginBottom: '14px', flex: 1 }}>
@@ -1650,7 +1703,8 @@ export default function VisualTab({
                                 }}>
                                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                                     <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: '800', color: cur.primaryBtn?.enabled !== false ? '#0284c7' : '#64748B', margin: 0 }}>
-                                      <span>🔘</span> Botón Primario
+                                      <BrandingVectorIcon name="arrow-right" size={12} color={cur.primaryBtn?.enabled !== false ? '#0284c7' : '#64748B'} />
+                                      Botón Primario
                                     </label>
                                     <label style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontSize: '11px', fontWeight: '700', color: cur.primaryBtn?.enabled !== false ? '#0369A1' : '#64748B' }}>
                                       <input
@@ -1677,8 +1731,9 @@ export default function VisualTab({
                                       />
                                     </div>
                                     <div>
-                                      <label style={{ display: 'block', fontSize: '10.5px', fontWeight: '700', color: '#64748B', marginBottom: '3px' }}>
-                                        🔗 Hipervínculo / Destino (URL)
+                                      <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '10.5px', fontWeight: '700', color: '#64748B', marginBottom: '3px' }}>
+                                        <BrandingVectorIcon name="link" size={11} color="#64748B" />
+                                        Hipervínculo / Destino (URL)
                                       </label>
                                       <input
                                         type="text"
@@ -1726,7 +1781,8 @@ export default function VisualTab({
                                 }}>
                                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                                     <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: '800', color: cur.secondaryBtn?.enabled !== false ? '#334155' : '#64748B', margin: 0 }}>
-                                      <span>🔘</span> Botón Secundario
+                                      <BrandingVectorIcon name="arrow-right" size={12} color={cur.secondaryBtn?.enabled !== false ? '#334155' : '#64748B'} />
+                                      Botón Secundario
                                     </label>
                                     <label style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', cursor: 'pointer', fontSize: '11px', fontWeight: '700', color: cur.secondaryBtn?.enabled !== false ? '#334155' : '#64748B' }}>
                                       <input
@@ -1753,8 +1809,9 @@ export default function VisualTab({
                                       />
                                     </div>
                                     <div>
-                                      <label style={{ display: 'block', fontSize: '10.5px', fontWeight: '700', color: '#64748B', marginBottom: '3px' }}>
-                                        🔗 Hipervínculo / Destino (URL)
+                                      <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '10.5px', fontWeight: '700', color: '#64748B', marginBottom: '3px' }}>
+                                        <BrandingVectorIcon name="link" size={11} color="#64748B" />
+                                        Hipervínculo / Destino (URL)
                                       </label>
                                       <input
                                         type="text"
@@ -1798,12 +1855,14 @@ export default function VisualTab({
                           {/* 4. Métricas / 3 KPIs */}
                           <div style={{ background: '#F8FAFC', padding: '18px 20px', borderRadius: '14px', border: '1px solid #E2E8F0', marginBottom: '22px' }}>
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '6px' }}>
-                              <label style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                                <span>📊</span> 3 Métricas Destacadas del Banner (Botones / KPIs laterales en pantalla grande)
+                              <label style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '7px' }}>
+                                <BrandingVectorIcon name="zap" size={15} color="#0284c7" />
+                                3 Métricas Destacadas del Banner (Botones / KPIs laterales en pantalla grande)
                               </label>
                               {cur.type === 'animated_stats' && (
-                                <span style={{ fontSize: '11px', background: '#FEF3C7', color: '#D97706', padding: '3px 9px', borderRadius: '6px', fontWeight: '750' }}>
-                                  ⚡ Modo animado DACAS activo
+                                <span style={{ fontSize: '11px', background: '#FEF3C7', color: '#D97706', padding: '3px 9px', borderRadius: '6px', fontWeight: '750', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                                  <BrandingVectorIcon name="zap" size={12} color="#D97706" />
+                                  Modo animado DACAS activo
                                 </span>
                               )}
                             </div>
@@ -1839,7 +1898,8 @@ export default function VisualTab({
                         <div style={{ background: '#F0F9FF', padding: '18px 22px', borderRadius: '14px', border: '1.5px dashed #38BDF8', fontSize: '13px', color: '#0369A1', marginBottom: '22px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
                           <div>
                             <div style={{ fontWeight: '800', fontSize: '14px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '7px' }}>
-                              <span>🖼️</span> Modo "Solo Imagen" Activo
+                              <BrandingVectorIcon name="image" size={16} color="#0369A1" />
+                              Modo "Solo Imagen" Activo
                             </div>
                             <div style={{ fontSize: '12.5px', color: '#475569' }}>
                               En este modo la imagen de fondo se presenta limpia sin textos sobreimpresos ni botones de métricas. ¿Deseas combinar esta imagen con títulos, botones y métricas?
@@ -1866,15 +1926,17 @@ export default function VisualTab({
                               gap: '6px'
                             }}
                           >
-                            <span>✨</span> Combinar Imagen con Textos y Botones
+                            <BrandingVectorIcon name="sparkles" size={14} color="#FFFFFF" />
+                            Combinar Imagen con Textos y Botones
                           </button>
                         </div>
                       )}
 
                       {/* 5. Barra Inferior de Guardado */}
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', paddingTop: '16px', borderTop: '1px solid #E2E8F0' }}>
-                        <div style={{ fontSize: '12.5px', color: '#64748B' }}>
-                          🌍 Configurando para: <strong>{selectedCountryScope === 'all' ? 'Todos los Países' : selectedCountryScope || 'AR'}</strong> • Los cambios se verán inmediatamente en la tienda tras guardar.
+                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', color: '#64748B' }}>
+                          <BrandingVectorIcon name="check-circle" size={14} color="#10B981" />
+                          <span>Los cambios guardados se reflejan inmediatamente en la tienda pública.</span>
                         </div>
                         <button
                           type="button"
@@ -1896,7 +1958,8 @@ export default function VisualTab({
                             transition: 'all 0.15s'
                           }}
                         >
-                          <span>💾</span> {isSavingVisual ? 'Guardando Cambios...' : 'Guardar Diseño y Banners'}
+                          <BrandingVectorIcon name="save" size={15} color="#FFFFFF" />
+                          {isSavingVisual ? 'Guardando Cambios...' : 'Guardar Banners'}
                         </button>
                       </div>
 
@@ -1915,10 +1978,12 @@ export default function VisualTab({
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px' }}>
                   <div>
                     <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(15, 164, 222, 0.1)', color: '#0fa4de', padding: '4px 12px', borderRadius: '999px', fontSize: '11px', fontWeight: '800', marginBottom: '8px' }}>
-                      ⭐ HOME DEL SHOP · BANNERS DE MARCA & CARRUSELES
+                      <BrandingVectorIcon name="star" size={13} color="#0fa4de" />
+                      HOME DEL SHOP · BANNERS DE MARCA & CARRUSELES
                     </div>
                     <h3 style={{ margin: '0 0 6px', fontSize: '1.35rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span>🏷️</span> Banners Promocionales de Marcas & Carruseles de la Home
+                      <BrandingVectorIcon name="tag" size={20} color="#0fa4de" />
+                      Banners Promocionales de Marcas & Carruseles de la Home
                     </h3>
                     <p style={{ margin: 0, color: '#64748B', fontSize: '0.92rem', maxWidth: '780px', lineHeight: 1.5 }}>
                       Personaliza los 2 o 3 banners destacados de marcas que promocionamos en la pantalla de inicio, y los carruseles horizontales de productos para que los clientes exploren el catálogo cómodamente.
@@ -1932,7 +1997,8 @@ export default function VisualTab({
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', flexWrap: 'wrap', gap: '10px' }}>
                   <div>
                     <h4 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span>🎯</span> 2 o 3 Banners de Marcas Promocionadas (Home)
+                      <BrandingVectorIcon name="award" size={16} color="#0fa4de" />
+                      2 o 3 Banners de Marcas Promocionadas (Home)
                     </h4>
                     <p style={{ margin: '4px 0 0', fontSize: '12px', color: '#64748B' }}>
                       Al hacer clic en un banner, el cliente navegará directo al catálogo con los productos de ese fabricante.
@@ -2095,7 +2161,7 @@ export default function VisualTab({
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '22px', flexWrap: 'wrap', gap: '16px' }}>
                   <div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '4px' }}>
-                      <span style={{ fontSize: '22px' }}>🎠</span>
+                      <BrandingVectorIcon name="layers" size={20} color="#0fa4de" />
                       <h4 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '900', color: '#0F172A', letterSpacing: '-0.02em' }}>
                         Configuración de Carruseles de la Home
                       </h4>
@@ -2111,7 +2177,7 @@ export default function VisualTab({
                       </span>
                     </div>
                     <p style={{ margin: 0, fontSize: '13px', color: '#64748B', maxWidth: '680px' }}>
-                      Crea, reordena y personaliza todos los carruseles que desees para la página principal. Cada país tiene sus carruseles y productos de forma 100% independiente.
+                      Crea, reordena y personaliza todos los carruseles que desees para la página principal. Cada región tiene sus carruseles y productos de forma independiente.
                     </p>
                   </div>
 
@@ -2135,64 +2201,35 @@ export default function VisualTab({
                         transition: 'all 0.2s ease'
                       }}
                     >
-                      <span style={{ fontSize: '16px', fontWeight: '900' }}>+</span>
+                      <BrandingVectorIcon name="plus" size={14} color="#FFFFFF" />
                       <span>Agregar Nuevo Carrusel</span>
                     </button>
                   </div>
                 </div>
 
-                {/* Country Switcher & Copy Bar */}
+                {/* Herramientas de Carruseles: Copiar desde otra región */}
                 <div style={{
                   background: '#F8FAFC',
-                  border: '1.5px solid #E2E8F0',
-                  borderRadius: '16px',
-                  padding: '14px 18px',
-                  marginBottom: '22px',
+                  border: '1px solid #E2E8F0',
+                  borderRadius: '12px',
+                  padding: '12px 18px',
+                  marginBottom: '20px',
                   display: 'flex',
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   flexWrap: 'wrap',
-                  gap: '14px'
+                  gap: '12px'
                 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '12px', fontWeight: '800', color: '#334155', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                      📍 País Activo:
-                    </span>
-                    <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-                      {DACAS_COUNTRIES_LIST.map(c => {
-                        const isSel = selectedCountryScope === c.code;
-                        return (
-                          <button
-                            key={c.code}
-                            type="button"
-                            onClick={() => onCountryScopeChange && onCountryScopeChange(c.code)}
-                            style={{
-                              padding: '6px 12px',
-                              borderRadius: '8px',
-                              border: isSel ? '2px solid #0fa4de' : '1px solid #CBD5E1',
-                              background: isSel ? '#0fa4de' : '#FFFFFF',
-                              color: isSel ? '#FFFFFF' : '#334155',
-                              fontWeight: '800',
-                              fontSize: '11.5px',
-                              cursor: 'pointer',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '5px',
-                              transition: 'all 0.15s ease'
-                            }}
-                          >
-                            <span>{c.flag}</span>
-                            <span>{c.code}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', fontSize: '12.5px', color: '#475569' }}>
+                    <BrandingVectorIcon name="layers" size={15} color="#0284c7" />
+                    <span>Los carruseles y su orden aplican a la tienda activa seleccionada en el scope.</span>
                   </div>
 
                   {/* Copy carousels from another country */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '11.5px', fontWeight: '700', color: '#64748B' }}>
-                      📋 Copiar carruseles de:
+                    <span style={{ fontSize: '11.5px', fontWeight: '700', color: '#64748B', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                      <BrandingVectorIcon name="copy" size={13} color="#64748B" />
+                      Copiar carruseles de:
                     </span>
                     <select
                       defaultValue=""
@@ -2212,9 +2249,9 @@ export default function VisualTab({
                         fontWeight: '600'
                       }}
                     >
-                      <option value="" disabled>Seleccionar país...</option>
+                      <option value="" disabled>Seleccionar origen...</option>
                       {DACAS_COUNTRIES_LIST.filter(c => c.code !== selectedCountryScope).map(c => (
-                        <option key={c.code} value={c.code}>{c.flag} {c.name} ({c.code})</option>
+                        <option key={c.code} value={c.code}>{c.name} ({c.code})</option>
                       ))}
                     </select>
                   </div>
@@ -2249,12 +2286,14 @@ export default function VisualTab({
                       border: '1.5px dashed #CBD5E1',
                       textAlign: 'center'
                     }}>
-                      <div style={{ fontSize: '36px', marginBottom: '8px' }}>🎠</div>
+                      <div style={{ marginBottom: '12px', display: 'flex', justifyContent: 'center' }}>
+                        <BrandingVectorIcon name="layers" size={36} color="#94A3B8" />
+                      </div>
                       <h5 style={{ margin: '0 0 6px', fontSize: '15px', fontWeight: '800', color: '#0F172A' }}>
-                        No hay carruseles configurados para {currentCountryObj.name}
+                        No hay carruseles configurados
                       </h5>
                       <p style={{ margin: '0 0 16px', fontSize: '12.5px', color: '#64748B' }}>
-                        Puedes agregar un nuevo carrusel personalizado o copiar la lista de carruseles de otro país.
+                        Puedes agregar un nuevo carrusel personalizado o copiar la lista de carruseles de otra sede.
                       </p>
                       <button
                         type="button"
@@ -2267,10 +2306,14 @@ export default function VisualTab({
                           borderRadius: '8px',
                           fontSize: '12.5px',
                           fontWeight: '800',
-                          cursor: 'pointer'
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px'
                         }}
                       >
-                        + Crear Primer Carrusel
+                        <BrandingVectorIcon name="plus" size={13} color="#FFFFFF" />
+                        Crear Primer Carrusel
                       </button>
                     </div>
                   )}
@@ -2287,8 +2330,9 @@ export default function VisualTab({
                   flexWrap: 'wrap',
                   gap: '12px'
                 }}>
-                  <div style={{ fontSize: '12px', color: '#64748B' }}>
-                    💡 <em>Recuerda guardar los cambios para que se publiquen en la tienda de <strong>{currentCountryObj.name}</strong>.</em>
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: '#64748B' }}>
+                    <BrandingVectorIcon name="check-circle" size={13} color="#10B981" />
+                    <span>Recuerda guardar los cambios para que se publiquen en la tienda.</span>
                   </div>
                   <button
                     type="button"
@@ -2303,10 +2347,14 @@ export default function VisualTab({
                       fontWeight: '800',
                       fontSize: '13px',
                       border: 'none',
-                      cursor: isSavingVisual ? 'not-allowed' : 'pointer'
+                      cursor: isSavingVisual ? 'not-allowed' : 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '7px'
                     }}
                   >
-                    {isSavingVisual ? 'Guardando...' : `💾 Guardar Carruseles de ${currentCountryObj.name}`}
+                    <BrandingVectorIcon name="save" size={14} color="#FFFFFF" />
+                    {isSavingVisual ? 'Guardando...' : 'Guardar Carruseles'}
                   </button>
                 </div>
 
@@ -2318,7 +2366,8 @@ export default function VisualTab({
           {visualSubTab === 'announcement' && (
             <div style={{ background: '#FFFFFF', padding: '30px', borderRadius: '22px', border: '1px solid rgba(15, 164, 222, 0.18)', boxShadow: '0 12px 36px rgba(7, 21, 36, 0.05)' }}>
               <h3 style={{ margin: '0 0 18px', fontSize: '1.25rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '-0.02em' }}>
-                <span>📢</span> Configuración de la Barra Superior & Textos de Cabecera
+                <BrandingVectorIcon name="megaphone" size={20} color="#0fa4de" />
+                Configuración de la Barra Superior & Textos de Cabecera
               </h3>
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', background: '#F8FAFC', padding: '14px 18px', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
@@ -2413,7 +2462,8 @@ export default function VisualTab({
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px', borderBottom: '1px solid #F1F5F9', paddingBottom: '16px' }}>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '1.25rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '-0.02em' }}>
-                    <span>🏷️</span> Las 4 Secciones Principales del Shop
+                    <BrandingVectorIcon name="tag" size={20} color="#0fa4de" />
+                    Las 4 Secciones Principales del Shop
                   </h3>
                   <p style={{ margin: '4px 0 0', color: '#64748B', fontSize: '13.5px' }}>
                     Personaliza el nombre, ícono y descripción visible para los integradores y clientes.
@@ -2501,9 +2551,11 @@ export default function VisualTab({
                             padding: '9px',
                             borderRadius: '10px',
                             border: '1.5px solid #CBD5E1',
-                            fontSize: '20px',
+                            fontSize: '13px',
+                            fontWeight: '700',
                             background: '#F8FAFC'
                           }}
+                          placeholder="network"
                         />
                       </div>
                       <div>
@@ -2571,20 +2623,10 @@ export default function VisualTab({
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '16px', marginBottom: '22px', borderBottom: '1px solid #F1F5F9', paddingBottom: '18px' }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                    <span style={{ fontSize: '24px' }}>📁</span>
+                    <BrandingVectorIcon name="layers" size={22} color="#0fa4de" />
                     <h3 style={{ margin: 0, fontSize: '1.3rem', fontWeight: '850', color: '#0F172A', letterSpacing: '-0.02em' }}>
                       Marcas por Categoría Tecnológica
                     </h3>
-                    <span style={{
-                      background: '#E0F2FE',
-                      color: '#0284c7',
-                      fontWeight: '800',
-                      fontSize: '11.5px',
-                      padding: '3px 10px',
-                      borderRadius: '6px'
-                    }}>
-                      {currentCountryObj.flag} {currentCountryObj.name} ({currentCountryObj.code})
-                    </span>
                   </div>
                   <p style={{ margin: '6px 0 0', color: '#64748B', fontSize: '13px', maxWidth: '780px', lineHeight: 1.45 }}>
                     Asigna y organiza qué fabricantes oficiales se visualizan dentro de cada una de las 4 categorías tecnológicas del Shop.
@@ -2605,11 +2647,15 @@ export default function VisualTab({
                       padding: '7px 12px',
                       fontSize: '11.5px',
                       fontWeight: '700',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px'
                     }}
                     title="Desplegar todas las categorías"
                   >
-                    🔽 Desplegar Todas
+                    <BrandingVectorIcon name="chevron-down" size={13} color="#475569" />
+                    <span>Desplegar Todas</span>
                   </button>
 
                   <button
@@ -2623,11 +2669,15 @@ export default function VisualTab({
                       padding: '7px 12px',
                       fontSize: '11.5px',
                       fontWeight: '700',
-                      cursor: 'pointer'
+                      cursor: 'pointer',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px'
                     }}
                     title="Colapsar todas las categorías"
                   >
-                    🔼 Colapsar Todas
+                    <BrandingVectorIcon name="chevron-up" size={13} color="#475569" />
+                    <span>Colapsar Todas</span>
                   </button>
 
                   {onNavigateToBrands && (
@@ -2650,8 +2700,9 @@ export default function VisualTab({
                       }}
                       title="Ir al módulo Marcas para crear nuevos fabricantes o editar logotipos"
                     >
-                      <span>🏷️</span>
-                      <span>Módulo Marcas (Crear / Editar Logos) ➔</span>
+                      <BrandingVectorIcon name="tag" size={13} color="#FFFFFF" />
+                      <span>Módulo Marcas (Crear / Editar Logos)</span>
+                      <BrandingVectorIcon name="arrow-right" size={12} color="#FFFFFF" />
                     </button>
                   )}
                 </div>
@@ -2672,7 +2723,7 @@ export default function VisualTab({
                 color: '#0369A1'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ fontSize: '15px' }}>💡</span>
+                  <BrandingVectorIcon name="lightbulb" size={15} color="#0284c7" />
                   <span>
                     <strong>Modo ordenado sin ruido visual:</strong> Haz clic en cualquier categoría para desplegarla. Para asignar una marca, selecciónala en el desplegable de esa categoría.
                   </span>
@@ -2741,11 +2792,10 @@ export default function VisualTab({
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            fontSize: '20px',
                             flexShrink: 0,
                             boxShadow: isExpanded ? '0 2px 6px rgba(0,0,0,0.06)' : 'none'
                           }}>
-                            {group.icon}
+                            <BrandingVectorIcon name={group.icon} size={22} color={group.color} />
                           </div>
 
                           <div style={{ minWidth: 0, flex: 1 }}>
@@ -2764,7 +2814,7 @@ export default function VisualTab({
                                 alignItems: 'center',
                                 gap: '5px'
                               }}>
-                                <span>{displayedAssignedBrands.length > 0 ? '●' : '○'}</span>
+                                <span style={{ display: 'inline-block', width: '6px', height: '6px', borderRadius: '50%', background: displayedAssignedBrands.length > 0 ? (isExpanded ? '#FFFFFF' : '#0369A1') : '#94A3B8' }}></span>
                                 <span>{displayedAssignedBrands.length} {displayedAssignedBrands.length === 1 ? 'marca asignada' : 'marcas asignadas'}</span>
                               </span>
                             </div>
@@ -2789,7 +2839,8 @@ export default function VisualTab({
                             gap: '6px',
                             transition: 'all 0.15s ease'
                           }}>
-                            <span>{isExpanded ? '▲ Ocultar marcas' : '▼ Ver marcas'}</span>
+                            <BrandingVectorIcon name={isExpanded ? 'chevron-up' : 'chevron-down'} size={12} color={isExpanded ? group.color : '#64748B'} />
+                            <span>{isExpanded ? 'Ocultar marcas' : 'Ver marcas'}</span>
                           </span>
                         </div>
                       </div>
@@ -2816,10 +2867,10 @@ export default function VisualTab({
                             boxShadow: '0 1px 4px rgba(0,0,0,0.02)'
                           }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                              <span style={{ fontSize: '18px' }}>➕</span>
+                              <BrandingVectorIcon name="plus" size={16} color="#0fa4de" />
                               <div>
                                 <div style={{ fontSize: '12.5px', fontWeight: '800', color: '#0F172A' }}>
-                                  Asignar Marca de Marcas a {group.title}
+                                  Asignar Marca a {group.title}
                                 </div>
                                 <div style={{ fontSize: '11px', color: '#64748B' }}>
                                   Elige un fabricante ya registrado en el catálogo para agregarlo a esta categoría.
@@ -2847,8 +2898,8 @@ export default function VisualTab({
                                   >
                                     <option value="">
                                       {availableBrandsToAssign.length === 0
-                                        ? `(Todas las marcas de ${currentCountryObj?.name || currentScopeCode} ya están asignadas)`
-                                        : `-- Seleccionar de marcas de ${currentCountryObj?.name || currentScopeCode} (${availableBrandsToAssign.length} disponibles) --`}
+                                        ? '(Todas las marcas ya están asignadas)'
+                                        : `-- Seleccionar marca disponible (${availableBrandsToAssign.length}) --`}
                                     </option>
                                     {availableBrandsToAssign.map(b => (
                                       <option key={b.key} value={b.key}>
@@ -2877,13 +2928,14 @@ export default function VisualTab({
                                       transition: 'all 0.15s ease'
                                     }}
                                   >
-                                    <span>✓</span>
+                                    <BrandingVectorIcon name="check" size={13} color={selectedBrandToAssign[group.key] ? '#FFFFFF' : '#94A3B8'} />
                                     <span>Asignar</span>
                                   </button>
                                 </>
                               ) : (
-                                <div style={{ fontSize: '11.5px', color: '#16A34A', fontWeight: '700', background: '#DCFCE7', padding: '5px 10px', borderRadius: '6px' }}>
-                                  ✓ Todas las marcas registradas ya están asignadas a {group.title}
+                                <div style={{ fontSize: '11.5px', color: '#16A34A', fontWeight: '700', background: '#DCFCE7', padding: '5px 10px', borderRadius: '6px', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                                  <BrandingVectorIcon name="check-circle" size={13} color="#16A34A" />
+                                  <span>Todas las marcas registradas ya están asignadas a {group.title}</span>
                                 </div>
                               )}
                             </div>
@@ -2899,9 +2951,11 @@ export default function VisualTab({
                               border: '1.5px dashed #CBD5E1',
                               color: '#64748B'
                             }}>
-                              <div style={{ fontSize: '26px', marginBottom: '4px' }}>🏷️</div>
+                              <div style={{ marginBottom: '6px', display: 'flex', justifyContent: 'center' }}>
+                                <BrandingVectorIcon name="tag" size={26} color="#94A3B8" />
+                              </div>
                               <div style={{ fontWeight: '750', fontSize: '13px', color: '#334155' }}>
-                                No hay marcas asignadas a {group.title} en {currentCountryObj.name}
+                                No hay marcas asignadas a {group.title}
                               </div>
                               <div style={{ fontSize: '11.5px', color: '#94A3B8', marginTop: '3px' }}>
                                 Utiliza el selector desplegable de arriba para elegir una de las marcas creadas en el catálogo.
@@ -3007,7 +3061,7 @@ export default function VisualTab({
                                       onMouseEnter={(e) => { e.currentTarget.style.background = '#DC2626'; e.currentTarget.style.color = '#FFFFFF'; }}
                                       onMouseLeave={(e) => { e.currentTarget.style.background = '#FEF2F2'; e.currentTarget.style.color = '#DC2626'; }}
                                     >
-                                      <span>✕</span>
+                                      <BrandingVectorIcon name="x" size={12} color="currentColor" />
                                       <span>Quitar</span>
                                     </button>
                                   </div>
@@ -3028,14 +3082,16 @@ export default function VisualTab({
           {visualSubTab === 'contact' && (
             <div style={{ background: '#FFFFFF', padding: '30px', borderRadius: '22px', border: '1px solid rgba(15, 164, 222, 0.18)', boxShadow: '0 12px 36px rgba(7, 21, 36, 0.05)' }}>
               <h3 style={{ margin: '0 0 18px', fontSize: '1.25rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '-0.02em' }}>
-                <span>📞</span> Canales de Atención Directa y Cotización B2B
+                <BrandingVectorIcon name="phone" size={18} color="#0fa4de" />
+                Canales de Atención Directa y Cotización B2B
               </h3>
 
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '18px' }}>
                 <div style={{ gridColumn: '1 / -1', background: '#F8FAFC', padding: '16px', borderRadius: '12px', border: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <div>
                     <div style={{ fontWeight: '800', fontSize: '13.5px', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '1.2rem' }}>💬</span> Botón Flotante de WhatsApp en el Shop
+                      <BrandingVectorIcon name="whatsapp" size={18} color="#25D366" />
+                      Botón Flotante de WhatsApp en el Shop
                     </div>
                     <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
                       Muestra el widget flotante interactivo de atención al cliente en tiempo real en la esquina inferior del Shop.

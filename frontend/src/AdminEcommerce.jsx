@@ -39,8 +39,11 @@ function EcommerceLayoutWrapper({
   handleCountryScopeChange,
   users = [],
   usuario,
+  visualSubTab = 'hero',
+  setVisualSubTab,
   children
 }) {
+  const [isVisualExpanded, setIsVisualExpanded] = useState(true);
   if (embedded) {
     return (
       <main className="crm-main-embedded" style={{ width: '100%', maxWidth: '100%', padding: 0, margin: 0 }}>
@@ -52,10 +55,26 @@ function EcommerceLayoutWrapper({
   return (
     <div className="crm-container" style={{ padding: '24px 32px', maxWidth: '1680px', margin: '0 auto', boxSizing: 'border-box' }}>
       <main className="crm-main-grid" style={{ display: 'flex', flexDirection: 'row', gap: '24px', alignItems: 'flex-start' }}>
-        {/* SIDEBAR DEDICADO E-COMMERCE */}
-        <aside className="sidebar-depts sidebar-left" style={{ position: 'sticky', top: '20px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: '14px' }}>
-            {/* Botón Volver a Administración */}
+        {/* SIDEBAR DEDICADO E-COMMERCE CON SCROLL INTERNO INDEPENDIENTE */}
+        <aside
+          className="sidebar-depts sidebar-left"
+          style={{
+            position: 'sticky',
+            top: '16px',
+            height: 'calc(100vh - 32px)',
+            maxHeight: 'calc(100vh - 32px)',
+            display: 'flex',
+            flexDirection: 'column',
+            padding: '14px 12px 12px 12px',
+            width: '280px',
+            flexShrink: 0,
+            boxSizing: 'border-box',
+            overflow: 'hidden',
+            zIndex: 20
+          }}
+        >
+          <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0, gap: '10px' }}>
+            {/* 1. Botón Volver a Administración (Fijo) */}
             <button
               type="button"
               onClick={() => { window.location.href = '/'; }}
@@ -65,61 +84,64 @@ function EcommerceLayoutWrapper({
                 alignItems: 'center',
                 gap: '8px',
                 fontWeight: '750',
-                padding: '10px 14px',
+                padding: '8px 12px',
                 width: '100%',
-                borderRadius: '12px',
+                borderRadius: '10px',
                 border: '1.5px solid var(--border-color, #cbd5e1)',
                 background: 'var(--card-bg, #ffffff)',
                 color: '#0284c7',
                 cursor: 'pointer',
-                fontSize: '0.85rem',
-                boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
-                transition: 'all 0.15s ease'
+                fontSize: '0.82rem',
+                boxShadow: '0 1px 3px rgba(0,0,0,0.02)',
+                transition: 'all 0.15s ease',
+                flexShrink: 0
               }}
               title="Regresar al Portal General de Administración y Tickets"
             >
-              <BrandingVectorIcon name="arrow-left" size={15} color="#0284c7" />
+              <BrandingVectorIcon name="arrow-left" size={14} color="#0284c7" />
               <span>Volver a Administración</span>
             </button>
 
-            {/* Encabezado E-commerce */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '0 4px' }}>
+            {/* 2. Encabezado E-commerce (Fijo) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '0 2px', flexShrink: 0 }}>
               <div style={{
-                width: '36px',
-                height: '36px',
-                borderRadius: '10px',
+                width: '32px',
+                height: '32px',
+                borderRadius: '8px',
                 background: 'linear-gradient(135deg, #0fa4de, #0284c7)',
                 color: '#ffffff',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: '0 4px 10px rgba(15, 164, 222, 0.3)'
+                boxShadow: '0 3px 8px rgba(15, 164, 222, 0.25)',
+                flexShrink: 0
               }}>
-                <BrandingVectorIcon name="shopping-cart" size={18} color="#ffffff" />
+                <BrandingVectorIcon name="shopping-cart" size={16} color="#ffffff" />
               </div>
               <div>
-                <h3 style={{ margin: 0, fontSize: '0.98rem', fontWeight: '800', color: 'var(--text-main, #0f172a)' }}>
+                <h3 style={{ margin: 0, fontSize: '0.92rem', fontWeight: '800', color: 'var(--text-main, #0f172a)', lineHeight: 1.2 }}>
                   Gestión E-commerce
                 </h3>
-                <span style={{ fontSize: '11px', color: 'var(--text-muted, #64748b)', fontWeight: '600' }}>
+                <span style={{ fontSize: '10.5px', color: 'var(--text-muted, #64748b)', fontWeight: '600' }}>
                   Control Regional DACAS
                 </span>
               </div>
             </div>
 
-            {/* Selector de Scope Activo */}
+            {/* 3. Selector de Scope Activo (Fijo y compacto) */}
             <div style={{
               background: 'var(--card-bg, #ffffff)',
-              borderRadius: '14px',
+              borderRadius: '12px',
               border: '1.5px solid #cbd5e1',
-              padding: '12px 14px',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.03)'
+              padding: '8px 10px',
+              boxShadow: '0 2px 6px rgba(0,0,0,0.02)',
+              flexShrink: 0
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-                <span style={{ fontSize: '10.5px', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+                <span style={{ fontSize: '10px', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                   Scope Activo
                 </span>
-                <span style={{ fontSize: '9px', background: 'linear-gradient(135deg, #0fa4de, #0284c7)', color: '#ffffff', padding: '2px 7px', borderRadius: '4px', fontWeight: '800' }}>
+                <span style={{ fontSize: '8.5px', background: 'linear-gradient(135deg, #0fa4de, #0284c7)', color: '#ffffff', padding: '1.5px 6px', borderRadius: '4px', fontWeight: '800' }}>
                   PRIMARY KEY
                 </span>
               </div>
@@ -129,11 +151,11 @@ function EcommerceLayoutWrapper({
                   onChange={(e) => handleCountryScopeChange(e.target.value)}
                   style={{
                     width: '100%',
-                    padding: '8px 10px',
-                    borderRadius: '8px',
+                    padding: '6px 8px',
+                    borderRadius: '7px',
                     border: '1.5px solid #0fa4de',
                     background: '#f8fafc',
-                    fontSize: '12.5px',
+                    fontSize: '12px',
                     fontWeight: '750',
                     color: '#0f172a',
                     cursor: 'pointer'
@@ -146,14 +168,37 @@ function EcommerceLayoutWrapper({
                   ))}
                 </select>
               </div>
-              <div style={{ fontSize: '10.5px', color: '#64748b', marginTop: '6px', lineHeight: 1.3 }}>
-                Catálogo, stock y precios filtrados para este país.
+              <div style={{ fontSize: '10px', color: '#64748b', marginTop: '4px', lineHeight: 1.2 }}>
+                Catálogo, stock y precios por país.
               </div>
             </div>
 
-            {/* Menú de Navegación Vertical de E-commerce */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', flex: 1, overflowY: 'auto' }}>
-              <div style={{ fontSize: '11px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.05em', padding: '4px 8px', marginBottom: '2px' }}>
+            {/* 4. Menú de Módulos E-commerce con Scroll Autónomo (No mueve la web) */}
+            <div
+              className="ecommerce-sidebar-scroll"
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '2px',
+                flex: 1,
+                minHeight: 0,
+                overflowY: 'auto',
+                overflowX: 'hidden',
+                paddingRight: '3px'
+              }}
+            >
+              <div style={{
+                fontSize: '10.5px',
+                fontWeight: '800',
+                color: '#64748b',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em',
+                padding: '4px 6px',
+                position: 'sticky',
+                top: 0,
+                background: 'var(--card-bg, #ffffff)',
+                zIndex: 2
+              }}>
                 Módulos E-commerce
               </div>
               {[
@@ -171,47 +216,158 @@ function EcommerceLayoutWrapper({
                 { id: 'apli', label: 'Conexión Apli', icon: 'zap' }
               ].map(item => {
                 const isSelected = activeTab === item.id;
+                const isVisualItem = item.id === 'visual';
+
                 return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={() => setActiveTab(item.id)}
-                    className={`sidebar-menu-btn ${isSelected ? 'active' : ''}`}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      padding: '10px 14px',
-                      fontSize: '0.88rem',
-                      borderRadius: '10px',
-                      fontWeight: isSelected ? '800' : '650',
-                      background: isSelected ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : 'transparent',
-                      color: isSelected ? '#ffffff' : 'var(--text-main, #334155)',
-                      border: isSelected ? 'none' : '1px solid transparent',
-                      boxShadow: isSelected ? '0 4px 12px rgba(15, 164, 222, 0.3)' : 'none',
-                      cursor: 'pointer',
-                      transition: 'all 0.15s ease'
-                    }}
-                  >
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                      <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-                        <BrandingVectorIcon name={item.icon} size={16} color={isSelected ? '#ffffff' : '#0284c7'} />
-                      </span>
-                      <span>{item.label}</span>
-                    </div>
-                    {item.badge > 0 && (
-                      <span style={{
-                        background: isSelected ? '#ffffff' : '#f59e0b',
-                        color: isSelected ? '#0284c7' : '#ffffff',
-                        fontSize: '10.5px',
-                        fontWeight: '800',
-                        padding: '1px 6px',
-                        borderRadius: '999px'
-                      }}>
-                        {item.badge}
-                      </span>
+                  <div key={item.id} style={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (isVisualItem) {
+                          if (activeTab === 'visual') {
+                            setIsVisualExpanded(prev => !prev);
+                          } else {
+                            setActiveTab('visual');
+                            setIsVisualExpanded(true);
+                          }
+                        } else {
+                          setActiveTab(item.id);
+                        }
+                      }}
+                      className={`sidebar-menu-btn ${isSelected ? 'active' : ''}`}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        padding: '7.5px 10px',
+                        fontSize: '0.84rem',
+                        borderRadius: '9px',
+                        fontWeight: isSelected ? '800' : '650',
+                        background: isSelected ? 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)' : 'transparent',
+                        color: isSelected ? '#ffffff' : 'var(--text-main, #334155)',
+                        border: isSelected ? 'none' : '1px solid transparent',
+                        boxShadow: isSelected ? '0 3px 10px rgba(15, 164, 222, 0.28)' : 'none',
+                        cursor: 'pointer',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+                          <BrandingVectorIcon name={item.icon} size={15} color={isSelected ? '#ffffff' : '#0284c7'} />
+                        </span>
+                        <span>{item.label}</span>
+                      </div>
+
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        {item.badge > 0 && (
+                          <span style={{
+                            background: isSelected ? '#ffffff' : '#f59e0b',
+                            color: isSelected ? '#0284c7' : '#ffffff',
+                            fontSize: '10px',
+                            fontWeight: '800',
+                            padding: '1px 5px',
+                            borderRadius: '999px'
+                          }}>
+                            {item.badge}
+                          </span>
+                        )}
+
+                        {isVisualItem && (
+                          <span
+                            style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              opacity: 0.9,
+                              transition: 'transform 0.2s ease',
+                              transform: (isSelected && isVisualExpanded) ? 'rotate(180deg)' : 'rotate(0deg)'
+                            }}
+                          >
+                            <BrandingVectorIcon
+                              name="chevron-down"
+                              size={13}
+                              color={isSelected ? '#ffffff' : '#64748b'}
+                            />
+                          </span>
+                        )}
+                      </div>
+                    </button>
+
+                    {/* Submenú desplegable dentro del módulo Diseño & Banners */}
+                    {isVisualItem && isSelected && isVisualExpanded && (
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '2px',
+                          marginLeft: '12px',
+                          paddingLeft: '8px',
+                          borderLeft: '2px solid rgba(15, 164, 222, 0.35)',
+                          marginTop: '3px',
+                          marginBottom: '4px'
+                        }}
+                      >
+                        {[
+                          { id: 'hero', label: 'Banners Principales (Hero)', icon: 'layers' },
+                          { id: 'brand_banners', label: 'Banners Marcas & Carruseles', icon: 'star' },
+                          { id: 'announcement', label: 'Anuncio & Barra Superior', icon: 'megaphone' },
+                          { id: 'categories', label: '4 Categorías del Shop', icon: 'tag' },
+                          { id: 'brands', label: 'Marcas por Categoría', icon: 'building' },
+                          { id: 'contact', label: 'Contacto & WhatsApp', icon: 'headphones' }
+                        ].map(sub => {
+                          const isSubActive = visualSubTab === sub.id;
+                          return (
+                            <button
+                              key={sub.id}
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setActiveTab('visual');
+                                if (setVisualSubTab) setVisualSubTab(sub.id);
+                              }}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '7px',
+                                padding: '6px 8px',
+                                fontSize: '0.78rem',
+                                borderRadius: '7px',
+                                fontWeight: isSubActive ? '800' : '600',
+                                background: isSubActive ? 'rgba(15, 164, 222, 0.12)' : 'transparent',
+                                color: isSubActive ? '#0284c7' : 'var(--text-main, #475569)',
+                                border: isSubActive ? '1px solid rgba(15, 164, 222, 0.3)' : '1px solid transparent',
+                                cursor: 'pointer',
+                                textAlign: 'left',
+                                transition: 'all 0.15s ease'
+                              }}
+                              onMouseEnter={(e) => {
+                                if (!isSubActive) {
+                                  e.currentTarget.style.background = '#f1f5f9';
+                                  e.currentTarget.style.color = '#0f172a';
+                                }
+                              }}
+                              onMouseLeave={(e) => {
+                                if (!isSubActive) {
+                                  e.currentTarget.style.background = 'transparent';
+                                  e.currentTarget.style.color = 'var(--text-main, #475569)';
+                                }
+                              }}
+                            >
+                              <span style={{ display: 'inline-flex', alignItems: 'center', flexShrink: 0 }}>
+                                <BrandingVectorIcon
+                                  name={sub.icon}
+                                  size={12}
+                                  color={isSubActive ? '#0284c7' : '#64748b'}
+                                />
+                              </span>
+                              <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                {sub.label}
+                              </span>
+                            </button>
+                          );
+                        })}
+                      </div>
                     )}
-                  </button>
+                  </div>
                 );
               })}
             </div>
@@ -274,7 +430,14 @@ function EcommerceLayoutWrapper({
                         envios: 'Métodos de Envío',
                         pagos: 'Métodos de Pago',
                         pagos_envios: 'Pagos y Envíos',
-                        visual: 'Diseño & Banners',
+                        visual: `Diseño & Banners • ${{
+                          hero: 'Banners Principales (Hero)',
+                          brand_banners: 'Banners Marcas & Carruseles',
+                          announcement: 'Anuncio & Barra Superior',
+                          categories: '4 Categorías del Shop',
+                          brands: 'Marcas por Categoría',
+                          contact: 'Contacto & WhatsApp'
+                        }[visualSubTab] || 'Personalización'}`,
                         n8n_bot: 'Bot n8n B2B',
                         apli: 'Conexión Apli'
                       }[activeTab] || 'Gestión'
@@ -293,8 +456,9 @@ function EcommerceLayoutWrapper({
                 }}
               />
               {activeTab === 'reportes' && (
-                <button className="nav-btn" onClick={() => window.print()} style={{ background: 'var(--card-bg)', color: 'var(--text-main)' }}>
-                  🖨️ Imprimir / PDF
+                <button className="nav-btn" onClick={() => window.print()} style={{ background: 'var(--card-bg)', color: 'var(--text-main)', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <BrandingVectorIcon name="printer" size={15} color="currentColor" />
+                  <span>Imprimir / PDF</span>
                 </button>
               )}
             </div>
@@ -318,6 +482,7 @@ function AdminEcommerce({
 }) {
   const navigate = useNavigate();
   const [internalActiveTab, setInternalActiveTab] = useState('products');
+  const [visualSubTab, setVisualSubTab] = useState('hero');
   const activeTab = externalActiveTab !== undefined ? externalActiveTab : internalActiveTab;
   const setActiveTab = (tab) => {
     setInternalActiveTab(tab);
@@ -879,6 +1044,25 @@ function AdminEcommerce({
         .crm-table-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; border-radius: 14px; margin-top: 8px; }
         .modal-overlay { position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.5); z-index:100; display:flex; align-items:center; justify-content:center; }
         .modal-content { background:var(--card-bg, white); padding:30px; border-radius:20px; width:90%; max-width:900px; max-height:90vh; overflow-y:auto; }
+
+        /* Scrollbar elegante y autónomo para el menú del sidebar */
+        .ecommerce-sidebar-scroll {
+          scrollbar-width: thin;
+          scrollbar-color: rgba(148, 163, 184, 0.45) transparent;
+        }
+        .ecommerce-sidebar-scroll::-webkit-scrollbar {
+          width: 4px;
+        }
+        .ecommerce-sidebar-scroll::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .ecommerce-sidebar-scroll::-webkit-scrollbar-thumb {
+          background: rgba(148, 163, 184, 0.35);
+          border-radius: 999px;
+        }
+        .ecommerce-sidebar-scroll::-webkit-scrollbar-thumb:hover {
+          background: rgba(15, 164, 222, 0.6);
+        }
       `}</style>
 
       <EcommerceLayoutWrapper
@@ -889,6 +1073,8 @@ function AdminEcommerce({
         handleCountryScopeChange={handleCountryScopeChange}
         users={users}
         usuario={{ rol: 'admin_ecommerce', nombre: 'Admin E-Commerce' }}
+        visualSubTab={visualSubTab}
+        setVisualSubTab={setVisualSubTab}
       >
         {error && <div style={{ color: 'red', marginBottom: '20px' }}>{error}</div>}
 
@@ -997,6 +1183,8 @@ function AdminEcommerce({
             products={products}
             onNavigateToBrands={() => setActiveTab('brands')}
             getAuthHeader={getAuthHeader}
+            visualSubTab={visualSubTab}
+            setVisualSubTab={setVisualSubTab}
           />
         )}
 

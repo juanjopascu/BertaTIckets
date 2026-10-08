@@ -1,4 +1,5 @@
 import React, { useState, useMemo } from 'react';
+import BrandingVectorIcon from '../../../BrandingVectorIcon';
 
 export const isProductInCat = (p, catKey) => {
   if (!catKey || catKey === 'all') return true;
@@ -21,10 +22,10 @@ export const isProductInCat = (p, catKey) => {
 
 export const CAROUSEL_CATEGORIES = [
   { key: 'all', label: 'Todo el Catálogo' },
-  { key: 'networking', label: '🌐 Networking & Conectividad' },
-  { key: 'infraestructura', label: '⚡ Infraestructura & Datacenter' },
-  { key: 'comunicaciones_unificadas', label: '📞 Comunicaciones Unificadas' },
-  { key: 'security', label: '🛡️ Ciberseguridad & Firewalls' }
+  { key: 'networking', label: 'Networking & Conectividad' },
+  { key: 'infraestructura', label: 'Infraestructura & Datacenter' },
+  { key: 'comunicaciones_unificadas', label: 'Comunicaciones Unificadas' },
+  { key: 'security', label: 'Ciberseguridad & Firewalls' }
 ];
 
 export default function CarouselEditorCard({
@@ -78,13 +79,13 @@ export default function CarouselEditorCard({
 
   const PRESET_COLORS = ['#0fa4de', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#06b6d4'];
   const ICONS_LIST = [
-    { key: 'star', label: '⭐ Estrella' },
-    { key: 'shield', label: '🛡️ Escudo' },
-    { key: 'zap', label: '⚡ Rayo' },
-    { key: 'fire', label: '🔥 Fuego' },
-    { key: 'tag', label: '🏷️ Etiqueta' },
-    { key: 'box', label: '📦 Caja' },
-    { key: 'cpu', label: '💻 Hardware' }
+    { key: 'star', label: 'Estrella' },
+    { key: 'shield', label: 'Escudo' },
+    { key: 'zap', label: 'Rayo' },
+    { key: 'fire', label: 'Destacado' },
+    { key: 'tag', label: 'Etiqueta' },
+    { key: 'box', label: 'Caja' },
+    { key: 'cpu', label: 'Hardware' }
   ];
 
   return (
@@ -147,9 +148,9 @@ export default function CarouselEditorCard({
             border: '1px solid #E2E8F0',
             fontWeight: '600'
           }}>
-            {carousel.selectionType === 'category' ? `📂 Cat: ${carousel.targetCategory || 'networking'} (${matchingCategoryCount} prod.)` :
-             carousel.selectionType === 'brand' ? `🏷️ Marca: ${(carousel.targetBrand || '').toUpperCase()} (${matchingBrandCount} prod.)` :
-             carousel.selectionType === 'manual' ? `🎯 ${selectedIds.length} seleccionados` : '⭐ Destacados'}
+            {carousel.selectionType === 'category' ? `Categoría: ${carousel.targetCategory || 'networking'} (${matchingCategoryCount} prod.)` :
+             carousel.selectionType === 'brand' ? `Marca: ${(carousel.targetBrand || '').toUpperCase()} (${matchingBrandCount} prod.)` :
+             carousel.selectionType === 'manual' ? `${selectedIds.length} seleccionados` : 'Destacados'}
           </span>
         </div>
 
@@ -163,15 +164,16 @@ export default function CarouselEditorCard({
             style={{
               background: '#FFFFFF',
               border: '1px solid #CBD5E1',
-              padding: '5px 9px',
+              padding: '6px 9px',
               borderRadius: '6px',
               cursor: index === 0 ? 'not-allowed' : 'pointer',
               opacity: index === 0 ? 0.35 : 1,
-              fontSize: '12px',
-              fontWeight: '800'
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
           >
-            ⬆️
+            <BrandingVectorIcon name="arrow-up" size={13} color="#475569" />
           </button>
           <button
             type="button"
@@ -181,15 +183,16 @@ export default function CarouselEditorCard({
             style={{
               background: '#FFFFFF',
               border: '1px solid #CBD5E1',
-              padding: '5px 9px',
+              padding: '6px 9px',
               borderRadius: '6px',
               cursor: index === total - 1 ? 'not-allowed' : 'pointer',
               opacity: index === total - 1 ? 0.35 : 1,
-              fontSize: '12px',
-              fontWeight: '800'
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center'
             }}
           >
-            ⬇️
+            <BrandingVectorIcon name="arrow-down" size={13} color="#475569" />
           </button>
           <button
             type="button"
@@ -198,15 +201,19 @@ export default function CarouselEditorCard({
             style={{
               background: '#FFFFFF',
               border: '1px solid #CBD5E1',
-              padding: '5px 9px',
+              padding: '5px 10px',
               borderRadius: '6px',
               cursor: 'pointer',
               fontSize: '12px',
               fontWeight: '700',
-              color: '#334155'
+              color: '#334155',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px'
             }}
           >
-            📋 Duplicar
+            <BrandingVectorIcon name="copy" size={13} color="#475569" />
+            <span>Duplicar</span>
           </button>
           <button
             type="button"
@@ -216,14 +223,18 @@ export default function CarouselEditorCard({
               background: '#FEE2E2',
               border: '1px solid #FECACA',
               color: '#DC2626',
-              padding: '5px 9px',
+              padding: '5px 10px',
               borderRadius: '6px',
               cursor: 'pointer',
               fontSize: '12px',
-              fontWeight: '700'
+              fontWeight: '700',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '5px'
             }}
           >
-            🗑️ Eliminar
+            <BrandingVectorIcon name="trash" size={13} color="#DC2626" />
+            <span>Eliminar</span>
           </button>
           <label style={{ display: 'flex', alignItems: 'center', gap: '5px', fontSize: '12px', fontWeight: '700', color: carousel.enabled !== false ? '#0284c7' : '#64748B', cursor: 'pointer', marginLeft: '6px' }}>
             <input
@@ -242,13 +253,14 @@ export default function CarouselEditorCard({
               border: 'none',
               padding: '4px 6px',
               cursor: 'pointer',
-              fontSize: '14px',
-              fontWeight: '900',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               color: '#64748B'
             }}
             title={isExpanded ? 'Contraer' : 'Expandir'}
           >
-            {isExpanded ? '▲' : '▼'}
+            <BrandingVectorIcon name={isExpanded ? "chevron-up" : "chevron-down"} size={15} color="#64748B" />
           </button>
         </div>
       </div>
@@ -266,7 +278,7 @@ export default function CarouselEditorCard({
                 type="text"
                 value={carousel.title || ''}
                 onChange={(e) => onUpdate('title', e.target.value)}
-                placeholder="Ej: 🔥 Ofertas Especiales IT"
+                placeholder="Ej: Ofertas Especiales IT"
                 style={{ width: '100%', padding: '8px 12px', borderRadius: '8px', border: '1.5px solid #CBD5E1', fontSize: '13px', fontWeight: '700' }}
               />
             </div>
@@ -347,14 +359,14 @@ export default function CarouselEditorCard({
           {/* Row 3: Product Selection Mode */}
           <div style={{ marginBottom: '14px' }}>
             <label style={{ display: 'block', fontSize: '12px', fontWeight: '900', color: '#0F172A', marginBottom: '8px' }}>
-              🎯 Modo de Selección de Productos para este Carrusel:
+              Modo de Selección de Productos para este Carrusel:
             </label>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px', marginBottom: '14px' }}>
               {[
-                { type: 'category', title: '📂 Por Categoría Entera', desc: 'Muestra automáticamente todos los equipos de una categoría' },
-                { type: 'brand', title: '🏷️ Por Marca Completa', desc: 'Muestra automáticamente todos los productos de un fabricante' },
-                { type: 'manual', title: '🎯 Manual / Específica', desc: 'Eliges qué productos exactos mostrar con buscador' },
-                { type: 'featured', title: '⭐ Automático Destacados', desc: 'Productos destacados y con stock de alta rotación' }
+                { type: 'category', title: 'Por Categoría', desc: 'Muestra automáticamente todos los equipos de una categoría', icon: 'tag' },
+                { type: 'brand', title: 'Por Marca', desc: 'Muestra automáticamente todos los productos de un fabricante', icon: 'building' },
+                { type: 'manual', title: 'Manual / Específica', desc: 'Eliges qué productos exactos mostrar con buscador', icon: 'check-circle' },
+                { type: 'featured', title: 'Destacados', desc: 'Productos destacados y con stock de alta rotación', icon: 'star' }
               ].map(mode => {
                 const isSelected = (carousel.selectionType || 'manual') === mode.type;
                 return (
@@ -370,8 +382,9 @@ export default function CarouselEditorCard({
                       transition: 'all 0.15s ease'
                     }}
                   >
-                    <div style={{ fontWeight: '800', fontSize: '12.5px', color: isSelected ? '#0284c7' : '#1E293B', marginBottom: '2px' }}>
-                      {mode.title}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: '800', fontSize: '12.5px', color: isSelected ? '#0284c7' : '#1E293B', marginBottom: '2px' }}>
+                      <BrandingVectorIcon name={mode.icon} size={14} color={isSelected ? '#0284c7' : '#64748B'} />
+                      <span>{mode.title}</span>
                     </div>
                     <div style={{ fontSize: '11px', color: '#64748B', lineHeight: 1.3 }}>
                       {mode.desc}
@@ -396,8 +409,9 @@ export default function CarouselEditorCard({
                     <option key={cat.key} value={cat.key}>{cat.label}</option>
                   ))}
                 </select>
-                <div style={{ marginTop: '8px', fontSize: '12px', color: '#0284c7', fontWeight: '600' }}>
-                  ✅ Este carrusel cargará automáticamente los <strong>{matchingCategoryCount} productos</strong> de esta categoría activos con stock para este país.
+                <div style={{ marginTop: '8px', fontSize: '12px', color: '#0284c7', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <BrandingVectorIcon name="check-circle" size={14} color="#0284c7" />
+                  <span>Este carrusel cargará automáticamente los <strong>{matchingCategoryCount} productos</strong> de esta categoría activos con stock.</span>
                 </div>
               </div>
             )}
@@ -417,8 +431,9 @@ export default function CarouselEditorCard({
                     <option key={b} value={b}>{b.toUpperCase()}</option>
                   ))}
                 </select>
-                <div style={{ marginTop: '8px', fontSize: '12px', color: '#0284c7', fontWeight: '600' }}>
-                  ✅ Este carrusel cargará automáticamente los <strong>{matchingBrandCount} productos</strong> de <strong>{(carousel.targetBrand || '').toUpperCase()}</strong> disponibles para este país.
+                <div style={{ marginTop: '8px', fontSize: '12px', color: '#0284c7', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <BrandingVectorIcon name="check-circle" size={14} color="#0284c7" />
+                  <span>Este carrusel cargará automáticamente los <strong>{matchingBrandCount} productos</strong> de <strong>{(carousel.targetBrand || '').toUpperCase()}</strong> disponibles.</span>
                 </div>
               </div>
             )}
@@ -433,7 +448,7 @@ export default function CarouselEditorCard({
                       type="text"
                       value={productSearch}
                       onChange={(e) => setProductSearch(e.target.value)}
-                      placeholder="🔍 Buscar por nombre, marca o SKU..."
+                      placeholder="Buscar por nombre, marca o SKU..."
                       style={{ width: '100%', padding: '7px 10px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12px' }}
                     />
                   </div>
@@ -480,7 +495,7 @@ export default function CarouselEditorCard({
                   <div style={{ marginBottom: '12px', background: '#FFFFFF', padding: '10px 12px', borderRadius: '10px', border: '1px solid #BAE6FD' }}>
                     <div style={{ fontSize: '11.5px', fontWeight: '800', color: '#0284c7', marginBottom: '6px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                       <span>Equipos seleccionados para este carrusel ({selectedProducts.length}):</span>
-                      <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 'normal' }}>Haz clic en la ✕ para quitar cualquiera</span>
+                      <span style={{ fontSize: '10.5px', color: '#64748B', fontWeight: 'normal' }}>Haz clic en la cruz para quitar cualquiera</span>
                     </div>
                     <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', maxHeight: '110px', overflowY: 'auto' }}>
                       {selectedProducts.map(p => (
@@ -505,10 +520,10 @@ export default function CarouselEditorCard({
                           <button
                             type="button"
                             onClick={() => onToggleProduct(p.id)}
-                            style={{ background: 'none', border: 'none', color: '#EF4444', fontWeight: '900', cursor: 'pointer', padding: 0, fontSize: '12px' }}
+                            style={{ background: 'none', border: 'none', color: '#EF4444', fontWeight: '900', cursor: 'pointer', padding: 0, fontSize: '12px', display: 'inline-flex', alignItems: 'center' }}
                             title="Quitar"
                           >
-                            ✕
+                            <BrandingVectorIcon name="x" size={11} color="#EF4444" />
                           </button>
                         </span>
                       ))}
@@ -563,8 +578,9 @@ export default function CarouselEditorCard({
 
             {/* Mode 4: Automatic / Featured */}
             {carousel.selectionType === 'featured' && (
-              <div style={{ background: '#F8FAFC', padding: '14px 18px', borderRadius: '12px', border: '1px solid #E2E8F0', fontSize: '12px', color: '#475569', lineHeight: 1.5 }}>
-                ⭐ <strong>Modo Automático:</strong> Este carrusel mostrará automáticamente los productos marcados como <em>Destacados</em>, <em>Nuevos</em> o con stock de alta rotación para este país sin necesidad de seleccionarlos a mano.
+              <div style={{ background: '#F8FAFC', padding: '14px 18px', borderRadius: '12px', border: '1px solid #E2E8F0', fontSize: '12px', color: '#475569', lineHeight: 1.5, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <BrandingVectorIcon name="star" size={14} color="#D97706" />
+                <span><strong>Modo Automático:</strong> Este carrusel mostrará automáticamente los productos marcados como <em>Destacados</em>, <em>Nuevos</em> o con stock de alta rotación para este país sin necesidad de seleccionarlos a mano.</span>
               </div>
             )}
           </div>
