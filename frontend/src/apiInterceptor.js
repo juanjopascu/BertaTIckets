@@ -18,10 +18,18 @@ window.fetch = async function(resource, init = {}) {
         headers.set('Authorization', `Bearer ${user.sesionId}`);
       }
     } else {
-      // Attach E-commerce client JWT if present
-      const ecomToken = localStorage.getItem('ecommerce_token') || localStorage.getItem('token');
-      if (ecomToken && !headers.has('Authorization')) {
-        headers.set('Authorization', `Bearer ${ecomToken}`);
+      // Attach E-commerce client / admin JWT if present
+      const authToken = 
+        localStorage.getItem('dacas_client_token') ||
+        localStorage.getItem('shop_token') ||
+        localStorage.getItem('dacas_admin_token') ||
+        localStorage.getItem('ecommerce_token') ||
+        localStorage.getItem('crm_token') ||
+        localStorage.getItem('token') ||
+        (typeof sessionStorage !== 'undefined' ? (sessionStorage.getItem('token') || sessionStorage.getItem('sessionId')) : null);
+
+      if (authToken && !headers.has('Authorization')) {
+        headers.set('Authorization', `Bearer ${authToken}`);
       }
     }
   } catch (e) {

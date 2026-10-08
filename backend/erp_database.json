@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
   "architecture": "DACAS OneWorld Multi-Subsidiary & Multi-Currency",
-  "updated_at": "2026-10-06T19:56:14.732Z",
+  "updated_at": "2026-10-08T00:58:03.259Z",
   "subsidiaries": [
     {
       "id": 1,
@@ -379,17 +379,17 @@
       "categoria": "Enterprise Switching",
       "precio_mayorista": 4120,
       "costo_promedio": 2950,
-      "stock_disponible": 53,
+      "stock_disponible": 52,
       "stock_por_almacen": {
         "LOC-BUE": 8,
         "LOC-SCL": 4,
-        "LOC-MIA": 39,
+        "LOC-MIA": 38,
         "LOC-BOG": 2
       },
       "lead_time_days": 14,
       "moneda": "USD",
       "precio_mayorista_usd": 195,
-      "updated_at": "2026-10-06T14:17:41.861Z"
+      "updated_at": "2026-10-07T15:04:28.069Z"
     },
     {
       "id": 4,
@@ -421,17 +421,17 @@
       "categoria": "Routing & Security",
       "precio_mayorista": 980,
       "costo_promedio": 690,
-      "stock_disponible": 33,
+      "stock_disponible": 31,
       "stock_por_almacen": {
         "LOC-BUE": 12,
         "LOC-SCL": 6,
-        "LOC-MIA": 13,
+        "LOC-MIA": 11,
         "LOC-BOG": 2
       },
       "lead_time_days": 10,
       "moneda": "USD",
       "precio_mayorista_usd": 680,
-      "updated_at": "2026-10-06T19:44:13.259Z"
+      "updated_at": "2026-10-08T00:11:19.769Z"
     },
     {
       "id": 6,
@@ -460,14 +460,15 @@
       "marca": "AudioCodes",
       "categoria": "networking",
       "item_type": "Inventario Físico",
-      "stock_disponible": 10,
+      "stock_disponible": 24,
       "stock_por_almacen": {
-        "LOC-MIA": 10
+        "LOC-MIA": 24
       },
-      "precio_mayorista_usd": 1000,
+      "precio_mayorista_usd": 145,
       "currency": "USD",
       "status": "Disponible",
-      "created_at": "2026-10-02T19:30:20.976Z"
+      "created_at": "2026-10-02T19:30:20.976Z",
+      "updated_at": "2026-10-08T00:58:03.259Z"
     }
   ],
   "vendors": [
@@ -873,6 +874,42 @@
     }
   ],
   "inventory_adjustments": [
+    {
+      "id": 1791421083259,
+      "sku": "zpa5",
+      "item_name": "Zapatilla De 6 ejes, con tensión",
+      "location": "LOC-MIA",
+      "adjustment": 24,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-08T00:58:03.259Z"
+    },
+    {
+      "id": 1791418279769,
+      "sku": "SRX300-SYS-JB",
+      "item_name": "Juniper SRX300 Services Gateway with Junos Software Base",
+      "location": "LOC-MIA",
+      "adjustment": 11,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-08T00:11:19.769Z"
+    },
+    {
+      "id": 1791387288170,
+      "sku": "SRX300-SYS-JB",
+      "item_name": "Juniper SRX300 Services Gateway with Junos Software Base",
+      "location": "LOC-MIA",
+      "adjustment": 12,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-07T15:34:48.170Z"
+    },
+    {
+      "id": 1791385468069,
+      "sku": "C9300-24T-A",
+      "item_name": "Cisco Catalyst 9300 24-Port Data Only, Network Advantage",
+      "location": "LOC-MIA",
+      "adjustment": 38,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-07T15:04:28.069Z"
+    },
     {
       "id": 1791316574732,
       "sku": "AP-505-RW",

@@ -179,11 +179,20 @@ function App() {
       }
     };
 
-    // Verificar inmediatamente y luego cada 5 segundos
+    // Verificar inmediatamente, cada 60 segundos, y cuando la pestaña vuelve al foco
     verificarSesion();
-    const interval = setInterval(verificarSesion, 5000);
+    const interval = setInterval(verificarSesion, 60000);
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') {
+        verificarSesion();
+      }
+    };
+    window.addEventListener('visibilitychange', handleVisibility);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('visibilitychange', handleVisibility);
+    };
   }, [usuario]);
 
   return (
@@ -399,7 +408,7 @@ function FloatingHelpButton({ usuario }) {
       }
     };
     window.addEventListener('storage', checkAuth);
-    const interval = setInterval(checkAuth, 1000);
+    const interval = setInterval(checkAuth, 5000);
     return () => {
       window.removeEventListener('storage', checkAuth);
       clearInterval(interval);

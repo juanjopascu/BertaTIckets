@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const crypto = require('crypto');
 const { Pool } = require('pg');
@@ -102,6 +103,7 @@ rawPool.connect()
         ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS related_ids JSONB;
         ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS related_skus JSONB;
         ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS cuenta_corriente_habilitada BOOLEAN DEFAULT false;
+        ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS cuenta_corriente_limite NUMERIC(12, 2) DEFAULT 0;
       `);
     } catch (_) {}
     client.release();
@@ -420,7 +422,19 @@ const COUNTRY_CHECKOUT_METHODS = {
         badge: 'Gratis',
         icon: '🏢',
         priceText: 'Sin cargo',
-        description: 'Retiro inmediato por depósito central DACAS en Barracas / CABA con orden de compra aprobada.'
+        description: 'Retiro inmediato por depósito central DACAS en Barracas / CABA con orden de compra aprobada.',
+        delivery_type: 'hub',
+        fields: {
+          require_receiver: true,
+          require_dni: true,
+          require_phone: true,
+          require_address: false,
+          require_postal_code: false,
+          require_partido: false,
+          require_time_slot: false,
+          require_expreso_info: false,
+          require_notes: true
+        }
       },
       {
         id: 'express_ar',
@@ -430,7 +444,19 @@ const COUNTRY_CHECKOUT_METHODS = {
         badge: 'Recomendado',
         icon: '🚚',
         priceText: 'Bonificado (B2B)',
-        description: 'Despacho logístico prioritario en 24/48hs a la dirección declarada de la empresa.'
+        description: 'Despacho logístico prioritario en 24/48hs a la dirección declarada de la empresa.',
+        delivery_type: 'caba',
+        fields: {
+          require_receiver: true,
+          require_dni: false,
+          require_phone: true,
+          require_address: true,
+          require_postal_code: true,
+          require_partido: true,
+          require_time_slot: true,
+          require_expreso_info: false,
+          require_notes: true
+        }
       },
       {
         id: 'expreso_ar',
@@ -440,7 +466,19 @@ const COUNTRY_CHECKOUT_METHODS = {
         badge: 'Interior del País',
         icon: '🚛',
         priceText: 'A cargo del cliente',
-        description: 'Despacho sin cargo hacia la receptoría o transporte que el integrador contrate en CABA/GBA (Andreani, Cruz del Sur, La Sevillanita, Expreso Brio, etc.).'
+        description: 'Despacho sin cargo hacia la receptoría o transporte que el integrador contrate en CABA/GBA (Andreani, Cruz del Sur, La Sevillanita, Expreso Brio, etc.).',
+        delivery_type: 'expreso',
+        fields: {
+          require_receiver: true,
+          require_dni: false,
+          require_phone: true,
+          require_address: true,
+          require_postal_code: true,
+          require_partido: true,
+          require_time_slot: false,
+          require_expreso_info: true,
+          require_notes: true
+        }
       }
     ],
     payment: [
@@ -1084,6 +1122,7 @@ const inMem = {
         tucuman: { enabled: false, alicuota: 0.0, coef: 0.0, vigencia: '2025-06-01' }
       },
       cuenta_corriente_habilitada: true,
+      cuenta_corriente_limite: 15000,
       created_at: new Date().toISOString()
     },
     {
@@ -1100,7 +1139,7 @@ const inMem = {
       country_id: 2,
       country_code: 'AR',
       country_name: 'Argentina',
-      status: 'pendiente',
+      status: 'activo',
       avatar_url: null,
       iibb_jurisdiccion: '902 - Buenos Aires',
       iibb_tipo: 'C.M.',
@@ -1113,7 +1152,8 @@ const inMem = {
         misiones: { enabled: false, alicuota: 0.0, vigencia: '2023-05-01' },
         tucuman: { enabled: false, alicuota: 0.0, coef: 0.0, vigencia: '2025-06-01' }
       },
-      cuenta_corriente_habilitada: false,
+      cuenta_corriente_habilitada: true,
+      cuenta_corriente_limite: 0,
       created_at: new Date(Date.now() - 3600000).toISOString()
     },
     {
@@ -1145,6 +1185,8 @@ const inMem = {
         misiones: { enabled: false, alicuota: 0.0, vigencia: '2023-05-01' },
         tucuman: { enabled: false, alicuota: 0.0, coef: 0.0, vigencia: '2025-06-01' }
       },
+      cuenta_corriente_habilitada: true,
+      cuenta_corriente_limite: 10000,
       created_at: new Date(Date.now() - 7200000).toISOString()
     },
     {
@@ -2003,7 +2045,8 @@ function executeInMemoryQuery(sql, params = []) {
         email_admin: params[30], email_factura_electronica: params[31], email_contacto_compras: params[32],
         email_cotizaciones_automaticas: params[33], address: params[34], company: params[35],
         cuenta_corriente_habilitada: params[36] !== undefined ? Boolean(params[36]) : false,
-        status: params[37] || 'activo',
+        cuenta_corriente_limite: params[37] !== undefined ? (parseFloat(params[37]) || 0) : 0,
+        status: params[38] || 'activo',
         created_at: new Date().toISOString()
       };
     }
@@ -2047,7 +2090,8 @@ function executeInMemoryQuery(sql, params = []) {
         email_cotizaciones_automaticas: params[32], address: params[33], company: params[34],
         cargo: params[35] || inMem.users[idx].cargo || 'Contacto / Usuario',
         cuenta_corriente_habilitada: params[36] !== undefined ? Boolean(params[36]) : (inMem.users[idx].cuenta_corriente_habilitada || false),
-        status: params[37] !== undefined && typeof params[37] === 'string' && ['activo', 'pendiente', 'inactivo'].includes(params[37]) ? params[37] : inMem.users[idx].status
+        cuenta_corriente_limite: params[37] !== undefined ? (parseFloat(params[37]) || 0) : (inMem.users[idx].cuenta_corriente_limite || 0),
+        status: params[38] !== undefined && typeof params[38] === 'string' && ['activo', 'pendiente', 'inactivo'].includes(params[38]) ? params[38] : inMem.users[idx].status
       };
       if (/password_hash\s*=\s*\$/i.test(norm)) {
         inMem.users[idx].password_hash = params[params.length - 2];
@@ -2635,12 +2679,16 @@ router.post('/auth/register', async (req, res) => {
       numero_nit, country_id, country_code, ciudad, direccion_legal, web, company 
     } = req.body;
 
-    if (!email) {
+    if (!email || !String(email).trim()) {
       return res.status(400).json({ error: 'El email es requerido' });
     }
 
+    if (!password || String(password).trim().length < 6) {
+      return res.status(400).json({ error: 'La contraseña es requerida y debe tener al menos 6 caracteres' });
+    }
+
     const targetCountry = resolveCountry(country_code || country_id || 'AR');
-    const hashedPassword = await bcrypt.hash(password || '123456', 10);
+    const hashedPassword = await bcrypt.hash(String(password).trim(), 10);
     
     // Check if PG or in-memory
     let result;
@@ -2740,6 +2788,7 @@ router.post('/auth/login', async (req, res) => {
       safeUser.tipo_iva = safeUser.tipo_iva || 'IVA Responsable Inscripto';
       safeUser.tipo_factura = safeUser.tipo_factura || 'Factura A (Responsable Inscripto)';
       safeUser.cuenta_corriente_habilitada = Boolean(user.cuenta_corriente_habilitada);
+      safeUser.cuenta_corriente_limite = user.cuenta_corriente_limite !== undefined ? parseFloat(user.cuenta_corriente_limite) : (parseFloat(user.limite_credito) || 0);
       const targetCountry = resolveCountry(safeUser.country_code || safeUser.country_id || safeUser.country_name || 'AR') || { id: 2, code: 'AR', name: 'Argentina' };
       safeUser.country_id = targetCountry.id;
       safeUser.country_code = targetCountry.code;
@@ -3274,6 +3323,7 @@ router.get('/client/profile', authenticateToken, async (req, res) => {
     user.tipo_iva = user.tipo_iva || 'IVA Responsable Inscripto';
     user.tipo_factura = user.tipo_factura || 'Factura A (Responsable Inscripto)';
     user.cuenta_corriente_habilitada = Boolean(user.cuenta_corriente_habilitada);
+    user.cuenta_corriente_limite = user.cuenta_corriente_limite !== undefined ? parseFloat(user.cuenta_corriente_limite) : (parseFloat(user.limite_credito) || 0);
 
     if (typeof user.percepciones === 'string') {
       try { user.percepciones = JSON.parse(user.percepciones); } catch (_) {}
@@ -3971,7 +4021,7 @@ router.delete('/client/end-users/:id', optionalAuthToken, async (req, res) => {
 // ==========================================
 
 // 1. Resumen Ejecutivo / SuiteDashboard & KPIs
-router.get('/admin/erp/overview', optionalAuthToken, async (req, res) => {
+router.get('/admin/erp/overview', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const overview = erpDatabaseService.getOverview(req.query.subsidiary);
     res.json(overview);
@@ -3982,7 +4032,7 @@ router.get('/admin/erp/overview', optionalAuthToken, async (req, res) => {
 });
 
 // 2. Subsidiarias Corporativas (OneWorld)
-router.get('/admin/erp/subsidiaries', optionalAuthToken, async (req, res) => {
+router.get('/admin/erp/subsidiaries', authenticateToken, requireAdmin, async (req, res) => {
   try {
     res.json(erpDatabaseService.getSubsidiaries());
   } catch (error) {
@@ -3991,7 +4041,7 @@ router.get('/admin/erp/subsidiaries', optionalAuthToken, async (req, res) => {
 });
 
 // 3. Multi-Divisa & Tasas de Cambio
-router.get('/admin/erp/currencies', optionalAuthToken, async (req, res) => {
+router.get('/admin/erp/currencies', authenticateToken, requireAdmin, async (req, res) => {
   try {
     res.json(erpDatabaseService.getCurrencies());
   } catch (error) {
@@ -3999,7 +4049,7 @@ router.get('/admin/erp/currencies', optionalAuthToken, async (req, res) => {
   }
 });
 
-router.put('/admin/erp/currencies/:code', optionalAuthToken, async (req, res) => {
+router.put('/admin/erp/currencies/:code', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const updated = erpDatabaseService.updateCurrencyRate(req.params.code, req.body.rate);
     res.json({ success: true, currency: updated });
@@ -4009,7 +4059,7 @@ router.put('/admin/erp/currencies/:code', optionalAuthToken, async (req, res) =>
 });
 
 // 4. Contabilidad & Finanzas: Plan de Cuentas (Chart of Accounts)
-router.get('/admin/erp/chart-of-accounts', optionalAuthToken, async (req, res) => {
+router.get('/admin/erp/chart-of-accounts', authenticateToken, requireAdmin, async (req, res) => {
   try {
     res.json(erpDatabaseService.getChartOfAccounts());
   } catch (error) {
@@ -4018,7 +4068,7 @@ router.get('/admin/erp/chart-of-accounts', optionalAuthToken, async (req, res) =
 });
 
 // 5. Asientos de Diario (Journal Entries)
-router.get('/admin/erp/journal-entries', optionalAuthToken, async (req, res) => {
+router.get('/admin/erp/journal-entries', authenticateToken, requireAdmin, async (req, res) => {
   try {
     res.json(erpDatabaseService.getJournalEntries(req.query.subsidiary));
   } catch (error) {
@@ -4026,7 +4076,7 @@ router.get('/admin/erp/journal-entries', optionalAuthToken, async (req, res) => 
   }
 });
 
-router.post('/admin/erp/journal-entries', optionalAuthToken, async (req, res) => {
+router.post('/admin/erp/journal-entries', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const entry = erpDatabaseService.createJournalEntry(req.body);
     res.status(201).json({ success: true, message: 'Asiento contable registrado exitosamente', entry });
@@ -4036,7 +4086,7 @@ router.post('/admin/erp/journal-entries', optionalAuthToken, async (req, res) =>
 });
 
 // 6. Almacenes & Ubicaciones (Locations)
-router.get('/admin/erp/locations', optionalAuthToken, async (req, res) => {
+router.get('/admin/erp/locations', authenticateToken, requireAdmin, async (req, res) => {
   try {
     res.json(erpDatabaseService.getLocations());
   } catch (error) {
@@ -4045,7 +4095,7 @@ router.get('/admin/erp/locations', optionalAuthToken, async (req, res) => {
 });
 
 // 7. Maestro de Artículos & Stock Multi-Almacén
-router.get('/admin/erp/catalog-sync', optionalAuthToken, async (req, res) => {
+router.get('/admin/erp/catalog-sync', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const items = erpDatabaseService.getCatalogItems(req.query.search, req.query.category, req.query.location);
     res.json(items);
@@ -4054,7 +4104,7 @@ router.get('/admin/erp/catalog-sync', optionalAuthToken, async (req, res) => {
   }
 });
 
-router.post('/admin/erp/inventory/adjust', optionalAuthToken, async (req, res) => {
+router.post('/admin/erp/inventory/adjust', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { itemId, locationCode, adjustmentQty, reason } = req.body;
     const item = erpDatabaseService.adjustInventoryStock(itemId, locationCode, adjustmentQty, reason);
@@ -4066,7 +4116,7 @@ router.post('/admin/erp/inventory/adjust', optionalAuthToken, async (req, res) =
 });
 
 // 8. Proveedores (Vendors - Procure-to-Pay)
-router.get('/admin/erp/vendors', optionalAuthToken, async (req, res) => {
+router.get('/admin/erp/vendors', authenticateToken, requireAdmin, async (req, res) => {
   try {
     res.json(erpDatabaseService.getVendors(req.query.search));
   } catch (error) {
@@ -4075,7 +4125,7 @@ router.get('/admin/erp/vendors', optionalAuthToken, async (req, res) => {
 });
 
 // 9. Órdenes de Compra (Purchase Orders - PO)
-router.get('/admin/erp/purchase-orders', optionalAuthToken, async (req, res) => {
+router.get('/admin/erp/purchase-orders', authenticateToken, requireAdmin, async (req, res) => {
   try {
     res.json(erpDatabaseService.getPurchaseOrders(req.query.subsidiary, req.query.search));
   } catch (error) {
@@ -4083,7 +4133,7 @@ router.get('/admin/erp/purchase-orders', optionalAuthToken, async (req, res) => 
   }
 });
 
-router.post('/admin/erp/purchase-orders', optionalAuthToken, async (req, res) => {
+router.post('/admin/erp/purchase-orders', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const po = erpDatabaseService.createPurchaseOrder(req.body);
     res.status(201).json({ success: true, message: 'Orden de compra PO creada exitosamente', po });
@@ -4092,7 +4142,7 @@ router.post('/admin/erp/purchase-orders', optionalAuthToken, async (req, res) =>
   }
 });
 
-router.post('/admin/erp/purchase-orders/:id/receive', optionalAuthToken, async (req, res) => {
+router.post('/admin/erp/purchase-orders/:id/receive', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const po = erpDatabaseService.updatePurchaseOrderStatus(req.params.id, 'Recibida en Almacén');
     res.json({ success: true, message: `PO #${req.params.id} recibida e ingresada al depósito`, po });
@@ -4102,7 +4152,7 @@ router.post('/admin/erp/purchase-orders/:id/receive', optionalAuthToken, async (
 });
 
 // 10. Facturas de Proveedores (Vendor Bills - A/P)
-router.get('/admin/erp/vendor-bills', optionalAuthToken, async (req, res) => {
+router.get('/admin/erp/vendor-bills', authenticateToken, requireAdmin, async (req, res) => {
   try {
     res.json(erpDatabaseService.getVendorBills(req.query.subsidiary));
   } catch (error) {
@@ -4110,7 +4160,7 @@ router.get('/admin/erp/vendor-bills', optionalAuthToken, async (req, res) => {
   }
 });
 
-router.post('/admin/erp/vendor-bills/:id/pay', optionalAuthToken, async (req, res) => {
+router.post('/admin/erp/vendor-bills/:id/pay', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const bill = erpDatabaseService.payVendorBill(req.params.id);
     res.json({ success: true, message: `Factura de proveedor pagada exitosamente`, bill });
@@ -4120,7 +4170,7 @@ router.post('/admin/erp/vendor-bills/:id/pay', optionalAuthToken, async (req, re
 });
 
 // 11. Órdenes de Venta (Sales Orders - SO)
-router.get('/admin/erp/orders', optionalAuthToken, async (req, res) => {
+router.get('/admin/erp/orders', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const orders = erpDatabaseService.getOrders(req.query.search, req.query.subsidiary);
     res.json(orders);
@@ -4129,7 +4179,7 @@ router.get('/admin/erp/orders', optionalAuthToken, async (req, res) => {
   }
 });
 
-router.post('/admin/erp/orders/:id/sync', optionalAuthToken, async (req, res) => {
+router.post('/admin/erp/orders/:id/sync', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const order = erpDatabaseService.updateOrderStatus(req.params.id, 'Facturado');
     if (!order) {
@@ -4142,7 +4192,7 @@ router.post('/admin/erp/orders/:id/sync', optionalAuthToken, async (req, res) =>
 });
 
 // 12. Facturas de Clientes (Invoices / Accounts Receivable - A/R)
-router.get('/admin/erp/invoices', optionalAuthToken, async (req, res) => {
+router.get('/admin/erp/invoices', authenticateToken, requireAdmin, async (req, res) => {
   try {
     res.json(erpDatabaseService.getInvoices(req.query.subsidiary, req.query.search));
   } catch (error) {
@@ -4150,7 +4200,7 @@ router.get('/admin/erp/invoices', optionalAuthToken, async (req, res) => {
   }
 });
 
-router.post('/admin/erp/invoices/:id/pay', optionalAuthToken, async (req, res) => {
+router.post('/admin/erp/invoices/:id/pay', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const inv = erpDatabaseService.payInvoice(req.params.id);
     res.json({ success: true, message: 'Factura cobrada y asiento registrado en A/R', invoice: inv });
@@ -4160,7 +4210,7 @@ router.post('/admin/erp/invoices/:id/pay', optionalAuthToken, async (req, res) =
 });
 
 // 13. ABM End Users & Clientes Comerciales
-router.get('/admin/erp/end-users', optionalAuthToken, async (req, res) => {
+router.get('/admin/erp/end-users', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { search, country } = req.query;
     const list = erpDatabaseService.getEndUsers(search, country);
@@ -4170,7 +4220,7 @@ router.get('/admin/erp/end-users', optionalAuthToken, async (req, res) => {
   }
 });
 
-router.post('/admin/erp/end-users', optionalAuthToken, async (req, res) => {
+router.post('/admin/erp/end-users', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const endUser = erpDatabaseService.saveEndUser(req.body);
     res.status(201).json({ success: true, message: 'End User registrado en ERP exitosamente', end_user: endUser });
@@ -4179,7 +4229,7 @@ router.post('/admin/erp/end-users', optionalAuthToken, async (req, res) => {
   }
 });
 
-router.delete('/admin/erp/end-users/:id', optionalAuthToken, async (req, res) => {
+router.delete('/admin/erp/end-users/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     erpDatabaseService.deleteEndUser(req.params.id);
     res.json({ success: true, message: 'End User eliminado de la base ERP' });
@@ -4189,7 +4239,7 @@ router.delete('/admin/erp/end-users/:id', optionalAuthToken, async (req, res) =>
 });
 
 // 14. Cuentas Comerciales y Crédito B2B de Base ERP
-router.get('/admin/erp/credit-accounts', optionalAuthToken, async (req, res) => {
+router.get('/admin/erp/credit-accounts', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const accounts = erpDatabaseService.getCreditAccounts();
     res.json(accounts);
@@ -4198,7 +4248,7 @@ router.get('/admin/erp/credit-accounts', optionalAuthToken, async (req, res) => 
   }
 });
 
-router.put('/admin/erp/credit-accounts/:id', optionalAuthToken, async (req, res) => {
+router.put('/admin/erp/credit-accounts/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const updated = erpDatabaseService.updateCreditAccount(req.params.id, req.body);
     if (!updated) {
@@ -4211,7 +4261,7 @@ router.put('/admin/erp/credit-accounts/:id', optionalAuthToken, async (req, res)
 });
 
 // 15. Verificación / Conciliación de Base de Datos ERP
-router.post('/admin/erp/sync-all', optionalAuthToken, async (req, res) => {
+router.post('/admin/erp/sync-all', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const now = new Date().toISOString();
     res.json({
@@ -4225,7 +4275,7 @@ router.post('/admin/erp/sync-all', optionalAuthToken, async (req, res) => {
 });
 
 // 16. ERP Admin: Obtener Parámetros Globales & Configuración
-router.get('/admin/erp/settings', optionalAuthToken, async (req, res) => {
+router.get('/admin/erp/settings', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const settings = erpDatabaseService.getSettings();
     res.json(settings);
@@ -4235,7 +4285,7 @@ router.get('/admin/erp/settings', optionalAuthToken, async (req, res) => {
 });
 
 // 17. ERP Admin: Guardar Parámetros Globales & Configuración
-router.put('/admin/erp/settings', optionalAuthToken, async (req, res) => {
+router.put('/admin/erp/settings', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const updated = erpDatabaseService.updateSettings(req.body);
     res.json({
@@ -4249,7 +4299,7 @@ router.put('/admin/erp/settings', optionalAuthToken, async (req, res) => {
 });
 
 // 18. ERP Admin: Listar APIs por País
-router.get('/admin/erp/country-apis', optionalAuthToken, async (req, res) => {
+router.get('/admin/erp/country-apis', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const apis = erpDatabaseService.getCountryApis();
     res.json(apis);
@@ -4259,7 +4309,7 @@ router.get('/admin/erp/country-apis', optionalAuthToken, async (req, res) => {
 });
 
 // 19. ERP Admin: Guardar / Actualizar API por País
-router.post('/admin/erp/country-apis', optionalAuthToken, async (req, res) => {
+router.post('/admin/erp/country-apis', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const api = erpDatabaseService.saveCountryApi(req.body);
     res.json({
@@ -4273,7 +4323,7 @@ router.post('/admin/erp/country-apis', optionalAuthToken, async (req, res) => {
 });
 
 // 20. ERP Admin: Eliminar API por País
-router.delete('/admin/erp/country-apis/:id', optionalAuthToken, async (req, res) => {
+router.delete('/admin/erp/country-apis/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     erpDatabaseService.deleteCountryApi(req.params.id);
     res.json({ success: true, message: 'Integración API por país eliminada' });
@@ -4283,7 +4333,7 @@ router.delete('/admin/erp/country-apis/:id', optionalAuthToken, async (req, res)
 });
 
 // 21. ERP Admin: Test Conexión / Ping de API por País
-router.post('/admin/erp/country-apis/:id/test', optionalAuthToken, async (req, res) => {
+router.post('/admin/erp/country-apis/:id/test', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const result = erpDatabaseService.testCountryApi(req.params.id);
     res.json(result);
@@ -4293,7 +4343,7 @@ router.post('/admin/erp/country-apis/:id/test', optionalAuthToken, async (req, r
 });
 
 // 22. ERP Admin: Reconciliación Contable & Auditoría
-router.post('/admin/erp/reconcile', optionalAuthToken, async (req, res) => {
+router.post('/admin/erp/reconcile', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const report = erpDatabaseService.reconcileBalances();
     res.json(report);
@@ -4303,7 +4353,7 @@ router.post('/admin/erp/reconcile', optionalAuthToken, async (req, res) => {
 });
 
 // 23. ERP Admin: Descargar / Exportar Backup Completo
-router.get('/admin/erp/backup', optionalAuthToken, async (req, res) => {
+router.get('/admin/erp/backup', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const backup = erpDatabaseService.exportBackup();
     res.json(backup);
@@ -4520,14 +4570,31 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
     // Obtener usuario y reglas
     let user = null;
     let allRules = [];
-    if (userId) {
+    const candidateUserId = userId || (req.body.user_id ? parseInt(req.body.user_id) : null);
+    if (candidateUserId) {
       if (isPgConnected) {
-        const uRes = await pool.query('SELECT * FROM ecommerce_users WHERE id = $1', [userId]);
+        const uRes = await pool.query('SELECT * FROM ecommerce_users WHERE id = $1', [candidateUserId]);
         user = uRes.rows[0];
       } else {
-        user = inMem.users.find(u => u.id === userId);
+        user = inMem.users.find(u => u.id === candidateUserId);
       }
-    } else if (billing_info) {
+    }
+
+    if (!user && (billing_info?.contacto_email || billing_info?.cuit || req.body.email || req.body.cuit)) {
+      const searchEmail = (billing_info?.contacto_email || req.body.email || '').toLowerCase().trim();
+      const searchCuit = (billing_info?.cuit || req.body.cuit || '').trim();
+      if (isPgConnected) {
+        const uRes = await pool.query('SELECT * FROM ecommerce_users WHERE (email IS NOT NULL AND LOWER(email) = $1) OR (numero_nit IS NOT NULL AND numero_nit = $2)', [searchEmail, searchCuit]);
+        if (uRes.rows && uRes.rows.length > 0) user = uRes.rows[0];
+      } else {
+        user = inMem.users.find(u => 
+          (searchEmail && u.email && u.email.toLowerCase().trim() === searchEmail) ||
+          (searchCuit && (u.numero_nit === searchCuit || u.cuit === searchCuit))
+        );
+      }
+    }
+
+    if (!user && billing_info) {
       // Create a virtual user object from billing info for guest orders
       user = {
         id: null,
@@ -4538,12 +4605,6 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
         tipo_factura: billing_info.tipo_factura || 'Factura A (Responsable Inscripto)',
         pais: 'Argentina'
       };
-    }
-
-    // Validación de Cuenta Corriente: verificar si el cliente la tiene habilitada
-    const isCcPayment = (payment_method || '').toLowerCase().includes('cuenta corriente') || (payment_method || '').toLowerCase().includes('cuenta_corriente');
-    if (isCcPayment && (!user || !user.cuenta_corriente_habilitada)) {
-      return res.status(400).json({ error: 'La forma de pago Cuenta Corriente no está habilitada para su cuenta mayorista. Por favor elija otro método de pago o consulte con su ejecutivo comercial.' });
     }
 
     if (isPgConnected) {
@@ -4672,6 +4733,25 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
     }
 
     const totalFinal = netBase + totalPercepciones;
+
+    // Validación de Cuenta Corriente B2B y Límite de Crédito
+    const isCcPayment = (payment_method || '').toLowerCase().includes('cuenta corriente') || (payment_method || '').toLowerCase().includes('cuenta_corriente');
+    if (isCcPayment) {
+      const ccLimit = user ? parseFloat(user.cuenta_corriente_limite || user.limite_credito || 0) : 0;
+      // 1. Si supera el límite comercial asignado (solo si ccLimit > 0; 0 indica crédito sin límite/ilimitado)
+      if (ccLimit > 0 && totalFinal > ccLimit) {
+        return res.status(400).json({
+          error: `El total de tu pedido ($${totalFinal.toFixed(2)} USD) supera el límite de crédito comercial autorizado ($${ccLimit.toFixed(2)} USD). Por favor seleccioná otro método de pago (como Transferencia Bancaria) o solicitá una ampliación crediticia a tu ejecutivo comercial.`
+        });
+      }
+      // 2. Si la cuenta corriente no está habilitada comercialmente
+      if (!user || !user.cuenta_corriente_habilitada) {
+        return res.status(400).json({
+          error: 'La forma de pago Cuenta Corriente no está habilitada para su cuenta mayorista. Por favor elija otro método de pago o consulte con su ejecutivo comercial.'
+        });
+      }
+    }
+
     const orderNumber = Math.floor(1000 + Math.random() * 9000);
     const effectivePo = po_number || `OC-${orderNumber}`;
     const effectiveTracking = `DACAS-LOG-AR-${orderNumber}`;
@@ -5039,7 +5119,7 @@ router.post('/coupons/validate', optionalAuthToken, async (req, res) => {
   }
 });
 
-router.get('/admin/rules', optionalAuthToken, async (req, res) => {
+router.get('/admin/rules', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { country, country_id } = req.query;
     const result = await pool.query(`
@@ -5691,7 +5771,7 @@ router.post('/admin/products/:id/clone', authenticateToken, requireAdmin, async 
   }
 });
 
-router.get('/admin/orders', optionalAuthToken, async (req, res) => {
+router.get('/admin/orders', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { country, country_id } = req.query;
     const result = await pool.query(`
@@ -5870,7 +5950,7 @@ router.get('/client-types', optionalAuthToken, async (req, res) => {
   }
 });
 
-router.post('/client-types', optionalAuthToken, async (req, res) => {
+router.post('/client-types', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { name, description, color } = req.body;
     if (!name || !name.trim()) return res.status(400).json({ error: 'El nombre del tipo de cliente es obligatorio' });
@@ -5908,7 +5988,7 @@ router.post('/client-types', optionalAuthToken, async (req, res) => {
   }
 });
 
-router.put('/client-types/:id', optionalAuthToken, async (req, res) => {
+router.put('/client-types/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { name, description, color } = req.body;
@@ -5953,7 +6033,7 @@ router.put('/client-types/:id', optionalAuthToken, async (req, res) => {
   }
 });
 
-router.delete('/client-types/:id', optionalAuthToken, async (req, res) => {
+router.delete('/client-types/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     if (isPgConnected) {
@@ -5973,7 +6053,7 @@ router.delete('/client-types/:id', optionalAuthToken, async (req, res) => {
 });
 
 // Admin Users (Customers) - Sanitized against password_hash exposure
-router.get('/admin/users', optionalAuthToken, async (req, res) => {
+router.get('/admin/users', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { country, country_id } = req.query;
     const result = await pool.query(`
@@ -5986,6 +6066,7 @@ router.get('/admin/users', optionalAuthToken, async (req, res) => {
       const sanitized = { ...u };
       delete sanitized.password_hash;
       sanitized.cuenta_corriente_habilitada = Boolean(sanitized.cuenta_corriente_habilitada);
+      sanitized.cuenta_corriente_limite = parseFloat(sanitized.cuenta_corriente_limite || sanitized.limite_credito || 0);
       return sanitized;
     });
 
@@ -6013,19 +6094,20 @@ router.post('/admin/users', authenticateToken, requireAdmin, async (req, res) =>
         name, email, password_hash, razon_social, tipo_cliente, direccion_legal, localidad, codigo_postal, ciudad, country_id, phone, fecha_limite_facturacion, web,
         report_to_country_id, vendedor, direccion_entrega, localidad_entrega, codigo_postal_entrega, ciudad_entrega, pais_entrega_id, tipo_iva, numero_nit,
         nombre_compras, telefono_compras, email_compras, nombre_pagos, telefono_pagos, email_pagos, nombre_admin, telefono_admin, email_admin,
-        email_factura_electronica, email_contacto_compras, email_cotizaciones_automaticas, address, company, cuenta_corriente_habilitada
+        email_factura_electronica, email_contacto_compras, email_cotizaciones_automaticas, address, company, cuenta_corriente_habilitada, cuenta_corriente_limite
       ) VALUES (
         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,
         $14, $15, $16, $17, $18, $19, $20, $21, $22,
         $23, $24, $25, $26, $27, $28, $29, $30, $31,
-        $32, $33, $34, $35, $36, $37
+        $32, $33, $34, $35, $36, $37, $38
       ) RETURNING id, name, email
     `;
     const values = [
       data.name, data.email, hashedPassword, data.razon_social, data.tipo_cliente, data.direccion_legal, data.localidad, data.codigo_postal, data.ciudad, data.country_id || null, data.phone, data.fecha_limite_facturacion || null, data.web,
       data.report_to_country_id || null, data.vendedor, data.direccion_entrega, data.localidad_entrega, data.codigo_postal_entrega, data.ciudad_entrega, data.pais_entrega_id || null, data.tipo_iva, data.numero_nit,
       data.nombre_compras, data.telefono_compras, data.email_compras, data.nombre_pagos, data.telefono_pagos, data.email_pagos, data.nombre_admin, data.telefono_admin, data.email_admin,
-      data.email_factura_electronica, data.email_contacto_compras, data.email_cotizaciones_automaticas, data.address, data.company, Boolean(data.cuenta_corriente_habilitada)
+      data.email_factura_electronica, data.email_contacto_compras, data.email_cotizaciones_automaticas, data.address, data.company, Boolean(data.cuenta_corriente_habilitada),
+      parseFloat(data.cuenta_corriente_limite) || 0
     ];
     
     const result = await pool.query(query, values);
@@ -6034,6 +6116,7 @@ router.post('/admin/users', authenticateToken, requireAdmin, async (req, res) =>
       const idx = inMem.users.findIndex(u => u.id === createdUser.id || u.email === data.email);
       if (idx !== -1) {
         inMem.users[idx].cuenta_corriente_habilitada = Boolean(data.cuenta_corriente_habilitada);
+        inMem.users[idx].cuenta_corriente_limite = parseFloat(data.cuenta_corriente_limite) || 0;
         inMem.users[idx].iibb_jurisdiccion = data.iibb_jurisdiccion || '901 - Capital Federal';
         inMem.users[idx].iibb_tipo = data.iibb_tipo || 'C.M.';
         inMem.users[idx].iibb_numero = data.iibb_numero || data.numero_nit || '';
@@ -6109,6 +6192,8 @@ router.get('/admin/users/:id', authenticateToken, requireAdmin, async (req, res)
         }));
     }
 
+    userClean.cuenta_corriente_limite = parseFloat(userClean.cuenta_corriente_limite || userClean.limite_credito || 0);
+
     res.json({
       ...userClean,
       company_users: companyUsers,
@@ -6129,23 +6214,24 @@ router.put('/admin/users/:id', authenticateToken, requireAdmin, async (req, res)
         name = $1, email = $2, razon_social = $3, tipo_cliente = $4, direccion_legal = $5, localidad = $6, codigo_postal = $7, ciudad = $8, country_id = $9, phone = $10, fecha_limite_facturacion = $11, web = $12,
         report_to_country_id = $13, vendedor = $14, direccion_entrega = $15, localidad_entrega = $16, codigo_postal_entrega = $17, ciudad_entrega = $18, pais_entrega_id = $19, tipo_iva = $20, numero_nit = $21,
         nombre_compras = $22, telefono_compras = $23, email_compras = $24, nombre_pagos = $25, telefono_pagos = $26, email_pagos = $27, nombre_admin = $28, telefono_admin = $29, email_admin = $30,
-        email_factura_electronica = $31, email_contacto_compras = $32, email_cotizaciones_automaticas = $33, address = $34, company = $35, cargo = $36, cuenta_corriente_habilitada = $37
+        email_factura_electronica = $31, email_contacto_compras = $32, email_cotizaciones_automaticas = $33, address = $34, company = $35, cargo = $36, cuenta_corriente_habilitada = $37, cuenta_corriente_limite = $38
     `;
     let values = [
       data.name, data.email, data.razon_social, data.tipo_cliente, data.direccion_legal, data.localidad, data.codigo_postal, data.ciudad, data.country_id || null, data.phone, data.fecha_limite_facturacion || null, data.web,
       data.report_to_country_id || null, data.vendedor, data.direccion_entrega, data.localidad_entrega, data.codigo_postal_entrega, data.ciudad_entrega, data.pais_entrega_id || null, data.tipo_iva, data.numero_nit,
       data.nombre_compras, data.telefono_compras, data.email_compras, data.nombre_pagos, data.telefono_pagos, data.email_pagos, data.nombre_admin, data.telefono_admin, data.email_admin,
       data.email_factura_electronica, data.email_contacto_compras, data.email_cotizaciones_automaticas, data.address, data.company, data.cargo || 'Contacto / Usuario',
-      Boolean(data.cuenta_corriente_habilitada)
+      Boolean(data.cuenta_corriente_habilitada),
+      parseFloat(data.cuenta_corriente_limite) || 0
     ];
     
     // Update password if provided
     if (data.password) {
         const hashedPassword = await bcrypt.hash(data.password, 10);
-        query += `, password_hash = $38 WHERE id = $39 RETURNING id, email, name`;
+        query += `, password_hash = $39 WHERE id = $40 RETURNING id, email, name`;
         values.push(hashedPassword, id);
     } else {
-        query += ` WHERE id = $38 RETURNING id, email, name`;
+        query += ` WHERE id = $39 RETURNING id, email, name`;
         values.push(id);
     }
 
@@ -6155,6 +6241,7 @@ router.put('/admin/users/:id', authenticateToken, requireAdmin, async (req, res)
     const idx = inMem.users.findIndex(u => u.id === parseInt(id));
     if (idx !== -1) {
       if (data.cuenta_corriente_habilitada !== undefined) inMem.users[idx].cuenta_corriente_habilitada = Boolean(data.cuenta_corriente_habilitada);
+      if (data.cuenta_corriente_limite !== undefined) inMem.users[idx].cuenta_corriente_limite = parseFloat(data.cuenta_corriente_limite) || 0;
       if (data.iibb_jurisdiccion !== undefined) inMem.users[idx].iibb_jurisdiccion = data.iibb_jurisdiccion;
       if (data.iibb_tipo !== undefined) inMem.users[idx].iibb_tipo = data.iibb_tipo;
       if (data.iibb_numero !== undefined) inMem.users[idx].iibb_numero = data.iibb_numero;
@@ -6171,7 +6258,12 @@ router.put('/admin/users/:id', authenticateToken, requireAdmin, async (req, res)
       req,
       detalles: { userId: id, razon_social: data.razon_social, email: data.email }
     });
-    res.json(result.rows[0]);
+    const updatedUser = inMem.users.find(u => u.id === parseInt(id)) || result.rows[0];
+    const userClean = { ...updatedUser };
+    delete userClean.password_hash;
+    userClean.cuenta_corriente_habilitada = Boolean(userClean.cuenta_corriente_habilitada);
+    userClean.cuenta_corriente_limite = parseFloat(userClean.cuenta_corriente_limite || 0);
+    res.json(userClean);
   } catch (error) {
     if (error.code === '23505') return res.status(400).json({ error: 'Email already exists' });
     res.status(500).json({ error: error.message });
@@ -6384,7 +6476,7 @@ router.get('/settings/checkout-methods', async (req, res) => {
   }
 });
 
-router.put('/settings/checkout-methods', optionalAuthToken, async (req, res) => {
+router.put('/settings/checkout-methods', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const updated = req.body;
     if (!updated || typeof updated !== 'object') {
@@ -6428,7 +6520,7 @@ router.put('/settings/checkout-methods', optionalAuthToken, async (req, res) => 
   }
 });
 
-router.post('/settings/checkout-methods/reset', optionalAuthToken, async (req, res) => {
+router.post('/settings/checkout-methods/reset', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const countryParam = req.query.country || req.query.country_code || 'AR';
     const targetCountry = resolveCountry(countryParam);

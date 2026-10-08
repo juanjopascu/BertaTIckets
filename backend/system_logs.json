@@ -1,5 +1,643 @@
 [
   {
+    "id": 382,
+    "timestamp": "2026-10-08T00:58:13.294Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Avaya Sistema de Videoconferencia Avaya Collaboration Bar B109 (SKU: AVAYA-B109-CONF, Cat: comunicaciones_unificadas, USD $680.00).",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 5,
+      "productName": "Sistema de Videoconferencia Avaya Collaboration Bar B109",
+      "sku": "AVAYA-B109-CONF",
+      "brand": "Avaya",
+      "price": "680.00",
+      "category": "comunicaciones_unificadas",
+      "timestamp": "2026-10-08T00:58:13.294Z"
+    }
+  },
+  {
+    "id": 381,
+    "timestamp": "2026-10-08T00:58:03.262Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1090 registrado por \"Usuario Demo\" por USD $147.17.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1090,
+      "total": "147.17",
+      "payment_method": "Transferencia Bancaria Inmediata (CBU / SWIFT)",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 380,
+    "timestamp": "2026-10-08T00:55:35.787Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "19ab39372534732d3f472a40889d07688ac55b77e8a3aebed6f158511fd3a959"
+    }
+  },
+  {
+    "id": 379,
+    "timestamp": "2026-10-08T00:55:04.392Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Vertiv Zapatilla De 6 tomas rackeable PDU con protección de sobretensión (SKU: PDU-6T-RACK-AR, Cat: infraestructura, USD $145.00).",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 7,
+      "productName": "Zapatilla De 6 tomas rackeable PDU con protección de sobretensión",
+      "sku": "PDU-6T-RACK-AR",
+      "brand": "Vertiv",
+      "price": "145.00",
+      "category": "infraestructura",
+      "timestamp": "2026-10-08T00:55:04.391Z"
+    }
+  },
+  {
+    "id": 378,
+    "timestamp": "2026-10-08T00:54:06.427Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $680,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791420846426",
+      "itemsCount": 1,
+      "total": 680,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Avaya Sistema de Videoconferencia Avaya Collaboration Bar B109 ($680.00)",
+      "items": [
+        {
+          "id": 5,
+          "name": "Sistema de Videoconferencia Avaya Collaboration Bar B109",
+          "brand": "Avaya",
+          "sku": "AVAYA-B109-CONF",
+          "qty": 1,
+          "price": 680,
+          "subtotal": 680
+        }
+      ],
+      "timestamp": "2026-10-08T00:54:06.426Z"
+    }
+  },
+  {
+    "id": 377,
+    "timestamp": "2026-10-08T00:20:18.896Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $680,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791418818896",
+      "itemsCount": 1,
+      "total": 680,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Avaya Sistema de Videoconferencia Avaya Collaboration Bar B109 ($680.00)",
+      "items": [
+        {
+          "id": 5,
+          "name": "Sistema de Videoconferencia Avaya Collaboration Bar B109",
+          "brand": "Avaya",
+          "sku": "AVAYA-B109-CONF",
+          "qty": 1,
+          "price": 680,
+          "subtotal": 680
+        }
+      ],
+      "timestamp": "2026-10-08T00:20:18.896Z"
+    }
+  },
+  {
+    "id": 376,
+    "timestamp": "2026-10-08T00:11:19.772Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1091 registrado por \"Carlos Mendoza\" por USD $691.90.",
+    "usuario": {
+      "id": 2,
+      "nombre": "Carlos Mendoza",
+      "email": "carlos@redesnet.com.ar",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1091,
+      "total": "691.90",
+      "payment_method": "Cuenta Corriente B2B (30 días fecha factura)",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 375,
+    "timestamp": "2026-10-08T00:10:24.395Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #2 (\"Carlos Mendoza\" / carlos@redesnet.com.ar) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "2",
+      "razon_social": "RedesNet Soluciones IT S.R.L.",
+      "email": "carlos@redesnet.com.ar"
+    }
+  },
+  {
+    "id": 374,
+    "timestamp": "2026-10-07T23:53:01.966Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #2 (\"Carlos Mendoza\" / carlos@redesnet.com.ar) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "2",
+      "razon_social": "RedesNet Soluciones IT S.R.L.",
+      "email": "carlos@redesnet.com.ar"
+    }
+  },
+  {
+    "id": 373,
+    "timestamp": "2026-10-07T23:51:40.126Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "07cbfeec0922a96fced91775ce5aa5ed354a729e6fd7f2f7ac36b2eddca49061"
+    }
+  },
+  {
+    "id": 372,
+    "timestamp": "2026-10-07T23:50:14.358Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1090 registrado por \"Carlos Mendoza\" por USD $0.00.",
+    "usuario": {
+      "id": 2,
+      "nombre": "Carlos Mendoza",
+      "email": "carlos@redesnet.com.ar",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1090,
+      "total": "0.00",
+      "payment_method": "Cuenta Corriente B2B (30 días fecha factura)",
+      "itemsCount": 0
+    }
+  },
+  {
+    "id": 371,
+    "timestamp": "2026-10-07T23:29:09.854Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $680,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791415749854",
+      "itemsCount": 1,
+      "total": 680,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Avaya Sistema de Videoconferencia Avaya Collaboration Bar B109 ($680.00)",
+      "items": [
+        {
+          "id": 5,
+          "name": "Sistema de Videoconferencia Avaya Collaboration Bar B109",
+          "brand": "Avaya",
+          "sku": "AVAYA-B109-CONF",
+          "qty": 1,
+          "price": 680,
+          "subtotal": 680
+        }
+      ],
+      "timestamp": "2026-10-07T23:29:09.854Z"
+    }
+  },
+  {
+    "id": 370,
+    "timestamp": "2026-10-07T23:20:49.400Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 369,
+    "timestamp": "2026-10-07T23:19:01.378Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 368,
+    "timestamp": "2026-10-07T23:18:42.254Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $680,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791415122254",
+      "itemsCount": 1,
+      "total": 680,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Avaya Sistema de Videoconferencia Avaya Collaboration Bar B109 ($680.00)",
+      "items": [
+        {
+          "id": 5,
+          "name": "Sistema de Videoconferencia Avaya Collaboration Bar B109",
+          "brand": "Avaya",
+          "sku": "AVAYA-B109-CONF",
+          "qty": 1,
+          "price": 680,
+          "subtotal": 680
+        }
+      ],
+      "timestamp": "2026-10-07T23:18:42.254Z"
+    }
+  },
+  {
+    "id": 367,
+    "timestamp": "2026-10-07T22:58:38.083Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $680,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791413918083",
+      "itemsCount": 1,
+      "total": 680,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Avaya Sistema de Videoconferencia Avaya Collaboration Bar B109 ($680.00)",
+      "items": [
+        {
+          "id": 5,
+          "name": "Sistema de Videoconferencia Avaya Collaboration Bar B109",
+          "brand": "Avaya",
+          "sku": "AVAYA-B109-CONF",
+          "qty": 1,
+          "price": 680,
+          "subtotal": 680
+        }
+      ],
+      "timestamp": "2026-10-07T22:58:38.083Z"
+    }
+  },
+  {
+    "id": 366,
+    "timestamp": "2026-10-07T22:48:13.646Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "bb0f1511e44c236bd2a93977ac57741a2ce6af77c0d82bd0f4dd7b1f21a47d5a"
+    }
+  },
+  {
+    "id": 365,
+    "timestamp": "2026-10-07T22:46:58.814Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $680,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791413218814",
+      "itemsCount": 1,
+      "total": 680,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Avaya Sistema de Videoconferencia Avaya Collaboration Bar B109 ($680.00)",
+      "items": [
+        {
+          "id": 5,
+          "name": "Sistema de Videoconferencia Avaya Collaboration Bar B109",
+          "brand": "Avaya",
+          "sku": "AVAYA-B109-CONF",
+          "qty": 1,
+          "price": 680,
+          "subtotal": 680
+        }
+      ],
+      "timestamp": "2026-10-07T22:46:58.814Z"
+    }
+  },
+  {
+    "id": 364,
+    "timestamp": "2026-10-07T22:46:54.404Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Aruba Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22 (SKU: R4W02A-AP22, Cat: networking, USD $195.00).",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 3,
+      "productName": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
+      "sku": "R4W02A-AP22",
+      "brand": "Aruba",
+      "price": "195.00",
+      "category": "networking",
+      "timestamp": "2026-10-07T22:46:54.404Z"
+    }
+  },
+  {
+    "id": 363,
+    "timestamp": "2026-10-07T22:46:39.721Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "4d9c4d6f352d0d36d78f1a3b66eb35cf21e81f0537a3b7d349e934f52f1c1f59"
+    }
+  },
+  {
+    "id": 362,
+    "timestamp": "2026-10-07T16:51:21.385Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "2281c47460b252a4726448c506bd5205a484dbff98b7daa9270fbb81e75d0950"
+    }
+  },
+  {
+    "id": 361,
+    "timestamp": "2026-10-07T15:34:48.183Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1091 registrado por \"Empresa Demo S.A.\" por USD $690.20.",
+    "usuario": {
+      "nombre": "Laura Gómez",
+      "email": "facturacion@empresademo.com.ar",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1091,
+      "total": "690.20",
+      "payment_method": "E-Cheq / Cheque de Pago Diferido",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 360,
+    "timestamp": "2026-10-07T15:07:31.911Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $2.150,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791385651911",
+      "itemsCount": 1,
+      "total": 2150,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Vertiv Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA ($2150.00)",
+      "items": [
+        {
+          "id": 4,
+          "name": "Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA",
+          "brand": "Vertiv",
+          "sku": "GXT5-3000IRT2UXLE",
+          "qty": 1,
+          "price": 2150,
+          "subtotal": 2150
+        }
+      ],
+      "timestamp": "2026-10-07T15:07:31.911Z"
+    }
+  },
+  {
+    "id": 359,
+    "timestamp": "2026-10-07T15:04:41.494Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 358,
+    "timestamp": "2026-10-07T15:04:28.075Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1090 registrado por \"Usuario Demo\" por USD $197.92.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1090,
+      "total": "197.92",
+      "payment_method": "Cuenta Corriente B2B (30 días fecha factura)",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 357,
+    "timestamp": "2026-10-07T15:03:46.315Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 356,
+    "timestamp": "2026-10-07T15:02:59.545Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "44ed06061be38a8331bb426525664002942c7c5e0466c58de30c64a837952709"
+    }
+  },
+  {
     "id": 355,
     "timestamp": "2026-10-06T21:19:36.784Z",
     "origen": "auth",

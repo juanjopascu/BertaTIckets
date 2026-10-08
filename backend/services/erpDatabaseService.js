@@ -840,14 +840,25 @@ class ErpDatabaseService {
   }
 
   saveDatabase() {
-    try {
-      this.db.updated_at = new Date().toISOString();
-      const dir = path.dirname(ERP_DB_FILE);
-      if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
-      fs.writeFileSync(ERP_DB_FILE, JSON.stringify(this.db, null, 2), 'utf8');
-    } catch (err) {
-      console.error('Error guardando erp_database.json:', err);
-    }
+    this.scheduleSave();
+  }
+
+  scheduleSave() {
+    this.db.updated_at = new Date().toISOString();
+    if (this._saveTimeout) return;
+    this._saveTimeout = setTimeout(async () => {
+      this._saveTimeout = null;
+      try {
+        const dir = path.dirname(ERP_DB_FILE);
+        await fs.promises.mkdir(dir, { recursive: true });
+        const tempFile = `${ERP_DB_FILE}.tmp.${Date.now()}`;
+        const data = JSON.stringify(this.db, null, 2);
+        await fs.promises.writeFile(tempFile, data, 'utf8');
+        await fs.promises.rename(tempFile, ERP_DB_FILE);
+      } catch (err) {
+        console.error('Error guardando erp_database.json:', err);
+      }
+    }, 150);
   }
 
   // ── OVERVIEW & KPIS (SuiteOverview) ──

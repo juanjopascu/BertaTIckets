@@ -106,11 +106,17 @@ class NotificationService {
   }
 
   save() {
-    try {
-      fs.writeFileSync(NOTIFICATIONS_FILE, JSON.stringify(this.notifications, null, 2), 'utf8');
-    } catch (err) {
-      console.error('Error guardando notifications.json:', err);
-    }
+    if (this._saveTimeout) return;
+    this._saveTimeout = setTimeout(async () => {
+      this._saveTimeout = null;
+      try {
+        const tempFile = `${NOTIFICATIONS_FILE}.tmp.${Date.now()}`;
+        await fs.promises.writeFile(tempFile, JSON.stringify(this.notifications, null, 2), 'utf8');
+        await fs.promises.rename(tempFile, NOTIFICATIONS_FILE);
+      } catch (err) {
+        console.error('Error guardando notifications.json:', err);
+      }
+    }, 200);
   }
 
   getNotifications(role = 'admin') {

@@ -123,7 +123,10 @@
         "audiocodes"
       ],
       "security": [
-        "fortinet",
+        {
+          "name": "fortinet",
+          "countries": []
+        },
         "sophos",
         "sonicwall",
         "barracuda"
@@ -195,7 +198,11 @@
             2,
             3,
             4,
-            5
+            5,
+            6,
+            7,
+            8,
+            9
           ]
         },
         {
@@ -211,7 +218,11 @@
           "targetBrand": "all",
           "productIds": [
             6,
-            7
+            7,
+            8,
+            9,
+            10,
+            11
           ]
         },
         {
@@ -280,6 +291,7 @@
       "fortinet": {
         "name": "Fortinet",
         "logo": "",
+        "banner": "http://localhost:3001/uploads/1791387669625-658330546-ChatGPT_Image_5_oct_2026__05_56_00_p.m..png",
         "tagline": "Seguridad de Red Convergente y Firewalls NGFW FortiGate",
         "color": "#EE3124"
       },
@@ -381,7 +393,8 @@
         "US",
         "AR",
         "CL"
-      ]
+      ],
+      "fortinet": []
     }
   },
   "CL": {

@@ -94,15 +94,23 @@ if (systemLogsDb.length === 0) {
     ];
 }
 
+let saveLogsTimeout = null;
+
 function saveSystemLogs() {
-    try {
-        if (systemLogsDb.length > 2500) {
-            systemLogsDb = systemLogsDb.slice(systemLogsDb.length - 2500);
+    if (saveLogsTimeout) return;
+    saveLogsTimeout = setTimeout(async () => {
+        saveLogsTimeout = null;
+        try {
+            if (systemLogsDb.length > 2500) {
+                systemLogsDb = systemLogsDb.slice(systemLogsDb.length - 2500);
+            }
+            const tempFile = `${SYSTEM_LOGS_FILE_PATH}.tmp.${Date.now()}`;
+            await fs.promises.writeFile(tempFile, JSON.stringify(systemLogsDb, null, 2), 'utf8');
+            await fs.promises.rename(tempFile, SYSTEM_LOGS_FILE_PATH);
+        } catch (err) {
+            console.error('Error guardando system_logs.json:', err);
         }
-        fs.writeFileSync(SYSTEM_LOGS_FILE_PATH, JSON.stringify(systemLogsDb, null, 2), 'utf8');
-    } catch (err) {
-        console.error('Error guardando system_logs.json:', err);
-    }
+    }, 500);
 }
 
 function registrarLog({ origen = 'sistema', tipo = 'INFO', accion, descripcion, usuario, req, detalles = {} }) {

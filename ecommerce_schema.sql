@@ -56,6 +56,7 @@ CREATE TABLE IF NOT EXISTS ecommerce_users (
     address TEXT,
     company VARCHAR(150),
     cuenta_corriente_habilitada BOOLEAN DEFAULT FALSE,
+    cuenta_corriente_limite NUMERIC(12, 2) DEFAULT 0,
     
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

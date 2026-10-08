@@ -1352,9 +1352,20 @@ export default function ShopClientPortal() {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '7px' }}>
                       <span style={{ color: '#64748B', fontWeight: '600' }}>Cuenta Corriente:</span>
                       {profileData?.cuenta_corriente_habilitada ? (
-                        <span style={{ background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '6px', fontWeight: '800', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                          ✓ Habilitada
-                        </span>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '3px' }}>
+                          <span style={{ background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '6px', fontWeight: '800', fontSize: '12px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            ✓ Habilitada
+                          </span>
+                          {parseFloat(profileData?.cuenta_corriente_limite || profileData?.limite_credito || 0) > 0 ? (
+                            <span style={{ fontSize: '11px', color: '#0284c7', fontWeight: '700' }}>
+                              Límite: ${parseFloat(profileData?.cuenta_corriente_limite || profileData?.limite_credito).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} USD
+                            </span>
+                          ) : (
+                            <span style={{ fontSize: '11px', color: '#16a34a', fontWeight: '600' }}>
+                              Sin límite estricto
+                            </span>
+                          )}
+                        </div>
                       ) : (
                         <span style={{ background: '#F1F5F9', color: '#64748B', border: '1px solid #CBD5E1', padding: '2px 8px', borderRadius: '6px', fontWeight: '700', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
                           🔒 No Habilitada (Bloqueada)
