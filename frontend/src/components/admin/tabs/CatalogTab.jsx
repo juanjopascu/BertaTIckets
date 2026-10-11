@@ -1522,7 +1522,11 @@ export default function CatalogTab({
                     Descripción & Especificaciones
                   </div>
                   <div style={{ fontSize: '12.5px', color: '#334155', lineHeight: 1.5, maxHeight: '140px', overflowY: 'auto' }}>
-                    {selectedProductDetail.description || 'Sin descripción técnica cargada para este producto.'}
+                    {typeof selectedProductDetail.description === 'string'
+                      ? selectedProductDetail.description
+                      : (selectedProductDetail.description && typeof selectedProductDetail.description === 'object'
+                          ? (selectedProductDetail.description.es || selectedProductDetail.description.plain || selectedProductDetail.description.text || selectedProductDetail.description.html || selectedProductDetail.description.en || 'Sin descripción técnica cargada para este producto.')
+                          : (selectedProductDetail.description != null ? String(selectedProductDetail.description) : 'Sin descripción técnica cargada para este producto.'))}
                   </div>
                 </div>
 

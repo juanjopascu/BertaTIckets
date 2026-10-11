@@ -1,5 +1,345 @@
 [
   {
+    "id": 404,
+    "timestamp": "2026-10-09T21:24:38.601Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "63a6f2214bb962000cd06e0cd8e9f8b73b221fd98b313893274819857e242854"
+    }
+  },
+  {
+    "id": 403,
+    "timestamp": "2026-10-09T21:21:41.753Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "e6a126c4a9de6f93c9af2c79cd9d62aa78a6d0d2ff4eb37c200e7542356b4939"
+    }
+  },
+  {
+    "id": 402,
+    "timestamp": "2026-10-09T21:06:52.587Z",
+    "origen": "tickets",
+    "tipo": "INFO",
+    "accion": "TICKET_ACTUALIZADO",
+    "descripcion": "Ticket #2 modificado (jpascuzzi@dacas.com): Campos actualizados",
+    "usuario": {
+      "nombre": "jpascuzzi@dacas.com",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "ticketId": 2,
+      "estado": "Negociación",
+      "asignado": "Administrador",
+      "prioridad": "Alta"
+    }
+  },
+  {
+    "id": 401,
+    "timestamp": "2026-10-09T21:06:47.621Z",
+    "origen": "tickets",
+    "tipo": "INFO",
+    "accion": "TICKET_ACTUALIZADO",
+    "descripcion": "Ticket #2 modificado (jpascuzzi@dacas.com): Estado: Contactado ➡️ Negociación",
+    "usuario": {
+      "nombre": "jpascuzzi@dacas.com",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "ticketId": 2,
+      "estado": "Negociación",
+      "asignado": "Administrador",
+      "prioridad": "Alta"
+    }
+  },
+  {
+    "id": 400,
+    "timestamp": "2026-10-09T21:06:35.657Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "a3457918fad5a8a134c7c367419fed6fce43f7f6918b2f8ec1245ec1ac3030dc"
+    }
+  },
+  {
+    "id": 399,
+    "timestamp": "2026-10-09T21:06:04.975Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Vendedor de Prueba\" (cliente@crm.com) con rol \"vendedor\".",
+    "usuario": {
+      "nombre": "Vendedor de Prueba",
+      "email": "cliente@crm.com",
+      "rol": "vendedor",
+      "id": 2
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "a7e5a26b3a172d04a7a95d4e3d45fd9978e89eee814555b7127791c98849c00e"
+    }
+  },
+  {
+    "id": 398,
+    "timestamp": "2026-10-09T21:05:46.078Z",
+    "origen": "dashboard",
+    "tipo": "INFO",
+    "accion": "USUARIO_MODIFICADO",
+    "descripcion": "Usuario \"Vendedor de Prueba\" (cliente@crm.com) actualizado por jpascuzzi@dacas.com",
+    "usuario": {
+      "nombre": "jpascuzzi@dacas.com",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "usuarioId": 2,
+      "rol": "vendedor",
+      "activo": true
+    }
+  },
+  {
+    "id": 397,
+    "timestamp": "2026-10-09T21:03:12.421Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Fortinet Licencia Anual FortiGuard Enterprise Protection Bundle (SKU: LIC-FG-ENT-1Y, Cat: security, USD $278.80).",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 6,
+      "productName": "Licencia Anual FortiGuard Enterprise Protection Bundle",
+      "sku": "LIC-FG-ENT-1Y",
+      "brand": "Fortinet",
+      "price": "278.80",
+      "category": "security",
+      "timestamp": "2026-10-09T21:03:12.421Z"
+    }
+  },
+  {
+    "id": 396,
+    "timestamp": "2026-10-09T21:01:42.512Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 2 producto(s) por total USD $958,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791579702511",
+      "itemsCount": 2,
+      "total": 958.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Avaya Sistema de Videoconferencia Avaya Collaboration Bar B109 ($680.00) | 1x Fortinet Licencia Anual FortiGuard Enterprise Protection Bundle ($278.80)",
+      "items": [
+        {
+          "id": 5,
+          "name": "Sistema de Videoconferencia Avaya Collaboration Bar B109",
+          "brand": "Avaya",
+          "sku": "AVAYA-B109-CONF",
+          "qty": 1,
+          "price": 680,
+          "subtotal": 680
+        },
+        {
+          "id": 6,
+          "name": "Licencia Anual FortiGuard Enterprise Protection Bundle",
+          "brand": "Fortinet",
+          "sku": "LIC-FG-ENT-1Y",
+          "qty": 1,
+          "price": 278.8,
+          "subtotal": 278.8
+        }
+      ],
+      "timestamp": "2026-10-09T21:01:42.511Z"
+    }
+  },
+  {
+    "id": 395,
+    "timestamp": "2026-10-09T21:01:17.482Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "07581d1bd541a94cc790a4042a6ade8e4636aeac0db75bf64ed49df6591cb2ed"
+    }
+  },
+  {
+    "id": 394,
+    "timestamp": "2026-10-09T20:58:52.810Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "cbf9438bd63a86774e60904fc777234deda4ba255750feb6b2b2a61c719b4565"
+    }
+  },
+  {
+    "id": 393,
+    "timestamp": "2026-10-09T20:25:35.501Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 2 producto(s) por total USD $958,80 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791577535501",
+      "itemsCount": 2,
+      "total": 958.8,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Avaya Sistema de Videoconferencia Avaya Collaboration Bar B109 ($680.00) | 1x Fortinet Licencia Anual FortiGuard Enterprise Protection Bundle ($278.80)",
+      "items": [
+        {
+          "id": 5,
+          "name": "Sistema de Videoconferencia Avaya Collaboration Bar B109",
+          "brand": "Avaya",
+          "sku": "AVAYA-B109-CONF",
+          "qty": 1,
+          "price": 680,
+          "subtotal": 680
+        },
+        {
+          "id": 6,
+          "name": "Licencia Anual FortiGuard Enterprise Protection Bundle",
+          "brand": "Fortinet",
+          "sku": "LIC-FG-ENT-1Y",
+          "qty": 1,
+          "price": 278.8,
+          "subtotal": 278.8
+        }
+      ],
+      "timestamp": "2026-10-09T20:25:35.501Z"
+    }
+  },
+  {
+    "id": 392,
+    "timestamp": "2026-10-09T20:22:06.440Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "2b7f7eb6de0ede6d639b78afc5f9352fc91c8620bde0dbf5f486bdaaabfe2fbe"
+    }
+  },
+  {
+    "id": 391,
+    "timestamp": "2026-10-09T13:48:08.852Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "ECOMMERCE_PRODUCTO_ELIMINADO",
+    "descripcion": "Producto #2 (\"Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router\") eliminado del catálogo",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": "2"
+    }
+  },
+  {
+    "id": 390,
+    "timestamp": "2026-10-09T13:44:10.282Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "5ec62458cb7ce35eb009539f062d439f3103f74812ec303da0236fab113c7285"
+    }
+  },
+  {
     "id": 389,
     "timestamp": "2026-10-08T13:33:50.232Z",
     "origen": "ecommerce",

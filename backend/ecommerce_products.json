@@ -1,47 +1,5 @@
 [
   {
-    "id": 2,
-    "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
-    "brand": "MikroTik",
-    "is_featured": true,
-    "badge": "DESTACADO",
-    "category": "networking",
-    "sku": "CRS328-24P-4S",
-    "description": "<p>Switch empresarial capa 2/3 con 24 puertos Gigabit PoE dual 802.3af/at y 4 puertos 10G SFP+ para fibra óptica de alta velocidad.</p>",
-    "price": "480.00",
-    "stock": 0,
-    "weight": "2.80",
-    "depth": "44.3",
-    "width": "22.4",
-    "height": "4.4",
-    "country_code": "AR",
-    "country_id": 2,
-    "image_url": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000&auto=format&fit=crop",
-    "images": [
-      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?q=80&w=1000&auto=format&fit=crop"
-    ],
-    "created_at": "2026-10-01T17:49:11.017Z",
-    "base_price": "480.00",
-    "client_price": null,
-    "promotional_price": null,
-    "discount_percentage": null,
-    "discount_percent": null,
-    "applied_rule": null,
-    "is_locked": true,
-    "secondary_images": [],
-    "highlights": "24 Puertos Gigabit Ethernet 10/100/1000 Mbps\nSalida PoE+ 802.3af/at y PoE pasivo de 24V con detección automática\n4 Puertos 10G SFP+ para enlaces ascendentes de fibra óptica\nFuente de poder redundante dual integrada\nSistema operativo dual: RouterOS o SwitchOS",
-    "warranty": "12 Meses con RMA y diagnóstico técnico DACAS",
-    "datasheet_url": "https://i.mt.lv/cdn/product_files/CRS328-24P-4SplusRM_180315.pdf",
-    "condition": "Nuevo Sellado",
-    "related_ids": [
-      3
-    ],
-    "related_skus": [
-      "R4W02A-AP22"
-    ],
-    "subcategory": "Switches"
-  },
-  {
     "id": 3,
     "name": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
     "brand": "Aruba",

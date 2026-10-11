@@ -1014,6 +1014,15 @@ function saveProductsToFile() {
   }
 }
 
+function normalizeProductDescription(desc) {
+  if (typeof desc === 'string') return desc;
+  if (!desc) return '';
+  if (typeof desc === 'object') {
+    return desc.es || desc.plain || desc.text || desc.html || desc.en || Object.values(desc).find(v => typeof v === 'string') || '';
+  }
+  return String(desc);
+}
+
 function loadProductsFromFile(defaultProducts) {
   try {
     if (fs.existsSync(PRODUCTS_FILE)) {
@@ -1024,6 +1033,7 @@ function loadProductsFromFile(defaultProducts) {
           const c = resolveCountry(p.country_code || p.country_id || 'AR');
           return {
             ...p,
+            description: normalizeProductDescription(p.description),
             country_code: p.country_code ? p.country_code.toUpperCase() : c.code,
             country_id: p.country_id ? parseInt(p.country_id, 10) : c.id
           };
@@ -2999,6 +3009,7 @@ router.get('/products', async (req, res) => {
       }
       return {
         ...p,
+        description: normalizeProductDescription(p.description),
         ...pricing,
         country_code: pCountry.code,
         country_id: pCountry.id,
@@ -3060,6 +3071,7 @@ router.get('/products/:id', async (req, res) => {
 
     res.json({
       ...prod,
+      description: normalizeProductDescription(prod.description),
       ...pricing,
       image_url: mainImg,
       images: combinedImages

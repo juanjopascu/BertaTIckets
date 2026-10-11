@@ -223,8 +223,16 @@ function App() {
         <Route
           path="/admin"
           element={
-            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin']}>
+            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin', 'admin_ecommerce']}>
               <AdminUsuarios usuario={usuario} theme={theme} toggleTheme={toggleTheme} />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/logs"
+          element={
+            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin', 'admin_ecommerce']}>
+              <AdminUsuarios usuario={usuario} theme={theme} toggleTheme={toggleTheme} initialTab="logs" />
             </ProtectedRoute>
           }
         />
@@ -296,7 +304,7 @@ function App() {
           path="/admin/ecommerce"
           element={
             <ProtectedRoute usuario={usuario} rolesPermitidos={['admin', 'admin_ecommerce']}>
-              <AdminEcommerce />
+              <AdminEcommerce usuario={usuario} />
             </ProtectedRoute>
           }
         />

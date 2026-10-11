@@ -873,11 +873,11 @@ function ShopMain() {
       if (p.brand && DISALLOWED_BRANDS.includes(p.brand.toLowerCase())) return false;
       const q = search.toLowerCase().trim();
       const matchSearch = !search ||
-        (p.name && p.name.toLowerCase().includes(q)) ||
-        (p.description && p.description.toLowerCase().includes(q)) ||
-        (p.sku && p.sku.toLowerCase().includes(q)) ||
-        (p.brand && p.brand.toLowerCase().includes(q)) ||
-        (p.subcategory && p.subcategory.toLowerCase().includes(q));
+        (p.name && typeof p.name === 'string' && p.name.toLowerCase().includes(q)) ||
+        (p.description && (typeof p.description === 'string' ? p.description : JSON.stringify(p.description)).toLowerCase().includes(q)) ||
+        (p.sku && typeof p.sku === 'string' && p.sku.toLowerCase().includes(q)) ||
+        (p.brand && typeof p.brand === 'string' && p.brand.toLowerCase().includes(q)) ||
+        (p.subcategory && typeof p.subcategory === 'string' && p.subcategory.toLowerCase().includes(q));
       const matchCat = isProductInCat(p, activeCategory);
       const matchBrand = !selectedBrand || selectedBrand === 'all' || (p.brand && p.brand.toLowerCase() === selectedBrand.toLowerCase());
       const matchSubcat = !selectedSubcategory || selectedSubcategory === 'all' ||

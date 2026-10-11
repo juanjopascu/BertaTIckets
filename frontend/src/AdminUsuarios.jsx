@@ -120,6 +120,26 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
   });
   const [error, setError] = useState(null);
 
+  const getAdminAuthHeaders = () => {
+    const headers = {};
+    let savedUser = null;
+    try {
+      savedUser = JSON.parse(localStorage.getItem('usuario') || 'null');
+    } catch (_) {}
+
+    const sessionId = usuario?.sesionId || savedUser?.sesionId || localStorage.getItem('sessionId') || sessionStorage.getItem('sessionId');
+    if (sessionId) {
+      headers['x-session-id'] = sessionId;
+      headers['Authorization'] = `Bearer ${sessionId}`;
+    } else {
+      const token = localStorage.getItem('token') || localStorage.getItem('dacas_token') || localStorage.getItem('dacas_admin_token') || localStorage.getItem('ecommerce_token') || localStorage.getItem('crm_token');
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+    }
+    return headers;
+  };
+
   const fetchSystemLogs = async () => {
     try {
       setLoadingLogs(true);
@@ -128,7 +148,9 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
       if (logTypeFilter && logTypeFilter !== 'todos') params.append('tipo', logTypeFilter);
       if (logSearchText.trim()) params.append('search', logSearchText.trim());
 
-      const response = await fetch(`${API_BASE_URL}/api/admin/system-logs?${params.toString()}`);
+      const response = await fetch(`${API_BASE_URL}/api/admin/system-logs?${params.toString()}`, {
+        headers: getAdminAuthHeaders()
+      });
       const data = await response.json();
       if (data && data.logs) {
         setSystemLogs(data.logs);
@@ -158,7 +180,10 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
   const handleClearLogs = async () => {
     if (window.confirm('¿Estás seguro de que deseas purgar todo el historial de logs y auditoría? Esta acción registrará un evento de seguridad irreversible.')) {
       try {
-        await fetch(`${API_BASE_URL}/api/admin/system-logs`, { method: 'DELETE' });
+        await fetch(`${API_BASE_URL}/api/admin/system-logs`, {
+          method: 'DELETE',
+          headers: getAdminAuthHeaders()
+        });
         fetchSystemLogs();
       } catch (err) {
         console.error("Error purgando logs:", err);
@@ -648,51 +673,49 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                   </label>
 
                   {/* User Status Option (Enable/Disable) */}
-                  {editingId !== 1 && (
-                    <label style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
-                      gap: '12px', 
-                      background: theme === 'dark' 
-                        ? (formData.activo ? 'rgba(34, 197, 94, 0.08)' : 'rgba(239, 68, 68, 0.08)') 
-                        : (formData.activo ? 'rgba(34, 197, 94, 0.05)' : 'rgba(239, 68, 68, 0.05)'), 
-                      padding: '12px 18px', 
-                      borderRadius: '12px', 
-                      border: theme === 'dark'
-                        ? (formData.activo ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)')
-                        : (formData.activo ? '1px solid rgba(34, 197, 94, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)'), 
-                      margin: 0, 
-                      cursor: 'pointer',
-                      boxSizing: 'border-box',
-                      transition: 'all 0.2s ease' 
-                    }}>
-                      <input 
-                        type="checkbox" 
-                        name="activo" 
-                        checked={formData.activo} 
-                        onChange={(e) => setFormData({ ...formData, activo: e.target.checked })} 
-                        style={{ 
-                          width: '18px', 
-                          height: '18px', 
-                          minWidth: '18px', 
-                          maxWidth: '18px', 
-                          flex: '0 0 18px', 
-                          margin: 0, 
-                          padding: 0, 
-                          cursor: 'pointer', 
-                          accentColor: '#22c55e' 
-                        }}
-                      />
-                      <span style={{ 
+                  <label style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '12px', 
+                    background: theme === 'dark' 
+                      ? (formData.activo ? 'rgba(34, 197, 94, 0.08)' : 'rgba(239, 68, 68, 0.08)') 
+                      : (formData.activo ? 'rgba(34, 197, 94, 0.05)' : 'rgba(239, 68, 68, 0.05)'), 
+                    padding: '12px 18px', 
+                    borderRadius: '12px', 
+                    border: theme === 'dark'
+                      ? (formData.activo ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)')
+                      : (formData.activo ? '1px solid rgba(34, 197, 94, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)'), 
+                    margin: 0, 
+                    cursor: 'pointer', 
+                    boxSizing: 'border-box', 
+                    transition: 'all 0.2s ease' 
+                  }}>
+                    <input 
+                      type="checkbox" 
+                      name="activo" 
+                      checked={formData.activo} 
+                      onChange={(e) => setFormData({ ...formData, activo: e.target.checked })} 
+                      style={{ 
+                        width: '18px', 
+                        height: '18px', 
+                        minWidth: '18px', 
+                        maxWidth: '18px', 
+                        flex: '0 0 18px', 
                         margin: 0, 
-                        fontWeight: 600, 
-                        fontSize: '0.88rem', 
-                        color: formData.activo ? '#16a34a' : '#dc2626' 
-                      }}>
-                        {formData.activo ? 'Habilitar usuario (Permitir acceso y login)' : 'Usuario deshabilitado (Acceso revocado)'}
-                      </span>
-                    </label>
-                  )}
+                        padding: 0, 
+                        cursor: 'pointer', 
+                        accentColor: '#22c55e' 
+                      }}
+                    />
+                    <span style={{ 
+                      margin: 0, 
+                      fontWeight: 600, 
+                      fontSize: '0.88rem', 
+                      color: formData.activo ? '#16a34a' : '#dc2626' 
+                    }}>
+                      {formData.activo ? 'Habilitar usuario (Permitir acceso y login)' : 'Usuario deshabilitado (Acceso revocado)'}
+                    </span>
+                  </label>
 
                   {/* Staff Accesses */}
                   {formData.rol === 'staff' && (
@@ -833,8 +856,8 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
           </div>
         )}
 
-        {/* Barra Superior Simétrica: Selector de Pestañas + Botón Nuevo Usuario */}
-        {activoTab !== 'logs' && (
+        {/* Barra Superior Simétrica: Selector de Pestañas + Botón Nuevo Usuario (oculto en modo embebido de logs) */}
+        {(!embedded || initialTab !== 'logs') && (
           <div style={{ 
             display: 'flex', 
             justifyContent: 'space-between',
@@ -847,7 +870,7 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
               display: 'flex', 
               gap: '12px', 
               background: 'rgba(255, 255, 255, 0.6)', 
-              backdropFilter: 'blur(10px)',
+              backdropFilter: 'blur(10px)', 
               padding: '6px', 
               borderRadius: '16px', 
               border: '1px solid rgba(226, 232, 240, 0.8)',
@@ -895,40 +918,63 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                 <BrandingVectorIcon name="lock" size={16} />
                 Sesiones Activas
               </button>
+              <button 
+                type="button"
+                onClick={() => setActivoTab('logs')} 
+                style={{
+                  padding: '10px 20px',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: activoTab === 'logs' ? 'linear-gradient(135deg, var(--primary) 0%, var(--primary-hover) 100%)' : 'transparent',
+                  color: activoTab === 'logs' ? 'white' : '#475569',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  boxShadow: activoTab === 'logs' ? '0 4px 12px var(--primary-light)' : 'none',
+                  transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                <BrandingVectorIcon name="file-text" size={16} />
+                Logs & Auditoría
+              </button>
             </div>
 
             {/* Botón de Creación de Usuario Simétrico y Prominente */}
-            <button
-              type="button"
-              className="btn-submit"
-              onClick={() => {
-                setEditingId(null);
-                setFormData({
-                  nombre: '', email: '', password: '', rol: 'vendedor',
-                  accesos: { departamentos: [], estados: [] },
-                  equipoId: '',
-                  crear_tickets: true,
-                  activo: true,
-                  pais: '', sector: '', horario_atencion: '', ciudad: ''
-                });
-                setMostrarModal(true);
-              }}
-              style={{
-                width: 'auto',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '10px 22px',
-                borderRadius: '12px',
-                fontWeight: '700',
-                fontSize: '0.92rem',
-                boxShadow: '0 4px 14px rgba(15, 164, 222, 0.3)',
-                cursor: 'pointer'
-              }}
-            >
-              <BrandingVectorIcon name="plus" size={16} color="#ffffff" />
-              Nuevo Usuario
-            </button>
+            {activoTab === 'usuarios' && (
+              <button
+                type="button"
+                className="btn-submit"
+                onClick={() => {
+                  setEditingId(null);
+                  setFormData({
+                    nombre: '', email: '', password: '', rol: 'vendedor',
+                    accesos: { departamentos: [], estados: [] },
+                    equipoId: '',
+                    crear_tickets: true,
+                    activo: true,
+                    pais: '', sector: '', horario_atencion: '', ciudad: ''
+                  });
+                  setMostrarModal(true);
+                }}
+                style={{
+                  width: 'auto',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '10px 22px',
+                  borderRadius: '12px',
+                  fontWeight: '700',
+                  fontSize: '0.92rem',
+                  boxShadow: '0 4px 14px rgba(15, 164, 222, 0.3)',
+                  cursor: 'pointer'
+                }}
+              >
+                <BrandingVectorIcon name="plus" size={16} color="#ffffff" />
+                Nuevo Usuario
+              </button>
+            )}
           </div>
         )}
 
@@ -1066,47 +1112,45 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
 
                       {/* 5. Acciones (2 lines vertical align) */}
                       <td style={{ padding: '6px 12px', textAlign: 'center', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
-                        {u.id !== 1 ? (
-                          <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
-                            <button
-                              type="button"
-                              onClick={() => handleEditClick(u)}
-                              style={{
-                                background: '#3b82f6',
-                                color: 'white',
-                                border: 'none',
-                                padding: '4px 9px',
-                                borderRadius: '6px',
-                                cursor: 'pointer',
-                                fontSize: '11px',
-                                fontWeight: '700',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '4px'
-                              }}
-                            >
-                              <BrandingVectorIcon name="edit" size={11} /> Editar
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleDelete(u.id)}
-                              className="btn-delete"
-                              style={{
-                                padding: '4px 9px',
-                                borderRadius: '6px',
-                                fontSize: '11px',
-                                fontWeight: '700',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '4px'
-                              }}
-                            >
-                              <BrandingVectorIcon name="trash" size={11} /> Eliminar
-                            </button>
-                          </div>
-                        ) : (
-                          <span style={{ fontSize: '11px', color: '#94a3b8', fontStyle: 'italic' }}>Principal</span>
-                        )}
+                        <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
+                          <button
+                            type="button"
+                            onClick={() => handleEditClick(u)}
+                            style={{
+                              background: '#3b82f6',
+                              color: 'white',
+                              border: 'none',
+                              padding: '4px 9px',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontSize: '11px',
+                              fontWeight: '700',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                            title="Editar datos, contraseña y estado del usuario"
+                          >
+                            <BrandingVectorIcon name="edit" size={11} /> Editar
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(u.id)}
+                            className="btn-delete"
+                            style={{
+                              padding: '4px 9px',
+                              borderRadius: '6px',
+                              fontSize: '11px',
+                              fontWeight: '700',
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}
+                            title="Eliminar usuario del sistema"
+                          >
+                            <BrandingVectorIcon name="trash" size={11} /> Eliminar
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );

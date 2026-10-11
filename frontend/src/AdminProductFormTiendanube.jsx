@@ -26,7 +26,14 @@ export default function AdminProductFormTiendanube({
 
   // 1. Basic Info
   const [name, setName] = useState(product?.name || '');
-  const [descriptionHtml, setDescriptionHtml] = useState(product?.description || '');
+  const [descriptionHtml, setDescriptionHtml] = useState(() => {
+    if (!product?.description) return '';
+    if (typeof product.description === 'string') return product.description;
+    if (typeof product.description === 'object') {
+      return product.description.es || product.description.html || product.description.plain || product.description.text || product.description.en || '';
+    }
+    return String(product.description);
+  });
   const [highlights, setHighlights] = useState(product?.highlights || '');
   
   // 2. Media

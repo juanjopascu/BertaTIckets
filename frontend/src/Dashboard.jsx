@@ -1083,6 +1083,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                   { id: 'users', label: 'Clientes Mayoristas', icon: 'users' },
                   { id: 'orders', label: 'Órdenes de Compra', icon: 'file-text' },
                   { id: 'reportes', label: 'Reportería & Métricas', icon: 'bar-chart' },
+                  { id: 'logs', label: 'Logs & Auditoría', icon: 'file-text' },
                   { id: 'envios', label: 'Métodos de Envío', icon: 'truck' },
                   { id: 'pagos', label: 'Métodos de Pago', icon: 'credit-card' },
                   { id: 'visual', label: 'Diseño & Banners', icon: 'palette' },
@@ -1815,6 +1816,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                             users: 'Clientes Mayoristas',
                             orders: 'Órdenes de Compra',
                             reportes: 'Reportería & Métricas',
+                            logs: 'Bitácora de Logs & Auditoría Integral',
                             envios: 'Métodos de Envío',
                             pagos: 'Métodos de Pago',
                             pagos_envios: 'Pagos y Envíos',
@@ -1916,6 +1918,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                 <AdminEcommerce
                   embedded={true}
                   hideTopBars={true}
+                  usuario={usuario}
                   activeTab={ecommerceSubTab}
                   onTabChange={setEcommerceSubTab}
                   visualSubTab={visualSubTab}
