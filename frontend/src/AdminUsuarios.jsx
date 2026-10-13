@@ -103,11 +103,11 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
 
   const [editingId, setEditingId] = useState(null);
   const [mostrarModal, setMostrarModal] = useState(false);
-  
-  const [formData, setFormData] = useState({ 
-    nombre: '', 
-    email: '', 
-    password: '', 
+
+  const [formData, setFormData] = useState({
+    nombre: '',
+    email: '',
+    password: '',
     rol: 'vendedor',
     accesos: { departamentos: [], estados: [] },
     equipoId: '',
@@ -125,7 +125,7 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
     let savedUser = null;
     try {
       savedUser = JSON.parse(localStorage.getItem('usuario') || 'null');
-    } catch (_) {}
+    } catch (_) { }
 
     const sessionId = usuario?.sesionId || savedUser?.sesionId || localStorage.getItem('sessionId') || sessionStorage.getItem('sessionId');
     if (sessionId) {
@@ -301,8 +301,8 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
   const handleCheckboxChange = (tipo, valor) => {
     setFormData(prev => {
       const actual = prev.accesos[tipo];
-      const nuevos = actual.includes(valor) 
-        ? actual.filter(v => v !== valor) 
+      const nuevos = actual.includes(valor)
+        ? actual.filter(v => v !== valor)
         : [...actual, valor];
       return { ...prev, accesos: { ...prev.accesos, [tipo]: nuevos } };
     });
@@ -329,8 +329,8 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
 
   const handleCancelEdit = () => {
     setEditingId(null);
-    setFormData({ 
-      nombre: '', email: '', password: '', rol: 'vendedor', 
+    setFormData({
+      nombre: '', email: '', password: '', rol: 'vendedor',
       accesos: { departamentos: [], estados: [] },
       equipoId: '',
       crear_tickets: true,
@@ -356,12 +356,12 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
       } else {
         payload.equipoId = payload.equipoId ? parseInt(payload.equipoId) : null;
       }
-      
+
       // Si estamos editando y la contraseña está vacía, no la enviamos para no sobreescribirla
       if (editingId && !payload.password) {
         delete payload.password;
       }
- 
+
       const url = editingId ? `${API_BASE_URL}/api/usuarios/${editingId}` : `${API_BASE_URL}/api/usuarios`;
       const method = editingId ? 'PUT' : 'POST';
 
@@ -443,9 +443,9 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                     <BrandingVectorIcon name="home" size={15} color="currentColor" />
                     <span>Home</span>
                   </button>
-                  <button 
-                    type="button" 
-                    onClick={toggleTheme} 
+                  <button
+                    type="button"
+                    onClick={toggleTheme}
                     className="theme-toggle-btn"
                     title="Cambiar Tema"
                   >
@@ -475,21 +475,21 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
               <div style={{ padding: '28px 32px' }}>
                 {error && <div className="error-alert" style={{ marginBottom: '20px', padding: '12px 16px', background: 'var(--danger-bg)', color: 'var(--danger)', borderRadius: '12px', fontWeight: 600 }}>{error}</div>}
                 <form onSubmit={handleSubmit} className="crm-form" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                  
+
                   {/* Grid de 2 columnas 100% simétricas */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: '16px 20px' }}>
-                    
+
                     {/* Campo 1: Nombre */}
                     <div className="form-group" style={{ margin: 0, display: 'flex', flexDirection: 'column' }}>
                       <label style={{ height: '18px', display: 'flex', alignItems: 'center', fontSize: '0.75rem', fontWeight: '750', textTransform: 'uppercase', letterSpacing: '0.04em', color: theme === 'dark' ? '#94a3b8' : '#475569', marginBottom: '8px' }}>
                         Nombre
                       </label>
-                      <input 
-                        type="text" 
-                        name="nombre" 
-                        value={formData.nombre} 
-                        onChange={handleInputChange} 
-                        required 
+                      <input
+                        type="text"
+                        name="nombre"
+                        value={formData.nombre}
+                        onChange={handleInputChange}
+                        required
                         placeholder="Nombre completo"
                         style={{ height: '46px', boxSizing: 'border-box', width: '100%', borderRadius: '10px' }}
                       />
@@ -500,12 +500,12 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                       <label style={{ height: '18px', display: 'flex', alignItems: 'center', fontSize: '0.75rem', fontWeight: '750', textTransform: 'uppercase', letterSpacing: '0.04em', color: theme === 'dark' ? '#94a3b8' : '#475569', marginBottom: '8px' }}>
                         Email
                       </label>
-                      <input 
-                        type="email" 
-                        name="email" 
-                        value={formData.email} 
-                        onChange={handleInputChange} 
-                        required 
+                      <input
+                        type="email"
+                        name="email"
+                        value={formData.email}
+                        onChange={handleInputChange}
+                        required
                         placeholder="ejemplo@dacas.com"
                         style={{ height: '46px', boxSizing: 'border-box', width: '100%', borderRadius: '10px' }}
                       />
@@ -517,12 +517,12 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                         <span>Contraseña</span>
                         {editingId && <span style={{ fontSize: '10.5px', color: '#64748b', fontWeight: '500', textTransform: 'none' }}>(Dejar vacío p/ mantener)</span>}
                       </label>
-                      <input 
-                        type="password" 
-                        name="password" 
-                        value={formData.password} 
-                        onChange={handleInputChange} 
-                        required={!editingId} 
+                      <input
+                        type="password"
+                        name="password"
+                        value={formData.password}
+                        onChange={handleInputChange}
+                        required={!editingId}
                         placeholder={editingId ? "••••••••" : "Contraseña de acceso"}
                         style={{ height: '46px', boxSizing: 'border-box', width: '100%', borderRadius: '10px' }}
                       />
@@ -533,11 +533,11 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                       <label style={{ height: '18px', display: 'flex', alignItems: 'center', fontSize: '0.75rem', fontWeight: '750', textTransform: 'uppercase', letterSpacing: '0.04em', color: theme === 'dark' ? '#94a3b8' : '#475569', marginBottom: '8px' }}>
                         Rol en el Sistema
                       </label>
-                      <select 
-                        name="rol" 
-                        value={formData.rol} 
-                        onChange={handleInputChange} 
-                        className="status-select" 
+                      <select
+                        name="rol"
+                        value={formData.rol}
+                        onChange={handleInputChange}
+                        className="status-select"
                         style={{ height: '46px', padding: '0 14px', boxSizing: 'border-box', width: '100%', borderRadius: '10px' }}
                       >
                         <option value="vendedor">Vendedor (Gestión y emisión de tickets)</option>
@@ -555,12 +555,12 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                       <label style={{ height: '18px', display: 'flex', alignItems: 'center', fontSize: '0.75rem', fontWeight: '750', textTransform: 'uppercase', letterSpacing: '0.04em', color: theme === 'dark' ? '#94a3b8' : '#475569', marginBottom: '8px' }}>
                         País
                       </label>
-                      <input 
-                        type="text" 
-                        name="pais" 
-                        placeholder="Ej. Argentina" 
-                        value={formData.pais} 
-                        onChange={handleInputChange} 
+                      <input
+                        type="text"
+                        name="pais"
+                        placeholder="Ej. Argentina"
+                        value={formData.pais}
+                        onChange={handleInputChange}
                         style={{ height: '46px', boxSizing: 'border-box', width: '100%', borderRadius: '10px' }}
                       />
                     </div>
@@ -570,12 +570,12 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                       <label style={{ height: '18px', display: 'flex', alignItems: 'center', fontSize: '0.75rem', fontWeight: '750', textTransform: 'uppercase', letterSpacing: '0.04em', color: theme === 'dark' ? '#94a3b8' : '#475569', marginBottom: '8px' }}>
                         Ciudad
                       </label>
-                      <input 
-                        type="text" 
-                        name="ciudad" 
-                        placeholder="Ej. Buenos Aires" 
-                        value={formData.ciudad} 
-                        onChange={handleInputChange} 
+                      <input
+                        type="text"
+                        name="ciudad"
+                        placeholder="Ej. Buenos Aires"
+                        value={formData.ciudad}
+                        onChange={handleInputChange}
                         style={{ height: '46px', boxSizing: 'border-box', width: '100%', borderRadius: '10px' }}
                       />
                     </div>
@@ -585,12 +585,12 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                       <label style={{ height: '18px', display: 'flex', alignItems: 'center', fontSize: '0.75rem', fontWeight: '750', textTransform: 'uppercase', letterSpacing: '0.04em', color: theme === 'dark' ? '#94a3b8' : '#475569', marginBottom: '8px' }}>
                         Sector / Departamento
                       </label>
-                      <input 
-                        type="text" 
-                        name="sector" 
-                        placeholder="Ej. Ventas, Soporte, Finanzas" 
-                        value={formData.sector} 
-                        onChange={handleInputChange} 
+                      <input
+                        type="text"
+                        name="sector"
+                        placeholder="Ej. Ventas, Soporte, Finanzas"
+                        value={formData.sector}
+                        onChange={handleInputChange}
                         style={{ height: '46px', boxSizing: 'border-box', width: '100%', borderRadius: '10px' }}
                       />
                     </div>
@@ -600,12 +600,12 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                       <label style={{ height: '18px', display: 'flex', alignItems: 'center', fontSize: '0.75rem', fontWeight: '750', textTransform: 'uppercase', letterSpacing: '0.04em', color: theme === 'dark' ? '#94a3b8' : '#475569', marginBottom: '8px' }}>
                         Horario de Atención
                       </label>
-                      <input 
-                        type="text" 
-                        name="horario_atencion" 
-                        placeholder="Ej. 09:00 - 18:00" 
-                        value={formData.horario_atencion} 
-                        onChange={handleInputChange} 
+                      <input
+                        type="text"
+                        name="horario_atencion"
+                        placeholder="Ej. 09:00 - 18:00"
+                        value={formData.horario_atencion}
+                        onChange={handleInputChange}
                         style={{ height: '46px', boxSizing: 'border-box', width: '100%', borderRadius: '10px' }}
                       />
                     </div>
@@ -617,11 +617,11 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                       <label style={{ height: '18px', display: 'flex', alignItems: 'center', fontSize: '0.75rem', fontWeight: '750', textTransform: 'uppercase', letterSpacing: '0.04em', color: theme === 'dark' ? '#94a3b8' : '#475569', marginBottom: '8px' }}>
                         Equipo de Soporte
                       </label>
-                      <select 
-                        name="equipoId" 
-                        value={formData.equipoId || ''} 
-                        onChange={handleInputChange} 
-                        className="status-select" 
+                      <select
+                        name="equipoId"
+                        value={formData.equipoId || ''}
+                        onChange={handleInputChange}
+                        className="status-select"
                         style={{ height: '46px', padding: '0 14px', boxSizing: 'border-box', width: '100%', borderRadius: '10px' }}
                       >
                         <option value="">Sin equipo asignado</option>
@@ -633,85 +633,85 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                   )}
 
                   {/* Ticket Creation Option */}
-                  <label style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '12px', 
-                    background: theme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : '#f8fafc', 
-                    padding: '12px 18px', 
-                    borderRadius: '12px', 
-                    border: theme === 'dark' ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid #e2e8f0', 
+                  <label style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    background: theme === 'dark' ? 'rgba(255, 255, 255, 0.03)' : '#f8fafc',
+                    padding: '12px 18px',
+                    borderRadius: '12px',
+                    border: theme === 'dark' ? '1px solid rgba(255, 255, 255, 0.1)' : '1px solid #e2e8f0',
                     margin: 0,
                     cursor: 'pointer',
                     boxSizing: 'border-box'
                   }}>
-                    <input 
-                      type="checkbox" 
-                      name="crear_tickets" 
-                      checked={formData.crear_tickets} 
-                      onChange={(e) => setFormData({ ...formData, crear_tickets: e.target.checked })} 
-                      style={{ 
-                        width: '18px', 
-                        height: '18px', 
-                        minWidth: '18px', 
-                        maxWidth: '18px', 
-                        flex: '0 0 18px', 
-                        margin: 0, 
-                        padding: 0, 
-                        cursor: 'pointer', 
-                        accentColor: 'var(--primary)' 
+                    <input
+                      type="checkbox"
+                      name="crear_tickets"
+                      checked={formData.crear_tickets}
+                      onChange={(e) => setFormData({ ...formData, crear_tickets: e.target.checked })}
+                      style={{
+                        width: '18px',
+                        height: '18px',
+                        minWidth: '18px',
+                        maxWidth: '18px',
+                        flex: '0 0 18px',
+                        margin: 0,
+                        padding: 0,
+                        cursor: 'pointer',
+                        accentColor: 'var(--primary)'
                       }}
                     />
-                    <span style={{ 
-                      margin: 0, 
-                      fontWeight: 600, 
-                      fontSize: '0.88rem', 
-                      color: theme === 'dark' ? '#e2e8f0' : '#1e293b' 
+                    <span style={{
+                      margin: 0,
+                      fontWeight: 600,
+                      fontSize: '0.88rem',
+                      color: theme === 'dark' ? '#e2e8f0' : '#1e293b'
                     }}>
                       Habilitar creación de tickets para este usuario
                     </span>
                   </label>
 
                   {/* User Status Option (Enable/Disable) */}
-                  <label style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '12px', 
-                    background: theme === 'dark' 
-                      ? (formData.activo ? 'rgba(34, 197, 94, 0.08)' : 'rgba(239, 68, 68, 0.08)') 
-                      : (formData.activo ? 'rgba(34, 197, 94, 0.05)' : 'rgba(239, 68, 68, 0.05)'), 
-                    padding: '12px 18px', 
-                    borderRadius: '12px', 
+                  <label style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '12px',
+                    background: theme === 'dark'
+                      ? (formData.activo ? 'rgba(34, 197, 94, 0.08)' : 'rgba(239, 68, 68, 0.08)')
+                      : (formData.activo ? 'rgba(34, 197, 94, 0.05)' : 'rgba(239, 68, 68, 0.05)'),
+                    padding: '12px 18px',
+                    borderRadius: '12px',
                     border: theme === 'dark'
                       ? (formData.activo ? '1px solid rgba(34, 197, 94, 0.3)' : '1px solid rgba(239, 68, 68, 0.3)')
-                      : (formData.activo ? '1px solid rgba(34, 197, 94, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)'), 
-                    margin: 0, 
-                    cursor: 'pointer', 
-                    boxSizing: 'border-box', 
-                    transition: 'all 0.2s ease' 
+                      : (formData.activo ? '1px solid rgba(34, 197, 94, 0.2)' : '1px solid rgba(239, 68, 68, 0.2)'),
+                    margin: 0,
+                    cursor: 'pointer',
+                    boxSizing: 'border-box',
+                    transition: 'all 0.2s ease'
                   }}>
-                    <input 
-                      type="checkbox" 
-                      name="activo" 
-                      checked={formData.activo} 
-                      onChange={(e) => setFormData({ ...formData, activo: e.target.checked })} 
-                      style={{ 
-                        width: '18px', 
-                        height: '18px', 
-                        minWidth: '18px', 
-                        maxWidth: '18px', 
-                        flex: '0 0 18px', 
-                        margin: 0, 
-                        padding: 0, 
-                        cursor: 'pointer', 
-                        accentColor: '#22c55e' 
+                    <input
+                      type="checkbox"
+                      name="activo"
+                      checked={formData.activo}
+                      onChange={(e) => setFormData({ ...formData, activo: e.target.checked })}
+                      style={{
+                        width: '18px',
+                        height: '18px',
+                        minWidth: '18px',
+                        maxWidth: '18px',
+                        flex: '0 0 18px',
+                        margin: 0,
+                        padding: 0,
+                        cursor: 'pointer',
+                        accentColor: '#22c55e'
                       }}
                     />
-                    <span style={{ 
-                      margin: 0, 
-                      fontWeight: 600, 
-                      fontSize: '0.88rem', 
-                      color: formData.activo ? '#16a34a' : '#dc2626' 
+                    <span style={{
+                      margin: 0,
+                      fontWeight: 600,
+                      fontSize: '0.88rem',
+                      color: formData.activo ? '#16a34a' : '#dc2626'
                     }}>
                       {formData.activo ? 'Habilitar usuario (Permitir acceso y login)' : 'Usuario deshabilitado (Acceso revocado)'}
                     </span>
@@ -719,52 +719,52 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
 
                   {/* Staff Accesses */}
                   {formData.rol === 'staff' && (
-                    <div style={{ 
-                      background: theme === 'dark' ? 'rgba(255, 255, 255, 0.02)' : '#f8fafc', 
-                      padding: '18px', 
-                      borderRadius: '16px', 
-                      border: theme === 'dark' ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid #e2e8f0', 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      gap: '12px' 
+                    <div style={{
+                      background: theme === 'dark' ? 'rgba(255, 255, 255, 0.02)' : '#f8fafc',
+                      padding: '18px',
+                      borderRadius: '16px',
+                      border: theme === 'dark' ? '1px solid rgba(255, 255, 255, 0.08)' : '1px solid #e2e8f0',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px'
                     }}>
-                      <h3 style={{ 
-                        margin: 0, 
-                        fontSize: '1rem', 
-                        color: theme === 'dark' ? '#f1f5f9' : '#1e293b', 
-                        fontWeight: 700 
+                      <h3 style={{
+                        margin: 0,
+                        fontSize: '1rem',
+                        color: theme === 'dark' ? '#f1f5f9' : '#1e293b',
+                        fontWeight: 700
                       }}>
                         Accesos Asignados (Staff)
                       </h3>
-                      
+
                       <div>
-                        <label style={{ 
-                          fontWeight: 'bold', 
-                          display: 'block', 
-                          marginBottom: '8px', 
-                          fontSize: '0.8rem', 
-                          textTransform: 'uppercase', 
-                          color: theme === 'dark' ? '#94a3b8' : '#64748b' 
+                        <label style={{
+                          fontWeight: 'bold',
+                          display: 'block',
+                          marginBottom: '8px',
+                          fontSize: '0.8rem',
+                          textTransform: 'uppercase',
+                          color: theme === 'dark' ? '#94a3b8' : '#64748b'
                         }}>
                           Departamentos Permitidos
                         </label>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                           {departamentos.map(d => (
-                            <label key={d.id} style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '6px', 
-                              fontSize: '0.9rem', 
-                              background: theme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'white', 
-                              padding: '6px 12px', 
-                              borderRadius: '20px', 
-                              border: theme === 'dark' ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid #e2e8f0', 
-                              color: theme === 'dark' ? '#e2e8f0' : '#1e293b', 
-                              cursor: 'pointer' 
+                            <label key={d.id} style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              fontSize: '0.9rem',
+                              background: theme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'white',
+                              padding: '6px 12px',
+                              borderRadius: '20px',
+                              border: theme === 'dark' ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid #e2e8f0',
+                              color: theme === 'dark' ? '#e2e8f0' : '#1e293b',
+                              cursor: 'pointer'
                             }}>
-                              <input 
-                                type="checkbox" 
-                                checked={formData.accesos.departamentos.includes(d.id)} 
+                              <input
+                                type="checkbox"
+                                checked={formData.accesos.departamentos.includes(d.id)}
                                 onChange={() => handleCheckboxChange('departamentos', d.id)}
                                 style={{ width: 'auto', minWidth: 'auto', flex: '0 0 auto', cursor: 'pointer' }}
                               />
@@ -775,33 +775,33 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                       </div>
 
                       <div>
-                        <label style={{ 
-                          fontWeight: 'bold', 
-                          display: 'block', 
-                          marginBottom: '8px', 
-                          fontSize: '0.8rem', 
-                          textTransform: 'uppercase', 
-                          color: theme === 'dark' ? '#94a3b8' : '#64748b' 
+                        <label style={{
+                          fontWeight: 'bold',
+                          display: 'block',
+                          marginBottom: '8px',
+                          fontSize: '0.8rem',
+                          textTransform: 'uppercase',
+                          color: theme === 'dark' ? '#94a3b8' : '#64748b'
                         }}>
                           Estados Permitidos
                         </label>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
                           {estados.map(e => (
-                            <label key={e.id} style={{ 
-                              display: 'flex', 
-                              alignItems: 'center', 
-                              gap: '6px', 
-                              fontSize: '0.9rem', 
-                              background: theme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'white', 
-                              padding: '6px 12px', 
-                              borderRadius: '20px', 
-                              border: theme === 'dark' ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid #e2e8f0', 
-                              color: theme === 'dark' ? '#e2e8f0' : '#1e293b', 
-                              cursor: 'pointer' 
+                            <label key={e.id} style={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              fontSize: '0.9rem',
+                              background: theme === 'dark' ? 'rgba(255, 255, 255, 0.05)' : 'white',
+                              padding: '6px 12px',
+                              borderRadius: '20px',
+                              border: theme === 'dark' ? '1px solid rgba(255, 255, 255, 0.15)' : '1px solid #e2e8f0',
+                              color: theme === 'dark' ? '#e2e8f0' : '#1e293b',
+                              cursor: 'pointer'
                             }}>
-                              <input 
-                                type="checkbox" 
-                                checked={formData.accesos.estados.includes(e.nombre)} 
+                              <input
+                                type="checkbox"
+                                checked={formData.accesos.estados.includes(e.nombre)}
                                 onChange={() => handleCheckboxChange('estados', e.nombre)}
                                 style={{ width: 'auto', minWidth: 'auto', flex: '0 0 auto', cursor: 'pointer' }}
                               />
@@ -815,17 +815,17 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
 
                   {/* Footer buttons 100% simétricos */}
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px', marginTop: '12px' }}>
-                    <button 
-                      type="button" 
-                      onClick={handleCancelEdit} 
-                      style={{ 
-                        background: '#e2e8f0', 
-                        color: '#475569', 
-                        border: 'none', 
-                        padding: '13px 20px', 
-                        borderRadius: '12px', 
-                        cursor: 'pointer', 
-                        fontWeight: '700', 
+                    <button
+                      type="button"
+                      onClick={handleCancelEdit}
+                      style={{
+                        background: '#e2e8f0',
+                        color: '#475569',
+                        border: 'none',
+                        padding: '13px 20px',
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        fontWeight: '700',
                         fontSize: '0.92rem',
                         transition: 'all 0.2s ease',
                         textAlign: 'center'
@@ -833,14 +833,14 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                     >
                       Cancelar
                     </button>
-                    <button 
-                      type="submit" 
-                      className="btn-submit" 
-                      style={{ 
-                        width: '100%', 
-                        padding: '13px 20px', 
-                        borderRadius: '12px', 
-                        fontWeight: '700', 
+                    <button
+                      type="submit"
+                      className="btn-submit"
+                      style={{
+                        width: '100%',
+                        padding: '13px 20px',
+                        borderRadius: '12px',
+                        fontWeight: '700',
                         fontSize: '0.92rem',
                         boxShadow: '0 4px 12px rgba(15, 164, 222, 0.25)',
                         cursor: 'pointer',
@@ -858,27 +858,27 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
 
         {/* Barra Superior Simétrica: Selector de Pestañas + Botón Nuevo Usuario (oculto en modo embebido de logs) */}
         {(!embedded || initialTab !== 'logs') && (
-          <div style={{ 
-            display: 'flex', 
+          <div style={{
+            display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            marginBottom: '24px', 
+            marginBottom: '24px',
             flexWrap: 'wrap',
             gap: '16px'
           }}>
-            <div style={{ 
-              display: 'flex', 
-              gap: '12px', 
-              background: 'rgba(255, 255, 255, 0.6)', 
-              backdropFilter: 'blur(10px)', 
-              padding: '6px', 
-              borderRadius: '16px', 
+            <div style={{
+              display: 'flex',
+              gap: '12px',
+              background: 'rgba(255, 255, 255, 0.6)',
+              backdropFilter: 'blur(10px)',
+              padding: '6px',
+              borderRadius: '16px',
               border: '1px solid rgba(226, 232, 240, 0.8)',
               width: 'fit-content'
             }}>
-              <button 
+              <button
                 type="button"
-                onClick={() => setActivoTab('usuarios')} 
+                onClick={() => setActivoTab('usuarios')}
                 style={{
                   padding: '10px 20px',
                   borderRadius: '12px',
@@ -897,9 +897,9 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                 <BrandingVectorIcon name="users" size={16} />
                 Usuarios Registrados
               </button>
-              <button 
+              <button
                 type="button"
-                onClick={() => setActivoTab('sesiones')} 
+                onClick={() => setActivoTab('sesiones')}
                 style={{
                   padding: '10px 20px',
                   borderRadius: '12px',
@@ -918,9 +918,9 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                 <BrandingVectorIcon name="lock" size={16} />
                 Sesiones Activas
               </button>
-              <button 
+              <button
                 type="button"
-                onClick={() => setActivoTab('logs')} 
+                onClick={() => setActivoTab('logs')}
                 style={{
                   padding: '10px 20px',
                   borderRadius: '12px',
@@ -983,13 +983,13 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <h2 style={{ margin: 0 }}>Usuarios del Sistema</h2>
-                <span style={{ 
-                  background: 'var(--primary-light)', 
-                  color: 'var(--primary)', 
-                  padding: '4px 10px', 
-                  borderRadius: '20px', 
-                  fontSize: '0.8rem', 
-                  fontWeight: '800' 
+                <span style={{
+                  background: 'var(--primary-light)',
+                  color: 'var(--primary)',
+                  padding: '4px 10px',
+                  borderRadius: '20px',
+                  fontSize: '0.8rem',
+                  fontWeight: '800'
                 }}>
                   {usuarios.length} registrados
                 </span>
@@ -997,171 +997,171 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
             </div>
             <div className="crm-table-container" style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', borderRadius: '12px', border: '1px solid var(--border-color, #e2e8f0)', background: '#ffffff' }}>
               <table className="users-table crm-compact-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '12px' }}>
-              <thead>
-                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left' }}>
-                  <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', minWidth: '180px' }}>Nombre & Email</th>
-                  <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', minWidth: '170px' }}>Ubicación & Sector</th>
-                  <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', minWidth: '160px' }}>Rol & Equipo</th>
-                  <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', minWidth: '150px' }}>Estado & Permisos</th>
-                  <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', textAlign: 'center', width: '110px' }}>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {usuarios.map(u => {
-                  const locationText = u.ciudad || u.pais ? `${u.ciudad ? u.ciudad : ''}${u.ciudad && u.pais ? ', ' : ''}${u.pais ? u.pais : ''}` : 'Sin ubicación';
-                  const sectorText = u.sector || 'General';
-                  const equipoNombre = u.equipoId ? (equipos.find(eq => eq.id === u.equipoId)?.nombre || `Equipo #${u.equipoId}`) : 'Sin Equipo Asignado';
+                <thead>
+                  <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left' }}>
+                    <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', minWidth: '180px' }}>Nombre & Email</th>
+                    <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', minWidth: '170px' }}>Ubicación & Sector</th>
+                    <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', minWidth: '160px' }}>Rol & Equipo</th>
+                    <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', minWidth: '150px' }}>Estado & Permisos</th>
+                    <th style={{ padding: '8px 12px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', textAlign: 'center', width: '110px' }}>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {usuarios.map(u => {
+                    const locationText = u.ciudad || u.pais ? `${u.ciudad ? u.ciudad : ''}${u.ciudad && u.pais ? ', ' : ''}${u.pais ? u.pais : ''}` : 'Sin ubicación';
+                    const sectorText = u.sector || 'General';
+                    const equipoNombre = u.equipoId ? (equipos.find(eq => eq.id === u.equipoId)?.nombre || `Equipo #${u.equipoId}`) : 'Sin Equipo Asignado';
 
-                  return (
-                    <tr key={u.id} style={{ borderBottom: '1px solid var(--border-color-subtle, #f1f5f9)', transition: 'background 0.15s ease' }}>
-                      {/* 1. Nombre & Email (2 lines) */}
-                      <td style={{ padding: '6px 12px', verticalAlign: 'middle', maxWidth: '220px' }}>
-                        <div style={{ fontWeight: 700, fontSize: '12.5px', color: 'var(--text-main, #0f172a)', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '5px' }} title={u.nombre}>
-                          <BrandingVectorIcon name="user" size={13} color="var(--primary)" />
-                          <span>{u.nombre}</span>
-                        </div>
-                        <div style={{ fontSize: '10.5px', color: '#0fa4de', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }} title={u.email}>
-                          <BrandingVectorIcon name="mail" size={11} color="#0fa4de" />
-                          <span>{u.email}</span>
-                        </div>
-                      </td>
+                    return (
+                      <tr key={u.id} style={{ borderBottom: '1px solid var(--border-color-subtle, #f1f5f9)', transition: 'background 0.15s ease' }}>
+                        {/* 1. Nombre & Email (2 lines) */}
+                        <td style={{ padding: '6px 12px', verticalAlign: 'middle', maxWidth: '220px' }}>
+                          <div style={{ fontWeight: 700, fontSize: '12.5px', color: 'var(--text-main, #0f172a)', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '5px' }} title={u.nombre}>
+                            <BrandingVectorIcon name="user" size={13} color="var(--primary)" />
+                            <span>{u.nombre}</span>
+                          </div>
+                          <div style={{ fontSize: '10.5px', color: '#0fa4de', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }} title={u.email}>
+                            <BrandingVectorIcon name="mail" size={11} color="#0fa4de" />
+                            <span>{u.email}</span>
+                          </div>
+                        </td>
 
-                      {/* 2. Ubicación & Sector (2 lines) */}
-                      <td style={{ padding: '6px 12px', verticalAlign: 'middle', maxWidth: '220px' }}>
-                        <div style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-main, #334155)', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '4px' }} title={locationText}>
-                          <BrandingVectorIcon name="map-pin" size={12} color="#ef4444" />
-                          <span>{locationText}</span>
-                        </div>
-                        <div style={{ fontSize: '10.5px', color: '#64748b', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }} title={`${sectorText}${u.horario_atencion ? ` • ${u.horario_atencion}` : ''}`}>
-                          <BrandingVectorIcon name="folder" size={11} color="#64748b" />
-                          <span>{sectorText}</span>
-                          {u.horario_atencion && (
-                            <>
-                              <span>•</span>
-                              <BrandingVectorIcon name="clock" size={10} color="#94a3b8" />
-                              <span>{u.horario_atencion}</span>
-                            </>
-                          )}
-                        </div>
-                      </td>
-
-                      {/* 3. Rol & Equipo (2 lines) */}
-                      <td style={{ padding: '6px 12px', verticalAlign: 'middle', maxWidth: '200px' }}>
-                        <div style={{ lineHeight: '1.25' }}>
-                          <span style={{ 
-                            padding: '2px 8px', borderRadius: '12px', fontSize: '10.5px', 
-                            background: u.rol === 'admin' ? 'var(--danger-bg)' : u.rol === 'admin_ecommerce' ? (theme === 'dark' ? 'rgba(15, 164, 222, 0.2)' : '#e0f2fe') : u.rol === 'admin_erp' ? (theme === 'dark' ? 'rgba(16, 185, 129, 0.2)' : '#dcfce7') : u.rol === 'staff' ? 'var(--warning-bg)' : u.rol === 'manager' ? (theme === 'dark' ? 'rgba(192, 132, 252, 0.15)' : '#f3e8ff') : u.rol === 'pm' ? (theme === 'dark' ? 'rgba(245, 158, 11, 0.18)' : '#fef3c7') : 'var(--primary-light)', 
-                            color: u.rol === 'admin' ? 'var(--danger)' : u.rol === 'admin_ecommerce' ? '#0284c7' : u.rol === 'admin_erp' ? '#166534' : u.rol === 'staff' ? 'var(--warning)' : u.rol === 'manager' ? 'var(--purple-brand)' : u.rol === 'pm' ? '#d97706' : 'var(--primary)',
-                            fontWeight: 700,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}>
-                            {u.rol === 'admin_ecommerce' ? (
-                              <><BrandingVectorIcon name="shopping-bag" size={12} /> Admin E-commerce</>
-                            ) : u.rol === 'admin_erp' ? (
-                              <><BrandingVectorIcon name="database" size={12} color="#166534" /> ERP Admin</>
-                            ) : u.rol === 'admin' ? (
-                              <><BrandingVectorIcon name="shield" size={12} /> Administrador</>
-                            ) : u.rol === 'staff' ? (
-                              <><BrandingVectorIcon name="briefcase" size={12} /> Staff</>
-                            ) : u.rol === 'manager' ? (
-                              <><BrandingVectorIcon name="users" size={12} /> Manager</>
-                            ) : u.rol === 'pm' ? (
-                              <><BrandingVectorIcon name="layers" size={12} /> PM</>
-                            ) : (
-                              <><BrandingVectorIcon name="user" size={12} /> Vendedor</>
+                        {/* 2. Ubicación & Sector (2 lines) */}
+                        <td style={{ padding: '6px 12px', verticalAlign: 'middle', maxWidth: '220px' }}>
+                          <div style={{ fontSize: '11.5px', fontWeight: '600', color: 'var(--text-main, #334155)', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '4px' }} title={locationText}>
+                            <BrandingVectorIcon name="map-pin" size={12} color="#ef4444" />
+                            <span>{locationText}</span>
+                          </div>
+                          <div style={{ fontSize: '10.5px', color: '#64748b', lineHeight: '1.25', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '2px' }} title={`${sectorText}${u.horario_atencion ? ` • ${u.horario_atencion}` : ''}`}>
+                            <BrandingVectorIcon name="folder" size={11} color="#64748b" />
+                            <span>{sectorText}</span>
+                            {u.horario_atencion && (
+                              <>
+                                <span>•</span>
+                                <BrandingVectorIcon name="clock" size={10} color="#94a3b8" />
+                                <span>{u.horario_atencion}</span>
+                              </>
                             )}
-                          </span>
-                        </div>
-                        <div style={{ fontSize: '10px', color: '#64748b', lineHeight: '1.25', marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '4px' }} title={u.rol === 'staff' ? `Equipo: ${equipoNombre}` : (u.crear_tickets !== false ? 'Habilitado para emitir tickets' : 'Solo consulta')}>
-                          {u.rol === 'staff' ? (
-                            <><BrandingVectorIcon name="users" size={11} color="#64748b" /> <span>{equipoNombre}</span></>
-                          ) : (u.crear_tickets !== false ? (
-                            <><BrandingVectorIcon name="edit" size={11} color="#10b981" /> <span>Crea Tickets</span></>
-                          ) : (
-                            <><BrandingVectorIcon name="lock" size={11} color="#ef4444" /> <span>Solo Consulta</span></>
-                          ))}
-                        </div>
-                      </td>
+                          </div>
+                        </td>
 
-                      {/* 4. Estado & Permisos (2 lines) */}
-                      <td style={{ padding: '6px 12px', verticalAlign: 'middle', maxWidth: '180px' }}>
-                        <div style={{ lineHeight: '1.25' }}>
-                          <span style={{
-                            padding: '2px 7px', borderRadius: '8px', fontSize: '10.5px',
-                            background: u.activo !== false ? '#dcfce7' : '#fee2e2',
-                            color: u.activo !== false ? '#15803d' : '#991b1b',
-                            fontWeight: 750,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}>
-                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: u.activo !== false ? '#22c55e' : '#ef4444' }}></span>
-                            {u.activo !== false ? 'Habilitado' : 'Deshabilitado'}
-                          </span>
-                        </div>
-                        <div style={{ fontSize: '10px', color: '#64748b', lineHeight: '1.25', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {u.rol === 'staff' && u.accesos ? (
-                            `Deptos: ${u.accesos.departamentos?.length || 0} • Estados: ${u.accesos.estados?.length || 0}`
-                          ) : (
-                            'Acceso Portal Matriz'
-                          )}
-                        </div>
-                      </td>
-
-                      {/* 5. Acciones (2 lines vertical align) */}
-                      <td style={{ padding: '6px 12px', textAlign: 'center', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
-                        <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
-                          <button
-                            type="button"
-                            onClick={() => handleEditClick(u)}
-                            style={{
-                              background: '#3b82f6',
-                              color: 'white',
-                              border: 'none',
-                              padding: '4px 9px',
-                              borderRadius: '6px',
-                              cursor: 'pointer',
-                              fontSize: '11px',
-                              fontWeight: '700',
+                        {/* 3. Rol & Equipo (2 lines) */}
+                        <td style={{ padding: '6px 12px', verticalAlign: 'middle', maxWidth: '200px' }}>
+                          <div style={{ lineHeight: '1.25' }}>
+                            <span style={{
+                              padding: '2px 8px', borderRadius: '12px', fontSize: '10.5px',
+                              background: u.rol === 'admin' ? 'var(--danger-bg)' : u.rol === 'admin_ecommerce' ? (theme === 'dark' ? 'rgba(15, 164, 222, 0.2)' : '#e0f2fe') : u.rol === 'admin_erp' ? (theme === 'dark' ? 'rgba(16, 185, 129, 0.2)' : '#dcfce7') : u.rol === 'staff' ? 'var(--warning-bg)' : u.rol === 'manager' ? (theme === 'dark' ? 'rgba(192, 132, 252, 0.15)' : '#f3e8ff') : u.rol === 'pm' ? (theme === 'dark' ? 'rgba(245, 158, 11, 0.18)' : '#fef3c7') : 'var(--primary-light)',
+                              color: u.rol === 'admin' ? 'var(--danger)' : u.rol === 'admin_ecommerce' ? '#0284c7' : u.rol === 'admin_erp' ? '#166534' : u.rol === 'staff' ? 'var(--warning)' : u.rol === 'manager' ? 'var(--purple-brand)' : u.rol === 'pm' ? '#d97706' : 'var(--primary)',
+                              fontWeight: 700,
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '4px'
-                            }}
-                            title="Editar datos, contraseña y estado del usuario"
-                          >
-                            <BrandingVectorIcon name="edit" size={11} /> Editar
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDelete(u.id)}
-                            className="btn-delete"
-                            style={{
-                              padding: '4px 9px',
-                              borderRadius: '6px',
-                              fontSize: '11px',
-                              fontWeight: '700',
+                            }}>
+                              {u.rol === 'admin_ecommerce' ? (
+                                <><BrandingVectorIcon name="shopping-bag" size={12} /> Admin E-commerce</>
+                              ) : u.rol === 'admin_erp' ? (
+                                <><BrandingVectorIcon name="database" size={12} color="#166534" /> ERP Admin</>
+                              ) : u.rol === 'admin' ? (
+                                <><BrandingVectorIcon name="shield" size={12} /> Administrador</>
+                              ) : u.rol === 'staff' ? (
+                                <><BrandingVectorIcon name="briefcase" size={12} /> Staff</>
+                              ) : u.rol === 'manager' ? (
+                                <><BrandingVectorIcon name="users" size={12} /> Manager</>
+                              ) : u.rol === 'pm' ? (
+                                <><BrandingVectorIcon name="layers" size={12} /> PM</>
+                              ) : (
+                                <><BrandingVectorIcon name="user" size={12} /> Vendedor</>
+                              )}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '10px', color: '#64748b', lineHeight: '1.25', marginTop: '3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', display: 'flex', alignItems: 'center', gap: '4px' }} title={u.rol === 'staff' ? `Equipo: ${equipoNombre}` : (u.crear_tickets !== false ? 'Habilitado para emitir tickets' : 'Solo consulta')}>
+                            {u.rol === 'staff' ? (
+                              <><BrandingVectorIcon name="users" size={11} color="#64748b" /> <span>{equipoNombre}</span></>
+                            ) : (u.crear_tickets !== false ? (
+                              <><BrandingVectorIcon name="edit" size={11} color="#10b981" /> <span>Crea Tickets</span></>
+                            ) : (
+                              <><BrandingVectorIcon name="lock" size={11} color="#ef4444" /> <span>Solo Consulta</span></>
+                            ))}
+                          </div>
+                        </td>
+
+                        {/* 4. Estado & Permisos (2 lines) */}
+                        <td style={{ padding: '6px 12px', verticalAlign: 'middle', maxWidth: '180px' }}>
+                          <div style={{ lineHeight: '1.25' }}>
+                            <span style={{
+                              padding: '2px 7px', borderRadius: '8px', fontSize: '10.5px',
+                              background: u.activo !== false ? '#dcfce7' : '#fee2e2',
+                              color: u.activo !== false ? '#15803d' : '#991b1b',
+                              fontWeight: 750,
                               display: 'inline-flex',
                               alignItems: 'center',
                               gap: '4px'
-                            }}
-                            title="Eliminar usuario del sistema"
-                          >
-                            <BrandingVectorIcon name="trash" size={11} /> Eliminar
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </section>
-      ) : activoTab === 'sesiones' ? (
-        <section className="board-section" style={{ animation: 'fadeIn 0.3s ease-out' }}>
-          <style>{`
+                            }}>
+                              <span style={{ width: 6, height: 6, borderRadius: '50%', background: u.activo !== false ? '#22c55e' : '#ef4444' }}></span>
+                              {u.activo !== false ? 'Habilitado' : 'Deshabilitado'}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '10px', color: '#64748b', lineHeight: '1.25', marginTop: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            {u.rol === 'staff' && u.accesos ? (
+                              `Deptos: ${u.accesos.departamentos?.length || 0} • Estados: ${u.accesos.estados?.length || 0}`
+                            ) : (
+                              'Acceso Portal Matriz'
+                            )}
+                          </div>
+                        </td>
+
+                        {/* 5. Acciones (2 lines vertical align) */}
+                        <td style={{ padding: '6px 12px', textAlign: 'center', whiteSpace: 'nowrap', verticalAlign: 'middle' }}>
+                          <div style={{ display: 'inline-flex', gap: '6px', alignItems: 'center' }}>
+                            <button
+                              type="button"
+                              onClick={() => handleEditClick(u)}
+                              style={{
+                                background: '#3b82f6',
+                                color: 'white',
+                                border: 'none',
+                                padding: '4px 9px',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                              title="Editar datos, contraseña y estado del usuario"
+                            >
+                              <BrandingVectorIcon name="edit" size={11} /> Editar
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDelete(u.id)}
+                              className="btn-delete"
+                              style={{
+                                padding: '4px 9px',
+                                borderRadius: '6px',
+                                fontSize: '11px',
+                                fontWeight: '700',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                              }}
+                              title="Eliminar usuario del sistema"
+                            >
+                              <BrandingVectorIcon name="trash" size={11} /> Eliminar
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        ) : activoTab === 'sesiones' ? (
+          <section className="board-section" style={{ animation: 'fadeIn 0.3s ease-out' }}>
+            <style>{`
             @keyframes pulse {
               0% {
                 transform: scale(0.95);
@@ -1177,156 +1177,156 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
               }
             }
           `}</style>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h2>Control de Sesiones Activas</h2>
-            <span style={{ background: 'var(--primary-light)', color: 'var(--primary)', padding: '6px 14px', borderRadius: '20px', fontWeight: 'bold', fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }}></span>
-              {sesiones.length} {sesiones.length === 1 ? 'Sesión activa' : 'Sesiones activas'}
-            </span>
-          </div>
-          
-          {sesiones.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '50px 20px', background: '#f8fafc', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
-              <div style={{ marginBottom: '10px' }}><BrandingVectorIcon name="lock" size={38} color="#94a3b8" /></div>
-              <p style={{ color: '#64748b', fontWeight: '500' }}>No hay otras sesiones activas registradas en este momento.</p>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h2>Control de Sesiones Activas</h2>
+              <span style={{ background: 'var(--primary-light)', color: 'var(--primary)', padding: '6px 14px', borderRadius: '20px', fontWeight: 'bold', fontSize: '0.9rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }}></span>
+                {sesiones.length} {sesiones.length === 1 ? 'Sesión activa' : 'Sesiones activas'}
+              </span>
             </div>
-          ) : (
-            <div className="crm-table-container">
-              <table className="users-table">
-                <thead>
-                  <tr>
-                    <th>Usuario / Email</th>
-                    <th>Dirección IP</th>
-                    <th>Rol</th>
-                    <th>Hora de Conexión</th>
-                    <th>Estado</th>
-                    <th>Acción</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sesiones.map(s => {
-                    const esMiSesion = s.id === usuario?.sesionId;
-                    const loginDate = new Date(s.loginAt);
-                    
-                    return (
-                      <tr key={s.id} style={{ background: esMiSesion ? 'rgba(15, 118, 110, 0.04)' : 'transparent' }}>
-                        <td>
-                          <div style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-main)' }}>{s.nombre}</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{s.email}</div>
-                        </td>
-                        <td>
-                          <span className="ip-badge" style={{ 
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '6px',
-                            background: '#f1f5f9',
-                            color: '#334155',
-                            padding: '4px 10px',
-                            borderRadius: '8px',
-                            fontFamily: 'monospace',
-                            fontSize: '0.85rem',
-                            fontWeight: '600',
-                            border: '1px solid #e2e8f0'
-                          }}>
-                            <BrandingVectorIcon name="globe" size={12} color="#64748b" /> {s.ip}
-                          </span>
-                        </td>
-                        <td>
-                          <span style={{ 
-                            padding: '3px 8px', borderRadius: '12px', fontSize: '0.8rem', 
-                            background: s.rol === 'admin' ? 'var(--danger-bg)' : s.rol === 'admin_ecommerce' ? (theme === 'dark' ? 'rgba(15, 164, 222, 0.2)' : '#e0f2fe') : s.rol === 'admin_erp' ? (theme === 'dark' ? 'rgba(16, 185, 129, 0.2)' : '#dcfce7') : s.rol === 'staff' ? 'var(--warning-bg)' : s.rol === 'manager' ? (theme === 'dark' ? 'rgba(192, 132, 252, 0.15)' : '#f3e8ff') : s.rol === 'pm' ? (theme === 'dark' ? 'rgba(245, 158, 11, 0.18)' : '#fef3c7') : 'var(--primary-light)', 
-                            color: s.rol === 'admin' ? 'var(--danger)' : s.rol === 'admin_ecommerce' ? '#0284c7' : s.rol === 'admin_erp' ? '#166534' : s.rol === 'staff' ? 'var(--warning)' : s.rol === 'manager' ? 'var(--purple-brand)' : s.rol === 'pm' ? '#d97706' : 'var(--primary)',
-                            fontWeight: 700,
-                            display: 'inline-flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}>
-                            {s.rol === 'admin_ecommerce' ? (
-                              <><BrandingVectorIcon name="shopping-bag" size={12} /> Admin E-commerce</>
-                            ) : s.rol === 'admin_erp' ? (
-                              <><BrandingVectorIcon name="database" size={12} color="#166534" /> ERP Admin</>
-                            ) : s.rol === 'admin' ? (
-                              <><BrandingVectorIcon name="shield" size={12} /> Administrador</>
-                            ) : s.rol === 'staff' ? (
-                              <><BrandingVectorIcon name="briefcase" size={12} /> Staff</>
-                            ) : s.rol === 'manager' ? (
-                              <><BrandingVectorIcon name="users" size={12} /> Manager</>
-                            ) : s.rol === 'pm' ? (
-                              <><BrandingVectorIcon name="layers" size={12} /> PM</>
-                            ) : (
-                              <><BrandingVectorIcon name="user" size={12} /> Vendedor</>
-                            )}
-                          </span>
-                        </td>
-                        <td>
-                          <div style={{ fontSize: '0.85rem', color: '#475569', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                            <BrandingVectorIcon name="calendar" size={12} color="#64748b" />
-                            <span>{loginDate.toLocaleDateString()} a las {loginDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
-                          </div>
-                        </td>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <span className="status-pulse-dot" style={{
-                              width: '8px',
-                              height: '8px',
-                              borderRadius: '50%',
-                              background: '#22c55e',
-                              display: 'inline-block',
-                              boxShadow: '0 0 0 0 rgba(34, 197, 94, 0.4)',
-                              animation: 'pulse 1.8s infinite'
-                            }} />
-                            <span style={{ fontSize: '0.85rem', color: '#15803d', fontWeight: '600' }}>Conectado</span>
-                          </div>
-                        </td>
-                        <td>
-                          {esMiSesion ? (
-                            <span style={{ 
-                              fontSize: '0.8rem', 
-                              color: 'var(--primary)', 
-                              fontWeight: 'bold',
-                              background: 'var(--primary-light)',
+
+            {sesiones.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '50px 20px', background: '#f8fafc', borderRadius: '16px', border: '1px dashed #cbd5e1' }}>
+                <div style={{ marginBottom: '10px' }}><BrandingVectorIcon name="lock" size={38} color="#94a3b8" /></div>
+                <p style={{ color: '#64748b', fontWeight: '500' }}>No hay otras sesiones activas registradas en este momento.</p>
+              </div>
+            ) : (
+              <div className="crm-table-container">
+                <table className="users-table">
+                  <thead>
+                    <tr>
+                      <th>Usuario / Email</th>
+                      <th>Dirección IP</th>
+                      <th>Rol</th>
+                      <th>Hora de Conexión</th>
+                      <th>Estado</th>
+                      <th>Acción</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sesiones.map(s => {
+                      const esMiSesion = s.id === usuario?.sesionId;
+                      const loginDate = new Date(s.loginAt);
+
+                      return (
+                        <tr key={s.id} style={{ background: esMiSesion ? 'rgba(15, 118, 110, 0.04)' : 'transparent' }}>
+                          <td>
+                            <div style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--text-main)' }}>{s.nombre}</div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{s.email}</div>
+                          </td>
+                          <td>
+                            <span className="ip-badge" style={{
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              background: '#f1f5f9',
+                              color: '#334155',
                               padding: '4px 10px',
-                              borderRadius: '8px'
+                              borderRadius: '8px',
+                              fontFamily: 'monospace',
+                              fontSize: '0.85rem',
+                              fontWeight: '600',
+                              border: '1px solid #e2e8f0'
                             }}>
-                              Tu Sesión
+                              <BrandingVectorIcon name="globe" size={12} color="#64748b" /> {s.ip}
                             </span>
-                          ) : (
-                            <button 
-                              type="button"
-                              onClick={() => handleDesconectar(s.id)}
-                              className="btn-delete"
-                              style={{ 
-                                background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)', 
-                                color: 'white', 
-                                border: 'none', 
-                                padding: '6px 12px', 
-                                borderRadius: '8px', 
-                                cursor: 'pointer',
-                                fontWeight: '600',
-                                boxShadow: '0 2px 4px rgba(239, 68, 68, 0.15)',
-                                transition: 'all 0.2s ease'
-                              }}
-                              onMouseEnter={(e) => {
-                                e.target.style.transform = 'translateY(-1px)';
-                                e.target.style.boxShadow = '0 4px 6px rgba(239, 68, 68, 0.25)';
-                              }}
-                              onMouseLeave={(e) => {
-                                e.target.style.transform = 'translateY(0)';
-                                e.target.style.boxShadow = '0 2px 4px rgba(239, 68, 68, 0.15)';
-                              }}
-                            >
-                              Desconectar
-                            </button>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
+                          </td>
+                          <td>
+                            <span style={{
+                              padding: '3px 8px', borderRadius: '12px', fontSize: '0.8rem',
+                              background: s.rol === 'admin' ? 'var(--danger-bg)' : s.rol === 'admin_ecommerce' ? (theme === 'dark' ? 'rgba(15, 164, 222, 0.2)' : '#e0f2fe') : s.rol === 'admin_erp' ? (theme === 'dark' ? 'rgba(16, 185, 129, 0.2)' : '#dcfce7') : s.rol === 'staff' ? 'var(--warning-bg)' : s.rol === 'manager' ? (theme === 'dark' ? 'rgba(192, 132, 252, 0.15)' : '#f3e8ff') : s.rol === 'pm' ? (theme === 'dark' ? 'rgba(245, 158, 11, 0.18)' : '#fef3c7') : 'var(--primary-light)',
+                              color: s.rol === 'admin' ? 'var(--danger)' : s.rol === 'admin_ecommerce' ? '#0284c7' : s.rol === 'admin_erp' ? '#166534' : s.rol === 'staff' ? 'var(--warning)' : s.rol === 'manager' ? 'var(--purple-brand)' : s.rol === 'pm' ? '#d97706' : 'var(--primary)',
+                              fontWeight: 700,
+                              display: 'inline-flex',
+                              alignItems: 'center',
+                              gap: '4px'
+                            }}>
+                              {s.rol === 'admin_ecommerce' ? (
+                                <><BrandingVectorIcon name="shopping-bag" size={12} /> Admin E-commerce</>
+                              ) : s.rol === 'admin_erp' ? (
+                                <><BrandingVectorIcon name="database" size={12} color="#166534" /> ERP Admin</>
+                              ) : s.rol === 'admin' ? (
+                                <><BrandingVectorIcon name="shield" size={12} /> Administrador</>
+                              ) : s.rol === 'staff' ? (
+                                <><BrandingVectorIcon name="briefcase" size={12} /> Staff</>
+                              ) : s.rol === 'manager' ? (
+                                <><BrandingVectorIcon name="users" size={12} /> Manager</>
+                              ) : s.rol === 'pm' ? (
+                                <><BrandingVectorIcon name="layers" size={12} /> PM</>
+                              ) : (
+                                <><BrandingVectorIcon name="user" size={12} /> Vendedor</>
+                              )}
+                            </span>
+                          </td>
+                          <td>
+                            <div style={{ fontSize: '0.85rem', color: '#475569', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                              <BrandingVectorIcon name="calendar" size={12} color="#64748b" />
+                              <span>{loginDate.toLocaleDateString()} a las {loginDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                            </div>
+                          </td>
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span className="status-pulse-dot" style={{
+                                width: '8px',
+                                height: '8px',
+                                borderRadius: '50%',
+                                background: '#22c55e',
+                                display: 'inline-block',
+                                boxShadow: '0 0 0 0 rgba(34, 197, 94, 0.4)',
+                                animation: 'pulse 1.8s infinite'
+                              }} />
+                              <span style={{ fontSize: '0.85rem', color: '#15803d', fontWeight: '600' }}>Conectado</span>
+                            </div>
+                          </td>
+                          <td>
+                            {esMiSesion ? (
+                              <span style={{
+                                fontSize: '0.8rem',
+                                color: 'var(--primary)',
+                                fontWeight: 'bold',
+                                background: 'var(--primary-light)',
+                                padding: '4px 10px',
+                                borderRadius: '8px'
+                              }}>
+                                Tu Sesión
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleDesconectar(s.id)}
+                                className="btn-delete"
+                                style={{
+                                  background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)',
+                                  color: 'white',
+                                  border: 'none',
+                                  padding: '6px 12px',
+                                  borderRadius: '8px',
+                                  cursor: 'pointer',
+                                  fontWeight: '600',
+                                  boxShadow: '0 2px 4px rgba(239, 68, 68, 0.15)',
+                                  transition: 'all 0.2s ease'
+                                }}
+                                onMouseEnter={(e) => {
+                                  e.target.style.transform = 'translateY(-1px)';
+                                  e.target.style.boxShadow = '0 4px 6px rgba(239, 68, 68, 0.25)';
+                                }}
+                                onMouseLeave={(e) => {
+                                  e.target.style.transform = 'translateY(0)';
+                                  e.target.style.boxShadow = '0 2px 4px rgba(239, 68, 68, 0.15)';
+                                }}
+                              >
+                                Desconectar
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </section>
         ) : (
           /* ── PESTAÑA 3: LOGS & AUDITORÍA GLOBAL (DASHBOARD & E-COMMERCE) ── */
           <section className="board-section" style={{ animation: 'fadeIn 0.3s ease-out', display: 'flex', flexDirection: 'column', gap: '24px' }}>
@@ -1346,10 +1346,10 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
 
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
                 <label style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '12.5px', color: 'var(--text-muted)', cursor: 'pointer', background: 'var(--pill-bg)', padding: '6px 12px', borderRadius: '10px', border: '1px solid var(--border-color-subtle)' }}>
-                  <input 
-                    type="checkbox" 
-                    checked={autoRefreshLogs} 
-                    onChange={(e) => setAutoRefreshLogs(e.target.checked)} 
+                  <input
+                    type="checkbox"
+                    checked={autoRefreshLogs}
+                    onChange={(e) => setAutoRefreshLogs(e.target.checked)}
                     style={{ cursor: 'pointer' }}
                   />
                   <span>Auto-actualizar (5s)</span>
