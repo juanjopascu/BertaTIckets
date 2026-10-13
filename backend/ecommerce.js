@@ -1015,10 +1015,11 @@ function saveProductsToFile() {
 }
 
 function normalizeProductDescription(desc) {
+  if (desc == null) return '';
   if (typeof desc === 'string') return desc;
-  if (!desc) return '';
   if (typeof desc === 'object') {
-    return desc.es || desc.plain || desc.text || desc.html || desc.en || Object.values(desc).find(v => typeof v === 'string') || '';
+    const val = desc.es || desc.plain || desc.text || desc.html || desc.en || Object.values(desc).find(v => typeof v === 'string') || '';
+    return typeof val === 'string' ? val : '';
   }
   return String(desc);
 }
@@ -5349,6 +5350,8 @@ router.post('/admin/products', authenticateToken, requireAdmin, async (req, res)
       country_code: targetCountry.code,
       country_id: targetCountry.id
     };
+    productPayload.name = String(productPayload.name || '').trim();
+    productPayload.description = normalizeProductDescription(productPayload.description);
     let result;
     if (isPgConnected) {
       const {
@@ -5358,6 +5361,8 @@ router.post('/admin/products', authenticateToken, requireAdmin, async (req, res)
         highlights = '', warranty = '12 Meses con RMA y Soporte DACAS',
         datasheet_url = '', condition = 'Nuevo Sellado', related_skus = []
       } = productPayload;
+      const cleanName = String(name || '').trim();
+      const cleanDescription = normalizeProductDescription(description);
       result = await pool.query(
         `INSERT INTO ecommerce_products (
           name, description, price, stock, image_url, country_code, country_id,
@@ -5365,7 +5370,7 @@ router.post('/admin/products', authenticateToken, requireAdmin, async (req, res)
           highlights, warranty, datasheet_url, condition, related_skus
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21) RETURNING *`,
         [
-          name, description, price, stock, image_url, targetCountry.code, targetCountry.id,
+          cleanName, cleanDescription, price, stock, image_url, targetCountry.code, targetCountry.id,
           brand, category, subcategory, sku, promotional_price, weight, depth, width, height,
           highlights, warranty, datasheet_url, condition, JSON.stringify(related_skus)
         ]
@@ -5600,12 +5605,16 @@ router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, asyn
 router.put('/admin/products/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
+    req.body.name = String(req.body.name || '').trim();
+    req.body.description = normalizeProductDescription(req.body.description);
     let result;
     if (isPgConnected) {
       const {
         name, description, price, stock, image_url, brand, category, subcategory, sku, promotional_price,
         weight, depth, width, height, highlights, warranty, datasheet_url, condition, related_ids, related_skus
       } = req.body;
+      const cleanName = String(name || '').trim();
+      const cleanDescription = normalizeProductDescription(description);
       result = await pool.query(
         `UPDATE ecommerce_products 
          SET name = $1, description = $2, price = $3, stock = $4, image_url = $5,
@@ -5615,7 +5624,7 @@ router.put('/admin/products/:id', authenticateToken, requireAdmin, async (req, r
              subcategory = $20
          WHERE id = $21 RETURNING *`,
         [
-          name, description, price, stock, image_url,
+          cleanName, cleanDescription, price, stock, image_url,
           brand, category, sku, promotional_price, weight,
           depth, width, height, highlights, warranty,
           datasheet_url, condition, JSON.stringify(related_ids || []), JSON.stringify(related_skus || []),
