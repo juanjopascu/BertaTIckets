@@ -13,8 +13,6 @@ import AdminUsuarios from './AdminUsuarios';
 import AdminImportarKayako from './AdminImportarKayako';
 import AdminConfigTickets from './AdminConfigTickets';
 import AdminCanalesAyuda from './AdminCanalesAyuda';
-import AdminErp from './AdminErp';
-import AdminErpConfig from './AdminErpConfig';
 import AdminReporteriaGeneral from './AdminReporteriaGeneral';
 import BrandingVectorIcon from './BrandingVectorIcon';
 import HomeCommandCenter from './HomeCommandCenter';
@@ -43,21 +41,6 @@ function AdminViewIcon({ name, size = 18, strokeWidth = 2 }) {
           <circle cx="8" cy="21" r="1"/>
           <circle cx="19" cy="21" r="1"/>
           <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
-        </svg>
-      );
-    case 'erp':
-      return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-          <ellipse cx="12" cy="5" rx="9" ry="3"/>
-          <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
-          <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
-        </svg>
-      );
-    case 'erp-admin':
-      return (
-        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
-          <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
-          <circle cx="12" cy="12" r="3"/>
         </svg>
       );
     case 'reporteria-general':
@@ -182,7 +165,6 @@ function AdminViewIcon({ name, size = 18, strokeWidth = 2 }) {
 const ADMIN_VIEWS_INFO = {
   personalizacion: { title: 'Personalización & Login', iconKey: 'personalizacion', route: '/admin/personalizacion' },
   ecommerce: { title: 'Gestión E-commerce', iconKey: 'ecommerce', route: '/admin/ecommerce' },
-  erp: { title: 'Módulo ERP & End Users', iconKey: 'erp', route: '/admin/erp' },
   reportes: { title: 'Reportes & Métricas', iconKey: 'reportes', route: '/reportes' },
   departamentos: { title: 'Gestión de Departamentos', iconKey: 'departamentos', route: '/departamentos' },
   estados: { title: 'Gestión de Estados', iconKey: 'estados', route: '/estados' },
@@ -193,8 +175,7 @@ const ADMIN_VIEWS_INFO = {
   logs: { title: 'Logs & Auditoría', iconKey: 'logs' },
   'importar-kayako': { title: 'Importar Kayako', iconKey: 'importar-kayako', route: '/admin/importar-kayako' },
   'config-tickets': { title: 'Configuración de Tickets', iconKey: 'config-tickets', route: '/config-tickets' },
-  'canales-ayuda': { title: 'Canales de Ayuda', iconKey: 'canales-ayuda', route: '/admin/canales-ayuda' },
-  'erp-admin': { title: 'ERP Admin & Integraciones', iconKey: 'erp-admin', route: '/admin/erp-admin' }
+  'canales-ayuda': { title: 'Canales de Ayuda', iconKey: 'canales-ayuda', route: '/admin/canales-ayuda' }
 };
 
 function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
@@ -228,7 +209,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
   const [ticketsProcesosAbierto, setTicketsProcesosAbierto] = useState(true);
 
   useEffect(() => {
-    if (['personalizacion', 'usuarios', 'canales-ayuda', 'logs', 'importar-kayako', 'erp-admin', 'reporteria-general'].includes(activeAdminView)) {
+    if (['personalizacion', 'usuarios', 'canales-ayuda', 'logs', 'importar-kayako', 'reporteria-general'].includes(activeAdminView)) {
       setAdminGeneralAbierto(true);
     } else if (['departamentos', 'estados', 'templates', 'organizaciones', 'equipos', 'config-tickets', 'reportes'].includes(activeAdminView)) {
       setTicketsProcesosAbierto(true);
@@ -861,9 +842,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                 <NotificationBell 
                   usuario={usuario}
                   onNavigate={(targetView, targetTab, meta) => {
-                    if (targetView === 'erp') {
-                      setActiveAdminView('erp');
-                    } else if (targetView === 'ecommerce') {
+                    if (targetView === 'ecommerce') {
                       setActiveAdminView('tiendanube');
                     } else if (targetView === 'crm') {
                       setActiveAdminView(null);
@@ -1262,7 +1241,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
             </button>
           </div>
 
-          {(usuario?.rol === 'admin' || usuario?.rol === 'admin_ecommerce' || usuario?.rol === 'admin_erp') && (
+          {(usuario?.rol === 'admin' || usuario?.rol === 'admin_ecommerce') && (
             <div className="sidebar-section sidebar-section-admin">
               <h3 
                 onClick={() => setAdminAbierto(!adminAbierto)} 
@@ -1274,7 +1253,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                   userSelect: 'none'
                 }}
               >
-                {usuario?.rol === 'admin_erp' ? 'Módulo ERP' : usuario?.rol === 'admin_ecommerce' ? 'Gestión E-commerce' : 'Administración'}
+                {usuario?.rol === 'admin_ecommerce' ? 'Gestión E-commerce' : 'Administración'}
                 <span style={{ 
                   fontSize: '0.8rem', 
                   color: 'var(--text-muted)',
@@ -1294,7 +1273,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                       <button
                         type="button"
                         onClick={() => setAdminGeneralAbierto(!adminGeneralAbierto)}
-                        className={`sidebar-menu-btn ${['personalizacion', 'canales-ayuda', 'logs', 'importar-kayako', 'usuarios', 'erp-admin', 'reporteria-general'].includes(activeAdminView) ? 'active' : ''}`}
+                        className={`sidebar-menu-btn ${['personalizacion', 'canales-ayuda', 'logs', 'importar-kayako', 'usuarios', 'reporteria-general'].includes(activeAdminView) ? 'active' : ''}`}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
@@ -1387,18 +1366,6 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                                 <AdminViewIcon name="usuarios" size={15} />
                               </span>
                               <span className="sidebar-btn-text">Usuarios y Sesiones</span>
-                            </button>
-                          </li>
-                          <li>
-                            <button 
-                              className={`sidebar-menu-btn ${activeAdminView === 'erp-admin' ? 'active' : ''}`}
-                              onClick={() => setActiveAdminView(activeAdminView === 'erp-admin' ? null : 'erp-admin')}
-                              style={{ padding: '8px 12px', fontSize: '0.85rem' }}
-                            >
-                              <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                                <AdminViewIcon name="erp-admin" size={15} />
-                              </span>
-                              <span className="sidebar-btn-text">ERP Admin</span>
                             </button>
                           </li>
                           <li>
@@ -1566,28 +1533,6 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                           <AdminViewIcon name="ecommerce" size={17} />
                         </span>
                         <span className="sidebar-btn-text">E-Commerce</span>
-                      </button>
-                    </div>
-                  )}
-
-                  {/* ÍTEM 4: ERP */}
-                  {(usuario?.rol === 'admin' || usuario?.rol === 'admin_erp') && (
-                    <div className="admin-group-block">
-                      <button 
-                        className={`sidebar-menu-btn ${activeAdminView === 'erp' ? 'active' : ''}`}
-                        onClick={() => setActiveAdminView(activeAdminView === 'erp' ? null : 'erp')}
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px',
-                          fontWeight: '700',
-                          padding: '10px 14px'
-                        }}
-                      >
-                        <span className="sidebar-btn-icon" style={{ display: 'inline-flex', alignItems: 'center' }}>
-                          <AdminViewIcon name="erp" size={17} />
-                        </span>
-                        <span className="sidebar-btn-text">ERP</span>
                       </button>
                     </div>
                   )}
@@ -1931,7 +1876,6 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                   }}
                 />
               )}
-              {activeAdminView === 'erp' && <AdminErp embedded={true} usuario={usuario} theme={theme} onBack={() => setActiveAdminView(null)} />}
               {activeAdminView === 'reportes' && <Reportes embedded={true} />}
               {activeAdminView === 'departamentos' && <AdminDepartamentos embedded={true} />}
               {activeAdminView === 'estados' && <AdminEstados embedded={true} />}
@@ -1943,17 +1887,6 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
               {activeAdminView === 'importar-kayako' && <AdminImportarKayako embedded={true} />}
               {activeAdminView === 'config-tickets' && <AdminConfigTickets embedded={true} />}
               {activeAdminView === 'canales-ayuda' && <AdminCanalesAyuda embedded={true} />}
-              {activeAdminView === 'erp-admin' && (
-                <AdminErpConfig
-                  embedded={true}
-                  usuario={usuario}
-                  theme={theme}
-                  onBack={() => {
-                    setActiveAdminView(null);
-                    setIsMaximized(false);
-                  }}
-                />
-              )}
               {activeAdminView === 'reporteria-general' && (
                 <AdminReporteriaGeneral
                   embedded={true}

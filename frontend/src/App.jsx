@@ -15,8 +15,6 @@ import AdminConfigTickets from './AdminConfigTickets';
 import AdminEcommerce from './AdminEcommerce';
 import AdminCanalesAyuda from './AdminCanalesAyuda';
 import AdminPersonalizacion from './AdminPersonalizacion';
-import AdminErp from './AdminErp';
-import AdminErpConfig from './AdminErpConfig';
 import AdminReporteriaGeneral from './AdminReporteriaGeneral';
 import Shop from './Shop';
 import ShopClientPortal from './ShopClientPortal';
@@ -81,7 +79,6 @@ function ProtectedRoute({ children, rolesPermitidos, usuario }) {
   if (rolesPermitidos && !rolesPermitidos.includes(current.rol)) {
     // Si un usuario no autorizado intenta entrar a una ruta, lo redirigimos a donde le corresponde
     if (current.rol === 'admin_ecommerce') return <Navigate to="/admin/ecommerce" replace />;
-    if (current.rol === 'admin_erp') return <Navigate to="/admin/erp" replace />;
     if (current.rol === 'admin' || current.rol === 'staff') return <Navigate to="/" replace />;
     if (current.rol === 'cliente' || current.rol === 'vendedor' || current.rol === 'pm' || current.rol === 'manager') return <Navigate to="/mis-tickets" replace />;
     return <Navigate to="/" replace />;
@@ -202,7 +199,7 @@ function App() {
         <Routes>
         <Route
           path="/login"
-          element={!usuario ? <Login setUsuario={setUsuario} initialError={sessionError} clearInitialError={() => setSessionError('')} theme={theme} toggleTheme={toggleTheme} /> : <Navigate to={usuario.rol === 'admin_erp' ? '/admin/erp' : usuario.rol === 'admin_ecommerce' ? '/admin/ecommerce' : (usuario.rol === 'admin' || usuario.rol === 'staff') ? '/' : '/mis-tickets'} />}
+          element={!usuario ? <Login setUsuario={setUsuario} initialError={sessionError} clearInitialError={() => setSessionError('')} theme={theme} toggleTheme={toggleTheme} /> : <Navigate to={usuario.rol === 'admin_ecommerce' ? '/admin/ecommerce' : (usuario.rol === 'admin' || usuario.rol === 'staff') ? '/' : '/mis-tickets'} />}
         />
 
         {/* Rutas Públicas de E-commerce */}
@@ -215,7 +212,7 @@ function App() {
         <Route
           path="/"
           element={
-            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin', 'staff', 'admin_ecommerce', 'admin_erp']}>
+            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin', 'staff', 'admin_ecommerce']}>
               <Dashboard usuario={usuario} setUsuario={setUsuario} theme={theme} toggleTheme={toggleTheme} />
             </ProtectedRoute>
           }
@@ -255,7 +252,7 @@ function App() {
         <Route
           path="/reportes"
           element={
-            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin', 'admin_ecommerce', 'admin_erp']}>
+            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin', 'admin_ecommerce']}>
               <Reportes />
             </ProtectedRoute>
           }
@@ -309,22 +306,6 @@ function App() {
           }
         />
         <Route
-          path="/admin/erp"
-          element={
-            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin', 'staff', 'admin_ecommerce', 'admin_erp']}>
-              <AdminErp usuario={usuario} theme={theme} toggleTheme={toggleTheme} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
-          path="/admin/erp-admin"
-          element={
-            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin', 'staff', 'admin_ecommerce', 'admin_erp']}>
-              <AdminErpConfig usuario={usuario} theme={theme} toggleTheme={toggleTheme} />
-            </ProtectedRoute>
-          }
-        />
-        <Route
           path="/admin/canales-ayuda"
           element={
             <ProtectedRoute usuario={usuario} rolesPermitidos={['admin']}>
@@ -343,7 +324,7 @@ function App() {
         <Route
           path="/admin/reporteria-general"
           element={
-            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin', 'staff', 'admin_erp', 'admin_ecommerce', 'manager']}>
+            <ProtectedRoute usuario={usuario} rolesPermitidos={['admin', 'staff', 'admin_ecommerce', 'manager']}>
               <AdminReporteriaGeneral usuario={usuario} theme={theme} toggleTheme={toggleTheme} />
             </ProtectedRoute>
           }

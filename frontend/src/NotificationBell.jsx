@@ -18,10 +18,10 @@ export default function NotificationBell({ usuario, onNavigate }) {
   const [composeForm, setComposeForm] = useState({
     title: '',
     message: '',
-    category: 'general', // 'general', 'erp', 'crm', 'ecommerce'
+    category: 'general', // 'general', 'crm', 'ecommerce'
     severity: 'info',    // 'info', 'warning', 'danger', 'success'
     targetAudience: 'all', // 'all' o 'roles'
-    selectedRoles: ['admin', 'admin_erp', 'admin_ecommerce', 'staff', 'vendedor', 'pm']
+    selectedRoles: ['admin', 'admin_ecommerce', 'staff', 'vendedor', 'pm']
   });
   const [submittingNotification, setSubmittingNotification] = useState(false);
   const [composeFeedback, setComposeFeedback] = useState(null);
@@ -134,9 +134,9 @@ export default function NotificationBell({ usuario, onNavigate }) {
           category: targetCategory,
           severity: composeForm.severity,
           targetView: targetView,
-          actionLabel: targetView === 'erp' ? 'Ver en ERP' : targetView === 'ecommerce' ? 'Ver en E-Com' : 'Ver Detalles',
+          actionLabel: targetView === 'ecommerce' ? 'Ver en E-Com' : 'Ver Detalles',
           roles: composeForm.targetAudience === 'all'
-            ? ['admin', 'admin_erp', 'admin_ecommerce', 'staff', 'vendedor', 'pm', 'manager', 'cliente']
+            ? ['admin', 'admin_ecommerce', 'staff', 'vendedor', 'pm', 'manager', 'cliente']
             : composeForm.selectedRoles
         })
       });
@@ -154,7 +154,7 @@ export default function NotificationBell({ usuario, onNavigate }) {
             category: 'general',
             severity: 'info',
             targetAudience: 'all',
-            selectedRoles: ['admin', 'admin_erp', 'admin_ecommerce', 'staff', 'vendedor', 'pm']
+            selectedRoles: ['admin', 'admin_ecommerce', 'staff', 'vendedor', 'pm']
           });
         }, 1200);
       } else {
@@ -177,9 +177,7 @@ export default function NotificationBell({ usuario, onNavigate }) {
     if (onNavigate) {
       onNavigate(notif.targetView, notif.targetTab, { ticketId: notif.ticketId, orderId: notif.orderId });
     } else {
-      if (notif.targetView === 'erp') {
-        window.location.href = '/admin/erp';
-      } else if (notif.targetView === 'ecommerce') {
+      if (notif.targetView === 'ecommerce') {
         window.location.href = '/admin/ecommerce';
       } else if (notif.targetView === 'crm') {
         window.location.href = '/';
@@ -197,11 +195,9 @@ export default function NotificationBell({ usuario, onNavigate }) {
     return notifications.filter(n => n.category === activeFilter);
   }, [notifications, activeFilter]);
 
-  // Counts by category
   const counts = useMemo(() => {
     return {
       all: notifications.length,
-      erp: notifications.filter(n => n.category === 'erp').length,
       crm: notifications.filter(n => n.category === 'crm').length,
       ecommerce: notifications.filter(n => n.category === 'ecommerce').length
     };
@@ -245,7 +241,7 @@ export default function NotificationBell({ usuario, onNavigate }) {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        title="Centro de Notificaciones (ERP, CRM, E-Commerce)"
+        title="Centro de Notificaciones (CRM, E-Commerce)"
         style={{
           background: isOpen ? 'var(--primary, #0fa4de)' : 'var(--pill-bg, #f1f5f9)',
           border: '1px solid var(--border-color, #e2e8f0)',
@@ -394,11 +390,10 @@ export default function NotificationBell({ usuario, onNavigate }) {
               </div>
             </div>
 
-            {/* Pestañas de Filtro (Todas / ERP / CRM / E-Commerce) */}
+            {/* Pestañas de Filtro (Todas / CRM / E-Commerce) */}
             <div style={{ display: 'flex', gap: '4px', background: 'var(--card-bg, #ffffff)', padding: '3px', borderRadius: '10px', border: '1px solid var(--border-color, #e2e8f0)' }}>
               {[
                 { id: 'all', label: 'Todas', count: counts.all },
-                { id: 'erp', label: 'ERP', count: counts.erp },
                 { id: 'crm', label: 'CRM', count: counts.crm },
                 { id: 'ecommerce', label: 'E-Com', count: counts.ecommerce }
               ].map(f => {
@@ -611,7 +606,7 @@ export default function NotificationBell({ usuario, onNavigate }) {
               alignItems: 'center'
             }}
           >
-            <span>Hub: ERP • CRM • E-Commerce</span>
+            <span>Hub: CRM • E-Commerce</span>
             <button
               type="button"
               onClick={() => setIsOpen(false)}
@@ -801,7 +796,6 @@ export default function NotificationBell({ usuario, onNavigate }) {
                     }}
                   >
                     <option value="general">📢 General (Todos)</option>
-                    <option value="erp">🏢 ERP OneWorld</option>
                     <option value="crm">🎯 CRM & Soporte</option>
                     <option value="ecommerce">🛒 E-Commerce & Tienda</option>
                   </select>
@@ -855,7 +849,7 @@ export default function NotificationBell({ usuario, onNavigate }) {
                       checked={composeForm.targetAudience === 'roles'}
                       onChange={() => setComposeForm({ ...composeForm, targetAudience: 'roles' })}
                     />
-                    <span>Solo roles operativos (Vendedores, ERP, Staff)</span>
+                    <span>Solo roles operativos (Vendedores, Staff, PM)</span>
                   </label>
                 </div>
               </div>

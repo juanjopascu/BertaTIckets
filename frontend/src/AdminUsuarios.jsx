@@ -545,7 +545,6 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                         <option value="manager">Manager (Monitorea múltiples clientes)</option>
                         <option value="staff">Staff (Atiende tickets específicos)</option>
                         <option value="admin_ecommerce">Admin E-commerce (Gestión de Tienda y Catálogo)</option>
-                        <option value="admin_erp">ERP Admin (Gestión de ERP, End Users y Conciliación)</option>
                         <option value="admin">Administrador (Acceso total)</option>
                       </select>
                     </div>
@@ -1050,8 +1049,8 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                           <div style={{ lineHeight: '1.25' }}>
                             <span style={{
                               padding: '2px 8px', borderRadius: '12px', fontSize: '10.5px',
-                              background: u.rol === 'admin' ? 'var(--danger-bg)' : u.rol === 'admin_ecommerce' ? (theme === 'dark' ? 'rgba(15, 164, 222, 0.2)' : '#e0f2fe') : u.rol === 'admin_erp' ? (theme === 'dark' ? 'rgba(16, 185, 129, 0.2)' : '#dcfce7') : u.rol === 'staff' ? 'var(--warning-bg)' : u.rol === 'manager' ? (theme === 'dark' ? 'rgba(192, 132, 252, 0.15)' : '#f3e8ff') : u.rol === 'pm' ? (theme === 'dark' ? 'rgba(245, 158, 11, 0.18)' : '#fef3c7') : 'var(--primary-light)',
-                              color: u.rol === 'admin' ? 'var(--danger)' : u.rol === 'admin_ecommerce' ? '#0284c7' : u.rol === 'admin_erp' ? '#166534' : u.rol === 'staff' ? 'var(--warning)' : u.rol === 'manager' ? 'var(--purple-brand)' : u.rol === 'pm' ? '#d97706' : 'var(--primary)',
+                              background: u.rol === 'admin' ? 'var(--danger-bg)' : u.rol === 'admin_ecommerce' ? (theme === 'dark' ? 'rgba(15, 164, 222, 0.2)' : '#e0f2fe') : u.rol === 'staff' ? 'var(--warning-bg)' : u.rol === 'manager' ? (theme === 'dark' ? 'rgba(192, 132, 252, 0.15)' : '#f3e8ff') : u.rol === 'pm' ? (theme === 'dark' ? 'rgba(245, 158, 11, 0.18)' : '#fef3c7') : 'var(--primary-light)',
+                              color: u.rol === 'admin' ? 'var(--danger)' : u.rol === 'admin_ecommerce' ? '#0284c7' : u.rol === 'staff' ? 'var(--warning)' : u.rol === 'manager' ? 'var(--purple-brand)' : u.rol === 'pm' ? '#d97706' : 'var(--primary)',
                               fontWeight: 700,
                               display: 'inline-flex',
                               alignItems: 'center',
@@ -1059,8 +1058,6 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                             }}>
                               {u.rol === 'admin_ecommerce' ? (
                                 <><BrandingVectorIcon name="shopping-bag" size={12} /> Admin E-commerce</>
-                              ) : u.rol === 'admin_erp' ? (
-                                <><BrandingVectorIcon name="database" size={12} color="#166534" /> ERP Admin</>
                               ) : u.rol === 'admin' ? (
                                 <><BrandingVectorIcon name="shield" size={12} /> Administrador</>
                               ) : u.rol === 'staff' ? (
@@ -1234,8 +1231,8 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                           <td>
                             <span style={{
                               padding: '3px 8px', borderRadius: '12px', fontSize: '0.8rem',
-                              background: s.rol === 'admin' ? 'var(--danger-bg)' : s.rol === 'admin_ecommerce' ? (theme === 'dark' ? 'rgba(15, 164, 222, 0.2)' : '#e0f2fe') : s.rol === 'admin_erp' ? (theme === 'dark' ? 'rgba(16, 185, 129, 0.2)' : '#dcfce7') : s.rol === 'staff' ? 'var(--warning-bg)' : s.rol === 'manager' ? (theme === 'dark' ? 'rgba(192, 132, 252, 0.15)' : '#f3e8ff') : s.rol === 'pm' ? (theme === 'dark' ? 'rgba(245, 158, 11, 0.18)' : '#fef3c7') : 'var(--primary-light)',
-                              color: s.rol === 'admin' ? 'var(--danger)' : s.rol === 'admin_ecommerce' ? '#0284c7' : s.rol === 'admin_erp' ? '#166534' : s.rol === 'staff' ? 'var(--warning)' : s.rol === 'manager' ? 'var(--purple-brand)' : s.rol === 'pm' ? '#d97706' : 'var(--primary)',
+                              background: s.rol === 'admin' ? 'var(--danger-bg)' : s.rol === 'admin_ecommerce' ? (theme === 'dark' ? 'rgba(15, 164, 222, 0.2)' : '#e0f2fe') : s.rol === 'staff' ? 'var(--warning-bg)' : s.rol === 'manager' ? (theme === 'dark' ? 'rgba(192, 132, 252, 0.15)' : '#f3e8ff') : s.rol === 'pm' ? (theme === 'dark' ? 'rgba(245, 158, 11, 0.18)' : '#fef3c7') : 'var(--primary-light)',
+                              color: s.rol === 'admin' ? 'var(--danger)' : s.rol === 'admin_ecommerce' ? '#0284c7' : s.rol === 'staff' ? 'var(--warning)' : s.rol === 'manager' ? 'var(--purple-brand)' : s.rol === 'pm' ? '#d97706' : 'var(--primary)',
                               fontWeight: 700,
                               display: 'inline-flex',
                               alignItems: 'center',
@@ -1243,8 +1240,6 @@ function AdminUsuarios({ usuario, theme, toggleTheme, embedded = false, initialT
                             }}>
                               {s.rol === 'admin_ecommerce' ? (
                                 <><BrandingVectorIcon name="shopping-bag" size={12} /> Admin E-commerce</>
-                              ) : s.rol === 'admin_erp' ? (
-                                <><BrandingVectorIcon name="database" size={12} color="#166534" /> ERP Admin</>
                               ) : s.rol === 'admin' ? (
                                 <><BrandingVectorIcon name="shield" size={12} /> Administrador</>
                               ) : s.rol === 'staff' ? (

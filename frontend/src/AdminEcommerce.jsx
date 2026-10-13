@@ -454,8 +454,7 @@ function EcommerceLayoutWrapper({
               <NotificationBell
                 usuario={typeof usuario !== 'undefined' ? usuario : { rol: 'admin_ecommerce', nombre: 'Admin E-Commerce' }}
                 onNavigate={(targetView) => {
-                  if (targetView === 'erp') window.location.href = '/admin/erp';
-                  else if (targetView === 'crm') window.location.href = '/';
+                  if (targetView === 'crm') window.location.href = '/';
                 }}
               />
               {activeTab === 'reportes' && (
