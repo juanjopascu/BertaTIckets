@@ -24,6 +24,7 @@ import ShopMacHelpHub from "./components/shop/ShopMacHelpHub";
 import ProductDetailModal from "./components/shop/ProductDetailModal";
 import ProductDetailPageView from "./components/shop/ProductDetailPageView";
 import AuthModal from "./components/shop/AuthModal";
+import B2BPortalLogin from "./components/shop/B2BPortalLogin";
 
 function ShopMain() {
   const navigate = useNavigate();
@@ -502,6 +503,7 @@ function ShopMain() {
   const handleLogout = () => {
     localStorage.removeItem('dacas_client_user');
     localStorage.removeItem('dacas_client_token');
+    localStorage.removeItem('shop_user');
     setClientUser(null);
     setUserDropdownOpen(false);
   };
@@ -518,10 +520,9 @@ function ShopMain() {
       const res = await fetch(`${API_BASE_URL}/api/ecommerce/products?country=${activeCode}`, { headers });
       if (res.ok) {
         const data = await res.json();
-        if (Array.isArray(data) && data.length > 0) {
-          // Normalize images property and filter disallowed brands
+          // Normalize images property and filter disallowed brands & hidden products
           const normalized = data
-            .filter((p) => !p.brand || !DISALLOWED_BRANDS.includes(p.brand.toLowerCase()))
+            .filter((p) => (!p.brand || !DISALLOWED_BRANDS.includes(p.brand.toLowerCase())) && p.is_visible !== false && p.visible !== false && p.status !== 'oculto')
             .map((p) => {
               const mainImg = p.image_url || (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : '');
               const secImgs = Array.isArray(p.secondary_images) ? p.secondary_images : [];
@@ -539,10 +540,9 @@ function ShopMain() {
                 images: combined
               };
             });
-          setProducts(normalized);
-          setLoading(false);
-          return;
-        }
+        setProducts(normalized);
+        setLoading(false);
+        return;
       }
     } catch (_) { }
 
@@ -947,73 +947,31 @@ function ShopMain() {
     return sortedAndFilteredProducts.slice(start, start + itemsPerPage);
   }, [sortedAndFilteredProducts, catalogPage, itemsPerPage]);
 
+  const isAuthorized = Boolean(clientUser);
+
+  if (!isAuthorized) {
+    return (
+      <B2BPortalLogin
+        loginConfig={visualSettings?.loginPage}
+        onLoginSuccess={(user, token) => {
+          localStorage.setItem('dacas_client_user', JSON.stringify(user));
+          localStorage.setItem('dacas_client_token', token);
+          const userCountry = (user.country_code || 'AR').toUpperCase();
+          localStorage.setItem('dacas_selected_country', userCountry);
+          setSelectedCountryCode(userCountry);
+          setClientUser(user);
+          try {
+            window.dispatchEvent(new CustomEvent('dacas_country_changed', { detail: { country: userCountry } }));
+          } catch (_) {}
+          fetchProducts(userCountry);
+          fetchVisualSettings(userCountry);
+        }}
+      />
+    );
+  }
+
   return (
     <div style={{ fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif", background: '#F8FAFC', minHeight: '100vh', color: '#0F172A' }}>
-
-      {/* ── Top Regional Countries Flag Bar (12 Países DACAS) ── */}
-      <div style={{ background: '#E2E8F0', borderBottom: '1px solid #CBD5E1', padding: '5px 0' }}>
-        <div style={{ maxWidth: '1320px', margin: '0 auto', padding: '0 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexWrap: 'wrap' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px', fontWeight: '800', color: '#475569', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-              <BrandingVectorIcon name="globe" size={14} color="#475569" /> Cobertura Regional DACAS:
-            </div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: clientUser ? '#0369a1' : '#0284c7', color: '#ffffff', padding: '2px 9px', borderRadius: '999px', fontSize: '11px', fontWeight: '800', boxShadow: '0 1px 3px rgba(2,132,199,0.3)' }}>
-              <span>{clientUser ? '🔒 Tienda Asignada:' : '📍 Operando en:'} {selectedCountryObj.flag} {selectedCountryObj.name}</span>
-            </div>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', overflowX: 'auto', padding: '2px 0' }}>
-            {DACAS_COUNTRIES.map((c) => {
-              const isSelected = selectedCountryCode === c.code;
-              const isLockedForOther = clientUser && userCountryCode !== c.code;
-              return (
-                <button
-                  key={c.code}
-                  onClick={() => {
-                    if (isLockedForOther) {
-                      setAttemptedCountry(c);
-                      setShowCountryBlockedModal(true);
-                      return;
-                    }
-                    setSelectedCountryCode(c.code);
-                    try {
-                      localStorage.setItem('dacas_selected_country', c.code);
-                      window.dispatchEvent(new CustomEvent('dacas_country_changed', { detail: { country: c.code } }));
-                    } catch {}
-                    fetchProducts(c.code);
-                  }}
-                  title={isLockedForOther 
-                    ? `🔒 Tu cuenta está registrada en ${userCountryObj.name}. Clic para cambiar de usuario si deseas operar en ${c.name}.`
-                    : `${c.name} (${c.code}) - Clic para ver catálogo y stock de ${c.name}`
-                  }
-                  style={{
-                    background: isSelected ? '#0fa4de' : 'transparent',
-                    border: isSelected ? '1.5px solid #0284c7' : '1px solid transparent',
-                    borderRadius: '8px',
-                    padding: '3px 7px',
-                    cursor: 'pointer',
-                    fontSize: '18px',
-                    lineHeight: 1,
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '4px',
-                    transition: 'all 0.15s ease',
-                    boxShadow: isSelected ? '0 2px 6px rgba(15, 164, 222, 0.4)' : 'none',
-                    transform: isSelected ? 'scale(1.12)' : 'none',
-                    opacity: isLockedForOther ? 0.65 : 1
-                  }}
-                  onMouseEnter={(e) => { if (!isSelected) e.currentTarget.style.background = 'rgba(255, 255, 255, 0.6)'; }}
-                  onMouseLeave={(e) => { if (!isSelected) e.currentTarget.style.background = 'transparent'; }}
-                >
-                  <span>{c.flag}</span>
-                  {isLockedForOther && (
-                    <span style={{ fontSize: '9px', marginLeft: '-2px' }}>🔒</span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </div>
 
       {/* ── Top Announcement Bar ── */}
       {announcement.enabled && (
@@ -1059,6 +1017,24 @@ function ShopMain() {
                 Shop <span style={{ color: '#0fa4de', fontSize: '0.85rem', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Enterprise</span>
               </span>
             </div>
+          </div>
+
+          {/* Badge de Tienda Asignada Oficial a la Cuenta */}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '7px',
+            background: '#F0F9FF',
+            border: '1.5px solid #BAE6FD',
+            borderRadius: '999px',
+            padding: '5px 14px',
+            fontSize: '12px',
+            fontWeight: '800',
+            color: '#0369A1',
+            flexShrink: 0
+          }}>
+            <span style={{ fontSize: '15px', lineHeight: 1 }}>{selectedCountryObj.flag}</span>
+            <span>Tienda {selectedCountryObj.name}</span>
           </div>
 
           {/* Botón Home */}
@@ -1404,6 +1380,11 @@ function ShopMain() {
                         <div style={{ fontSize: '12px', color: '#64748B', marginTop: '2px' }}>
                           Cant: <strong>{item.qty}</strong> · <span style={{ color: '#0fa4de', fontWeight: '700' }}>${(parseFloat(item.price || 0) * item.qty).toFixed(2)}</span>
                         </div>
+                        {(parseInt(item.stock, 10) || 0) === 0 && (
+                          <div style={{ fontSize: '10.5px', color: '#0284c7', fontWeight: '750', marginTop: '2px' }}>
+                            ⏳ A pedido (llega en 30/45 días)
+                          </div>
+                        )}
                       </div>
                       <button
                         onClick={() => removeFromCart(item.id)}
@@ -1795,7 +1776,7 @@ function ShopMain() {
                       {currentSlideObj.titleLine2}
                     </span>
                   </h1>
-                  <p style={{ margin: '0 0 20px', color: '#E2E8F0', fontSize: '0.95rem', lineHeight: 1.5, maxWidth: '520px', textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>
+                  <p style={{ margin: '0 0 20px', color: '#E2E8F0', fontSize: '0.95rem', lineHeight: 1.5, maxWidth: currentSlideObj.showMetrics === false ? '720px' : '520px', textShadow: '0 1px 8px rgba(0,0,0,0.5)' }}>
                     {currentSlideObj.desc}
                   </p>
                   <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
@@ -1844,12 +1825,10 @@ function ShopMain() {
                   </div>
                 </div>
 
-                {/* Right Visual / Animated Stats */}
-                {currentSlideObj.type === 'animated_stats' ? (
-                  <AnimatedHeroStats active={true} metrics={currentSlideObj.metrics} />
-                ) : (
+                {/* Right Visual / KPIs (Condicional según showMetrics) */}
+                {currentSlideObj.showMetrics !== false && Array.isArray(currentSlideObj.metrics) && currentSlideObj.metrics.some(m => m.value || m.label) && (
                   <div style={{ display: 'flex', gap: '14px', flexWrap: 'wrap' }}>
-                    {currentSlideObj.metrics?.map((metric, mIdx) => (
+                    {currentSlideObj.metrics.map((metric, mIdx) => (
                       <div
                         key={metric.label || mIdx}
                         style={{

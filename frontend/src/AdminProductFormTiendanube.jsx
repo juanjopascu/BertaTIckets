@@ -24,6 +24,14 @@ export default function AdminProductFormTiendanube({
     product?.country_code || (defaultCountryCode && defaultCountryCode !== 'all' ? defaultCountryCode : 'AR')
   );
 
+  // 0.1 Product Catalog Visibility
+  const [isVisible, setIsVisible] = useState(() => {
+    if (product?.is_visible === false || product?.visible === false || product?.status === 'oculto') {
+      return false;
+    }
+    return true;
+  });
+
   // 1. Basic Info
   const [name, setName] = useState(product?.name || '');
   const [descriptionHtml, setDescriptionHtml] = useState(product?.description || '');
@@ -50,6 +58,7 @@ export default function AdminProductFormTiendanube({
   const [promotionalPrice, setPromotionalPrice] = useState(product?.promotional_price || product?.compare_price || '');
   const [showPriceInStore, setShowPriceInStore] = useState(product?.show_price !== undefined ? product.show_price : true);
   const [cost, setCost] = useState(product?.cost || '');
+  const [taxRate, setTaxRate] = useState(product?.tax_rate !== undefined ? product.tax_rate : (product?.iva !== undefined ? product.iva : 21));
 
   // 4. Product Type & Inventory
   const [productType, setProductType] = useState(product?.product_type || 'physical'); // 'physical' | 'digital'
@@ -454,6 +463,8 @@ export default function AdminProductFormTiendanube({
       show_price: showPriceInStore,
       cost: cost ? cost.toString() : '0.00',
       profit_margin: profitMargin,
+      tax_rate: parseFloat(taxRate) || 21,
+      iva: parseFloat(taxRate) || 21,
       product_type: productType,
       stock_type: stockType,
       stock: stockType === 'infinite' ? 9999 : (parseInt(stock, 10) || 0),
@@ -463,6 +474,9 @@ export default function AdminProductFormTiendanube({
       subcategory: subcategory.trim(),
       is_featured: isFeatured,
       featured: isFeatured,
+      is_visible: isVisible,
+      visible: isVisible,
+      status: isVisible ? 'activo' : 'oculto',
       badge: isFeatured ? (product?.badge || 'DESTACADO') : (product?.badge === 'DESTACADO' ? '' : (product?.badge || '')),
       weight: weight.toString(),
       depth: depth.toString(),
@@ -689,6 +703,64 @@ export default function AdminProductFormTiendanube({
             </select>
             <p style={{ margin: '4px 0 0', fontSize: '0.8rem', color: '#64748b' }}>
               Este producto se gestionará de manera 100% aislada e independiente en el inventario y tienda del país seleccionado.
+            </p>
+          </div>
+
+          {/* Selector de Visibilidad en Catálogo */}
+          <div style={{ marginBottom: '20px' }}>
+            <label style={labelStyle}>
+              Visibilidad en el Catálogo
+            </label>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+              <button
+                type="button"
+                onClick={() => setIsVisible(true)}
+                style={{
+                  padding: '12px 16px',
+                  borderRadius: '10px',
+                  border: isVisible ? '2px solid #10b981' : '1.5px solid #e5e7eb',
+                  background: isVisible ? '#ecfdf5' : '#ffffff',
+                  color: isVisible ? '#065f46' : '#6b7280',
+                  fontWeight: '700',
+                  fontSize: '0.88rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <span style={{ width: 10, height: 10, borderRadius: '50%', background: isVisible ? '#10b981' : '#d1d5db', display: 'inline-block' }} />
+                Visible en tienda
+              </button>
+              <button
+                type="button"
+                onClick={() => setIsVisible(false)}
+                style={{
+                  padding: '12px 16px',
+                  borderRadius: '10px',
+                  border: !isVisible ? '2px solid #f59e0b' : '1.5px solid #e5e7eb',
+                  background: !isVisible ? '#fffbeb' : '#ffffff',
+                  color: !isVisible ? '#92400e' : '#6b7280',
+                  fontWeight: '700',
+                  fontSize: '0.88rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  transition: 'all 0.15s ease'
+                }}
+              >
+                <span style={{ width: 10, height: 10, borderRadius: '50%', background: !isVisible ? '#f59e0b' : '#d1d5db', display: 'inline-block' }} />
+                Oculto (Solo Admin)
+              </button>
+            </div>
+            <p style={{ margin: '6px 0 0', fontSize: '0.8rem', color: '#64748b' }}>
+              {isVisible
+                ? 'El producto se mostrará en el catálogo mayorista y búsquedas de clientes.'
+                : 'El producto permanecerá oculto para clientes en la tienda. Solo visible en el panel de administración.'}
             </p>
           </div>
 
@@ -1072,6 +1144,21 @@ export default function AdminProductFormTiendanube({
               }}>
                 {profitMargin}
               </div>
+            </div>
+
+            {/* Alícuota IVA */}
+            <div style={{ gridColumn: '1 / -1' }}>
+              <label style={labelStyle}>Alícuota IVA (%)</label>
+              <select
+                value={taxRate}
+                onChange={(e) => setTaxRate(parseFloat(e.target.value) || 21)}
+                style={inputStyle}
+              >
+                <option value={21}>21% (Alícuota General - Telecomunicaciones / Ciberseguridad)</option>
+                <option value={10.5}>10.5% (Alícuota Reducida - Hardware / Bienes de Capital IT)</option>
+                <option value={0}>0% (Exento / No Gravado)</option>
+              </select>
+              <p style={helperStyle}>Tasa impositiva aplicada para liquidación de Factura A en el checkout corporativo.</p>
             </div>
           </div>
         </div>

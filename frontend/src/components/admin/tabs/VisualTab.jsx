@@ -766,6 +766,7 @@ export default function VisualTab({
             const currentSubTabInfo = {
               hero: { icon: 'layers', title: 'Banners Principales (Hero)', desc: `Administra los slides principales y carruseles del encabezado (${(visualConfig.heroSlides || []).length} slides configurados)` },
               brand_banners: { icon: 'star', title: 'Banners Marcas & Carruseles', desc: 'Personaliza los banners promocionales y carruseles de productos por marca' },
+              login_page: { icon: 'lock', title: 'Edición Pantalla de Log In', desc: 'Personaliza los textos, destacados corporativos y pie del portal de acceso B2B' },
               announcement: { icon: 'megaphone', title: 'Anuncio & Barra Superior', desc: 'Configura la cinta superior y mensajes de alerta o cobertura para clientes' },
               categories: { icon: 'tag', title: '4 Categorías del Shop', desc: 'Organiza los títulos, íconos y visibilidad de las 4 categorías principales' },
               brands: { icon: 'building', title: 'Marcas por Categoría', desc: 'Asigna y clasifica las marcas autorizadas para cada categoría de productos' },
@@ -985,26 +986,28 @@ export default function VisualTab({
                         </div>
 
                         {/* KPIs laterales en la preview */}
-                        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-                          {(Array.isArray(slide?.metrics) ? slide.metrics : []).slice(0, 3).map((m, mIdx) => (
-                            <div key={mIdx} style={{
-                              textAlign: 'center',
-                              background: 'rgba(15, 39, 66, 0.85)',
-                              backdropFilter: 'blur(12px)',
-                              border: '1px solid rgba(15, 164, 222, 0.3)',
-                              borderRadius: '12px',
-                              padding: '12px 16px',
-                              minWidth: '95px'
-                            }}>
-                              <div style={{ fontSize: '1.25rem', fontWeight: '900', color: slide.titleColor || '#0fa4de' }}>
-                                {m.value || '--'}
+                        {slide.showMetrics !== false && (
+                          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                            {(Array.isArray(slide?.metrics) ? slide.metrics : []).slice(0, 3).map((m, mIdx) => (
+                              <div key={mIdx} style={{
+                                textAlign: 'center',
+                                background: 'rgba(15, 39, 66, 0.85)',
+                                backdropFilter: 'blur(12px)',
+                                border: '1px solid rgba(15, 164, 222, 0.3)',
+                                borderRadius: '12px',
+                                padding: '12px 16px',
+                                minWidth: '95px'
+                              }}>
+                                <div style={{ fontSize: '1.25rem', fontWeight: '900', color: slide.titleColor || '#0fa4de' }}>
+                                  {m.value || '--'}
+                                </div>
+                                <div style={{ fontSize: '11px', color: '#CBD5E1', marginTop: '2px', fontWeight: '600' }}>
+                                  {m.label || '--'}
+                                </div>
                               </div>
-                              <div style={{ fontSize: '11px', color: '#CBD5E1', marginTop: '2px', fontWeight: '600' }}>
-                                {m.label || '--'}
-                              </div>
-                            </div>
-                          ))}
-                        </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     )}
                   </div>
@@ -1175,7 +1178,7 @@ export default function VisualTab({
                       {visualConfig.heroSlides.map((s, idx) => {
                         const isSelected = editingSlideIdx === idx;
                         const isImageOnlySlide = (s.type === 'custom_image' && s.showOverlayText !== true) || s.showOverlayText === false;
-                        const typeBadge = isImageOnlySlide ? 'Solo Imagen' : s.imageUrl ? 'Fondo + Textos' : s.type === 'animated_stats' ? 'Animado' : 'Título + KPIs';
+                        const typeBadge = isImageOnlySlide ? 'Solo Imagen' : s.imageUrl ? (s.showMetrics === false ? 'Fondo + Textos' : 'Fondo + KPIs') : (s.showMetrics === false ? 'Solo Títulos' : 'Título + KPIs');
                         const slideKey = `hero-slide-item-${s?.id !== undefined && s?.id !== null ? s.id : idx}`;
                         
                         return (
@@ -1267,10 +1270,10 @@ export default function VisualTab({
                 {visualConfig.heroSlides && visualConfig.heroSlides[editingSlideIdx] && (() => {
                   const cur = visualConfig.heroSlides[editingSlideIdx];
                   return (
-                    <div style={{ background: '#FFFFFF', padding: '26px 30px', borderRadius: '18px', border: '1px solid #E2E8F0', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', width: '100%' }}>
+                    <div style={{ background: '#FFFFFF', padding: '24px 28px', borderRadius: '18px', border: '1px solid #E2E8F0', boxShadow: '0 4px 20px rgba(0,0,0,0.03)', width: '100%', boxSizing: 'border-box', minWidth: 0 }}>
                       
                       {/* Header con Título y Botón Guardar Directo */}
-                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px', flexWrap: 'wrap', gap: '14px', borderBottom: '1px solid #F1F5F9', paddingBottom: '16px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '22px', flexWrap: 'wrap', gap: '14px', borderBottom: '1px solid #F1F5F9', paddingBottom: '16px', boxSizing: 'border-box' }}>
                         <div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <h4 style={{ margin: 0, fontSize: '17px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1320,20 +1323,19 @@ export default function VisualTab({
                       </div>
 
                       {/* 1. Selector de Modo de Banner */}
-                      <div style={{ marginBottom: '22px', background: '#F8FAFC', padding: '16px 18px', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
+                      <div style={{ marginBottom: '22px', background: '#F8FAFC', padding: '16px 18px', borderRadius: '14px', border: '1px solid #E2E8F0', boxSizing: 'border-box' }}>
                         <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', fontWeight: '800', color: '#0F172A', marginBottom: '10px' }}>
                           <BrandingVectorIcon name="layers" size={15} color="#0284c7" />
                           1. Tipo de Presentación del Banner
                         </label>
-                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px' }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px', boxSizing: 'border-box' }}>
                           {[
-                            { id: 'metrics', icon: 'layers', label: 'Título + 3 KPIs Laterales', desc: 'Textos, botones y 3 métricas destacadas (admite imagen de fondo)' },
-                            { id: 'animated_stats', icon: 'zap', label: 'Animado Core DACAS', desc: 'Textos, botones y contadores tecnológicos (admite imagen de fondo)' },
+                            { id: 'metrics', icon: 'layers', label: 'Título, Textos & Botones', desc: 'Textos, botones de acción y métricas laterales configurables (admite imagen de fondo)' },
                             { id: 'custom_image', icon: 'image', label: 'Solo Imagen (Sin Textos)', desc: 'Para banners prediseñados donde no requieres textos sobreimpresos' }
                           ].map(t => {
                             const isSelected = t.id === 'custom_image'
                               ? (cur.type === 'custom_image' && cur.showOverlayText !== true) || cur.showOverlayText === false
-                              : (cur.type || 'metrics') === t.id && cur.showOverlayText !== false;
+                              : (cur.type !== 'custom_image' && cur.showOverlayText !== false);
                             return (
                               <button
                                 key={t.id}
@@ -1343,13 +1345,13 @@ export default function VisualTab({
                                     handleUpdateSlideField(editingSlideIdx, 'type', 'custom_image');
                                     handleUpdateSlideField(editingSlideIdx, 'showOverlayText', false);
                                   } else {
-                                    handleUpdateSlideField(editingSlideIdx, 'type', t.id);
+                                    handleUpdateSlideField(editingSlideIdx, 'type', 'metrics');
                                     handleUpdateSlideField(editingSlideIdx, 'showOverlayText', true);
                                   }
                                 }}
                                 style={{
-                                  padding: '12px 14px',
-                                  borderRadius: '10px',
+                                  padding: '14px 16px',
+                                  borderRadius: '12px',
                                   textAlign: 'left',
                                   background: isSelected ? '#0284c7' : '#FFFFFF',
                                   color: isSelected ? '#FFFFFF' : '#334155',
@@ -1358,14 +1360,17 @@ export default function VisualTab({
                                   fontSize: '12.5px',
                                   fontWeight: '750',
                                   boxShadow: isSelected ? '0 4px 12px rgba(2, 132, 199, 0.22)' : 'none',
-                                  transition: 'all 0.15s'
+                                  transition: 'all 0.15s ease',
+                                  boxSizing: 'border-box',
+                                  minWidth: 0,
+                                  overflow: 'hidden'
                                 }}
                               >
-                                <div style={{ fontSize: '13px', marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '7px' }}>
-                                  <BrandingVectorIcon name={t.icon} size={15} color={isSelected ? '#FFFFFF' : '#0284c7'} />
-                                  <span>{t.label}</span>
+                                <div style={{ fontSize: '13.5px', marginBottom: '5px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                  <BrandingVectorIcon name={t.icon} size={16} color={isSelected ? '#FFFFFF' : '#0284c7'} />
+                                  <span style={{ fontWeight: '800' }}>{t.label}</span>
                                 </div>
-                                <div style={{ fontSize: '11px', opacity: isSelected ? 0.95 : 0.75, fontWeight: '500' }}>{t.desc}</div>
+                                <div style={{ fontSize: '11.5px', opacity: isSelected ? 0.95 : 0.75, fontWeight: '500', lineHeight: 1.35 }}>{t.desc}</div>
                               </button>
                             );
                           })}
@@ -1565,10 +1570,10 @@ export default function VisualTab({
                       {/* 3. Textos, Badges, Colores y Botones */}
                       {((cur.type !== 'custom_image' && cur.showOverlayText !== false) || cur.showOverlayText === true) ? (
                         <>
-                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: '22px', marginBottom: '22px' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '20px', marginBottom: '22px', boxSizing: 'border-box' }}>
                             
                             {/* Columna Izquierda: Badges, Títulos y Color */}
-                            <div style={{ background: '#F8FAFC', padding: '18px 20px', borderRadius: '14px', border: '1px solid #E2E8F0' }}>
+                            <div style={{ background: '#F8FAFC', padding: '18px 20px', borderRadius: '14px', border: '1px solid #E2E8F0', boxSizing: 'border-box', minWidth: 0 }}>
                               <h5 style={{ margin: '0 0 14px', fontSize: '13px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '7px' }}>
                                 <BrandingVectorIcon name="tag" size={14} color="#0284c7" />
                                 Identidad Visual & Títulos
@@ -1583,11 +1588,11 @@ export default function VisualTab({
                                     type="text"
                                     value={cur.badgeIcon || ''}
                                     onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'badgeIcon', e.target.value)}
-                                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', textAlign: 'center' }}
+                                    style={{ width: '100%', boxSizing: 'border-box', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px', textAlign: 'center' }}
                                     placeholder="shield"
                                   />
                                 </div>
-                                <div>
+                                <div style={{ minWidth: 0 }}>
                                   <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '750', color: '#475569', marginBottom: '5px' }}>
                                     Texto del Badge Superior
                                   </label>
@@ -1595,7 +1600,7 @@ export default function VisualTab({
                                     type="text"
                                     value={cur.badge || ''}
                                     onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'badge', e.target.value)}
-                                    style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
+                                    style={{ width: '100%', boxSizing: 'border-box', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13px' }}
                                     placeholder="DISTRIBUIDOR OFICIAL MAYORISTA"
                                   />
                                 </div>
@@ -1609,7 +1614,7 @@ export default function VisualTab({
                                   type="text"
                                   value={cur.titleLine1 || ''}
                                   onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'titleLine1', e.target.value)}
-                                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13.5px', fontWeight: '700' }}
+                                  style={{ width: '100%', boxSizing: 'border-box', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13.5px', fontWeight: '700' }}
                                   placeholder="Equipamiento IT, Redes"
                                 />
                               </div>
@@ -1622,7 +1627,7 @@ export default function VisualTab({
                                   type="text"
                                   value={cur.titleLine2 || ''}
                                   onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'titleLine2', e.target.value)}
-                                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13.5px', fontWeight: '700', color: cur.titleColor || '#0fa4de' }}
+                                  style={{ width: '100%', boxSizing: 'border-box', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '13.5px', fontWeight: '700', color: cur.titleColor || '#0fa4de' }}
                                   placeholder="& Ciberseguridad Enterprise"
                                 />
                               </div>
@@ -1636,7 +1641,7 @@ export default function VisualTab({
                                     type="color"
                                     value={cur.titleColor || '#0fa4de'}
                                     onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'titleColor', e.target.value)}
-                                    style={{ width: '38px', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', cursor: 'pointer', padding: '2px' }}
+                                    style={{ width: '38px', height: '34px', borderRadius: '8px', border: '1px solid #CBD5E1', cursor: 'pointer', padding: '2px', boxSizing: 'border-box' }}
                                   />
                                   {[
                                     { color: '#0fa4de', label: 'Cyan DACAS' },
@@ -1661,7 +1666,8 @@ export default function VisualTab({
                                         cursor: 'pointer',
                                         display: 'inline-flex',
                                         alignItems: 'center',
-                                        gap: '5px'
+                                        gap: '5px',
+                                        boxSizing: 'border-box'
                                       }}
                                     >
                                       <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: p.color }}></span>
@@ -1673,13 +1679,13 @@ export default function VisualTab({
                             </div>
 
                             {/* Columna Derecha: Descripción & Botones de Acción */}
-                            <div style={{ background: '#F8FAFC', padding: '18px 20px', borderRadius: '14px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column' }}>
+                            <div style={{ background: '#F8FAFC', padding: '18px 20px', borderRadius: '14px', border: '1px solid #E2E8F0', display: 'flex', flexDirection: 'column', boxSizing: 'border-box', minWidth: 0 }}>
                               <h5 style={{ margin: '0 0 14px', fontSize: '13px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '7px' }}>
                                 <BrandingVectorIcon name="layers" size={14} color="#0284c7" />
                                 Descripción & Botones de Acción
                               </h5>
 
-                              <div style={{ marginBottom: '14px', flex: 1 }}>
+                              <div style={{ marginBottom: '14px', flex: 1, minWidth: 0 }}>
                                 <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '750', color: '#475569', marginBottom: '5px' }}>
                                   Descripción del Slide
                                 </label>
@@ -1687,7 +1693,7 @@ export default function VisualTab({
                                   value={cur.desc || ''}
                                   onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'desc', e.target.value)}
                                   rows={3}
-                                  style={{ width: '100%', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12.5px', resize: 'vertical' }}
+                                  style={{ width: '100%', boxSizing: 'border-box', padding: '9px 12px', borderRadius: '8px', border: '1px solid #CBD5E1', fontSize: '12.5px', resize: 'vertical' }}
                                   placeholder="Texto explicativo para los clientes..."
                                 />
                               </div>
@@ -1699,7 +1705,8 @@ export default function VisualTab({
                                   padding: '12px',
                                   borderRadius: '10px',
                                   border: cur.primaryBtn?.enabled !== false ? '1.5px solid #BAE6FD' : '1px solid #CBD5E1',
-                                  transition: 'all 0.2s ease'
+                                  transition: 'all 0.2s ease',
+                                  boxSizing: 'border-box'
                                 }}>
                                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                                     <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: '800', color: cur.primaryBtn?.enabled !== false ? '#0284c7' : '#64748B', margin: 0 }}>
@@ -1727,7 +1734,7 @@ export default function VisualTab({
                                         value={cur.primaryBtn?.text || ''}
                                         onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'primaryBtn', 'text', e.target.value)}
                                         placeholder="Texto botón (ej: Ver Seguridad)"
-                                        style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF' }}
+                                        style={{ width: '100%', boxSizing: 'border-box', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF' }}
                                       />
                                     </div>
                                     <div>
@@ -1740,7 +1747,7 @@ export default function VisualTab({
                                         value={cur.primaryBtn?.link !== undefined ? cur.primaryBtn.link : (cur.primaryBtn?.cat ? (cur.primaryBtn.cat === 'all' ? '/shop' : `/shop?cat=${cur.primaryBtn.cat}`) : '')}
                                         onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'primaryBtn', 'link', e.target.value)}
                                         placeholder="https://... o /shop?cat=security"
-                                        style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF' }}
+                                        style={{ width: '100%', boxSizing: 'border-box', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF' }}
                                       />
                                     </div>
                                     <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '6px' }}>
@@ -1761,7 +1768,8 @@ export default function VisualTab({
                                             fontSize: '9.5px',
                                             color: '#0369A1',
                                             cursor: 'pointer',
-                                            fontWeight: '700'
+                                            fontWeight: '700',
+                                            boxSizing: 'border-box'
                                           }}
                                         >
                                           {s.label}
@@ -1777,7 +1785,8 @@ export default function VisualTab({
                                   padding: '12px',
                                   borderRadius: '10px',
                                   border: cur.secondaryBtn?.enabled !== false ? '1.5px solid #CBD5E1' : '1px solid #E2E8F0',
-                                  transition: 'all 0.2s ease'
+                                  transition: 'all 0.2s ease',
+                                  boxSizing: 'border-box'
                                 }}>
                                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                                     <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11.5px', fontWeight: '800', color: cur.secondaryBtn?.enabled !== false ? '#334155' : '#64748B', margin: 0 }}>
@@ -1805,7 +1814,7 @@ export default function VisualTab({
                                         value={cur.secondaryBtn?.text || ''}
                                         onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'secondaryBtn', 'text', e.target.value)}
                                         placeholder="Texto botón (ej: Consultar Stock)"
-                                        style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF' }}
+                                        style={{ width: '100%', boxSizing: 'border-box', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF' }}
                                       />
                                     </div>
                                     <div>
@@ -1818,7 +1827,7 @@ export default function VisualTab({
                                         value={cur.secondaryBtn?.link !== undefined ? cur.secondaryBtn.link : (cur.secondaryBtn?.cat ? (cur.secondaryBtn.cat === 'all' ? '/shop' : `/shop?cat=${cur.secondaryBtn.cat}`) : '')}
                                         onChange={(e) => handleUpdateSlideBtn(editingSlideIdx, 'secondaryBtn', 'link', e.target.value)}
                                         placeholder="https://... o /shop o /contacto"
-                                        style={{ width: '100%', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF' }}
+                                        style={{ width: '100%', boxSizing: 'border-box', padding: '7px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12px', background: '#FFFFFF' }}
                                       />
                                     </div>
                                     <div style={{ display: 'flex', gap: '4px', flexWrap: 'wrap', marginTop: '6px' }}>
@@ -1839,7 +1848,8 @@ export default function VisualTab({
                                             fontSize: '9.5px',
                                             color: '#334155',
                                             cursor: 'pointer',
-                                            fontWeight: '700'
+                                            fontWeight: '700',
+                                            boxSizing: 'border-box'
                                           }}
                                         >
                                           {s.label}
@@ -1853,45 +1863,70 @@ export default function VisualTab({
                           </div>
 
                           {/* 4. Métricas / 3 KPIs */}
-                          <div style={{ background: '#F8FAFC', padding: '18px 20px', borderRadius: '14px', border: '1px solid #E2E8F0', marginBottom: '22px' }}>
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '6px' }}>
-                              <label style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '7px' }}>
+                          <div style={{ background: '#F8FAFC', padding: '18px 20px', borderRadius: '14px', border: '1px solid #E2E8F0', marginBottom: '22px', boxSizing: 'border-box' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: cur.showMetrics !== false ? '14px' : '0', flexWrap: 'wrap', gap: '10px' }}>
+                              <label style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '7px', margin: 0 }}>
                                 <BrandingVectorIcon name="zap" size={15} color="#0284c7" />
                                 3 Métricas Destacadas del Banner (Botones / KPIs laterales en pantalla grande)
                               </label>
-                              {cur.type === 'animated_stats' && (
-                                <span style={{ fontSize: '11px', background: '#FEF3C7', color: '#D97706', padding: '3px 9px', borderRadius: '6px', fontWeight: '750', display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                                  <BrandingVectorIcon name="zap" size={12} color="#D97706" />
-                                  Modo animado DACAS activo
+
+                              {/* Toggle para Activar / Desactivar Métricas */}
+                              <label style={{
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '8px',
+                                cursor: 'pointer',
+                                background: cur.showMetrics !== false ? '#E0F2FE' : '#F1F5F9',
+                                border: `1.5px solid ${cur.showMetrics !== false ? '#BAE6FD' : '#CBD5E1'}`,
+                                padding: '5px 12px',
+                                borderRadius: '20px',
+                                userSelect: 'none',
+                                transition: 'all 0.15s ease'
+                              }}>
+                                <input
+                                  type="checkbox"
+                                  checked={cur.showMetrics !== false}
+                                  onChange={(e) => handleUpdateSlideField(editingSlideIdx, 'showMetrics', e.target.checked)}
+                                  style={{ cursor: 'pointer', accentColor: '#0284c7', width: '15px', height: '15px', margin: 0 }}
+                                />
+                                <span style={{ fontSize: '11.5px', fontWeight: '800', color: cur.showMetrics !== false ? '#0284c7' : '#64748B' }}>
+                                  {cur.showMetrics !== false ? 'Métricas Activadas' : 'Métricas Desactivadas'}
                                 </span>
-                              )}
+                              </label>
                             </div>
-                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
-                              {[0, 1, 2].map(mIdx => {
-                                const m = cur.metrics?.[mIdx] || { value: '', label: '' };
-                                return (
-                                  <div key={mIdx} style={{ background: '#FFFFFF', padding: '14px', borderRadius: '10px', border: '1px solid #E2E8F0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)' }}>
-                                    <div style={{ fontSize: '12px', fontWeight: '800', color: '#0284c7', marginBottom: '6px' }}>
-                                      KPI / Botón #{mIdx + 1}
+
+                            {cur.showMetrics === false ? (
+                              <div style={{ fontSize: '12px', color: '#64748B', fontStyle: 'italic', paddingTop: '6px' }}>
+                                Las métricas destacadas están desactivadas para este banner. El título, botones y descripción ocuparán el espacio completo sin recuadros a la derecha.
+                              </div>
+                            ) : (
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', boxSizing: 'border-box' }}>
+                                {[0, 1, 2].map(mIdx => {
+                                  const m = cur.metrics?.[mIdx] || { value: '', label: '' };
+                                  return (
+                                    <div key={mIdx} style={{ background: '#FFFFFF', padding: '14px', borderRadius: '10px', border: '1px solid #E2E8F0', boxShadow: '0 1px 3px rgba(0,0,0,0.02)', boxSizing: 'border-box', minWidth: 0 }}>
+                                      <div style={{ fontSize: '12px', fontWeight: '800', color: '#0284c7', marginBottom: '6px' }}>
+                                        KPI / Botón #{mIdx + 1}
+                                      </div>
+                                      <input
+                                        type="text"
+                                        value={m.value || ''}
+                                        onChange={(e) => handleUpdateSlideMetric(editingSlideIdx, mIdx, 'value', e.target.value)}
+                                        placeholder={mIdx === 0 ? "Valor (ej: +25 Años)" : mIdx === 1 ? "Valor (ej: Stock Local)" : "Valor (ej: 24/7)"}
+                                        style={{ width: '100%', boxSizing: 'border-box', padding: '8px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12.5px', fontWeight: '700', marginBottom: '6px' }}
+                                      />
+                                      <input
+                                        type="text"
+                                        value={m.label || ''}
+                                        onChange={(e) => handleUpdateSlideMetric(editingSlideIdx, mIdx, 'label', e.target.value)}
+                                        placeholder={mIdx === 0 ? "Etiqueta (ej: Liderando en Argentina)" : mIdx === 1 ? "Etiqueta (ej: Depósito Buenos Aires)" : "Etiqueta (ej: Garantía Oficial DACAS)"}
+                                        style={{ width: '100%', boxSizing: 'border-box', padding: '8px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '11.5px', color: '#64748B' }}
+                                      />
                                     </div>
-                                    <input
-                                      type="text"
-                                      value={m.value || ''}
-                                      onChange={(e) => handleUpdateSlideMetric(editingSlideIdx, mIdx, 'value', e.target.value)}
-                                      placeholder={mIdx === 0 ? "Valor (ej: +25 Años)" : mIdx === 1 ? "Valor (ej: 12 Países)" : "Valor (ej: 24/7)"}
-                                      style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '12.5px', fontWeight: '700', marginBottom: '6px' }}
-                                    />
-                                    <input
-                                      type="text"
-                                      value={m.label || ''}
-                                      onChange={(e) => handleUpdateSlideMetric(editingSlideIdx, mIdx, 'label', e.target.value)}
-                                      placeholder={mIdx === 0 ? "Etiqueta (ej: Liderando el Mercado IT)" : mIdx === 1 ? "Etiqueta (ej: Cobertura Regional)" : "Etiqueta (ej: Soporte Oficial)"}
-                                      style={{ width: '100%', padding: '8px 10px', borderRadius: '6px', border: '1px solid #CBD5E1', fontSize: '11.5px', color: '#64748B' }}
-                                    />
-                                  </div>
-                                );
-                              })}
-                            </div>
+                                  );
+                                })}
+                              </div>
+                            )}
                           </div>
                         </>
                       ) : (
@@ -2361,6 +2396,488 @@ export default function VisualTab({
               </div>
             </div>
           )}
+
+          {/* ── SUBTAB: EDICIÓN LOG IN ── */}
+          {visualSubTab === 'login_page' && (() => {
+            const loginPageConfig = visualConfig.loginPage || {
+              badgeText: 'Portal Privado B2B - Acceso Restringido',
+              title: 'Distribución Mayorista IT & Ciberseguridad',
+              description: 'Plataforma corporativa de abastecimiento tecnológico exclusiva para Canales, Integradores y Resellers autorizados en América Latina y Estados Unidos.',
+              footerText: 'DACAS Mayorista Oficial • Conectividad, Ciberseguridad & Data Centers',
+              features: [
+                {
+                  id: 'feat_1',
+                  icon: 'globe',
+                  title: '12 Países con Stock Local',
+                  desc: 'Acceda a inventario en tiempo real y facturación oficial en moneda local según su sede.',
+                  enabled: true
+                },
+                {
+                  id: 'feat_2',
+                  icon: 'credit-card',
+                  title: 'Condiciones Comerciales & Crédito',
+                  desc: 'Precios mayoristas protegidos, margen de canal y gestión de cuenta corriente con verificación B2B.',
+                  enabled: true
+                },
+                {
+                  id: 'feat_3',
+                  icon: 'truck',
+                  title: 'Despacho Inmediato & Retiro HUB',
+                  desc: 'Envíos asegurados y retiros en centros logísticos oficiales con trazabilidad integral.',
+                  enabled: true
+                },
+                {
+                  id: 'feat_4',
+                  icon: 'check-circle',
+                  title: 'Garantía Oficial Directa del Fabricante',
+                  desc: 'Soporte postventa certificado, canalización de RMA y gestión técnica de licencias enterprise.',
+                  enabled: true
+                }
+              ]
+            };
+
+            const updateLoginPage = (fields) => {
+              setVisualConfig(prev => ({
+                ...prev,
+                loginPage: {
+                  ...(prev.loginPage || loginPageConfig),
+                  ...fields
+                }
+              }));
+            };
+
+            const updateFeature = (index, featureFields) => {
+              const currentList = Array.isArray(loginPageConfig.features) ? [...loginPageConfig.features] : [];
+              currentList[index] = { ...currentList[index], ...featureFields };
+              updateLoginPage({ features: currentList });
+            };
+
+            const addFeature = () => {
+              const currentList = Array.isArray(loginPageConfig.features) ? [...loginPageConfig.features] : [];
+              currentList.push({
+                id: `feat_${Date.now()}`,
+                icon: 'star',
+                title: 'Nuevo Destacado Corporativo',
+                desc: 'Descripción del servicio o beneficio comercial para clientes B2B.',
+                enabled: true
+              });
+              updateLoginPage({ features: currentList });
+            };
+
+            const removeFeature = (index) => {
+              const currentList = Array.isArray(loginPageConfig.features) ? [...loginPageConfig.features] : [];
+              currentList.splice(index, 1);
+              updateLoginPage({ features: currentList });
+            };
+
+            const AVAILABLE_ICONS = [
+              { id: 'globe', label: 'Globo / Regional' },
+              { id: 'credit-card', label: 'Crédito / Finanzas' },
+              { id: 'truck', label: 'Logística / Envíos' },
+              { id: 'check-circle', label: 'Garantía / Calidad' },
+              { id: 'shield', label: 'Seguridad / Ciberseguridad' },
+              { id: 'building', label: 'Empresa / Sede' },
+              { id: 'award', label: 'Certificación / Oficial' },
+              { id: 'lock', label: 'Privado / Restringido' },
+              { id: 'headphones', label: 'Soporte 24/7' },
+              { id: 'star', label: 'Destacado / Estrella' }
+            ];
+
+            return (
+              <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) 420px', gap: '24px', alignItems: 'start' }}>
+                {/* Formulario de Configuración */}
+                <div style={{ background: '#FFFFFF', padding: '30px', borderRadius: '22px', border: '1px solid rgba(15, 164, 222, 0.18)', boxShadow: '0 12px 36px rgba(7, 21, 36, 0.05)' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '22px' }}>
+                    <div>
+                      <h3 style={{ margin: '0 0 6px', fontSize: '1.25rem', fontWeight: '800', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px', letterSpacing: '-0.02em' }}>
+                        <BrandingVectorIcon name="lock" size={20} color="#0fa4de" />
+                        Edición de Portada de Ingreso B2B (Log In)
+                      </h3>
+                      <p style={{ margin: 0, fontSize: '13px', color: '#64748B' }}>
+                        Personalice los mensajes institucionales y pilares comerciales que visualizan los clientes al ingresar al shop.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Campos Principales */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '18px', marginBottom: '24px' }}>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '800', color: '#334155', marginBottom: '6px' }}>
+                        Texto de Badge de Portada
+                      </label>
+                      <input
+                        type="text"
+                        value={loginPageConfig.badgeText || ''}
+                        onChange={(e) => updateLoginPage({ badgeText: e.target.value })}
+                        placeholder="Portal Privado B2B - Acceso Restringido"
+                        style={{
+                          width: '100%',
+                          padding: '11px 14px',
+                          borderRadius: '10px',
+                          border: '1.5px solid #CBD5E1',
+                          fontSize: '13px',
+                          color: '#0F172A',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '800', color: '#334155', marginBottom: '6px' }}>
+                        Título Principal
+                      </label>
+                      <input
+                        type="text"
+                        value={loginPageConfig.title || ''}
+                        onChange={(e) => updateLoginPage({ title: e.target.value })}
+                        placeholder="Distribución Mayorista IT & Ciberseguridad"
+                        style={{
+                          width: '100%',
+                          padding: '11px 14px',
+                          borderRadius: '10px',
+                          border: '1.5px solid #CBD5E1',
+                          fontSize: '13.5px',
+                          fontWeight: '700',
+                          color: '#0F172A',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '800', color: '#334155', marginBottom: '6px' }}>
+                        Descripción / Bajada Comercial
+                      </label>
+                      <textarea
+                        rows={3}
+                        value={loginPageConfig.description || ''}
+                        onChange={(e) => updateLoginPage({ description: e.target.value })}
+                        placeholder="Plataforma corporativa de abastecimiento tecnológico exclusiva para Canales..."
+                        style={{
+                          width: '100%',
+                          padding: '11px 14px',
+                          borderRadius: '10px',
+                          border: '1.5px solid #CBD5E1',
+                          fontSize: '13px',
+                          color: '#0F172A',
+                          boxSizing: 'border-box',
+                          resize: 'vertical'
+                        }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: 'block', fontSize: '12.5px', fontWeight: '800', color: '#334155', marginBottom: '6px' }}>
+                        Pie de Portada (Footer)
+                      </label>
+                      <input
+                        type="text"
+                        value={loginPageConfig.footerText || ''}
+                        onChange={(e) => updateLoginPage({ footerText: e.target.value })}
+                        placeholder="DACAS Mayorista Oficial • Conectividad, Ciberseguridad & Data Centers"
+                        style={{
+                          width: '100%',
+                          padding: '11px 14px',
+                          borderRadius: '10px',
+                          border: '1.5px solid #CBD5E1',
+                          fontSize: '13px',
+                          color: '#0F172A',
+                          boxSizing: 'border-box'
+                        }}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Lista de Pilares / Destacados Comerciales */}
+                  <div style={{ marginTop: '24px', paddingTop: '20px', borderTop: '1px solid #E2E8F0' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' }}>
+                      <div>
+                        <h4 style={{ margin: '0 0 4px', fontSize: '14px', fontWeight: '800', color: '#0F172A' }}>
+                          Pilares & Beneficios B2B Destacados
+                        </h4>
+                        <p style={{ margin: 0, fontSize: '12px', color: '#64748B' }}>
+                          Configure los ítems principales que comunican el valor comercial mayorista.
+                        </p>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={addFeature}
+                        style={{
+                          background: '#E0F2FE',
+                          color: '#0284c7',
+                          border: '1px solid #BAE6FD',
+                          borderRadius: '8px',
+                          padding: '7px 14px',
+                          fontSize: '12px',
+                          fontWeight: '800',
+                          cursor: 'pointer',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '6px'
+                        }}
+                      >
+                        <BrandingVectorIcon name="plus" size={13} color="#0284c7" />
+                        <span>Agregar Pilar</span>
+                      </button>
+                    </div>
+
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                      {(loginPageConfig.features || []).map((feat, fIdx) => (
+                        <div
+                          key={feat.id || fIdx}
+                          style={{
+                            background: '#F8FAFC',
+                            border: feat.enabled !== false ? '1.5px solid #CBD5E1' : '1.5px dashed #E2E8F0',
+                            borderRadius: '14px',
+                            padding: '16px',
+                            opacity: feat.enabled !== false ? 1 : 0.6,
+                            transition: 'all 0.15s ease'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', fontWeight: '800', color: '#334155', cursor: 'pointer' }}>
+                                <input
+                                  type="checkbox"
+                                  checked={feat.enabled !== false}
+                                  onChange={(e) => updateFeature(fIdx, { enabled: e.target.checked })}
+                                />
+                                <span>Pilar #{fIdx + 1} {feat.enabled === false ? '(Desactivado)' : ''}</span>
+                              </label>
+                            </div>
+                            {(loginPageConfig.features || []).length > 1 && (
+                              <button
+                                type="button"
+                                onClick={() => removeFeature(fIdx)}
+                                style={{
+                                  background: 'none',
+                                  border: 'none',
+                                  color: '#EF4444',
+                                  fontSize: '11.5px',
+                                  fontWeight: '700',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '4px'
+                                }}
+                              >
+                                <BrandingVectorIcon name="trash" size={13} color="#EF4444" />
+                                <span>Eliminar</span>
+                              </button>
+                            )}
+                          </div>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: '160px 1fr', gap: '12px', marginBottom: '10px' }}>
+                            <div>
+                              <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#64748B', marginBottom: '4px' }}>
+                                Ícono
+                              </label>
+                              <select
+                                value={feat.icon || 'star'}
+                                onChange={(e) => updateFeature(fIdx, { icon: e.target.value })}
+                                style={{
+                                  width: '100%',
+                                  padding: '8px 10px',
+                                  borderRadius: '8px',
+                                  border: '1.5px solid #CBD5E1',
+                                  fontSize: '12px',
+                                  background: '#FFFFFF'
+                                }}
+                              >
+                                {AVAILABLE_ICONS.map(ic => (
+                                  <option key={ic.id} value={ic.id}>{ic.label}</option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div>
+                              <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#64748B', marginBottom: '4px' }}>
+                                Título del Pilar
+                              </label>
+                              <input
+                                type="text"
+                                value={feat.title || ''}
+                                onChange={(e) => updateFeature(fIdx, { title: e.target.value })}
+                                placeholder="Ej: 12 Países con Stock Local"
+                                style={{
+                                  width: '100%',
+                                  padding: '8px 12px',
+                                  borderRadius: '8px',
+                                  border: '1.5px solid #CBD5E1',
+                                  fontSize: '12.5px',
+                                  fontWeight: '700',
+                                  background: '#FFFFFF'
+                                }}
+                              />
+                            </div>
+                          </div>
+
+                          <div>
+                            <label style={{ display: 'block', fontSize: '11px', fontWeight: '700', color: '#64748B', marginBottom: '4px' }}>
+                              Descripción Detallada
+                            </label>
+                            <input
+                              type="text"
+                              value={feat.desc || ''}
+                              onChange={(e) => updateFeature(fIdx, { desc: e.target.value })}
+                              placeholder="Ej: Acceda a inventario en tiempo real y facturación oficial..."
+                              style={{
+                                width: '100%',
+                                padding: '8px 12px',
+                                borderRadius: '8px',
+                                border: '1.5px solid #CBD5E1',
+                                fontSize: '12px',
+                                background: '#FFFFFF'
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Botón de Guardado */}
+                  <div style={{ marginTop: '28px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+                    <button
+                      type="button"
+                      onClick={handleSaveVisualSettings}
+                      disabled={isSavingVisual}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        borderRadius: '10px',
+                        padding: '12px 24px',
+                        fontSize: '13.5px',
+                        fontWeight: '800',
+                        cursor: isSavingVisual ? 'wait' : 'pointer',
+                        boxShadow: '0 4px 14px rgba(15, 164, 222, 0.35)'
+                      }}
+                    >
+                      <BrandingVectorIcon name="save" size={16} color="#FFFFFF" />
+                      <span>{isSavingVisual ? 'Guardando...' : 'Guardar Configuración de Log In'}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Vista Previa en Vivo */}
+                <div style={{ position: 'sticky', top: '20px' }}>
+                  <div style={{ fontSize: '12px', fontWeight: '800', color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '10px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <BrandingVectorIcon name="eye" size={14} color="#0284c7" />
+                    <span>Vista Previa en Tiempo Real</span>
+                  </div>
+
+                  <div style={{
+                    background: '#0F2742',
+                    borderRadius: '20px',
+                    padding: '30px 26px',
+                    border: '1px solid rgba(15, 164, 222, 0.3)',
+                    boxShadow: '0 16px 40px rgba(0,0,0,0.35)',
+                    color: '#FFFFFF'
+                  }}>
+                    {/* Header */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '18px' }}>
+                      <div style={{
+                        background: 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                        color: '#FFFFFF',
+                        fontWeight: '900',
+                        fontSize: '1.05rem',
+                        padding: '5px 12px',
+                        borderRadius: '8px'
+                      }}>
+                        DACAS
+                      </div>
+                      <span style={{ fontWeight: '800', fontSize: '1.05rem', color: '#FFFFFF' }}>
+                        Shop <span style={{ color: '#0fa4de', fontSize: '0.75rem', fontWeight: '700' }}>ENTERPRISE</span>
+                      </span>
+                    </div>
+
+                    {/* Badge */}
+                    <div style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '5px',
+                      background: 'rgba(15, 164, 222, 0.15)',
+                      border: '1px solid rgba(15, 164, 222, 0.35)',
+                      color: '#38bdf8',
+                      fontSize: '10px',
+                      fontWeight: '800',
+                      padding: '3px 10px',
+                      borderRadius: '999px',
+                      textTransform: 'uppercase',
+                      marginBottom: '14px'
+                    }}>
+                      <BrandingVectorIcon name="shield" size={11} color="#38bdf8" />
+                      <span>{loginPageConfig.badgeText || 'Portal Privado B2B'}</span>
+                    </div>
+
+                    {/* Title */}
+                    <h4 style={{
+                      margin: '0 0 10px',
+                      color: '#FFFFFF',
+                      fontSize: '1.35rem',
+                      fontWeight: '900',
+                      lineHeight: 1.25
+                    }}>
+                      {loginPageConfig.title || 'Distribución Mayorista IT'}
+                    </h4>
+
+                    {/* Description */}
+                    <p style={{
+                      margin: '0 0 20px',
+                      color: '#94A3B8',
+                      fontSize: '12px',
+                      lineHeight: 1.5
+                    }}>
+                      {loginPageConfig.description}
+                    </p>
+
+                    {/* Features */}
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+                      {(loginPageConfig.features || []).filter(f => f.enabled !== false).map((p, idx) => (
+                        <div key={idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                          <div style={{
+                            width: '28px',
+                            height: '28px',
+                            borderRadius: '7px',
+                            background: 'rgba(15, 164, 222, 0.15)',
+                            border: '1px solid rgba(15, 164, 222, 0.25)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            flexShrink: 0
+                          }}>
+                            <BrandingVectorIcon name={p.icon || 'star'} size={13} color="#0fa4de" />
+                          </div>
+                          <div>
+                            <div style={{ color: '#FFFFFF', fontSize: '12px', fontWeight: '800' }}>
+                              {p.title}
+                            </div>
+                            <div style={{ color: '#94A3B8', fontSize: '11px', marginTop: '2px', lineHeight: 1.35 }}>
+                              {p.desc}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Footer */}
+                    <div style={{
+                      paddingTop: '16px',
+                      borderTop: '1px solid rgba(15, 164, 222, 0.15)',
+                      fontSize: '10.5px',
+                      color: '#64748B'
+                    }}>
+                      {loginPageConfig.footerText}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })()}
 
           {/* ── SUBTAB 2: ANNOUNCEMENT & HEADER ── */}
           {visualSubTab === 'announcement' && (

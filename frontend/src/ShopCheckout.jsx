@@ -6,6 +6,8 @@ import {
   DACAS_COUNTRIES_LIST,
   DEFAULT_CHECKOUT_METHODS,
   isCuentaCorrienteMethod,
+  getPaymentTermLabel,
+  STANDARD_PAYMENT_TERMS,
   inputStyle,
   labelStyle
 } from './components/checkout/checkoutHelpers';
@@ -226,7 +228,45 @@ function ShopCheckoutContent() {
     return activePercepcionesList.reduce((acc, p) => acc + p.amount, 0);
   }, [activePercepcionesList]);
 
-  const finalOrderTotal = netCommercialSubtotal + percepcionesTotal;
+  // ── IVA Discriminado por Producto (Argentina / Factura A) ──
+  const ivaCalculation = useMemo(() => {
+    if (!isArgentinaClient || !cart || cart.length === 0) {
+      return { ivaTotal: 0, ivaDiscriminatedData: [] };
+    }
+
+    const discountRatio = cartTotal > 0 ? (discountAmount / cartTotal) : 0;
+    const ratesMap = {};
+    let totalIvaSum = 0;
+
+    cart.forEach(item => {
+      const lineOriginal = (parseFloat(item.price) || 0) * (item.qty || 1);
+      const lineNet = lineOriginal * (1 - discountRatio);
+      const rate = item.tax_rate !== undefined ? parseFloat(item.tax_rate) : (item.iva !== undefined ? parseFloat(item.iva) : 21);
+      const effectiveRate = !isNaN(rate) ? rate : 21;
+      const lineIva = parseFloat(((lineNet * effectiveRate) / 100).toFixed(2));
+      totalIvaSum += lineIva;
+
+      const rateKey = effectiveRate.toString();
+      if (!ratesMap[rateKey]) {
+        ratesMap[rateKey] = {
+          rate: effectiveRate,
+          taxable_base: 0,
+          amount: 0
+        };
+      }
+      ratesMap[rateKey].taxable_base = parseFloat((ratesMap[rateKey].taxable_base + lineNet).toFixed(2));
+      ratesMap[rateKey].amount = parseFloat((ratesMap[rateKey].amount + lineIva).toFixed(2));
+    });
+
+    return {
+      ivaTotal: parseFloat(totalIvaSum.toFixed(2)),
+      ivaDiscriminatedData: Object.values(ratesMap)
+    };
+  }, [cart, cartTotal, discountAmount, isArgentinaClient]);
+
+  const { ivaTotal, ivaDiscriminatedData } = ivaCalculation;
+
+  const finalOrderTotal = netCommercialSubtotal + (isArgentinaClient ? ivaTotal : 0) + percepcionesTotal;
   const isCreditLimitExceeded = Boolean(isCuentaCorrienteHabilitada && cuentaCorrienteLimite > 0 && finalOrderTotal > cuentaCorrienteLimite);
 
   const [showCountryBlockedModal, setShowCountryBlockedModal] = useState(false);
@@ -533,7 +573,22 @@ function ShopCheckoutContent() {
     );
     return ccOk ? 'cuenta_corriente' : 'transferencia';
   });
-  const [ccTerms, setCcTerms] = useState('30_dias');
+  const [ccTerms, setCcTerms] = useState(() => {
+    try {
+      const stored = localStorage.getItem('dacas_client_user') || localStorage.getItem('shop_user');
+      if (stored) {
+        const u = JSON.parse(stored);
+        let list = u.terminos_pago;
+        if (typeof list === 'string') {
+          try { list = JSON.parse(list); } catch (_) { list = list.split(',').map(s => s.trim()); }
+        }
+        if (Array.isArray(list) && list.length > 0) {
+          return list[0];
+        }
+      }
+    } catch (_) {}
+    return '30_dias';
+  });
   const [acceptTerms, setAcceptTerms] = useState(true);
 
   // Auto-switch payment method away from CC if client is not enabled for Cuenta Corriente or limit is exceeded
@@ -569,6 +624,16 @@ function ShopCheckoutContent() {
               localStorage.setItem('dacas_client_user', JSON.stringify(u));
               localStorage.setItem('shop_user', JSON.stringify(u));
             } catch (_) {}
+
+            if (u.terminos_pago) {
+              let tList = u.terminos_pago;
+              if (typeof tList === 'string') {
+                try { tList = JSON.parse(tList); } catch (_) { tList = tList.split(',').map(s => s.trim()); }
+              }
+              if (Array.isArray(tList) && tList.length > 0) {
+                setCcTerms(prev => (tList.includes(prev) ? prev : tList[0]));
+              }
+            }
 
             const nameVal = u.nombre_compras || u.nombre || u.name || '';
             const emailVal = u.email_factura_electronica || u.email_compras || u.email || '';
@@ -724,7 +789,7 @@ function ShopCheckoutContent() {
         : `${shipping.calle} ${shipping.numero} ${shipping.piso_depto ? `(${shipping.piso_depto})` : ''}, ${shipping.partido || shipping.ciudad} (CP ${shipping.codigo_postal}) • Tel: ${shipping.telefono_recepcion}`;
 
     const paymentMethodLabel = isCuentaCorrienteMethod({ id: paymentMethod })
-      ? `Cuenta Corriente B2B (${ccTerms === '30_dias' ? '30 días fecha factura' : ccTerms === '60_dias' ? '60 días fecha factura' : '90 días fecha factura'})`
+      ? `Cuenta Corriente B2B (${getPaymentTermLabel(ccTerms)})`
       : (paymentMethod || '').includes('transferencia')
         ? 'Transferencia Bancaria Inmediata (CBU / SWIFT)'
         : (paymentMethod || '').includes('tarjeta')
@@ -737,10 +802,19 @@ function ShopCheckoutContent() {
         user_id: shopUser?.id || null,
         email: billing.contacto_email || shopUser?.email || null,
         cuit: billing.cuit || shopUser?.numero_nit || shopUser?.cuit || null,
-        items: cart.map(i => ({ id: i.id, quantity: i.qty, qty: i.qty })),
+        items: cart.map(i => ({
+          id: i.id,
+          quantity: i.qty,
+          qty: i.qty,
+          price: i.price,
+          tax_rate: i.tax_rate !== undefined ? parseFloat(i.tax_rate) : (i.iva !== undefined ? parseFloat(i.iva) : 21),
+          iva: i.tax_rate !== undefined ? parseFloat(i.tax_rate) : (i.iva !== undefined ? parseFloat(i.iva) : 21)
+        })),
         country_id: selectedCountryObj?.id || 2,
         country_code: selectedCountryCode || 'AR',
         payment_method: paymentMethodLabel,
+        payment_terms: isCuentaCorrienteMethod({ id: paymentMethod }) ? ccTerms : null,
+        payment_terms_label: isCuentaCorrienteMethod({ id: paymentMethod }) ? getPaymentTermLabel(ccTerms) : null,
         shipping_method: selectedShippingMethodObj?.title || (effDeliveryType === 'hub' ? 'Retiro en Depósito Central' : effDeliveryType === 'expreso' ? 'Expreso Transporte' : 'Envío Express a Domicilio'),
         shipping_address: formattedAddress,
         billing_info: billing,
@@ -753,6 +827,8 @@ function ShopCheckoutContent() {
             : `Horario: ${shipping.horario_entrega}. Receptor: ${shipping.contacto_recepcion}. Teléfono coordinación: ${shipping.telefono_recepcion}.`,
         coupon_code: appliedCoupon ? appliedCoupon.code : null,
         end_user: (endUser.nombre && endUser.nombre.trim()) ? endUser : null,
+        iva_total: ivaTotal.toFixed(2),
+        iva_discriminated: ivaDiscriminatedData,
         percepciones_total: percepcionesTotal.toFixed(2),
         percepciones_applied: activePercepcionesList
       };
@@ -789,6 +865,8 @@ function ShopCheckoutContent() {
         total: finalOrderTotal.toFixed(2),
         subtotal: cartTotal.toFixed(2),
         discount_applied: discountAmount.toFixed(2),
+        iva_total: ivaTotal.toFixed(2),
+        iva_discriminated: ivaDiscriminatedData,
         percepciones_total: percepcionesTotal.toFixed(2),
         percepciones_applied: activePercepcionesList,
         coupon_code: appliedCoupon ? appliedCoupon.code : null,
@@ -1124,6 +1202,8 @@ function ShopCheckoutContent() {
                   billing={billing}
                   netCommercialSubtotal={netCommercialSubtotal}
                   activePercepcionesList={activePercepcionesList}
+                  ivaTotal={ivaTotal}
+                  ivaDiscriminatedData={ivaDiscriminatedData}
                   acceptTerms={acceptTerms}
                   setAcceptTerms={setAcceptTerms}
                   handlePlaceOrder={handlePlaceOrder}
@@ -1151,6 +1231,8 @@ function ShopCheckoutContent() {
               discountAmount={discountAmount}
               isArgentinaClient={isArgentinaClient}
               activePercepcionesList={activePercepcionesList}
+              ivaTotal={ivaTotal}
+              ivaDiscriminatedData={ivaDiscriminatedData}
               finalOrderTotal={finalOrderTotal}
             />
 

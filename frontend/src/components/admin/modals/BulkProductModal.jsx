@@ -58,10 +58,9 @@ export default function BulkProductModal({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '20px',
               boxShadow: '0 4px 14px rgba(15, 164, 222, 0.35)'
             }}>
-              📤
+              <BrandingVectorIcon name="upload" size={22} color="#ffffff" />
             </div>
             <div>
               <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: '900', color: '#ffffff', letterSpacing: '-0.02em' }}>
@@ -114,11 +113,21 @@ export default function BulkProductModal({
             gap: '16px'
           }}>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-              <span style={{ fontSize: '26px' }}>📄</span>
+              <div style={{
+                width: '38px',
+                height: '38px',
+                borderRadius: '10px',
+                background: '#E0F2FE',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <BrandingVectorIcon name="file-text" size={20} color="#0284c7" />
+              </div>
               <div>
                 <strong style={{ color: '#0F172A', fontSize: '13.5px', display: 'block' }}>¿Primera vez cargando productos?</strong>
                 <span style={{ color: '#64748B', fontSize: '12.5px' }}>
-                  Descarga nuestra plantilla oficial pre-formateada con ejemplos listos para Excel o Google Sheets.
+                  Descarga nuestra plantilla oficial pre-formateada con columna de IVA (21% / 10.5%), links a datasheets PDF y productos relacionados.
                 </span>
               </div>
             </div>
@@ -141,7 +150,7 @@ export default function BulkProductModal({
               onMouseOver={(e) => e.currentTarget.style.background = '#E2E8F0'}
               onMouseOut={(e) => e.currentTarget.style.background = '#F1F5F9'}
             >
-              📥 Descargar Plantilla CSV
+              Descargar Plantilla CSV / Excel
             </button>
           </div>
 
@@ -171,7 +180,7 @@ export default function BulkProductModal({
             <input
               id="bulk-csv-input"
               type="file"
-              accept=".csv,text/csv,text/plain"
+              accept=".csv,text/csv,text/plain,.xlsx,.xls"
               style={{ display: 'none' }}
               onChange={(e) => {
                 if (e.target.files && e.target.files[0]) {
@@ -179,8 +188,8 @@ export default function BulkProductModal({
                 }
               }}
             />
-            <div style={{ fontSize: '38px', marginBottom: '10px' }}>
-              {bulkFile ? '📊' : '☁️'}
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '10px' }}>
+              <BrandingVectorIcon name="upload-cloud" size={36} color="#0FA4DE" />
             </div>
             {bulkFile ? (
               <div>
@@ -215,7 +224,7 @@ export default function BulkProductModal({
               alignItems: 'center',
               gap: '8px'
             }}>
-              <span>⚠️</span>
+              <BrandingVectorIcon name="alert-triangle" size={16} color="#991B1B" />
               <span>{bulkError}</span>
             </div>
           )}
@@ -232,7 +241,8 @@ export default function BulkProductModal({
               marginBottom: '20px'
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '800', marginBottom: '4px' }}>
-                <span>🎉</span> ¡Carga masiva procesada exitosamente!
+                <BrandingVectorIcon name="check-circle" size={18} color="#166534" />
+                <span>Carga masiva procesada exitosamente</span>
               </div>
               <div>
                 Total analizados: <strong>{bulkResult.total}</strong> | Creados: <strong>{bulkResult.created}</strong> | Actualizados: <strong>{bulkResult.updated}</strong>
@@ -282,8 +292,8 @@ export default function BulkProductModal({
                       fontWeight: '600'
                     }}
                   >
-                    <option value="upsert">🔄 Actualizar existentes y Crear nuevos (Upsert)</option>
-                    <option value="create_only">➕ Solo crear nuevos</option>
+                    <option value="upsert">Actualizar existentes y Crear nuevos (Upsert)</option>
+                    <option value="create_only">Solo crear nuevos</option>
                   </select>
                 </div>
               </div>
@@ -299,14 +309,14 @@ export default function BulkProductModal({
               }}>
                 <div style={{ padding: '12px 18px', background: '#F8FAFC', borderBottom: '1px solid #E2E8F0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                   <strong style={{ fontSize: '12.5px', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                    Vista Previa de Registros ({bulkData.length > 10 ? 'Primeros 10 de ' + bulkData.length : bulkData.length})
+                    Vista Previa de Registros ({bulkData.length > 15 ? 'Primeros 15 de ' + bulkData.length : bulkData.length})
                   </strong>
                   <span style={{ fontSize: '11.5px', color: '#64748B' }}>
                     Revisa que las columnas coincidan correctamente antes de confirmar
                   </span>
                 </div>
 
-                <div style={{ overflowX: 'auto', maxHeight: '280px' }}>
+                <div style={{ overflowX: 'auto', maxHeight: '320px' }}>
                   <table className="users-table" style={{ margin: 0, fontSize: '12px' }}>
                     <thead>
                       <tr>
@@ -318,37 +328,109 @@ export default function BulkProductModal({
                         <th>SKU</th>
                         <th>Precio (USD)</th>
                         <th>Promo (USD)</th>
+                        <th>IVA (%)</th>
                         <th>Stock</th>
+                        <th>Visibilidad</th>
+                        <th>Datasheet</th>
+                        <th>Relacionados</th>
                         <th>Peso (kg)</th>
                         <th>Dimensiones (cm)</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {bulkData.slice(0, 15).map((item, idx) => (
-                        <tr key={idx}>
-                          <td>{idx + 1}</td>
-                          <td>
-                            {item.isValid ? (
-                              <span style={{ background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: '700' }}>
-                                ✓ Válido
+                      {bulkData.slice(0, 15).map((item, idx) => {
+                        const rawV = item.visible !== undefined ? item.visible : (item.is_visible !== undefined ? item.is_visible : (item.visibilidad !== undefined ? item.visibilidad : item.status));
+                        const isOculto = rawV === false || String(rawV).trim().toLowerCase() === 'oculto' || String(rawV).trim().toLowerCase() === 'false' || String(rawV).trim().toLowerCase() === '0';
+                        return (
+                          <tr key={idx}>
+                            <td>{idx + 1}</td>
+                            <td>
+                              {item.isValid ? (
+                                <span style={{ background: '#DCFCE7', color: '#166534', padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: '700' }}>
+                                  Válido
+                                </span>
+                              ) : (
+                                <span style={{ background: '#FEE2E2', color: '#991B1B', padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: '700' }}>
+                                  Incompleto
+                                </span>
+                              )}
+                            </td>
+                            <td><strong style={{ color: '#0F172A' }}>{item.name || '—'}</strong></td>
+                            <td>{item.brand || '—'}</td>
+                            <td><span style={{ background: '#F1F5F9', padding: '2px 6px', borderRadius: '4px' }}>{item.category || 'General'}</span></td>
+                            <td style={{ fontFamily: 'monospace' }}>{item.sku || '—'}</td>
+                            <td><strong>${item.price}</strong></td>
+                            <td>{item.promotional_price ? <span style={{ color: '#10B981', fontWeight: '700' }}>${item.promotional_price}</span> : '—'}</td>
+                            <td>
+                              <span style={{ background: '#EFF6FF', color: '#1D4ED8', padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: '800' }}>
+                                {item.iva ?? item.tax_rate ?? 21}%
                               </span>
-                            ) : (
-                              <span style={{ background: '#FEE2E2', color: '#991B1B', padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: '700' }}>
-                                ⚠️ Incompleto
-                              </span>
-                            )}
-                          </td>
-                          <td><strong style={{ color: '#0F172A' }}>{item.name}</strong></td>
-                          <td>{item.brand || '—'}</td>
-                          <td><span style={{ background: '#F1F5F9', padding: '2px 6px', borderRadius: '4px' }}>{item.category}</span></td>
-                          <td style={{ fontFamily: 'monospace' }}>{item.sku || '—'}</td>
-                          <td><strong>${item.price}</strong></td>
-                          <td>{item.promotional_price ? <span style={{ color: '#10B981', fontWeight: '700' }}>${item.promotional_price}</span> : '—'}</td>
-                          <td><strong style={{ color: item.stock > 0 ? '#166534' : '#DC2626' }}>{item.stock}</strong></td>
-                          <td>{item.weight ? `${item.weight} kg` : '—'}</td>
-                          <td>{(item.depth || item.width || item.height) ? `${item.depth || '0'} x ${item.width || '0'} x ${item.height || '0'}` : '—'}</td>
-                        </tr>
-                      ))}
+                            </td>
+                            <td><strong style={{ color: item.stock > 0 ? '#166534' : '#DC2626' }}>{item.stock}</strong></td>
+                            <td>
+                              {isOculto ? (
+                                <span style={{ background: '#FEF3C7', color: '#92400E', padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: '700' }}>
+                                  Oculto
+                                </span>
+                              ) : (
+                                <span style={{ background: '#ECFDF5', color: '#065F46', padding: '2px 8px', borderRadius: '6px', fontSize: '11px', fontWeight: '700' }}>
+                                  Visible
+                                </span>
+                              )}
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              {item.datasheet_url ? (
+                                <a
+                                  href={item.datasheet_url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    background: '#E0F2FE',
+                                    color: '#0369A1',
+                                    padding: '2px 8px',
+                                    borderRadius: '6px',
+                                    fontSize: '11px',
+                                    fontWeight: '700',
+                                    textDecoration: 'none',
+                                    display: 'inline-block'
+                                  }}
+                                  title={item.datasheet_url}
+                                >
+                                  PDF Link
+                                </a>
+                              ) : (
+                                <span style={{ color: '#94A3B8' }}>—</span>
+                              )}
+                            </td>
+                            <td>
+                              {item.related_skus ? (
+                                <span
+                                  style={{
+                                    background: '#F1F5F9',
+                                    color: '#334155',
+                                    padding: '2px 6px',
+                                    borderRadius: '4px',
+                                    fontSize: '10.5px',
+                                    fontFamily: 'monospace',
+                                    display: 'inline-block',
+                                    maxWidth: '120px',
+                                    overflow: 'hidden',
+                                    textOverflow: 'ellipsis',
+                                    whiteSpace: 'nowrap'
+                                  }}
+                                  title={Array.isArray(item.related_skus) ? item.related_skus.join(', ') : String(item.related_skus)}
+                                >
+                                  {Array.isArray(item.related_skus) ? item.related_skus.join(', ') : String(item.related_skus)}
+                                </span>
+                              ) : (
+                                <span style={{ color: '#94A3B8' }}>—</span>
+                              )}
+                            </td>
+                            <td>{item.weight ? `${item.weight} kg` : '—'}</td>
+                            <td>{(item.depth || item.width || item.height) ? `${item.depth || '0'} x ${item.width || '0'} x ${item.height || '0'}` : '—'}</td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -395,9 +477,9 @@ export default function BulkProductModal({
                   }}
                 >
                   {bulkLoading ? (
-                    <>⏳ Importando...</>
+                    <span>Importando...</span>
                   ) : (
-                    <>🚀 Confirmar e Importar {bulkData.length} Productos</>
+                    <span>Confirmar e Importar {bulkData.length} Productos</span>
                   )}
                 </button>
               </div>

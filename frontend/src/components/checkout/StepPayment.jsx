@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import BrandingVectorIcon from '../../BrandingVectorIcon';
-import { isCuentaCorrienteMethod } from './checkoutHelpers';
+import { isCuentaCorrienteMethod, STANDARD_PAYMENT_TERMS, getPaymentTermLabel } from './checkoutHelpers';
 
 export default function StepPayment({
   checkoutMethods,
@@ -15,6 +15,8 @@ export default function StepPayment({
   billing,
   netCommercialSubtotal,
   activePercepcionesList = [],
+  ivaTotal = 0,
+  ivaDiscriminatedData = [],
   acceptTerms,
   setAcceptTerms,
   handlePlaceOrder,
@@ -25,6 +27,35 @@ export default function StepPayment({
   setStep
 }) {
   const [copiedKey, setCopiedKey] = useState(null);
+
+  const allowedTerms = useMemo(() => {
+    let raw = shopUser?.terminos_pago || shopUser?.payment_terms;
+    if (typeof raw === 'string') {
+      try {
+        raw = JSON.parse(raw);
+      } catch (_) {
+        raw = raw.split(',').map(s => s.trim()).filter(Boolean);
+      }
+    }
+    if (Array.isArray(raw) && raw.length > 0) {
+      return raw.map(termVal => ({
+        value: termVal,
+        label: getPaymentTermLabel(termVal)
+      }));
+    }
+    return [
+      { value: '30_dias', label: '30 días fecha de emisión de factura' }
+    ];
+  }, [shopUser?.terminos_pago, shopUser?.payment_terms]);
+
+  useEffect(() => {
+    if (allowedTerms.length > 0) {
+      const exists = allowedTerms.some(t => t.value === ccTerms);
+      if (!exists) {
+        setCcTerms(allowedTerms[0].value);
+      }
+    }
+  }, [allowedTerms, ccTerms, setCcTerms]);
 
   const handleCopy = (text, key) => {
     if (!text) return;
@@ -286,9 +317,11 @@ export default function StepPayment({
                         value={ccTerms}
                         onChange={e => setCcTerms(e.target.value)}
                       >
-                        <option value="30_dias">30 días fecha de emisión de factura</option>
-                        <option value="60_dias">60 días fecha de emisión de factura</option>
-                        <option value="90_dias">90 días fecha de emisión de factura (Especial)</option>
+                        {allowedTerms.map(term => (
+                          <option key={term.value} value={term.value}>
+                            {term.label}
+                          </option>
+                        ))}
                       </select>
                     </div>
                     {m.instrucciones && (
@@ -494,25 +527,55 @@ export default function StepPayment({
         <div style={{ background: '#F8FAFC', border: '1.5px solid #CBD5E1', borderRadius: '16px', padding: '18px 20px', marginBottom: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
             <div style={{ fontWeight: '800', fontSize: '13.5px', color: '#0F172A', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>🏛️</span>
-              <span>Liquidación Impositiva & Percepciones IIBB (Argentina)</span>
+              <BrandingVectorIcon name="file-text" size={16} color="#0FA4DE" />
+              <span>Liquidación Impositiva (IVA & Percepciones IIBB - Argentina)</span>
             </div>
             <span style={{ fontSize: '11px', background: '#E0F2FE', color: '#0369A1', padding: '3px 8px', borderRadius: '6px', fontWeight: '800' }}>
               Régimen: {shopUser?.iibb_tipo || 'C.M.'} • Sede: {shopUser?.iibb_jurisdiccion || '901 - Capital Federal'}
             </span>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px', fontSize: '12px', color: '#475569', marginBottom: '14px', background: '#FFFFFF', padding: '12px 14px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
-            <div>CUIT / NIT: <strong style={{ color: '#0F172A' }}>{billing?.cuit || shopUser?.cuit || shopUser?.numero_nit || '30-12345678-9'}</strong></div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '10px', fontSize: '12px', color: '#475569', marginBottom: '14px', background: '#FFFFFF', padding: '12px 14px', borderRadius: '10px', border: '1px solid #E2E8F0' }}>
+            <div>CUIT: <strong style={{ color: '#0F172A' }}>{billing?.cuit || shopUser?.cuit || shopUser?.numero_nit || '30-12345678-9'}</strong></div>
             <div>Nro Inscripción IIBB: <strong style={{ color: '#0F172A' }}>{shopUser?.iibb_numero || shopUser?.cuit || '9017223280'}</strong></div>
             <div>Base Imponible Neta: <strong style={{ color: '#0F172A' }}>${(netCommercialSubtotal || 0).toFixed(2)} USD</strong></div>
+            <div>Total IVA Liquidado: <strong style={{ color: '#0284C7' }}>${(ivaTotal || 0).toFixed(2)} USD</strong></div>
           </div>
+
+          {/* IVA Discriminado (Factura A) */}
+          {ivaTotal > 0 && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '10px' }}>
+              {ivaDiscriminatedData && ivaDiscriminatedData.map((item, idx) => (
+                <div key={idx} style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  background: '#F0F9FF',
+                  border: '1px solid #BAE6FD',
+                  padding: '10px 14px',
+                  borderRadius: '10px',
+                  fontSize: '12.5px'
+                }}>
+                  <div>
+                    <span style={{ fontWeight: '800', color: '#0369A1' }}>IVA Débito Fiscal ({item.rate}%):</span>
+                    <span style={{ color: '#0284C7', marginLeft: '6px', fontSize: '11.5px' }}>
+                      Base neta gravada: ${item.taxable_base.toFixed(2)} USD
+                    </span>
+                  </div>
+                  <span style={{ fontWeight: '900', color: '#0284C7', fontSize: '13.5px' }}>
+                    +${item.amount.toFixed(2)} USD
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Lista de Percepciones Calculadas sobre Valor Neto */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {activePercepcionesList.length === 0 ? (
-              <div style={{ fontSize: '12px', color: '#16A34A', display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', background: '#DCFCE7', borderRadius: '8px' }}>
-                <span>✓</span> Cliente sin percepciones activas de Ingresos Brutos (Alícuota 0.00% o Exento).
+              <div style={{ fontSize: '12px', color: '#166534', display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', background: '#DCFCE7', borderRadius: '8px' }}>
+                <BrandingVectorIcon name="check-circle" size={14} color="#166534" />
+                <span>Cliente sin percepciones activas de Ingresos Brutos (Alícuota 0.00% o Exento).</span>
               </div>
             ) : (
               activePercepcionesList.map((p, idx) => (

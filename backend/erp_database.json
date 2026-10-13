@@ -1,7 +1,7 @@
 {
   "version": "2.0.0",
   "architecture": "DACAS OneWorld Multi-Subsidiary & Multi-Currency",
-  "updated_at": "2026-10-08T13:22:30.876Z",
+  "updated_at": "2026-10-13T20:56:54.001Z",
   "subsidiaries": [
     {
       "id": 1,
@@ -367,7 +367,7 @@
       "lead_time_days": 5,
       "moneda": "USD",
       "precio_mayorista_usd": 480,
-      "updated_at": "2026-10-06T19:56:14.732Z"
+      "updated_at": "2026-10-13T20:17:40.509Z"
     },
     {
       "id": 3,
@@ -379,17 +379,17 @@
       "categoria": "Enterprise Switching",
       "precio_mayorista": 4120,
       "costo_promedio": 2950,
-      "stock_disponible": 52,
+      "stock_disponible": 50,
       "stock_por_almacen": {
         "LOC-BUE": 8,
         "LOC-SCL": 4,
-        "LOC-MIA": 38,
+        "LOC-MIA": 36,
         "LOC-BOG": 2
       },
       "lead_time_days": 14,
       "moneda": "USD",
       "precio_mayorista_usd": 195,
-      "updated_at": "2026-10-07T15:04:28.069Z"
+      "updated_at": "2026-10-13T15:17:17.325Z"
     },
     {
       "id": 4,
@@ -421,17 +421,17 @@
       "categoria": "Routing & Security",
       "precio_mayorista": 980,
       "costo_promedio": 690,
-      "stock_disponible": 31,
+      "stock_disponible": 30,
       "stock_por_almacen": {
         "LOC-BUE": 12,
         "LOC-SCL": 6,
-        "LOC-MIA": 11,
+        "LOC-MIA": 10,
         "LOC-BOG": 2
       },
       "lead_time_days": 10,
       "moneda": "USD",
       "precio_mayorista_usd": 680,
-      "updated_at": "2026-10-08T00:11:19.769Z"
+      "updated_at": "2026-10-13T19:31:13.135Z"
     },
     {
       "id": 6,
@@ -443,15 +443,17 @@
       "categoria": "Energía & Racks",
       "precio_mayorista": 890,
       "costo_promedio": 620,
-      "stock_disponible": 65,
+      "stock_disponible": 1051,
       "stock_por_almacen": {
         "LOC-BUE": 30,
         "LOC-SCL": 15,
-        "LOC-MIA": 12,
+        "LOC-MIA": 998,
         "LOC-BOG": 8
       },
       "lead_time_days": 7,
-      "moneda": "USD"
+      "moneda": "USD",
+      "precio_mayorista_usd": 340,
+      "updated_at": "2026-10-13T13:31:15.961Z"
     },
     {
       "id": 7,
@@ -836,44 +838,160 @@
     {
       "id": 1,
       "user_id": 1,
-      "company_name": "Banco Santander Río S.A.",
-      "nombre": "Santander Casa Central",
+      "company_name": "Empresa Demo S.A.",
+      "nombre": "Banco Santander Río S.A.",
       "direccion": "Av. Paseo Colón 315",
       "ciudad": "Buenos Aires",
       "pais": "Argentina",
       "telefono": "+54 11 4341-1000",
-      "contacto": "Ing. Martín Palermo",
+      "contacto": "Ing. Martín Palermo (Gerente Infraestructura)",
       "website": "www.santander.com.ar",
       "created_at": "2026-09-14T14:23:01.942Z"
     },
     {
       "id": 2,
       "user_id": 1,
-      "company_name": "Cencosud S.A.",
-      "nombre": "Cencosud Corporativo",
-      "direccion": "Av. Kennedy 9001",
-      "ciudad": "Santiago",
-      "pais": "Chile",
-      "telefono": "+56 2 2959-0000",
-      "contacto": "Carlos Vives - Gerente IT",
-      "website": "www.cencosud.com",
+      "company_name": "Empresa Demo S.A.",
+      "nombre": "PetroAndina Energía C.A.",
+      "direccion": "Torre Digitel, Piso 15",
+      "ciudad": "Caracas",
+      "pais": "Venezuela",
+      "telefono": "+58 212 555-0199",
+      "contacto": "Dr. Alejandro Silva (CEO)",
+      "website": "www.petroandina.com.ve",
       "created_at": "2026-09-21T14:23:01.942Z"
     },
     {
       "id": 3,
-      "user_id": 1,
-      "company_name": "Banesco Banco Universal",
-      "nombre": "Banesco Ciudad Banesco",
-      "direccion": "Av. Principal de Bello Monte",
-      "ciudad": "Caracas",
-      "pais": "Venezuela",
-      "telefono": "+58 212 501-1111",
-      "contacto": "Dr. Juan Carlos Escotet (CEO)",
-      "website": "www.banesco.com",
+      "user_id": 2,
+      "company_name": "Carlos Mendoza",
+      "nombre": "Hospital Alemán - Sede Central",
+      "direccion": "Av. Pueyrredón 1640",
+      "ciudad": "Buenos Aires",
+      "pais": "Argentina",
+      "telefono": "+54 11 4827-7000",
+      "contacto": "Lic. Fernando Gago (Sistemas Médicos)",
+      "website": "www.hospitalaleman.org.ar",
       "created_at": "2026-09-26T14:23:01.942Z"
+    },
+    {
+      "id": 4,
+      "user_id": 2,
+      "company_name": "Carlos Mendoza",
+      "nombre": "Telecom Argentina Nodo Norte",
+      "direccion": "Av. Alicia Moreau de Justo 50",
+      "ciudad": "Buenos Aires",
+      "pais": "Argentina",
+      "telefono": "+54 11 4968-4000",
+      "contacto": "Ing. Marcelo Gallardo (Operaciones Red)",
+      "website": "www.telecom.com.ar",
+      "created_at": "2026-10-02T10:15:00.000Z"
+    },
+    {
+      "id": 5,
+      "user_id": 4,
+      "company_name": "Redes y Telecomunicaciones Chile SpA",
+      "nombre": "Cencosud Corporativo Chile",
+      "direccion": "Av. Kennedy 9001",
+      "ciudad": "Santiago",
+      "pais": "Chile",
+      "telefono": "+56 2 2959-0000",
+      "contacto": "Carlos Vives (Gerente IT)",
+      "website": "www.cencosud.com",
+      "created_at": "2026-10-05T12:00:00.000Z"
     }
   ],
   "inventory_adjustments": [
+    {
+      "id": 1791922660509,
+      "sku": "AP-505-RW",
+      "item_name": "Aruba AP-505 Campus Unified Access Point Wi-Fi 6",
+      "location": "LOC-MIA",
+      "adjustment": 0,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-13T20:17:40.509Z"
+    },
+    {
+      "id": 1791919873135,
+      "sku": "SRX300-SYS-JB",
+      "item_name": "Juniper SRX300 Services Gateway with Junos Software Base",
+      "location": "LOC-MIA",
+      "adjustment": 10,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-13T19:31:13.135Z"
+    },
+    {
+      "id": 1791904637325,
+      "sku": "C9300-24T-A",
+      "item_name": "Cisco Catalyst 9300 24-Port Data Only, Network Advantage",
+      "location": "LOC-MIA",
+      "adjustment": 36,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-13T15:17:17.325Z"
+    },
+    {
+      "id": 1791904637324,
+      "sku": "AP-505-RW",
+      "item_name": "Aruba AP-505 Campus Unified Access Point Wi-Fi 6",
+      "location": "LOC-MIA",
+      "adjustment": 8,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-13T15:17:17.324Z"
+    },
+    {
+      "id": 1791904039744,
+      "sku": "AP-505-RW",
+      "item_name": "Aruba AP-505 Campus Unified Access Point Wi-Fi 6",
+      "location": "LOC-MIA",
+      "adjustment": 9,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-13T15:07:19.744Z"
+    },
+    {
+      "id": 1791898457867,
+      "sku": "AP-505-RW",
+      "item_name": "Aruba AP-505 Campus Unified Access Point Wi-Fi 6",
+      "location": "LOC-MIA",
+      "adjustment": 10,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-13T13:34:17.867Z"
+    },
+    {
+      "id": 1791898378649,
+      "sku": "AP-505-RW",
+      "item_name": "Aruba AP-505 Campus Unified Access Point Wi-Fi 6",
+      "location": "LOC-MIA",
+      "adjustment": 0,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-13T13:32:58.649Z"
+    },
+    {
+      "id": 1791898312309,
+      "sku": "AP-505-RW",
+      "item_name": "Aruba AP-505 Campus Unified Access Point Wi-Fi 6",
+      "location": "LOC-MIA",
+      "adjustment": 18,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-13T13:31:52.309Z"
+    },
+    {
+      "id": 1791898275961,
+      "sku": "SMT1500C",
+      "item_name": "APC Smart-UPS 1500VA LCD 120V con SmartConnect Cloud",
+      "location": "LOC-MIA",
+      "adjustment": 998,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-13T13:31:15.961Z"
+    },
+    {
+      "id": 1791473362570,
+      "sku": "AP-505-RW",
+      "item_name": "Aruba AP-505 Campus Unified Access Point Wi-Fi 6",
+      "location": "LOC-MIA",
+      "adjustment": 0,
+      "reason": "Sincronización en tiempo real desde E-Commerce (LOC-MIA)",
+      "timestamp": "2026-10-08T15:29:22.570Z"
+    },
     {
       "id": 1791421083259,
       "sku": "zpa5",

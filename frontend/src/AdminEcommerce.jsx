@@ -309,6 +309,7 @@ function EcommerceLayoutWrapper({
                         {[
                           { id: 'hero', label: 'Banners Principales (Hero)', icon: 'layers' },
                           { id: 'brand_banners', label: 'Banners Marcas & Carruseles', icon: 'star' },
+                          { id: 'login_page', label: 'Edición Log In', icon: 'lock' },
                           { id: 'announcement', label: 'Anuncio & Barra Superior', icon: 'megaphone' },
                           { id: 'categories', label: '4 Categorías del Shop', icon: 'tag' },
                           { id: 'brands', label: 'Marcas por Categoría', icon: 'building' },
@@ -433,6 +434,7 @@ function EcommerceLayoutWrapper({
                         visual: `Diseño & Banners • ${{
                           hero: 'Banners Principales (Hero)',
                           brand_banners: 'Banners Marcas & Carruseles',
+                          login_page: 'Edición Log In',
                           announcement: 'Anuncio & Barra Superior',
                           categories: '4 Categorías del Shop',
                           brands: 'Marcas por Categoría',
@@ -566,6 +568,8 @@ function AdminEcommerce({
   // Modals for User & Order detail
   const [showUserModal, setShowUserModal] = useState(false);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [editingUserTarget, setEditingUserTarget] = useState(null);
+  const [addUserCompanyTarget, setAddUserCompanyTarget] = useState(null);
 
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -616,12 +620,13 @@ function AdminEcommerce({
     try {
       const code = countryCode !== undefined ? countryCode : selectedCountryScope;
       const url = code && code !== 'all'
-        ? `${API_BASE_URL}/api/ecommerce/products?country=${code}`
-        : `${API_BASE_URL}/api/ecommerce/products?country=all`;
-      const res = await fetch(url);
+        ? `${API_BASE_URL}/api/ecommerce/products?country=${code}&include_hidden=true`
+        : `${API_BASE_URL}/api/ecommerce/products?country=all&include_hidden=true`;
+      const res = await fetch(url, { headers: getAuthHeader() });
       const data = await res.json();
       setProducts(Array.isArray(data) ? data : []);
-    } catch {
+    } catch (err) {
+      console.error('Error fetching products in AdminEcommerce:', err);
       setProducts([]);
     }
   };
@@ -859,9 +864,36 @@ function AdminEcommerce({
   };
 
   // Open modals
-  const openUserModal = (u) => {
-    setSelectedUser(u);
+  const openUserModal = async (u) => {
+    const userObj = (u && typeof u === 'object') ? u : users.find(x => x.id === u || String(x.id) === String(u));
+    setSelectedUser(userObj || null);
     setShowUserModal(true);
+
+    if (userObj?.id) {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/ecommerce/admin/users/${userObj.id}`, {
+          headers: getAuthHeader()
+        });
+        if (res.ok) {
+          const freshData = await res.json();
+          setSelectedUser(prev => (prev && prev.id === userObj.id ? { ...prev, ...freshData } : prev));
+        }
+      } catch (_) {}
+    }
+  };
+
+  const handleEditUserFromModal = (user) => {
+    setShowUserModal(false);
+    setSelectedUser(null);
+    setActiveTab('users');
+    setEditingUserTarget(user);
+  };
+
+  const handleOpenAddUserToCompanyFromModal = (company) => {
+    setShowUserModal(false);
+    setSelectedUser(null);
+    setActiveTab('users');
+    setAddUserCompanyTarget(company);
   };
 
   const openOrderModal = (o) => {
@@ -1135,6 +1167,10 @@ function AdminEcommerce({
             openUserModal={openUserModal}
             fetchUsers={fetchUsers}
             getAuthHeader={getAuthHeader}
+            editingUserTarget={editingUserTarget}
+            onClearEditingUserTarget={() => setEditingUserTarget(null)}
+            addUserCompanyTarget={addUserCompanyTarget}
+            onClearAddUserCompanyTarget={() => setAddUserCompanyTarget(null)}
           />
         )}
 
@@ -1352,8 +1388,8 @@ function AdminEcommerce({
         countries={countries}
         onClose={() => { setShowUserModal(false); setSelectedUser(null); }}
         handleApproveUser={handleApproveUser}
-        handleEditUser={() => {}}
-        handleOpenAddUserToCompany={() => {}}
+        handleEditUser={handleEditUserFromModal}
+        handleOpenAddUserToCompany={handleOpenAddUserToCompanyFromModal}
         handleToggleUserStatus={handleToggleUserStatus}
         handleDeleteUser={handleDeleteUser}
       />

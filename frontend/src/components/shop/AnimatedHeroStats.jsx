@@ -132,7 +132,7 @@ export const HERO_SLIDES = [
     titleColor: '#0fa4de',
     desc: 'Más de 25 años conectando a los principales fabricantes mundiales de ciberseguridad, networking, infraestructura y comunicaciones unificadas con integradores de toda la región.',
     primaryBtn: { text: 'Explorar Catálogo', cat: 'all' },
-    secondaryBtn: { text: 'Nuestros Países', cat: 'all' },
+    secondaryBtn: { text: 'Soluciones IT', cat: 'all' },
     type: 'metrics',
     metrics: [
       { value: '+25 Años', label: 'Liderando el Mercado IT' },

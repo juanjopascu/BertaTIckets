@@ -15,6 +15,8 @@ export default function CheckoutOrderSummary({
   discountAmount = 0,
   isArgentinaClient = false,
   activePercepcionesList = [],
+  ivaTotal = 0,
+  ivaDiscriminatedData = [],
   finalOrderTotal = 0
 }) {
   return (
@@ -31,7 +33,11 @@ export default function CheckoutOrderSummary({
             <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid #F1F5F9', fontSize: '13px' }}>
               <div style={{ minWidth: 0, flex: 1, paddingRight: '8px' }}>
                 <div style={{ fontWeight: '700', color: '#071524', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</div>
-                <div style={{ color: '#94A3B8', fontSize: '11px' }}>Cant: {item.qty} × ${parseFloat(item.price).toFixed(2)}</div>
+                <div style={{ color: '#94A3B8', fontSize: '11px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                  <span>Cant: {item.qty} × ${parseFloat(item.price).toFixed(2)}</span>
+                  <span>·</span>
+                  <span style={{ color: '#0284C7', fontWeight: '700' }}>IVA: {item.tax_rate ?? item.iva ?? 21}%</span>
+                </div>
               </div>
               <div style={{ fontWeight: '800', color: '#071524', flexShrink: 0 }}>
                 ${(parseFloat(item.price) * item.qty).toFixed(2)}
@@ -133,6 +139,24 @@ export default function CheckoutOrderSummary({
                 <span>Descuento ({appliedCoupon?.code || 'Cupón'}):</span>
               </span>
               <span style={{ fontWeight: '800' }}>-${discountAmount.toFixed(2)} USD</span>
+            </div>
+          )}
+
+          {isArgentinaClient && ivaTotal > 0 && (
+            <div style={{ margin: '8px 0', padding: '8px 10px', background: '#F0F9FF', borderRadius: '10px', border: '1px solid #BAE6FD' }}>
+              <div style={{ fontSize: '11px', fontWeight: '800', color: '#0369A1', marginBottom: '4px', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                IVA Liquidado (Factura A):
+              </div>
+              {ivaDiscriminatedData && ivaDiscriminatedData.map((item, idx) => (
+                <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#0284C7', marginBottom: '3px' }}>
+                  <span>IVA ({item.rate}%):</span>
+                  <span style={{ fontWeight: '800' }}>+${item.amount.toFixed(2)} USD</span>
+                </div>
+              ))}
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '12px', color: '#0369A1', fontWeight: '800', borderTop: '1px dashed #BAE6FD', paddingTop: '4px', marginTop: '4px' }}>
+                <span>Total IVA:</span>
+                <span>+${ivaTotal.toFixed(2)} USD</span>
+              </div>
             </div>
           )}
 

@@ -198,10 +198,17 @@ export default function OrderDetailModal({
                   </div>
                 )}
 
-                {parseFloat(selectedOrder.tax_applied || 0) > 0 && (
-                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#64748B' }}>
-                    <span>Impuestos / IVA:</span>
-                    <strong style={{ color: '#0F172A' }}>+${parseFloat(selectedOrder.tax_applied).toFixed(2)} USD</strong>
+                {parseFloat(selectedOrder.iva_total || selectedOrder.tax_applied || 0) > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#0284C7' }}>
+                    <span>IVA Liquidado (Factura A):</span>
+                    <strong style={{ color: '#0284C7' }}>+${parseFloat(selectedOrder.iva_total || selectedOrder.tax_applied).toFixed(2)} USD</strong>
+                  </div>
+                )}
+
+                {parseFloat(selectedOrder.percepciones_total || 0) > 0 && (
+                  <div style={{ display: 'flex', justifyContent: 'space-between', color: '#B45309' }}>
+                    <span>Percepciones IIBB:</span>
+                    <strong style={{ color: '#B45309' }}>+${parseFloat(selectedOrder.percepciones_total).toFixed(2)} USD</strong>
                   </div>
                 )}
 

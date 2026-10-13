@@ -39,7 +39,10 @@
     "related_skus": [
       "R4W02A-AP22"
     ],
-    "subcategory": "Switches"
+    "subcategory": "Switches",
+    "is_visible": true,
+    "visible": true,
+    "status": "activo"
   },
   {
     "id": 3,
@@ -49,7 +52,7 @@
     "sku": "R4W02A-AP22",
     "description": "<p>Access Point de techo para alta densidad corporativa. Ofrece tecnología Wi-Fi 6 MU-MIMO con gestión centralizada en la nube sin costo adicional de licencias.</p>",
     "price": "195.00",
-    "stock": 38,
+    "stock": 36,
     "weight": "0.50",
     "depth": "16.0",
     "width": "16.0",
@@ -81,7 +84,10 @@
     "related_skus": [
       "CRS328-24P-4S"
     ],
-    "subcategory": "Access Points"
+    "subcategory": "Access Points",
+    "is_visible": true,
+    "visible": true,
+    "status": "activo"
   },
   {
     "id": 4,
@@ -113,7 +119,10 @@
     "applied_rule": null,
     "is_locked": true,
     "secondary_images": [],
-    "subcategory": "UPS / Respaldo Eléctrico"
+    "subcategory": "UPS / Respaldo Eléctrico",
+    "is_visible": true,
+    "visible": true,
+    "status": "activo"
   },
   {
     "id": 5,
@@ -123,7 +132,7 @@
     "sku": "AVAYA-B109-CONF",
     "description": "<p>El <strong>Avaya B109</strong> es un altavoz de conferencia personal ultracompacto y portátil diseñado para profesionales que demandan máxima claridad acústica en entornos de trabajo híbrido, oficinas privadas y salas de reunión pequeñas (huddle rooms de hasta 6 personas).</p><h4>Claridad de Audio Excepcional con OmniSound®</h4><p>Equipado con la tecnología patentada <strong>OmniSound®</strong> de Avaya, ofrece audio de banda ancha Full Duplex cristalino en 360°, eliminando ruidos de fondo no deseados y ecos acústicos molestos. Ideal tanto para llamadas de conferencia críticas como para reproducción de contenido multimedia con alta fidelidad.</p><h4>Conectividad Instantánea y Sin Fisuras</h4><ul><li><strong>Bluetooth con NFC:</strong> Emparejamiento instantáneo al aproximar cualquier smartphone o tablet compatible.</li><li><strong>Conexión USB Plug & Play:</strong> Compatible con PC y Mac sin necesidad de drivers adicionales.</li><li><strong>Compatibilidad Certificada:</strong> Integración transparente con Microsoft Teams, Zoom, Avaya Spaces, Cisco Webex y Google Meet.</li><li><strong>Salida de Audio 3.5mm:</strong> Permite conectar auriculares para alternar con total privacidad entre llamadas personales y de conferencia.</li></ul><h4>Autonomía y Diseño Portátil</h4><p>Incorpora una batería de iones de litio de alta densidad que proporciona hasta <strong>12 horas continuas de conversación</strong> y 60 días en modo standby. Su pantalla LCD informativa y teclas táctiles retroiluminadas permiten gestionar el volumen, silenciar micrófonos y conmutar fuentes de audio de forma intuitiva.</p>",
     "price": "680.00",
-    "stock": 11,
+    "stock": 10,
     "weight": "0.23",
     "depth": "14.5",
     "width": "13.5",
@@ -164,7 +173,10 @@
     ],
     "variants": [],
     "video_url": "",
-    "subcategory": "Videoconferencia & Audio"
+    "subcategory": "Videoconferencia & Audio",
+    "is_visible": true,
+    "visible": true,
+    "status": "activo"
   },
   {
     "id": 6,
@@ -174,7 +186,7 @@
     "sku": "LIC-FG-ENT-1Y",
     "description": "<p>Renovación y suscripción anual a servicios de seguridad avanzada: Anti-Malware en la nube, DLP, Sandboxing y filtrado Web DNS.</p>",
     "price": "340.00",
-    "stock": 999,
+    "stock": 998,
     "weight": "0.00",
     "depth": "0.0",
     "width": "0.0",
@@ -196,7 +208,10 @@
     "secondary_images": [],
     "is_featured": true,
     "badge": "DESTACADO",
-    "subcategory": "Licencias & Soporte"
+    "subcategory": "Licencias & Soporte",
+    "is_visible": true,
+    "visible": true,
+    "status": "activo"
   },
   {
     "id": 7,
@@ -233,7 +248,10 @@
     ],
     "video_url": "",
     "created_at": "2026-10-02T19:30:20.960Z",
-    "subcategory": "PDU Rackeables"
+    "subcategory": "PDU Rackeables",
+    "is_visible": true,
+    "visible": true,
+    "status": "activo"
   },
   {
     "id": 101,
@@ -263,7 +281,10 @@
     ],
     "product_type": "physical",
     "stock_type": "limited",
-    "subcategory": "Firewalls"
+    "subcategory": "Firewalls",
+    "is_visible": true,
+    "visible": true,
+    "status": "activo"
   },
   {
     "id": 102,
@@ -293,7 +314,10 @@
     ],
     "product_type": "physical",
     "stock_type": "limited",
-    "subcategory": "Switches"
+    "subcategory": "Switches",
+    "is_visible": true,
+    "visible": true,
+    "status": "activo"
   },
   {
     "id": 103,
@@ -323,7 +347,10 @@
     ],
     "product_type": "physical",
     "stock_type": "limited",
-    "subcategory": "Racks & Gabinetes"
+    "subcategory": "Racks & Gabinetes",
+    "is_visible": true,
+    "visible": true,
+    "status": "activo"
   },
   {
     "id": 201,
@@ -353,7 +380,10 @@
     ],
     "product_type": "physical",
     "stock_type": "limited",
-    "subcategory": "Session Border Controllers (SBC)"
+    "subcategory": "Session Border Controllers (SBC)",
+    "is_visible": true,
+    "visible": true,
+    "status": "activo"
   },
   {
     "id": 202,
@@ -383,7 +413,10 @@
     ],
     "product_type": "physical",
     "stock_type": "limited",
-    "subcategory": "Firewalls"
+    "subcategory": "Firewalls",
+    "is_visible": true,
+    "visible": true,
+    "status": "activo"
   },
   {
     "id": 301,
@@ -413,7 +446,10 @@
     ],
     "product_type": "physical",
     "stock_type": "limited",
-    "subcategory": "Switches"
+    "subcategory": "Switches",
+    "is_visible": true,
+    "visible": true,
+    "status": "activo"
   },
   {
     "id": 302,
@@ -443,7 +479,10 @@
     ],
     "product_type": "physical",
     "stock_type": "limited",
-    "subcategory": "Climatización de Precisión"
+    "subcategory": "Climatización de Precisión",
+    "is_visible": true,
+    "visible": true,
+    "status": "activo"
   },
   {
     "id": 401,
@@ -473,7 +512,10 @@
     ],
     "product_type": "physical",
     "stock_type": "limited",
-    "subcategory": "Routers"
+    "subcategory": "Routers",
+    "is_visible": true,
+    "visible": true,
+    "status": "activo"
   },
   {
     "id": 8,
@@ -500,7 +542,10 @@
     "warranty": "36 Meses con Soporte FortiCare 24x7",
     "datasheet_url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-fortiwifi-60f-series.pdf",
     "condition": "Nuevo Sellado",
-    "created_at": "2026-10-05T18:23:10.799Z"
+    "created_at": "2026-10-05T18:23:10.799Z",
+    "is_visible": true,
+    "visible": true,
+    "status": "activo"
   },
   {
     "id": 9,
@@ -527,7 +572,10 @@
     "warranty": "12 Meses con Garantía y RMA DACAS",
     "datasheet_url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/FortiSwitch_100_Series.pdf",
     "condition": "Nuevo Sellado",
-    "created_at": "2026-10-05T18:23:10.803Z"
+    "created_at": "2026-10-05T18:23:10.803Z",
+    "is_visible": true,
+    "visible": true,
+    "status": "activo"
   },
   {
     "id": 10,
@@ -554,7 +602,10 @@
     "warranty": "24 Meses con Soporte Oficial",
     "datasheet_url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortiap-series.pdf",
     "condition": "Nuevo Sellado",
-    "created_at": "2026-10-05T18:23:10.803Z"
+    "created_at": "2026-10-05T18:23:10.803Z",
+    "is_visible": true,
+    "visible": true,
+    "status": "activo"
   },
   {
     "id": 104,
@@ -577,7 +628,10 @@
     "warranty": "12 Meses con Garantía DACAS Chile",
     "datasheet_url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/FortiSwitch_100_Series.pdf",
     "condition": "Nuevo Sellado",
-    "created_at": "2026-10-05T18:23:10.803Z"
+    "created_at": "2026-10-05T18:23:10.803Z",
+    "is_visible": true,
+    "visible": true,
+    "status": "activo"
   },
   {
     "id": 105,
@@ -600,6 +654,9 @@
     "warranty": "24 Meses con Soporte DACAS Chile",
     "datasheet_url": "https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortiap-series.pdf",
     "condition": "Nuevo Sellado",
-    "created_at": "2026-10-05T18:23:10.803Z"
+    "created_at": "2026-10-05T18:23:10.803Z",
+    "is_visible": true,
+    "visible": true,
+    "status": "activo"
   }
 ]

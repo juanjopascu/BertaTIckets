@@ -1333,8 +1333,12 @@ class ErpDatabaseService {
   }
 
   // ── ABM END USERS ──
-  getEndUsers(search = '', country = 'Todos') {
+  getEndUsers(search = '', country = 'Todos', userId = null) {
     let list = this.db.end_users || [];
+    if (userId && userId !== 'Todos' && userId !== 'all') {
+      const numUserId = parseInt(userId);
+      list = list.filter(eu => eu.user_id === numUserId || String(eu.user_id) === String(userId));
+    }
     if (country && country !== 'Todos') {
       list = list.filter(eu => String(eu.pais).toLowerCase() === String(country).toLowerCase());
     }

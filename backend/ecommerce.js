@@ -102,8 +102,14 @@ rawPool.connect()
         ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS condition VARCHAR(100) DEFAULT 'Nuevo Sellado';
         ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS related_ids JSONB;
         ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS related_skus JSONB;
+        ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS is_visible BOOLEAN DEFAULT TRUE;
+        ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS visible BOOLEAN DEFAULT TRUE;
+        ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS status VARCHAR(50) DEFAULT 'activo';
+        ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS tax_rate DECIMAL(5, 2) DEFAULT 21.00;
+        ALTER TABLE ecommerce_products ADD COLUMN IF NOT EXISTS iva DECIMAL(5, 2) DEFAULT 21.00;
         ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS cuenta_corriente_habilitada BOOLEAN DEFAULT false;
         ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS cuenta_corriente_limite NUMERIC(12, 2) DEFAULT 0;
+        ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS terminos_pago JSONB DEFAULT '["30_dias"]'::jsonb;
       `);
     } catch (_) {}
     client.release();
@@ -113,6 +119,42 @@ rawPool.connect()
     isPgConnected = false;
     console.log('ℹ️ PostgreSQL no disponible. Usando motor E-commerce En Memoria con datos iniciales.');
   });
+
+// --- HELPER DE TÉRMINOS DE PAGO B2B ---
+const normalizeSinglePaymentTerm = (item) => {
+  if (item === null || item === undefined) return null;
+  const s = String(item).trim();
+  if (!s) return null;
+  const lower = s.toLowerCase();
+  if (lower === '0' || lower === 'contado' || lower === 'pago contado') return 'contado';
+  const numMatch = lower.match(/^(\d+)/);
+  if (numMatch) {
+    const num = parseInt(numMatch[1], 10);
+    if (num === 0) return 'contado';
+    return `${num}_dias`;
+  }
+  return lower.replace(/\s+/g, '_');
+};
+
+const parsePaymentTerms = (raw) => {
+  if (!raw) return ['30_dias'];
+  let list = [];
+  if (Array.isArray(raw)) {
+    list = raw;
+  } else if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) list = parsed;
+      else list = [raw];
+    } catch (_) {
+      list = raw.split(',').map(s => s.trim()).filter(Boolean);
+    }
+  } else if (typeof raw === 'number') {
+    list = [String(raw)];
+  }
+  const normalized = list.map(normalizeSinglePaymentTerm).filter(Boolean);
+  return normalized.length > 0 ? normalized : ['30_dias'];
+};
 
 // --- DEFAULT VISUAL & SHOP CUSTOMIZATION SETTINGS ---
 const DEFAULT_VISUAL_SETTINGS = {
@@ -405,6 +447,42 @@ const DEFAULT_VISUAL_SETTINGS = {
       tagline: 'Licenciamiento Corporativo CSP, Windows Server y M365',
       color: '#00A4EF'
     }
+  },
+  loginPage: {
+    badgeText: 'Portal Privado B2B - Acceso Restringido',
+    title: 'Distribución Mayorista IT & Ciberseguridad',
+    description: 'Plataforma corporativa de abastecimiento tecnológico exclusiva para Canales, Integradores y Resellers autorizados en América Latina y Estados Unidos.',
+    footerText: 'DACAS Mayorista Oficial • Conectividad, Ciberseguridad & Data Centers',
+    features: [
+      {
+        id: 'feat_1',
+        icon: 'globe',
+        title: '12 Países con Stock Local',
+        desc: 'Acceda a inventario en tiempo real y facturación oficial en moneda local según su sede.',
+        enabled: true
+      },
+      {
+        id: 'feat_2',
+        icon: 'credit-card',
+        title: 'Condiciones Comerciales & Crédito',
+        desc: 'Precios mayoristas protegidos, margen de canal y gestión de cuenta corriente con verificación B2B.',
+        enabled: true
+      },
+      {
+        id: 'feat_3',
+        icon: 'truck',
+        title: 'Despacho Inmediato & Retiro HUB',
+        desc: 'Envíos asegurados y retiros en centros logísticos oficiales con trazabilidad integral.',
+        enabled: true
+      },
+      {
+        id: 'feat_4',
+        icon: 'check-circle',
+        title: 'Garantía Oficial Directa del Fabricante',
+        desc: 'Soporte postventa certificado, canalización de RMA y gestión técnica de licencias enterprise.',
+        enabled: true
+      }
+    ]
   }
 };
 
@@ -1004,14 +1082,31 @@ function saveVisualSettingsToFile() {
   }
 }
 
+// Persistencia asincronica y atomica (tmp + rename) del catalogo en modo sin PostgreSQL.
+// Las escrituras concurrentes se agrupan: si hay una en curso, se reprograma una sola al finalizar.
+let productsWriteInFlight = null;
+let productsWritePending = false;
 function saveProductsToFile() {
-  try {
-    if (typeof inMem !== 'undefined' && inMem && Array.isArray(inMem.products)) {
-      fs.writeFileSync(PRODUCTS_FILE, JSON.stringify(inMem.products, null, 2), 'utf-8');
-    }
-  } catch (err) {
-    console.error('Error guardando ecommerce_products.json:', err);
+  if (typeof inMem === 'undefined' || !inMem || !Array.isArray(inMem.products)) return Promise.resolve();
+  if (productsWriteInFlight) {
+    productsWritePending = true;
+    return productsWriteInFlight;
   }
+  const snapshot = JSON.stringify(inMem.products, null, 2);
+  const tmpFile = `${PRODUCTS_FILE}.tmp`;
+  productsWriteInFlight = fs.promises.writeFile(tmpFile, snapshot, 'utf-8')
+    .then(() => fs.promises.rename(tmpFile, PRODUCTS_FILE))
+    .catch((err) => {
+      console.error('Error guardando ecommerce_products.json:', err);
+    })
+    .finally(() => {
+      productsWriteInFlight = null;
+      if (productsWritePending) {
+        productsWritePending = false;
+        saveProductsToFile();
+      }
+    });
+  return productsWriteInFlight;
 }
 
 function loadProductsFromFile(defaultProducts) {
@@ -1022,8 +1117,12 @@ function loadProductsFromFile(defaultProducts) {
       if (Array.isArray(parsed) && parsed.length > 0) {
         return parsed.map(p => {
           const c = resolveCountry(p.country_code || p.country_id || 'AR');
+          const isVis = p.is_visible !== undefined ? Boolean(p.is_visible) : (p.visible !== undefined ? Boolean(p.visible) : (p.status !== 'oculto'));
           return {
             ...p,
+            is_visible: isVis,
+            visible: isVis,
+            status: p.status || (isVis ? 'activo' : 'oculto'),
             country_code: p.country_code ? p.country_code.toUpperCase() : c.code,
             country_id: p.country_id ? parseInt(p.country_id, 10) : c.id
           };
@@ -1123,6 +1222,7 @@ const inMem = {
       },
       cuenta_corriente_habilitada: true,
       cuenta_corriente_limite: 15000,
+      terminos_pago: ['30_dias', '60_dias'],
       created_at: new Date().toISOString()
     },
     {
@@ -1154,6 +1254,7 @@ const inMem = {
       },
       cuenta_corriente_habilitada: true,
       cuenta_corriente_limite: 0,
+      terminos_pago: ['30_dias'],
       created_at: new Date(Date.now() - 3600000).toISOString()
     },
     {
@@ -1187,6 +1288,7 @@ const inMem = {
       },
       cuenta_corriente_habilitada: true,
       cuenta_corriente_limite: 10000,
+      terminos_pago: ['30_dias', '60_dias'],
       created_at: new Date(Date.now() - 7200000).toISOString()
     },
     {
@@ -1455,13 +1557,13 @@ const inMem = {
       id: 1,
       user_id: 1,
       company_name: 'Empresa Demo S.A.',
-      nombre: 'Banco Metropolitano S.A.',
-      direccion: 'Av. Corrientes 500, Piso 12',
+      nombre: 'Banco Santander Río S.A.',
+      direccion: 'Av. Paseo Colón 315',
       ciudad: 'Buenos Aires',
       pais: 'Argentina',
-      telefono: '+54 11 4321-0000',
-      contacto: 'Ing. Roberto Méndez (Gerente de Infraestructura)',
-      website: 'https://www.bancometropolitano.com.ar',
+      telefono: '+54 11 4341-1000',
+      contacto: 'Ing. Martín Palermo (Gerente Infraestructura)',
+      website: 'www.santander.com.ar',
       created_at: new Date(Date.now() - 86400000 * 5).toISOString()
     },
     {
@@ -1469,13 +1571,52 @@ const inMem = {
       user_id: 1,
       company_name: 'Empresa Demo S.A.',
       nombre: 'PetroAndina Energía C.A.',
-      direccion: 'Torre Digitel, Piso 15, La Castellana',
+      direccion: 'Torre Digitel, Piso 15',
       ciudad: 'Caracas',
       pais: 'Venezuela',
       telefono: '+58 212 555-0199',
-      contacto: 'Dr. Alejandro Silva - CEO',
-      website: 'https://www.petroandina.com.ve',
+      contacto: 'Dr. Alejandro Silva (CEO)',
+      website: 'www.petroandina.com.ve',
       created_at: new Date(Date.now() - 86400000 * 3).toISOString()
+    },
+    {
+      id: 3,
+      user_id: 2,
+      company_name: 'Carlos Mendoza',
+      nombre: 'Hospital Alemán - Sede Central',
+      direccion: 'Av. Pueyrredón 1640',
+      ciudad: 'Buenos Aires',
+      pais: 'Argentina',
+      telefono: '+54 11 4827-7000',
+      contacto: 'Lic. Fernando Gago (Sistemas Médicos)',
+      website: 'www.hospitalaleman.org.ar',
+      created_at: new Date(Date.now() - 86400000 * 2).toISOString()
+    },
+    {
+      id: 4,
+      user_id: 2,
+      company_name: 'Carlos Mendoza',
+      nombre: 'Telecom Argentina Nodo Norte',
+      direccion: 'Av. Alicia Moreau de Justo 50',
+      ciudad: 'Buenos Aires',
+      pais: 'Argentina',
+      telefono: '+54 11 4968-4000',
+      contacto: 'Ing. Marcelo Gallardo (Operaciones Red)',
+      website: 'www.telecom.com.ar',
+      created_at: new Date(Date.now() - 86400000 * 1).toISOString()
+    },
+    {
+      id: 5,
+      user_id: 4,
+      company_name: 'Redes y Telecomunicaciones Chile SpA',
+      nombre: 'Cencosud Corporativo Chile',
+      direccion: 'Av. Kennedy 9001',
+      ciudad: 'Santiago',
+      pais: 'Chile',
+      telefono: '+56 2 2959-0000',
+      contacto: 'Carlos Vives (Gerente IT)',
+      website: 'www.cencosud.com',
+      created_at: new Date(Date.now() - 86400000 * 4).toISOString()
     }
   ],
   countries: [
@@ -2343,6 +2484,9 @@ function executeInMemoryQuery(sql, params = []) {
       country_code: pData.country_code ? pData.country_code.toUpperCase() : 'AR',
       country_id: pData.country_id ? parseInt(pData.country_id, 10) : (resolveCountry(pData.country_code || 'AR').id),
       variants: pData.variants || [],
+      is_visible: pData.is_visible !== undefined ? Boolean(pData.is_visible) : (pData.visible !== undefined ? Boolean(pData.visible) : (pData.status !== 'oculto')),
+      visible: pData.visible !== undefined ? Boolean(pData.visible) : (pData.is_visible !== undefined ? Boolean(pData.is_visible) : (pData.status !== 'oculto')),
+      status: pData.status || ((pData.is_visible === false || pData.visible === false) ? 'oculto' : 'activo'),
       image_url: pData.image_url || '',
       secondary_images: Array.isArray(pData.secondary_images) ? pData.secondary_images : [],
       images: Array.isArray(pData.images) && pData.images.length > 0
@@ -2358,7 +2502,7 @@ function executeInMemoryQuery(sql, params = []) {
 
   if (/^UPDATE ecommerce_products/i.test(norm)) {
     let id;
-    let pData;
+    let pData = {};
     if (typeof params[0] === 'object' && params[0] !== null) {
       pData = params[0];
       id = parseInt(params[1]);
@@ -2367,44 +2511,82 @@ function executeInMemoryQuery(sql, params = []) {
       pData = {
         name: params[0],
         description: params[1],
-        price: String(params[2] || '0.00'),
-        stock: parseInt(params[3]) || 0,
-        image_url: params[4] || '',
-        video_url: params[5] || '',
-        compare_price: params[6] ? String(params[6]) : null,
-        sku: params[7] || '',
-        secondary_images: params[8] || [],
-        category: params[9] || 'General'
+        price: params[2],
+        stock: params[3],
+        image_url: params[4],
+        brand: params[5],
+        category: params[6],
+        sku: params[7],
+        promotional_price: params[8],
+        weight: params[9],
+        depth: params[10],
+        width: params[11],
+        height: params[12],
+        highlights: params[13],
+        warranty: params[14],
+        datasheet_url: params[15],
+        condition: params[16],
+        related_ids: params[17],
+        related_skus: params[18],
+        subcategory: params[19],
+        is_visible: params[20],
+        visible: params[21],
+        status: params[22]
       };
     }
 
     const idx = inMem.products.findIndex(p => p.id === id);
     if (idx !== -1) {
       const current = inMem.products[idx];
-      const mainImg = pData.image_url !== undefined ? pData.image_url : (current.image_url || '');
+      const mainImg = (pData.image_url !== undefined && pData.image_url !== '') ? pData.image_url : (current.image_url || '');
       const secImgs = Array.isArray(pData.secondary_images) ? pData.secondary_images : (current.secondary_images || []);
       const allImgs = Array.isArray(pData.images) && pData.images.length > 0
         ? pData.images
         : [mainImg, ...secImgs].filter(Boolean);
 
       const isFeat = pData.is_featured !== undefined ? Boolean(pData.is_featured) : (pData.isFeatured !== undefined ? Boolean(pData.isFeatured) : (pData.featured !== undefined ? Boolean(pData.featured) : current.is_featured));
+      const isVis = pData.is_visible !== undefined ? Boolean(pData.is_visible) : (pData.visible !== undefined ? Boolean(pData.visible) : (pData.status === 'oculto' ? false : (current.is_visible !== undefined ? current.is_visible : true)));
 
       inMem.products[idx] = {
         ...current,
-        ...pData,
         id,
-        brand: pData.brand !== undefined ? pData.brand : current.brand,
+        name: (pData.name !== undefined && pData.name !== '') ? pData.name : current.name,
+        brand: (pData.brand !== undefined && pData.brand !== '') ? pData.brand : current.brand,
+        category: (pData.category !== undefined && pData.category !== '') ? pData.category : current.category,
         subcategory: pData.subcategory !== undefined ? pData.subcategory : current.subcategory,
+        sku: (pData.sku !== undefined && pData.sku !== '') ? pData.sku : current.sku,
+        description: pData.description !== undefined ? pData.description : current.description,
         country_code: pData.country_code ? pData.country_code.toUpperCase() : (current.country_code || 'AR'),
         country_id: pData.country_id ? parseInt(pData.country_id, 10) : (current.country_id || 2),
         is_featured: isFeat,
+        is_visible: isVis,
+        visible: isVis,
+        status: isVis ? 'activo' : 'oculto',
         badge: pData.badge !== undefined ? pData.badge : (isFeat && !current.badge ? 'DESTACADO' : (!isFeat && current.badge === 'DESTACADO' ? '' : current.badge)),
         image_url: mainImg,
         secondary_images: secImgs,
         images: allImgs,
-        price: String(pData.price || current.price || '0.00'),
-        stock: pData.stock_type === 'infinite' ? 9999 : (pData.stock !== undefined ? parseInt(pData.stock) : current.stock)
+        price: (pData.price !== undefined && pData.price !== '') ? String(pData.price) : (current.price || '0.00'),
+        promotional_price: pData.promotional_price !== undefined ? pData.promotional_price : current.promotional_price,
+        stock: pData.stock_type === 'infinite' ? 9999 : (pData.stock !== undefined ? parseInt(pData.stock, 10) : current.stock)
       };
+
+      if (pData.stock !== undefined) {
+        const cId = inMem.products[idx].country_id || 2;
+        const stNum = pData.stock_type === 'infinite' ? 9999 : (parseInt(pData.stock, 10) || 0);
+        let cStock = inMem.product_stock.find(s => s.product_id === id && s.country_id === cId);
+        if (cStock) {
+          cStock.stock = stNum;
+        } else {
+          inMem.product_stock.push({
+            id: inMem.nextIds ? inMem.nextIds.stock++ : (inMem.product_stock.length + 1),
+            product_id: id,
+            country_id: cId,
+            stock: stNum
+          });
+        }
+      }
+
       saveProductsToFile();
       return { rows: [inMem.products[idx]] };
     }
@@ -2635,13 +2817,51 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
+// Fuente unica de verdad para roles administrativos
+const ADMIN_ROLES = Object.freeze(['admin', 'admin_ecommerce', 'admin_erp']);
+const isAdminRole = (u) => !!u && ADMIN_ROLES.includes(u.role || u.rol);
+
+// Resuelve el solicitante en endpoints publicos de lectura (sin bloquear si no hay credenciales).
+// Devuelve el usuario ecommerce (para pricing) y si el solicitante tiene rol administrativo,
+// validando tanto JWT como sesion CRM (x-session-id), igual que authenticateToken.
+async function resolveOptionalRequester(req) {
+  const authHeader = req.headers['authorization'];
+  const bearer = typeof authHeader === 'string' && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null;
+  const sessionId = req.headers['x-session-id'] || (typeof authHeader === 'string' && !bearer ? authHeader : null);
+  let user = null;
+  let isAdmin = false;
+
+  if (bearer) {
+    try {
+      const decoded = jwt.verify(bearer, JWT_SECRET);
+      isAdmin = isAdminRole(decoded);
+      const userRes = await pool.query('SELECT * FROM ecommerce_users WHERE id = $1', [decoded.id]);
+      if (userRes.rows.length > 0 && (userRes.rows[0].status || 'activo') === 'activo') {
+        user = userRes.rows[0];
+      }
+    } catch (_) { /* token invalido: se trata como anonimo */ }
+  }
+
+  if (!isAdmin && router.validateSession) {
+    const candidates = [sessionId, bearer].filter(Boolean);
+    for (const candidate of candidates) {
+      const session = router.validateSession(candidate);
+      if (session && isAdminRole({ rol: session.rol })) {
+        isAdmin = true;
+        break;
+      }
+    }
+  }
+
+  return { user, isAdmin };
+}
+
 // Middleware to verify Administrator Role
 const requireAdmin = (req, res, next) => {
   if (!req.user) {
     return res.status(401).json({ error: 'Acceso no autorizado' });
   }
-  const role = req.user.role || req.user.rol;
-  if (role !== 'admin' && role !== 'admin_ecommerce' && role !== 'admin_erp') {
+  if (!isAdminRole(req.user)) {
     return res.status(403).json({ error: 'Permisos insuficientes. Se requiere rol de administrador.' });
   }
   next();
@@ -2789,6 +3009,7 @@ router.post('/auth/login', async (req, res) => {
       safeUser.tipo_factura = safeUser.tipo_factura || 'Factura A (Responsable Inscripto)';
       safeUser.cuenta_corriente_habilitada = Boolean(user.cuenta_corriente_habilitada);
       safeUser.cuenta_corriente_limite = user.cuenta_corriente_limite !== undefined ? parseFloat(user.cuenta_corriente_limite) : (parseFloat(user.limite_credito) || 0);
+      safeUser.terminos_pago = parsePaymentTerms(user.terminos_pago);
       const targetCountry = resolveCountry(safeUser.country_code || safeUser.country_id || safeUser.country_name || 'AR') || { id: 2, code: 'AR', name: 'Argentina' };
       safeUser.country_id = targetCountry.id;
       safeUser.country_code = targetCountry.code;
@@ -2938,19 +3159,7 @@ function calculateCustomProductPrice(product, user, allRules) {
 
 router.get('/products', async (req, res) => {
   try {
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    let user = null;
-
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const userRes = await pool.query('SELECT * FROM ecommerce_users WHERE id = $1', [decoded.id]);
-        if (userRes.rows.length > 0 && (userRes.rows[0].status || 'activo') === 'activo') {
-          user = userRes.rows[0];
-        }
-      } catch (_) {}
-    }
+    const { user, isAdmin } = await resolveOptionalRequester(req);
 
     // Determine target country (primary key scope)
     const rawCountryParam = req.query.country || req.query.country_code || req.query.country_id;
@@ -2968,6 +3177,12 @@ router.get('/products', async (req, res) => {
         const prodCountryCode = (p.country_code || 'AR').toUpperCase();
         return prodCountryCode === targetCountry.code.toUpperCase();
       });
+    }
+
+    // Los productos ocultos solo se exponen a roles administrativos autenticados que los soliciten.
+    const includeHidden = isAdmin && req.query.include_hidden === 'true';
+    if (!includeHidden) {
+      sourceProducts = sourceProducts.filter(p => p.is_visible !== false && p.visible !== false && p.status !== 'oculto');
     }
 
     const formatted = sourceProducts.map(p => {
@@ -2997,9 +3212,16 @@ router.get('/products', async (req, res) => {
       if (combinedImages.length === 0 && Array.isArray(p.images) && p.images.length > 0) {
         combinedImages = p.images;
       }
+      const isProductVisible = p.is_visible !== false && p.visible !== false && p.status !== 'oculto';
+      const prodIva = parseFloat(p.tax_rate !== undefined ? p.tax_rate : (p.iva !== undefined ? p.iva : 21.00)) || 21.00;
       return {
         ...p,
         ...pricing,
+        is_visible: isProductVisible,
+        visible: isProductVisible,
+        status: p.status || (isProductVisible ? 'activo' : 'oculto'),
+        tax_rate: prodIva,
+        iva: prodIva,
         country_code: pCountry.code,
         country_id: pCountry.id,
         stock: localStock,
@@ -3026,25 +3248,18 @@ router.get('/products', async (req, res) => {
 router.get('/products/:id', async (req, res) => {
   try {
     const { id } = req.params;
-    const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-    let user = null;
-
-    if (token) {
-      try {
-        const decoded = jwt.verify(token, JWT_SECRET);
-        const userRes = await pool.query('SELECT * FROM ecommerce_users WHERE id = $1', [decoded.id]);
-        if (userRes.rows.length > 0 && (userRes.rows[0].status || 'activo') === 'activo') {
-          user = userRes.rows[0];
-        }
-      } catch (_) {}
-    }
+    const { user, isAdmin } = await resolveOptionalRequester(req);
 
     const result = await pool.query('SELECT * FROM ecommerce_products WHERE id = $1', [id]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: 'Product not found' });
     }
     const prod = result.rows[0];
+    const isProductVisible = prod.is_visible !== false && prod.visible !== false && prod.status !== 'oculto';
+    if (!isProductVisible && !isAdmin) {
+      return res.status(404).json({ error: 'Producto no disponible o no encontrado' });
+    }
+
     const rulesRes = await pool.query('SELECT * FROM ecommerce_pricing_rules WHERE is_active = true');
     const pricing = calculateCustomProductPrice(prod, user, rulesRes.rows);
     const mainImg = prod.image_url || (Array.isArray(prod.images) && prod.images.length > 0 ? prod.images[0] : '');
@@ -3058,9 +3273,15 @@ router.get('/products/:id', async (req, res) => {
       combinedImages = prod.images;
     }
 
+    const prodIva = parseFloat(prod.tax_rate !== undefined ? prod.tax_rate : (prod.iva !== undefined ? prod.iva : 21.00)) || 21.00;
     res.json({
       ...prod,
       ...pricing,
+      is_visible: isProductVisible,
+      visible: isProductVisible,
+      status: prod.status || (isProductVisible ? 'activo' : 'oculto'),
+      tax_rate: prodIva,
+      iva: prodIva,
       image_url: mainImg,
       images: combinedImages
     });
@@ -3324,6 +3545,7 @@ router.get('/client/profile', authenticateToken, async (req, res) => {
     user.tipo_factura = user.tipo_factura || 'Factura A (Responsable Inscripto)';
     user.cuenta_corriente_habilitada = Boolean(user.cuenta_corriente_habilitada);
     user.cuenta_corriente_limite = user.cuenta_corriente_limite !== undefined ? parseFloat(user.cuenta_corriente_limite) : (parseFloat(user.limite_credito) || 0);
+    user.terminos_pago = parsePaymentTerms(user.terminos_pago);
 
     if (typeof user.percepciones === 'string') {
       try { user.percepciones = JSON.parse(user.percepciones); } catch (_) {}
@@ -4212,9 +4434,28 @@ router.post('/admin/erp/invoices/:id/pay', authenticateToken, requireAdmin, asyn
 // 13. ABM End Users & Clientes Comerciales
 router.get('/admin/erp/end-users', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const { search, country } = req.query;
-    const list = erpDatabaseService.getEndUsers(search, country);
-    res.json(list);
+    const { search, country, user_id, company_name } = req.query;
+    let list = erpDatabaseService.getEndUsers(search, country, user_id);
+    if (company_name && company_name !== 'Todos' && company_name !== 'all') {
+      list = list.filter(eu => String(eu.company_name || '').toLowerCase() === String(company_name).toLowerCase());
+    }
+    let allUsers = [];
+    if (isPgConnected) {
+      const uRes = await pool.query('SELECT id, name, razon_social, email, country_name, country_code FROM ecommerce_users');
+      allUsers = uRes.rows;
+    } else {
+      allUsers = inMem.users;
+    }
+    const enrichedList = list.map(eu => {
+      const parentUser = allUsers.find(u => u.id === eu.user_id || (eu.company_name && u.razon_social && u.razon_social.toLowerCase() === eu.company_name.toLowerCase()));
+      return {
+        ...eu,
+        client_name: parentUser ? (parentUser.razon_social || parentUser.name) : (eu.company_name || 'Sin Asignar'),
+        client_email: parentUser ? parentUser.email : null,
+        client_id: parentUser ? parentUser.id : (eu.user_id || null)
+      };
+    });
+    res.json(enrichedList);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -4222,7 +4463,23 @@ router.get('/admin/erp/end-users', authenticateToken, requireAdmin, async (req, 
 
 router.post('/admin/erp/end-users', authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const endUser = erpDatabaseService.saveEndUser(req.body);
+    const { user_id, client_id, company_name } = req.body;
+    let resolvedUserId = user_id || client_id || null;
+    let resolvedCompany = company_name || null;
+    if (resolvedUserId && !resolvedCompany) {
+      if (isPgConnected) {
+        const u = await pool.query('SELECT razon_social, name FROM ecommerce_users WHERE id = $1', [resolvedUserId]);
+        if (u.rows[0]) resolvedCompany = u.rows[0].razon_social || u.rows[0].name;
+      } else {
+        const u = inMem.users.find(x => x.id === parseInt(resolvedUserId));
+        if (u) resolvedCompany = u.razon_social || u.name;
+      }
+    }
+    const endUser = erpDatabaseService.saveEndUser({
+      ...req.body,
+      user_id: resolvedUserId ? parseInt(resolvedUserId) : (req.body.user_id ? parseInt(req.body.user_id) : 1),
+      company_name: resolvedCompany || req.body.company_name || 'Empresa Cliente'
+    });
     res.status(201).json({ success: true, message: 'End User registrado en ERP exitosamente', end_user: endUser });
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -4638,6 +4895,8 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
       subtotal += itemSubtotal;
       totalDiscount += (itemSubtotal - itemFinalTotal);
 
+      const itemIvaRate = parseFloat(item.tax_rate !== undefined ? item.tax_rate : (item.iva !== undefined ? item.iva : (prod.tax_rate !== undefined ? prod.tax_rate : (prod.iva !== undefined ? prod.iva : 21.00)))) || 21.00;
+
       orderItems.push({
         product_id: prod.id,
         product_name: prod.name,
@@ -4645,6 +4904,8 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
         brand: prod.brand || '',
         quantity: qty,
         price_at_purchase: unitPrice.toFixed(2),
+        tax_rate: itemIvaRate,
+        iva: itemIvaRate,
         image_url: prod.image_url || ''
       });
     }
@@ -4686,13 +4947,42 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
       }
     }
 
-    // ── CÁLCULO DE PERCEPCIONES IIBB (ARGENTINA) SOBRE VALOR NETO ──
+    // ── CÁLCULO DE IVA DISCRIMINADO POR PRODUCTO (ARGENTINA / FACTURA A) ──
     const effectiveCountryId = (user && user.country_id) ? user.country_id : (country_id ? (resolveCountry(country_id)?.id || 2) : 2);
     const isArgentina = effectiveCountryId === 2 || (user && (user.country_code === 'AR' || user.pais === 'Argentina'));
 
+    let totalIva = 0;
+    const ivaDiscriminatedMap = {};
+    const netBase = Math.max(0, subtotal - totalDiscount);
+    const discountRatio = subtotal > 0 ? (totalDiscount / subtotal) : 0;
+
+    for (let oi of orderItems) {
+      const lineOriginalTotal = (parseFloat(oi.price_at_purchase) || 0) * oi.quantity;
+      const lineNetTotal = lineOriginalTotal * (1 - discountRatio);
+      const lineIvaRate = isArgentina ? (oi.tax_rate !== undefined ? oi.tax_rate : 21) : 0;
+      const lineIvaAmount = parseFloat(((lineNetTotal * lineIvaRate) / 100).toFixed(2));
+      oi.tax_amount = lineIvaAmount.toFixed(2);
+      totalIva += lineIvaAmount;
+
+      if (lineIvaRate > 0) {
+        const rateKey = lineIvaRate.toString();
+        if (!ivaDiscriminatedMap[rateKey]) {
+          ivaDiscriminatedMap[rateKey] = {
+            rate: lineIvaRate,
+            taxable_base: 0,
+            amount: 0
+          };
+        }
+        ivaDiscriminatedMap[rateKey].taxable_base = parseFloat((ivaDiscriminatedMap[rateKey].taxable_base + lineNetTotal).toFixed(2));
+        ivaDiscriminatedMap[rateKey].amount = parseFloat((ivaDiscriminatedMap[rateKey].amount + lineIvaAmount).toFixed(2));
+      }
+    }
+    totalIva = parseFloat(totalIva.toFixed(2));
+    const ivaDiscriminatedList = Object.values(ivaDiscriminatedMap);
+
+    // ── CÁLCULO DE PERCEPCIONES IIBB (ARGENTINA) SOBRE VALOR NETO ──
     let totalPercepciones = 0;
     const appliedPercepcionesList = [];
-    const netBase = Math.max(0, subtotal - totalDiscount);
 
     if (isArgentina) {
       let percs = (user && user.percepciones) ? user.percepciones : null;
@@ -4732,7 +5022,7 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
       }
     }
 
-    const totalFinal = netBase + totalPercepciones;
+    const totalFinal = netBase + (isArgentina ? totalIva : 0) + totalPercepciones;
 
     // Validación de Cuenta Corriente B2B y Límite de Crédito
     const isCcPayment = (payment_method || '').toLowerCase().includes('cuenta corriente') || (payment_method || '').toLowerCase().includes('cuenta_corriente');
@@ -4762,13 +5052,15 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
       try {
         await pool.query('ALTER TABLE ecommerce_orders ADD COLUMN IF NOT EXISTS percepciones_total NUMERIC DEFAULT 0;');
         await pool.query('ALTER TABLE ecommerce_orders ADD COLUMN IF NOT EXISTS percepciones_applied JSONB;');
+        await pool.query('ALTER TABLE ecommerce_orders ADD COLUMN IF NOT EXISTS iva_total NUMERIC DEFAULT 0;');
+        await pool.query('ALTER TABLE ecommerce_orders ADD COLUMN IF NOT EXISTS iva_discriminated JSONB;');
       } catch (_) {}
 
       const orderRes = await pool.query(`
         INSERT INTO ecommerce_orders (
-          user_id, country_id, total, tax_applied, shipping_applied, nationalization_applied, discount_applied, status
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *
-      `, [userId || 1, country_id || (user ? user.country_id : 1), totalFinal.toFixed(2), totalPercepciones.toFixed(2), 0, 0, totalDiscount.toFixed(2), 'procesando']);
+          user_id, country_id, total, tax_applied, iva_total, iva_discriminated, percepciones_total, percepciones_applied, shipping_applied, nationalization_applied, discount_applied, status
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12) RETURNING *
+      `, [userId || 1, country_id || (user ? user.country_id : 1), totalFinal.toFixed(2), totalIva.toFixed(2), totalIva.toFixed(2), JSON.stringify(ivaDiscriminatedList), totalPercepciones.toFixed(2), JSON.stringify(appliedPercepcionesList), 0, 0, totalDiscount.toFixed(2), 'procesando']);
 
       const newOrder = orderRes.rows[0];
 
@@ -4783,6 +5075,8 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
         ...newOrder,
         coupon_code: appliedCoupon ? appliedCoupon.code : null,
         coupon_discount: couponDiscountAmount.toFixed(2),
+        iva_total: totalIva.toFixed(2),
+        iva_discriminated: ivaDiscriminatedList,
         percepciones_total: totalPercepciones.toFixed(2),
         percepciones_applied: appliedPercepcionesList,
         net_subtotal: netBase.toFixed(2),
@@ -4805,11 +5099,13 @@ router.post('/client/orders', optionalAuthToken, async (req, res) => {
         subtotal: subtotal.toFixed(2),
         net_subtotal: netBase.toFixed(2),
         discount_applied: totalDiscount.toFixed(2),
+        iva_total: totalIva.toFixed(2),
+        iva_discriminated: ivaDiscriminatedList,
         percepciones_total: totalPercepciones.toFixed(2),
         percepciones_applied: appliedPercepcionesList,
         coupon_code: appliedCoupon ? appliedCoupon.code : null,
         coupon_discount: couponDiscountAmount.toFixed(2),
-        tax_applied: totalPercepciones.toFixed(2),
+        tax_applied: totalIva.toFixed(2),
         shipping_applied: '0.00',
         nationalization_applied: '0.00',
         status: 'procesando',
@@ -5332,8 +5628,13 @@ router.post('/ai/generate-categories', authenticateToken, requireAdmin, async (r
 router.post('/admin/products', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const targetCountry = resolveCountry(req.body.country_code || req.body.country_id || req.query.country || 'AR');
+    const is_visible = req.body.is_visible !== undefined ? Boolean(req.body.is_visible) : (req.body.visible !== undefined ? Boolean(req.body.visible) : (req.body.status !== 'oculto'));
+    const status = req.body.status || (is_visible ? 'activo' : 'oculto');
     const productPayload = {
       ...req.body,
+      is_visible,
+      visible: is_visible,
+      status,
       country_code: targetCountry.code,
       country_id: targetCountry.id
     };
@@ -5350,12 +5651,13 @@ router.post('/admin/products', authenticateToken, requireAdmin, async (req, res)
         `INSERT INTO ecommerce_products (
           name, description, price, stock, image_url, country_code, country_id,
           brand, category, subcategory, sku, promotional_price, weight, depth, width, height,
-          highlights, warranty, datasheet_url, condition, related_skus
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21) RETURNING *`,
+          highlights, warranty, datasheet_url, condition, related_skus, is_visible, visible, status
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24) RETURNING *`,
         [
           name, description, price, stock, image_url, targetCountry.code, targetCountry.id,
           brand, category, subcategory, sku, promotional_price, weight, depth, width, height,
-          highlights, warranty, datasheet_url, condition, JSON.stringify(related_skus)
+          highlights, warranty, datasheet_url, condition, JSON.stringify(related_skus),
+          is_visible, is_visible, status
         ]
       );
     } else {
@@ -5390,13 +5692,14 @@ router.post('/admin/products', authenticateToken, requireAdmin, async (req, res)
   }
 });
 
-router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, async (req, res) => {
+router.post(['/admin/products/bulk-upload', '/admin/products/bulk'], authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { products: items, mode = 'upsert' } = req.body;
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({ error: 'No se recibieron productos válidos para importar.' });
     }
 
+    const targetCountry = resolveCountry(req.query.country || req.body.country_code || req.body.country || 'AR');
     let createdCount = 0;
     let updatedCount = 0;
     const errors = [];
@@ -5426,6 +5729,19 @@ router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, asyn
       const rawStock = item.stock !== undefined ? item.stock : (item.Stock !== undefined ? item.Stock : 0);
       const stock = parseInt(rawStock, 10) || 0;
 
+      // Visibilidad (visible, is_visible, visibilidad, estado, status)
+      const rawVisible = item.visible !== undefined ? item.visible : (item.is_visible !== undefined ? item.is_visible : (item.visibilidad !== undefined ? item.visibilidad : (item.Visibilidad !== undefined ? item.Visibilidad : (item.estado !== undefined ? item.estado : item.status))));
+      let is_visible = true;
+      if (rawVisible !== undefined && rawVisible !== null) {
+        const vStr = String(rawVisible).trim().toLowerCase();
+        if (vStr === 'oculto' || vStr === 'false' || vStr === '0' || vStr === 'no' || vStr === 'inactivo' || vStr === 'desactivado') {
+          is_visible = false;
+        } else {
+          is_visible = true;
+        }
+      }
+      const status = is_visible ? 'activo' : 'oculto';
+
       const brand = String(item.brand || item.marca || item.Marca || '').trim();
       const category = String(item.category || item.categoria || item.Categoría || 'General').trim() || 'General';
       const subcategory = String(item.subcategory || item.subcategoria || item.Subcategoria || item.subcategoría || item.Subcategoría || item.tipo_equipo || item.Tipo_Equipo || '').trim();
@@ -5439,8 +5755,13 @@ router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, asyn
 
       const highlights = String(item.highlights || item.caracteristicas_destacadas || item.Caracteristicas_Destacadas || item.puntos_clave || '').trim();
       const warranty = String(item.warranty || item.garantia || item.Garantia || '12 Meses con RMA y Soporte DACAS').trim();
-      const datasheet_url = String(item.datasheet_url || item.ficha_tecnica_url || item.Ficha_Tecnica_URL || item.ficha_tecnica || item.Datasheet || '').trim();
+      const datasheet_url = String(item.datasheet_url || item.ficha_tecnica_url || item.Ficha_Tecnica_URL || item.ficha_tecnica || item.Datasheet || item.datasheet_pdf || item.Datasheet_PDF || '').trim();
       const condition = String(item.condition || item.condicion || item.Condicion || 'Nuevo Sellado').trim();
+
+      // IVA / Alícuota impositiva (21, 10.5, etc.)
+      const rawIva = item.iva !== undefined ? item.iva : (item.tax_rate !== undefined ? item.tax_rate : (item.alicuota_iva !== undefined ? item.alicuota_iva : (item.Alicuota_IVA !== undefined ? item.Alicuota_IVA : (item.IVA !== undefined ? item.IVA : (item.iva_porcentaje !== undefined ? item.iva_porcentaje : '21')))));
+      const cleanIva = parseFloat(String(rawIva).replace('%', '').replace(/,/g, '.').trim());
+      const tax_rate = (!isNaN(cleanIva) && cleanIva >= 0) ? cleanIva : 21.00;
       
       const rawRelated = item.related_skus || item.skus_relacionados || item.SKUs_Relacionados || item.productos_relacionados || item.Productos_Relacionados || [];
       const related_skus = Array.isArray(rawRelated) 
@@ -5465,16 +5786,17 @@ router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, asyn
                  weight = COALESCE(NULLIF($10, ''), weight), depth = COALESCE(NULLIF($11, ''), depth), width = COALESCE(NULLIF($12, ''), width), height = COALESCE(NULLIF($13, ''), height),
                  highlights = COALESCE(NULLIF($14, ''), highlights), warranty = COALESCE(NULLIF($15, ''), warranty),
                  datasheet_url = COALESCE(NULLIF($16, ''), datasheet_url), condition = COALESCE(NULLIF($17, ''), condition),
-                 related_skus = $18, subcategory = COALESCE(NULLIF($19, ''), subcategory)
-             WHERE id = $20`,
-            [name, brand, category, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height, highlights, warranty, datasheet_url, condition, JSON.stringify(related_skus), subcategory, existing.id]
+                 related_skus = $18, subcategory = COALESCE(NULLIF($19, ''), subcategory),
+                 is_visible = $20, visible = $21, status = $22, tax_rate = $23, iva = $24
+             WHERE id = $25`,
+            [name, brand, category, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height, highlights, warranty, datasheet_url, condition, JSON.stringify(related_skus), subcategory, is_visible, is_visible, status, tax_rate, tax_rate, existing.id]
           );
           updatedCount++;
         } else {
           await pool.query(
-            `INSERT INTO ecommerce_products (name, brand, category, subcategory, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height, highlights, warranty, datasheet_url, condition, related_skus) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)`,
-            [name, brand, category, subcategory, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height, highlights, warranty, datasheet_url, condition, JSON.stringify(related_skus)]
+            `INSERT INTO ecommerce_products (name, brand, category, subcategory, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height, highlights, warranty, datasheet_url, condition, related_skus, is_visible, visible, status, country_code, country_id, tax_rate, iva) 
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26)`,
+            [name, brand, category, subcategory, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height, highlights, warranty, datasheet_url, condition, JSON.stringify(related_skus), is_visible, is_visible, status, targetCountry.code, targetCountry.id, tax_rate, tax_rate]
           );
           createdCount++;
         }
@@ -5498,6 +5820,11 @@ router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, asyn
           existing.price = price;
           existing.promotional_price = promotional_price;
           existing.stock = stock;
+          existing.is_visible = is_visible;
+          existing.visible = is_visible;
+          existing.status = status;
+          existing.tax_rate = tax_rate;
+          existing.iva = tax_rate;
           if (weight !== '') existing.weight = weight;
           if (depth !== '') existing.depth = depth;
           if (width !== '') existing.width = width;
@@ -5517,11 +5844,28 @@ router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, asyn
             existing.image_url = image_url;
             if (!existing.images || existing.images.length === 0) existing.images = [image_url];
           }
+
+          // Actualizar stock por pais
+          if (Array.isArray(inMem.product_stock)) {
+            let cStock = inMem.product_stock.find(s => s.product_id === existing.id && s.country_id === targetCountry.id);
+            if (cStock) {
+              cStock.stock = stock;
+            } else {
+              inMem.product_stock.push({
+                id: inMem.nextIds ? inMem.nextIds.stock++ : (inMem.product_stock.length + 1),
+                product_id: existing.id,
+                country_id: targetCountry.id,
+                stock
+              });
+            }
+          }
+
           updatedCount++;
         } else {
           const defaultImg = 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?q=80&w=1000&auto=format&fit=crop';
+          const newProductId = inMem.nextIds ? inMem.nextIds.products++ : (inMem.products.length + 1);
           const newProduct = {
-            id: inMem.nextIds.products++,
+            id: newProductId,
             name,
             brand: brand || 'DACAS',
             category,
@@ -5532,6 +5876,13 @@ router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, asyn
             price,
             promotional_price,
             stock,
+            is_visible,
+            visible: is_visible,
+            status,
+            tax_rate,
+            iva: tax_rate,
+            country_code: targetCountry.code,
+            country_id: targetCountry.id,
             weight: weight || '',
             depth: depth || '',
             width: width || '',
@@ -5550,6 +5901,16 @@ router.post('/admin/products/bulk-upload', authenticateToken, requireAdmin, asyn
             created_at: new Date().toISOString()
           };
           inMem.products.push(newProduct);
+
+          if (Array.isArray(inMem.product_stock)) {
+            inMem.product_stock.push({
+              id: inMem.nextIds ? inMem.nextIds.stock++ : (inMem.product_stock.length + 1),
+              product_id: newProductId,
+              country_id: targetCountry.id,
+              stock
+            });
+          }
+
           createdCount++;
         }
 
@@ -5594,20 +5955,23 @@ router.put('/admin/products/:id', authenticateToken, requireAdmin, async (req, r
         name, description, price, stock, image_url, brand, category, subcategory, sku, promotional_price,
         weight, depth, width, height, highlights, warranty, datasheet_url, condition, related_ids, related_skus
       } = req.body;
+      const is_visible = req.body.is_visible !== undefined ? Boolean(req.body.is_visible) : (req.body.visible !== undefined ? Boolean(req.body.visible) : (req.body.status !== 'oculto'));
+      const status = req.body.status || (is_visible ? 'activo' : 'oculto');
       result = await pool.query(
         `UPDATE ecommerce_products 
          SET name = $1, description = $2, price = $3, stock = $4, image_url = $5,
              brand = $6, category = $7, sku = $8, promotional_price = $9, weight = $10,
              depth = $11, width = $12, height = $13, highlights = $14, warranty = $15,
              datasheet_url = $16, condition = $17, related_ids = $18, related_skus = $19,
-             subcategory = $20
-         WHERE id = $21 RETURNING *`,
+             subcategory = $20, is_visible = $21, visible = $22, status = $23
+         WHERE id = $24 RETURNING *`,
         [
           name, description, price, stock, image_url,
           brand, category, sku, promotional_price, weight,
           depth, width, height, highlights, warranty,
           datasheet_url, condition, JSON.stringify(related_ids || []), JSON.stringify(related_skus || []),
           subcategory || '',
+          is_visible, is_visible, status,
           id
         ]
       );
@@ -5640,6 +6004,60 @@ router.put('/admin/products/:id', authenticateToken, requireAdmin, async (req, r
 
     res.json(prod);
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.patch('/admin/products/:id/toggle-visibility', authenticateToken, requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const prodId = parseInt(id, 10);
+
+    let updatedProduct = null;
+    if (isPgConnected) {
+      const checkRes = await pool.query('SELECT is_visible, visible, status, name FROM ecommerce_products WHERE id = $1', [prodId]);
+      if (checkRes.rows.length === 0) return res.status(404).json({ error: 'Producto no encontrado' });
+      const current = checkRes.rows[0];
+      const currentlyVisible = current.is_visible !== false && current.visible !== false && current.status !== 'oculto';
+      const nextVisible = !currentlyVisible;
+      const nextStatus = nextVisible ? 'activo' : 'oculto';
+
+      const updateRes = await pool.query(
+        'UPDATE ecommerce_products SET is_visible = $1, visible = $2, status = $3 WHERE id = $4 RETURNING *',
+        [nextVisible, nextVisible, nextStatus, prodId]
+      );
+      updatedProduct = updateRes.rows[0];
+    } else {
+      const idx = inMem.products.findIndex(p => p.id === prodId);
+      if (idx === -1) return res.status(404).json({ error: 'Producto no encontrado' });
+      const current = inMem.products[idx];
+      const currentlyVisible = current.is_visible !== false && current.visible !== false && current.status !== 'oculto';
+      const nextVisible = !currentlyVisible;
+      const nextStatus = nextVisible ? 'activo' : 'oculto';
+
+      inMem.products[idx] = {
+        ...current,
+        is_visible: nextVisible,
+        visible: nextVisible,
+        status: nextStatus
+      };
+      saveProductsToFile();
+      updatedProduct = inMem.products[idx];
+    }
+
+    registrarLog({
+      origen: 'ecommerce',
+      tipo: 'INFO',
+      accion: 'ECOMMERCE_PRODUCTO_VISIBILIDAD_TOGGLE',
+      descripcion: `Producto #${prodId} marcado como ${updatedProduct.is_visible ? 'VISIBLE' : 'OCULTO'} por ${req.user ? req.user.email : 'Admin'}`,
+      usuario: req.user ? req.user.email : 'Admin',
+      req,
+      detalles: { productoId: prodId, is_visible: updatedProduct.is_visible }
+    });
+
+    res.json({ success: true, is_visible: updatedProduct.is_visible, visible: updatedProduct.visible, status: updatedProduct.status, product: updatedProduct });
+  } catch (error) {
+    console.error('Error toggling product visibility:', error);
     res.status(500).json({ error: error.message });
   }
 });
@@ -6067,6 +6485,7 @@ router.get('/admin/users', authenticateToken, requireAdmin, async (req, res) => 
       delete sanitized.password_hash;
       sanitized.cuenta_corriente_habilitada = Boolean(sanitized.cuenta_corriente_habilitada);
       sanitized.cuenta_corriente_limite = parseFloat(sanitized.cuenta_corriente_limite || sanitized.limite_credito || 0);
+      sanitized.terminos_pago = parsePaymentTerms(sanitized.terminos_pago);
       return sanitized;
     });
 
@@ -6088,18 +6507,19 @@ router.post('/admin/users', authenticateToken, requireAdmin, async (req, res) =>
     const data = req.body;
     const password = data.password || '123456';
     const hashedPassword = await bcrypt.hash(password, 10);
+    const parsedTerms = parsePaymentTerms(data.terminos_pago);
     
     const query = `
       INSERT INTO ecommerce_users (
         name, email, password_hash, razon_social, tipo_cliente, direccion_legal, localidad, codigo_postal, ciudad, country_id, phone, fecha_limite_facturacion, web,
         report_to_country_id, vendedor, direccion_entrega, localidad_entrega, codigo_postal_entrega, ciudad_entrega, pais_entrega_id, tipo_iva, numero_nit,
         nombre_compras, telefono_compras, email_compras, nombre_pagos, telefono_pagos, email_pagos, nombre_admin, telefono_admin, email_admin,
-        email_factura_electronica, email_contacto_compras, email_cotizaciones_automaticas, address, company, cuenta_corriente_habilitada, cuenta_corriente_limite
+        email_factura_electronica, email_contacto_compras, email_cotizaciones_automaticas, address, company, cuenta_corriente_habilitada, cuenta_corriente_limite, terminos_pago
       ) VALUES (
         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,
         $14, $15, $16, $17, $18, $19, $20, $21, $22,
         $23, $24, $25, $26, $27, $28, $29, $30, $31,
-        $32, $33, $34, $35, $36, $37, $38
+        $32, $33, $34, $35, $36, $37, $38, $39
       ) RETURNING id, name, email
     `;
     const values = [
@@ -6107,7 +6527,8 @@ router.post('/admin/users', authenticateToken, requireAdmin, async (req, res) =>
       data.report_to_country_id || null, data.vendedor, data.direccion_entrega, data.localidad_entrega, data.codigo_postal_entrega, data.ciudad_entrega, data.pais_entrega_id || null, data.tipo_iva, data.numero_nit,
       data.nombre_compras, data.telefono_compras, data.email_compras, data.nombre_pagos, data.telefono_pagos, data.email_pagos, data.nombre_admin, data.telefono_admin, data.email_admin,
       data.email_factura_electronica, data.email_contacto_compras, data.email_cotizaciones_automaticas, data.address, data.company, Boolean(data.cuenta_corriente_habilitada),
-      parseFloat(data.cuenta_corriente_limite) || 0
+      parseFloat(data.cuenta_corriente_limite) || 0,
+      JSON.stringify(parsedTerms)
     ];
     
     const result = await pool.query(query, values);
@@ -6117,6 +6538,7 @@ router.post('/admin/users', authenticateToken, requireAdmin, async (req, res) =>
       if (idx !== -1) {
         inMem.users[idx].cuenta_corriente_habilitada = Boolean(data.cuenta_corriente_habilitada);
         inMem.users[idx].cuenta_corriente_limite = parseFloat(data.cuenta_corriente_limite) || 0;
+        inMem.users[idx].terminos_pago = parsedTerms;
         inMem.users[idx].iibb_jurisdiccion = data.iibb_jurisdiccion || '901 - Capital Federal';
         inMem.users[idx].iibb_tipo = data.iibb_tipo || 'C.M.';
         inMem.users[idx].iibb_numero = data.iibb_numero || data.numero_nit || '';
@@ -6193,6 +6615,8 @@ router.get('/admin/users/:id', authenticateToken, requireAdmin, async (req, res)
     }
 
     userClean.cuenta_corriente_limite = parseFloat(userClean.cuenta_corriente_limite || userClean.limite_credito || 0);
+    const inMemUser = inMem.users.find(u => u.id === parseInt(id));
+    userClean.terminos_pago = parsePaymentTerms(userClean.terminos_pago || (inMemUser ? inMemUser.terminos_pago : null));
 
     res.json({
       ...userClean,
@@ -6208,13 +6632,14 @@ router.put('/admin/users/:id', authenticateToken, requireAdmin, async (req, res)
   try {
     const { id } = req.params;
     const data = req.body;
+    const parsedTerms = parsePaymentTerms(data.terminos_pago);
     
     let query = `
       UPDATE ecommerce_users SET 
         name = $1, email = $2, razon_social = $3, tipo_cliente = $4, direccion_legal = $5, localidad = $6, codigo_postal = $7, ciudad = $8, country_id = $9, phone = $10, fecha_limite_facturacion = $11, web = $12,
         report_to_country_id = $13, vendedor = $14, direccion_entrega = $15, localidad_entrega = $16, codigo_postal_entrega = $17, ciudad_entrega = $18, pais_entrega_id = $19, tipo_iva = $20, numero_nit = $21,
         nombre_compras = $22, telefono_compras = $23, email_compras = $24, nombre_pagos = $25, telefono_pagos = $26, email_pagos = $27, nombre_admin = $28, telefono_admin = $29, email_admin = $30,
-        email_factura_electronica = $31, email_contacto_compras = $32, email_cotizaciones_automaticas = $33, address = $34, company = $35, cargo = $36, cuenta_corriente_habilitada = $37, cuenta_corriente_limite = $38
+        email_factura_electronica = $31, email_contacto_compras = $32, email_cotizaciones_automaticas = $33, address = $34, company = $35, cargo = $36, cuenta_corriente_habilitada = $37, cuenta_corriente_limite = $38, terminos_pago = $39
     `;
     let values = [
       data.name, data.email, data.razon_social, data.tipo_cliente, data.direccion_legal, data.localidad, data.codigo_postal, data.ciudad, data.country_id || null, data.phone, data.fecha_limite_facturacion || null, data.web,
@@ -6222,16 +6647,17 @@ router.put('/admin/users/:id', authenticateToken, requireAdmin, async (req, res)
       data.nombre_compras, data.telefono_compras, data.email_compras, data.nombre_pagos, data.telefono_pagos, data.email_pagos, data.nombre_admin, data.telefono_admin, data.email_admin,
       data.email_factura_electronica, data.email_contacto_compras, data.email_cotizaciones_automaticas, data.address, data.company, data.cargo || 'Contacto / Usuario',
       Boolean(data.cuenta_corriente_habilitada),
-      parseFloat(data.cuenta_corriente_limite) || 0
+      parseFloat(data.cuenta_corriente_limite) || 0,
+      JSON.stringify(parsedTerms)
     ];
     
     // Update password if provided
     if (data.password) {
         const hashedPassword = await bcrypt.hash(data.password, 10);
-        query += `, password_hash = $39 WHERE id = $40 RETURNING id, email, name`;
+        query += `, password_hash = $40 WHERE id = $41 RETURNING id, email, name`;
         values.push(hashedPassword, id);
     } else {
-        query += ` WHERE id = $39 RETURNING id, email, name`;
+        query += ` WHERE id = $40 RETURNING id, email, name`;
         values.push(id);
     }
 
@@ -6242,6 +6668,7 @@ router.put('/admin/users/:id', authenticateToken, requireAdmin, async (req, res)
     if (idx !== -1) {
       if (data.cuenta_corriente_habilitada !== undefined) inMem.users[idx].cuenta_corriente_habilitada = Boolean(data.cuenta_corriente_habilitada);
       if (data.cuenta_corriente_limite !== undefined) inMem.users[idx].cuenta_corriente_limite = parseFloat(data.cuenta_corriente_limite) || 0;
+      if (data.terminos_pago !== undefined) inMem.users[idx].terminos_pago = parsedTerms;
       if (data.iibb_jurisdiccion !== undefined) inMem.users[idx].iibb_jurisdiccion = data.iibb_jurisdiccion;
       if (data.iibb_tipo !== undefined) inMem.users[idx].iibb_tipo = data.iibb_tipo;
       if (data.iibb_numero !== undefined) inMem.users[idx].iibb_numero = data.iibb_numero;
@@ -6367,6 +6794,10 @@ router.get('/settings/visual', async (req, res) => {
       brandCustomInfo: {
         ...DEFAULT_VISUAL_SETTINGS.brandCustomInfo,
         ...(base.brandCustomInfo || {})
+      },
+      loginPage: {
+        ...DEFAULT_VISUAL_SETTINGS.loginPage,
+        ...(base.loginPage || {})
       }
     });
   } catch (error) {

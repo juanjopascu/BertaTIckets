@@ -106,30 +106,55 @@ export default function ProductCard({
           </span>
         )}
 
-        {/* Stock country badge */}
-        {product.stock !== undefined && (
-          <span style={{
-            position: 'absolute',
-            top: '10px',
-            right: '10px',
-            background: product.stock > 0 ? (product.stock <= 10 ? 'rgba(234, 88, 12, 0.95)' : 'rgba(16, 185, 129, 0.95)') : 'rgba(239, 68, 68, 0.95)',
-            color: '#fff',
-            fontSize: '9.5px',
-            fontWeight: '800',
-            padding: '3px 8px',
-            borderRadius: '999px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '4px'
-          }}>
-            {product.stock > 0 ? (
-              <span>{activeCountryObj.flag} Stock {activeCountryCode}: {product.stock} un.</span>
-            ) : (
-              <span>{activeCountryObj.flag} Sin stock en {activeCountryObj.name}</span>
-            )}
-          </span>
-        )}
+        {/* Stock status badge */}
+        {product.stock !== undefined && (() => {
+          const s = parseInt(product.stock, 10) || 0;
+          if (s === 0) {
+            return (
+              <span style={{
+                position: 'absolute',
+                top: '10px',
+                right: '10px',
+                background: 'linear-gradient(135deg, #0284c7 0%, #0369a1 100%)',
+                color: '#fff',
+                fontSize: '9.5px',
+                fontWeight: '800',
+                padding: '3px 8px',
+                borderRadius: '999px',
+                boxShadow: '0 2px 8px rgba(2, 132, 199, 0.35)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}>
+                <BrandingVectorIcon name="clock" size={10} color="#ffffff" />
+                <span>Llega en 30/45 días</span>
+              </span>
+            );
+          }
+          if (s > 0 && s < 5) {
+            return (
+              <span style={{
+                position: 'absolute',
+                top: '10px',
+                right: '10px',
+                background: 'rgba(234, 88, 12, 0.95)',
+                color: '#fff',
+                fontSize: '9.5px',
+                fontWeight: '800',
+                padding: '3px 8px',
+                borderRadius: '999px',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}>
+                <BrandingVectorIcon name="zap" size={10} color="#ffffff" />
+                <span>Últimos equipos</span>
+              </span>
+            );
+          }
+          return null;
+        })()}
       </div>
 
       {/* Body */}

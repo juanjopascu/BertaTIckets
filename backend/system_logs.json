@@ -1,5 +1,1491 @@
 [
   {
+    "id": 451,
+    "timestamp": "2026-10-13T20:58:34.980Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"admin@dacas.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {
+      "emailIntentado": "admin@dacas.com"
+    }
+  },
+  {
+    "id": 450,
+    "timestamp": "2026-10-13T20:57:46.018Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "c120063d41382052779307806f43bf7aa627b0835417f365fb341efc34659a06"
+    }
+  },
+  {
+    "id": 449,
+    "timestamp": "2026-10-13T20:35:43.258Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 2 producto(s) por total USD $1.160,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791923743258",
+      "itemsCount": 2,
+      "total": 1160,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router ($480.00) | 1x Avaya Sistema de Videoconferencia Avaya Collaboration Bar B109 ($680.00)",
+      "items": [
+        {
+          "id": 2,
+          "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+          "brand": "MikroTik",
+          "sku": "CRS328-24P-4S",
+          "qty": 1,
+          "price": 480,
+          "subtotal": 480
+        },
+        {
+          "id": 5,
+          "name": "Sistema de Videoconferencia Avaya Collaboration Bar B109",
+          "brand": "Avaya",
+          "sku": "AVAYA-B109-CONF",
+          "qty": 1,
+          "price": 680,
+          "subtotal": 680
+        }
+      ],
+      "timestamp": "2026-10-13T20:35:43.258Z"
+    }
+  },
+  {
+    "id": 448,
+    "timestamp": "2026-10-13T20:25:51.500Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 2 producto(s) por total USD $1.160,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791923151500",
+      "itemsCount": 2,
+      "total": 1160,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router ($480.00) | 1x Avaya Sistema de Videoconferencia Avaya Collaboration Bar B109 ($680.00)",
+      "items": [
+        {
+          "id": 2,
+          "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+          "brand": "MikroTik",
+          "sku": "CRS328-24P-4S",
+          "qty": 1,
+          "price": 480,
+          "subtotal": 480
+        },
+        {
+          "id": 5,
+          "name": "Sistema de Videoconferencia Avaya Collaboration Bar B109",
+          "brand": "Avaya",
+          "sku": "AVAYA-B109-CONF",
+          "qty": 1,
+          "price": 680,
+          "subtotal": 680
+        }
+      ],
+      "timestamp": "2026-10-13T20:25:51.500Z"
+    }
+  },
+  {
+    "id": 447,
+    "timestamp": "2026-10-13T20:25:36.469Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "c6521cefe648c352486ad15a69f2402638d560e03dc8a1e26bfa57652562bd54"
+    }
+  },
+  {
+    "id": 446,
+    "timestamp": "2026-10-13T20:19:24.260Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $480,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791922764260",
+      "itemsCount": 1,
+      "total": 480,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router ($480.00)",
+      "items": [
+        {
+          "id": 2,
+          "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+          "brand": "MikroTik",
+          "sku": "CRS328-24P-4S",
+          "qty": 1,
+          "price": 480,
+          "subtotal": 480
+        }
+      ],
+      "timestamp": "2026-10-13T20:19:24.260Z"
+    }
+  },
+  {
+    "id": 445,
+    "timestamp": "2026-10-13T20:17:47.044Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router (SKU: CRS328-24P-4S, Cat: networking, USD $480.00).",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 2,
+      "productName": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+      "sku": "CRS328-24P-4S",
+      "brand": "MikroTik",
+      "price": "480.00",
+      "category": "networking",
+      "timestamp": "2026-10-13T20:17:47.044Z"
+    }
+  },
+  {
+    "id": 444,
+    "timestamp": "2026-10-13T20:17:40.507Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_ACTUALIZADO",
+    "descripcion": "Producto #2 (\"Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router\") modificado por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": "2",
+      "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+      "price": "480.00",
+      "stock": 0
+    }
+  },
+  {
+    "id": 443,
+    "timestamp": "2026-10-13T20:15:24.100Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Fortinet Firewall NGFW Fortinet FortiGate 60F (SKU: FG-60F-BDL-950-AR, Cat: security, USD $729.80).",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 8,
+      "productName": "Firewall NGFW Fortinet FortiGate 60F",
+      "sku": "FG-60F-BDL-950-AR",
+      "brand": "Fortinet",
+      "price": "729.80",
+      "category": "security",
+      "timestamp": "2026-10-13T20:15:24.099Z"
+    }
+  },
+  {
+    "id": 442,
+    "timestamp": "2026-10-13T20:15:02.984Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Aruba Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22 (SKU: R4W02A-AP22, Cat: networking, USD $195.00).",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 3,
+      "productName": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
+      "sku": "R4W02A-AP22",
+      "brand": "Aruba",
+      "price": "195.00",
+      "category": "networking",
+      "timestamp": "2026-10-13T20:15:02.984Z"
+    }
+  },
+  {
+    "id": 441,
+    "timestamp": "2026-10-13T20:15:01.008Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Avaya Sistema de Videoconferencia Avaya Collaboration Bar B109 (SKU: AVAYA-B109-CONF, Cat: comunicaciones_unificadas, USD $680.00).",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 5,
+      "productName": "Sistema de Videoconferencia Avaya Collaboration Bar B109",
+      "sku": "AVAYA-B109-CONF",
+      "brand": "Avaya",
+      "price": "680.00",
+      "category": "comunicaciones_unificadas",
+      "timestamp": "2026-10-13T20:15:01.008Z"
+    }
+  },
+  {
+    "id": 440,
+    "timestamp": "2026-10-13T20:14:58.610Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Vertiv Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA (SKU: GXT5-3000IRT2UXLE, Cat: infraestructura, USD $2150.00).",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 4,
+      "productName": "Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA",
+      "sku": "GXT5-3000IRT2UXLE",
+      "brand": "Vertiv",
+      "price": "2150.00",
+      "category": "infraestructura",
+      "timestamp": "2026-10-13T20:14:58.610Z"
+    }
+  },
+  {
+    "id": 439,
+    "timestamp": "2026-10-13T20:14:52.162Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Aruba Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22 (SKU: R4W02A-AP22, Cat: networking, USD $195.00).",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 3,
+      "productName": "Punto de Acceso Wi-Fi 6 Enterprise Aruba Instant On AP22",
+      "sku": "R4W02A-AP22",
+      "brand": "Aruba",
+      "price": "195.00",
+      "category": "networking",
+      "timestamp": "2026-10-13T20:14:52.162Z"
+    }
+  },
+  {
+    "id": 438,
+    "timestamp": "2026-10-13T20:14:47.083Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Fortinet Firewall NGFW Fortinet FortiGate 60F (SKU: FG-60F-BDL-950-AR, Cat: security, USD $729.80).",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 8,
+      "productName": "Firewall NGFW Fortinet FortiGate 60F",
+      "sku": "FG-60F-BDL-950-AR",
+      "brand": "Fortinet",
+      "price": "729.80",
+      "category": "security",
+      "timestamp": "2026-10-13T20:14:47.083Z"
+    }
+  },
+  {
+    "id": 437,
+    "timestamp": "2026-10-13T20:12:07.348Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "4c1143acccba71f2110e941210f27efe2d6b697fafb722cdffc20fe71fd7c001"
+    }
+  },
+  {
+    "id": 436,
+    "timestamp": "2026-10-13T20:09:34.549Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "0c537d59dc8820bb504dacd8517b27cee373ef0ca3ecb38702e890fcb35cee0c"
+    }
+  },
+  {
+    "id": 435,
+    "timestamp": "2026-10-13T19:31:13.135Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1090 registrado por \"Usuario Demo\" por USD $833.00.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1090,
+      "total": "833.00",
+      "payment_method": "Transferencia Bancaria Inmediata (CBU / SWIFT)",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 434,
+    "timestamp": "2026-10-13T19:27:21.247Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 433,
+    "timestamp": "2026-10-13T19:27:05.420Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "12397af2d572c06d3152bc4d411264647e6ab6fc69c0c66ab32cb91e98981dd4"
+    }
+  },
+  {
+    "id": 432,
+    "timestamp": "2026-10-13T19:26:26.150Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $323,90 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791919586150",
+      "itemsCount": 1,
+      "total": 323.9,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Punto de Acceso Wi-Fi 6 Fortinet FortiAP 231F ($323.90)",
+      "items": [
+        {
+          "id": 10,
+          "name": "Punto de Acceso Wi-Fi 6 Fortinet FortiAP 231F",
+          "brand": "Fortinet",
+          "sku": "FAP-231F-A-AR",
+          "qty": 1,
+          "price": 323.9,
+          "subtotal": 323.9
+        }
+      ],
+      "timestamp": "2026-10-13T19:26:26.150Z"
+    }
+  },
+  {
+    "id": 431,
+    "timestamp": "2026-10-13T19:11:48.029Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $323,90 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791918708029",
+      "itemsCount": 1,
+      "total": 323.9,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Punto de Acceso Wi-Fi 6 Fortinet FortiAP 231F ($323.90)",
+      "items": [
+        {
+          "id": 10,
+          "name": "Punto de Acceso Wi-Fi 6 Fortinet FortiAP 231F",
+          "brand": "Fortinet",
+          "sku": "FAP-231F-A-AR",
+          "qty": 1,
+          "price": 323.9,
+          "subtotal": 323.9
+        }
+      ],
+      "timestamp": "2026-10-13T19:11:48.029Z"
+    }
+  },
+  {
+    "id": 430,
+    "timestamp": "2026-10-13T19:10:56.141Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "253204dd37db81674ee289978b5cd4e30f8ab7c5163964cfbab1a419d8d8c5bb"
+    }
+  },
+  {
+    "id": 429,
+    "timestamp": "2026-10-13T19:09:13.641Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $323,90 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791918553640",
+      "itemsCount": 1,
+      "total": 323.9,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Fortinet Punto de Acceso Wi-Fi 6 Fortinet FortiAP 231F ($323.90)",
+      "items": [
+        {
+          "id": 10,
+          "name": "Punto de Acceso Wi-Fi 6 Fortinet FortiAP 231F",
+          "brand": "Fortinet",
+          "sku": "FAP-231F-A-AR",
+          "qty": 1,
+          "price": 323.9,
+          "subtotal": 323.9
+        }
+      ],
+      "timestamp": "2026-10-13T19:09:13.641Z"
+    }
+  },
+  {
+    "id": 428,
+    "timestamp": "2026-10-13T19:01:20.042Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 427,
+    "timestamp": "2026-10-13T19:01:01.914Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "e63ccd2339d2a7a2477a4d3e31bebdbbde94955a7083c238101df898e277df72"
+    }
+  },
+  {
+    "id": 426,
+    "timestamp": "2026-10-13T18:39:12.909Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 425,
+    "timestamp": "2026-10-13T18:37:40.804Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $480,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791916660803",
+      "itemsCount": 1,
+      "total": 480,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router ($480.00)",
+      "items": [
+        {
+          "id": 2,
+          "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+          "brand": "MikroTik",
+          "sku": "CRS328-24P-4S",
+          "qty": 1,
+          "price": 480,
+          "subtotal": 480
+        }
+      ],
+      "timestamp": "2026-10-13T18:37:40.803Z"
+    }
+  },
+  {
+    "id": 424,
+    "timestamp": "2026-10-13T18:25:20.713Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $480,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791915920713",
+      "itemsCount": 1,
+      "total": 480,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router ($480.00)",
+      "items": [
+        {
+          "id": 2,
+          "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+          "brand": "MikroTik",
+          "sku": "CRS328-24P-4S",
+          "qty": 1,
+          "price": 480,
+          "subtotal": 480
+        }
+      ],
+      "timestamp": "2026-10-13T18:25:20.713Z"
+    }
+  },
+  {
+    "id": 423,
+    "timestamp": "2026-10-13T18:20:34.990Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $480,00 abandonado sin concretar compra.",
+    "usuario": {
+      "nombre": "Visitante Corporativo",
+      "email": "visitante@b2b.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791915634990",
+      "itemsCount": 1,
+      "total": 480,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router ($480.00)",
+      "items": [
+        {
+          "id": 2,
+          "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+          "brand": "MikroTik",
+          "sku": "CRS328-24P-4S",
+          "qty": 1,
+          "price": 480,
+          "subtotal": 480
+        }
+      ],
+      "timestamp": "2026-10-13T18:20:34.990Z"
+    }
+  },
+  {
+    "id": 422,
+    "timestamp": "2026-10-13T18:20:07.700Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $480,00 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791915607700",
+      "itemsCount": 1,
+      "total": 480,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router ($480.00)",
+      "items": [
+        {
+          "id": 2,
+          "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+          "brand": "MikroTik",
+          "sku": "CRS328-24P-4S",
+          "qty": 1,
+          "price": 480,
+          "subtotal": 480
+        }
+      ],
+      "timestamp": "2026-10-13T18:20:07.700Z"
+    }
+  },
+  {
+    "id": 421,
+    "timestamp": "2026-10-13T18:15:48.838Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $480,00 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791915348838",
+      "itemsCount": 1,
+      "total": 480,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router ($480.00)",
+      "items": [
+        {
+          "id": 2,
+          "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+          "brand": "MikroTik",
+          "sku": "CRS328-24P-4S",
+          "qty": 1,
+          "price": 480,
+          "subtotal": 480
+        }
+      ],
+      "timestamp": "2026-10-13T18:15:48.838Z"
+    }
+  },
+  {
+    "id": 420,
+    "timestamp": "2026-10-13T18:05:14.169Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $480,00 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791914714169",
+      "itemsCount": 1,
+      "total": 480,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router ($480.00)",
+      "items": [
+        {
+          "id": 2,
+          "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+          "brand": "MikroTik",
+          "sku": "CRS328-24P-4S",
+          "qty": 1,
+          "price": 480,
+          "subtotal": 480
+        }
+      ],
+      "timestamp": "2026-10-13T18:05:14.169Z"
+    }
+  },
+  {
+    "id": 419,
+    "timestamp": "2026-10-13T18:01:25.998Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Avaya Sistema de Videoconferencia Avaya Collaboration Bar B109 (SKU: AVAYA-B109-CONF, Cat: comunicaciones_unificadas, USD $680.00).",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 5,
+      "productName": "Sistema de Videoconferencia Avaya Collaboration Bar B109",
+      "sku": "AVAYA-B109-CONF",
+      "brand": "Avaya",
+      "price": "680.00",
+      "category": "comunicaciones_unificadas",
+      "timestamp": "2026-10-13T18:01:25.997Z"
+    }
+  },
+  {
+    "id": 418,
+    "timestamp": "2026-10-13T17:34:56.585Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $480,00 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791912896585",
+      "itemsCount": 1,
+      "total": 480,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router ($480.00)",
+      "items": [
+        {
+          "id": 2,
+          "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+          "brand": "MikroTik",
+          "sku": "CRS328-24P-4S",
+          "qty": 1,
+          "price": 480,
+          "subtotal": 480
+        }
+      ],
+      "timestamp": "2026-10-13T17:34:56.585Z"
+    }
+  },
+  {
+    "id": 417,
+    "timestamp": "2026-10-13T17:31:57.650Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PEDIDO_ESTADO",
+    "descripcion": "Pedido #1091 actualizado a estado \"procesando\"",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "ordenId": "1091",
+      "nuevoEstado": "procesando"
+    }
+  },
+  {
+    "id": 416,
+    "timestamp": "2026-10-13T17:31:49.479Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PEDIDO_ESTADO",
+    "descripcion": "Pedido #1091 actualizado a estado \"paid\"",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "ordenId": "1091",
+      "nuevoEstado": "paid"
+    }
+  },
+  {
+    "id": 415,
+    "timestamp": "2026-10-13T17:31:46.134Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PEDIDO_ESTADO",
+    "descripcion": "Pedido #1091 actualizado a estado \"entregado\"",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "ordenId": "1091",
+      "nuevoEstado": "entregado"
+    }
+  },
+  {
+    "id": 414,
+    "timestamp": "2026-10-13T17:21:09.778Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"admin_ecommerce@dacas.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {
+      "emailIntentado": "admin_ecommerce@dacas.com"
+    }
+  },
+  {
+    "id": 413,
+    "timestamp": "2026-10-13T16:54:00.813Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"admin@dacas.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {
+      "emailIntentado": "admin@dacas.com"
+    }
+  },
+  {
+    "id": 412,
+    "timestamp": "2026-10-13T16:24:07.993Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"admin@dacas.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {
+      "emailIntentado": "admin@dacas.com"
+    }
+  },
+  {
+    "id": 411,
+    "timestamp": "2026-10-13T16:11:02.266Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"admin@dacas.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {
+      "emailIntentado": "admin@dacas.com"
+    }
+  },
+  {
+    "id": 410,
+    "timestamp": "2026-10-13T15:26:13.699Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "15e608492ef7d31c7b16c6053fd0850d14cd3a5f2a96d78778c0939671919479"
+    }
+  },
+  {
+    "id": 409,
+    "timestamp": "2026-10-13T15:17:17.327Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1091 registrado por \"Cliente Invitado\" por USD $1002.30.",
+    "usuario": {
+      "nombre": "Cliente Invitado",
+      "email": "invitado@ecommerce.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1091,
+      "total": "1002.30",
+      "payment_method": "Transferencia Bancaria",
+      "itemsCount": 2
+    }
+  },
+  {
+    "id": 408,
+    "timestamp": "2026-10-13T15:07:19.745Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1090 registrado por \"Cliente Invitado\" por USD $530.40.",
+    "usuario": {
+      "nombre": "Cliente Invitado",
+      "email": "invitado@ecommerce.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1090,
+      "total": "530.40",
+      "payment_method": "Transferencia Bancaria",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 407,
+    "timestamp": "2026-10-13T14:12:03.147Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "8cf9a08a719e043ccc1140501f5b9c7470fec687ff776e1b1a73811e2ba8e8fd"
+    }
+  },
+  {
+    "id": 406,
+    "timestamp": "2026-10-13T13:54:36.976Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $480,00 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791899676976",
+      "itemsCount": 1,
+      "total": 480,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router ($480.00)",
+      "items": [
+        {
+          "id": 2,
+          "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+          "brand": "MikroTik",
+          "sku": "CRS328-24P-4S",
+          "qty": 1,
+          "price": 480,
+          "subtotal": 480
+        }
+      ],
+      "timestamp": "2026-10-13T13:54:36.976Z"
+    }
+  },
+  {
+    "id": 405,
+    "timestamp": "2026-10-13T13:38:15.601Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Avaya Sistema de Videoconferencia Avaya Collaboration Bar B109 (SKU: AVAYA-B109-CONF, Cat: comunicaciones_unificadas, USD $680.00).",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 5,
+      "productName": "Sistema de Videoconferencia Avaya Collaboration Bar B109",
+      "sku": "AVAYA-B109-CONF",
+      "brand": "Avaya",
+      "price": "680.00",
+      "category": "comunicaciones_unificadas",
+      "timestamp": "2026-10-13T13:38:15.601Z"
+    }
+  },
+  {
+    "id": 404,
+    "timestamp": "2026-10-13T13:34:17.867Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_ACTUALIZADO",
+    "descripcion": "Producto #2 (\"Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router\") modificado por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": "2",
+      "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+      "price": "480.00",
+      "stock": 10
+    }
+  },
+  {
+    "id": 403,
+    "timestamp": "2026-10-13T13:33:56.813Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $480,00 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791898436813",
+      "itemsCount": 1,
+      "total": 480,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router ($480.00)",
+      "items": [
+        {
+          "id": 2,
+          "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+          "brand": "MikroTik",
+          "sku": "CRS328-24P-4S",
+          "qty": 1,
+          "price": 480,
+          "subtotal": 480
+        }
+      ],
+      "timestamp": "2026-10-13T13:33:56.813Z"
+    }
+  },
+  {
+    "id": 402,
+    "timestamp": "2026-10-13T13:33:27.854Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $480,00 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791898407853",
+      "itemsCount": 1,
+      "total": 480,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router ($480.00)",
+      "items": [
+        {
+          "id": 2,
+          "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+          "brand": "MikroTik",
+          "sku": "CRS328-24P-4S",
+          "qty": 1,
+          "price": 480,
+          "subtotal": 480
+        }
+      ],
+      "timestamp": "2026-10-13T13:33:27.854Z"
+    }
+  },
+  {
+    "id": 401,
+    "timestamp": "2026-10-13T13:33:11.052Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router (SKU: CRS328-24P-4S, Cat: networking, USD $480.00).",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 2,
+      "productName": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+      "sku": "CRS328-24P-4S",
+      "brand": "MikroTik",
+      "price": "480.00",
+      "category": "networking",
+      "timestamp": "2026-10-13T13:33:11.051Z"
+    }
+  },
+  {
+    "id": 400,
+    "timestamp": "2026-10-13T13:32:58.649Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_ACTUALIZADO",
+    "descripcion": "Producto #2 (\"Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router\") modificado por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": "2",
+      "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+      "price": "480.00",
+      "stock": 0
+    }
+  },
+  {
+    "id": 399,
+    "timestamp": "2026-10-13T13:32:44.689Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_VISIBILIDAD_TOGGLE",
+    "descripcion": "Producto #2 marcado como VISIBLE por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 2,
+      "is_visible": true
+    }
+  },
+  {
+    "id": 398,
+    "timestamp": "2026-10-13T13:32:32.978Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_VISIBILIDAD_TOGGLE",
+    "descripcion": "Producto #2 marcado como OCULTO por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 2,
+      "is_visible": false
+    }
+  },
+  {
+    "id": 397,
+    "timestamp": "2026-10-13T13:32:15.226Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_VISIBILIDAD_TOGGLE",
+    "descripcion": "Producto #2 marcado como VISIBLE por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": 2,
+      "is_visible": true
+    }
+  },
+  {
+    "id": 396,
+    "timestamp": "2026-10-13T13:31:52.308Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_ACTUALIZADO",
+    "descripcion": "Producto #2 (\"Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router\") modificado por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": "2",
+      "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+      "price": "480.00",
+      "stock": 18
+    }
+  },
+  {
+    "id": 395,
+    "timestamp": "2026-10-13T13:31:15.962Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1090 registrado por \"Usuario Demo\" por USD $282.98.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1090,
+      "total": "282.98",
+      "payment_method": "Cuenta Corriente B2B (30 días fecha factura)",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 394,
+    "timestamp": "2026-10-13T13:30:42.200Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 393,
+    "timestamp": "2026-10-13T13:29:52.257Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "5b34ae82af7adcfaa62c10e0a776a15356016ac76f8ba99f63ddd33cce9061ee"
+    }
+  },
+  {
+    "id": 392,
+    "timestamp": "2026-10-08T15:29:29.125Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: MikroTik Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router (SKU: CRS328-24P-4S, Cat: networking, USD $480.00).",
+    "usuario": {
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 2,
+      "productName": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+      "sku": "CRS328-24P-4S",
+      "brand": "MikroTik",
+      "price": "480.00",
+      "category": "networking",
+      "timestamp": "2026-10-08T15:29:29.125Z"
+    }
+  },
+  {
+    "id": 391,
+    "timestamp": "2026-10-08T15:29:22.569Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_PRODUCTO_ACTUALIZADO",
+    "descripcion": "Producto #2 (\"Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router\") modificado por admin@crm.com",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productoId": "2",
+      "name": "Switch Gestionable Gigabit 24 Puertos PoE+ MikroTik Cloud Router",
+      "price": "480.00",
+      "stock": 0
+    }
+  },
+  {
+    "id": 390,
+    "timestamp": "2026-10-08T15:11:13.625Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "1aad635e17e5a6e14bfbefc9b15634671b46dce19c9f4f4b87f2dd8bd539479f"
+    }
+  },
+  {
     "id": 389,
     "timestamp": "2026-10-08T13:33:50.232Z",
     "origen": "ecommerce",

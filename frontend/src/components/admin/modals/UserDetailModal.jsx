@@ -84,12 +84,16 @@ export default function UserDetailModal({
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px', fontSize: '12.5px', color: '#94A3B8', flexWrap: 'wrap' }}>
                 <span>ID Cliente: <strong style={{ color: '#E2E8F0' }}>#{selectedUser.id}</strong></span>
                 <span>•</span>
-                <span>✉️ <strong style={{ color: '#E2E8F0' }}>{selectedUser.email}</strong></span>
+                <span style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <BrandingVectorIcon name="mail" size={12} color="#94A3B8" />
+                  <strong style={{ color: '#E2E8F0' }}>{selectedUser.email}</strong>
+                </span>
                 {selectedUser.tipo_cliente && (
                   <>
                     <span>•</span>
-                    <span style={{ background: 'rgba(15, 164, 222, 0.2)', color: '#38bdf8', padding: '2px 8px', borderRadius: '6px', fontWeight: '700', fontSize: '11px' }}>
-                      🏢 {selectedUser.tipo_cliente}
+                    <span style={{ background: 'rgba(15, 164, 222, 0.2)', color: '#38bdf8', padding: '2px 8px', borderRadius: '6px', fontWeight: '700', fontSize: '11px', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                      <BrandingVectorIcon name="briefcase" size={11} color="#38bdf8" />
+                      {selectedUser.tipo_cliente}
                     </span>
                   </>
                 )}
@@ -120,7 +124,8 @@ export default function UserDetailModal({
                   gap: '6px'
                 }}
               >
-                ✓ Aprobar Cuenta
+                <BrandingVectorIcon name="check" size={13} color="#ffffff" />
+                Aprobar Cuenta
               </button>
             )}
             <button
@@ -142,7 +147,8 @@ export default function UserDetailModal({
                 gap: '6px'
               }}
             >
-              ✏️ Editar
+              <BrandingVectorIcon name="edit" size={13} color="#ffffff" />
+              Editar
             </button>
             <button
               onClick={onClose}
@@ -175,7 +181,8 @@ export default function UserDetailModal({
             {/* Card 1: Identificación Comercial */}
             <div style={{ background: '#FFFFFF', padding: '20px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
               <div style={{ fontSize: '12px', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span>📊</span> Perfil Comercial & Legal
+                <BrandingVectorIcon name="bar-chart" size={13} color="#0284c7" />
+                <span>Perfil Comercial & Legal</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px', fontSize: '13px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '7px' }}>
@@ -202,9 +209,9 @@ export default function UserDetailModal({
                   <span style={{ color: '#64748B', fontWeight: '600' }}>Cuenta Corriente:</span>
                   <div style={{ textAlign: 'right' }}>
                     <span style={{
-                      background: selectedUser.cuenta_corriente_habilitada ? '#DCFCE7' : '#FEE2E2',
-                      color: selectedUser.cuenta_corriente_habilitada ? '#166534' : '#991B1B',
-                      border: `1px solid ${selectedUser.cuenta_corriente_habilitada ? '#86EFAC' : '#FCA5A5'}`,
+                      background: Boolean(selectedUser.cuenta_corriente_habilitada) ? '#DCFCE7' : '#FEE2E2',
+                      color: Boolean(selectedUser.cuenta_corriente_habilitada) ? '#166534' : '#991B1B',
+                      border: `1px solid ${Boolean(selectedUser.cuenta_corriente_habilitada) ? '#86EFAC' : '#FCA5A5'}`,
                       padding: '2px 8px',
                       borderRadius: '6px',
                       fontWeight: '800',
@@ -213,9 +220,10 @@ export default function UserDetailModal({
                       alignItems: 'center',
                       gap: '5px'
                     }}>
-                      {selectedUser.cuenta_corriente_habilitada ? '✓ Habilitada para Checkout' : '🔒 Bloqueada en Checkout'}
+                      <BrandingVectorIcon name={Boolean(selectedUser.cuenta_corriente_habilitada) ? "check" : "lock"} size={11} color={Boolean(selectedUser.cuenta_corriente_habilitada) ? "#166534" : "#991B1B"} />
+                      {Boolean(selectedUser.cuenta_corriente_habilitada) ? 'Habilitada para Checkout' : 'Bloqueada en Checkout'}
                     </span>
-                    {selectedUser.cuenta_corriente_habilitada && (
+                    {Boolean(selectedUser.cuenta_corriente_habilitada) && (
                       <div style={{ fontSize: '11px', fontWeight: '700', color: '#059669', marginTop: '3px' }}>
                         Límite: {parseFloat(selectedUser.cuenta_corriente_limite || selectedUser.limite_credito || 0) > 0 ? `$${parseFloat(selectedUser.cuenta_corriente_limite || selectedUser.limite_credito).toLocaleString()} USD` : 'Sin límite'}
                       </div>
@@ -232,7 +240,8 @@ export default function UserDetailModal({
             {/* Card 2: Datos Impositivos & Fiscales */}
             <div style={{ background: '#FFFFFF', padding: '20px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
               <div style={{ fontSize: '12px', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span>🧾</span> Condición Fiscal & Asignación
+                <BrandingVectorIcon name="file-text" size={13} color="#0284c7" />
+                <span>Condición Fiscal & Asignación</span>
               </div>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '10px', fontSize: '13px' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '7px' }}>
@@ -268,7 +277,8 @@ export default function UserDetailModal({
             {/* Dirección Legal */}
             <div style={{ background: '#FFFFFF', padding: '20px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
               <div style={{ fontSize: '12px', fontWeight: '800', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span>🏛️</span> Domicilio Legal / Fiscal
+                <BrandingVectorIcon name="map-pin" size={13} color="#0F172A" />
+                <span>Domicilio Legal / Fiscal</span>
               </div>
               {selectedUser.direccion_legal ? (
                 <div style={{ fontSize: '13px', color: '#334155', lineHeight: '1.6' }}>
@@ -278,12 +288,14 @@ export default function UserDetailModal({
                     {selectedUser.codigo_postal ? ` (CP ${selectedUser.codigo_postal})` : ''}
                   </div>
                   <div style={{ color: '#0284c7', fontWeight: '700', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span>🌎</span> {selectedUser.country_name || countries.find(c => c.id === selectedUser.country_id)?.name || 'Argentina'}
+                    <BrandingVectorIcon name="globe" size={12} color="#0284c7" />
+                    <span>{selectedUser.country_name || countries.find(c => c.id === selectedUser.country_id)?.name || 'Argentina'}</span>
                   </div>
                 </div>
               ) : (
                 <div style={{ fontSize: '13px', color: '#94A3B8', fontStyle: 'italic', padding: '8px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span>📍</span> No se ha registrado domicilio fiscal específico.
+                  <BrandingVectorIcon name="map-pin" size={12} color="#94A3B8" />
+                  <span>No se ha registrado domicilio fiscal específico.</span>
                 </div>
               )}
             </div>
@@ -291,7 +303,8 @@ export default function UserDetailModal({
             {/* Dirección de Entrega */}
             <div style={{ background: '#FFFFFF', padding: '20px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)' }}>
               <div style={{ fontSize: '12px', fontWeight: '800', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <span>🚚</span> Dirección de Entrega / Despacho
+                <BrandingVectorIcon name="truck" size={13} color="#0F172A" />
+                <span>Dirección de Entrega / Despacho</span>
               </div>
               {selectedUser.direccion_entrega ? (
                 <div style={{ fontSize: '13px', color: '#334155', lineHeight: '1.6' }}>
@@ -301,12 +314,14 @@ export default function UserDetailModal({
                     {selectedUser.codigo_postal_entrega ? ` (CP ${selectedUser.codigo_postal_entrega})` : ''}
                   </div>
                   <div style={{ color: '#0284c7', fontWeight: '700', marginTop: '6px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <span>🌎</span> {countries.find(c => c.id === selectedUser.pais_entrega_id)?.name || selectedUser.country_name || 'Mismo país legal'}
+                    <BrandingVectorIcon name="globe" size={12} color="#0284c7" />
+                    <span>{countries.find(c => c.id === selectedUser.pais_entrega_id)?.name || selectedUser.country_name || 'Mismo país legal'}</span>
                   </div>
                 </div>
               ) : (
                 <div style={{ fontSize: '13px', color: '#94A3B8', fontStyle: 'italic', padding: '8px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span>📦</span> Misma que dirección legal o a convenir por pedido.
+                  <BrandingVectorIcon name="package" size={12} color="#94A3B8" />
+                  <span>Misma que dirección legal o a convenir por pedido.</span>
                 </div>
               )}
             </div>
@@ -317,7 +332,8 @@ export default function UserDetailModal({
             <div style={{ background: '#FFFFFF', padding: '20px', borderRadius: '16px', border: '1px solid #E2E8F0', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', marginBottom: '20px' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '8px' }}>
                 <div style={{ fontSize: '12px', fontWeight: '800', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                  <span>🏛️</span> Percepciones & Retenciones IIBB (Argentina)
+                  <BrandingVectorIcon name="file-text" size={13} color="#0284c7" />
+                  <span>Percepciones & Retenciones IIBB (Argentina)</span>
                 </div>
                 <span style={{ background: '#e0f2fe', color: '#0369a1', fontSize: '11px', fontWeight: '800', padding: '3px 8px', borderRadius: '6px' }}>
                   Jurisdicción: {selectedUser.iibb_jurisdiccion || '901 - Capital Federal'}
@@ -332,7 +348,7 @@ export default function UserDetailModal({
                 <div style={{ background: '#f8fafc', padding: '10px 14px', borderRadius: '10px', border: '1px solid #e2e8f0' }}>
                   <span style={{ color: '#64748b', fontSize: '11px', display: 'block' }}>Código de Aceptación:</span>
                   <strong style={{ color: selectedUser.iibb_codigo_aceptacion ? '#16a34a' : '#94a3b8' }}>
-                    {selectedUser.iibb_codigo_aceptacion ? '✓ Aceptado / Homologado' : '✗ No informado'}
+                    {selectedUser.iibb_codigo_aceptacion ? 'Aceptado / Homologado' : 'No informado'}
                   </strong>
                 </div>
               </div>
@@ -387,21 +403,32 @@ export default function UserDetailModal({
           {/* Grid 3: Contactos Designados */}
           <div style={{ marginBottom: '20px' }}>
             <div style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-              <span>👥</span> Contactos Clave Designados
+              <BrandingVectorIcon name="users" size={13} color="#0F172A" />
+              <span>Contactos Clave Designados</span>
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '14px' }}>
               {/* Compras */}
               <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '16px', borderRadius: '14px', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '16px' }}>🛒</span>
+                  <BrandingVectorIcon name="shopping-cart" size={14} color="#0284c7" />
                   <span style={{ fontWeight: '800', fontSize: '11px', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Contacto Compras</span>
                 </div>
                 <div style={{ fontWeight: '800', fontSize: '14px', color: '#0F172A', marginBottom: '6px' }}>
                   {selectedUser.nombre_compras || 'Sin especificar'}
                 </div>
                 <div style={{ fontSize: '12px', color: '#475569', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  {selectedUser.telefono_compras && <div>📞 <strong style={{ color: '#0F172A' }}>{selectedUser.telefono_compras}</strong></div>}
-                  {selectedUser.email_compras && <div>✉️ <a href={`mailto:${selectedUser.email_compras}`} style={{ color: '#0fa4de', textDecoration: 'none', fontWeight: '600' }}>{selectedUser.email_compras}</a></div>}
+                  {selectedUser.telefono_compras && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <BrandingVectorIcon name="phone" size={11} color="#0F172A" />
+                      <strong style={{ color: '#0F172A' }}>{selectedUser.telefono_compras}</strong>
+                    </div>
+                  )}
+                  {selectedUser.email_compras && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <BrandingVectorIcon name="mail" size={11} color="#0fa4de" />
+                      <a href={`mailto:${selectedUser.email_compras}`} style={{ color: '#0fa4de', textDecoration: 'none', fontWeight: '600' }}>{selectedUser.email_compras}</a>
+                    </div>
+                  )}
                   {!selectedUser.telefono_compras && !selectedUser.email_compras && <span style={{ color: '#94A3B8', fontStyle: 'italic' }}>Sin datos de contacto</span>}
                 </div>
               </div>
@@ -409,15 +436,25 @@ export default function UserDetailModal({
               {/* Pagos */}
               <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '16px', borderRadius: '14px', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '16px' }}>💳</span>
+                  <BrandingVectorIcon name="credit-card" size={14} color="#166534" />
                   <span style={{ fontWeight: '800', fontSize: '11px', color: '#166534', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Pagos / Tesorería</span>
                 </div>
                 <div style={{ fontWeight: '800', fontSize: '14px', color: '#0F172A', marginBottom: '6px' }}>
                   {selectedUser.nombre_pagos || 'Sin especificar'}
                 </div>
                 <div style={{ fontSize: '12px', color: '#475569', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  {selectedUser.telefono_pagos && <div>📞 <strong style={{ color: '#0F172A' }}>{selectedUser.telefono_pagos}</strong></div>}
-                  {selectedUser.email_pagos && <div>✉️ <a href={`mailto:${selectedUser.email_pagos}`} style={{ color: '#0fa4de', textDecoration: 'none', fontWeight: '600' }}>{selectedUser.email_pagos}</a></div>}
+                  {selectedUser.telefono_pagos && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <BrandingVectorIcon name="phone" size={11} color="#0F172A" />
+                      <strong style={{ color: '#0F172A' }}>{selectedUser.telefono_pagos}</strong>
+                    </div>
+                  )}
+                  {selectedUser.email_pagos && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <BrandingVectorIcon name="mail" size={11} color="#0fa4de" />
+                      <a href={`mailto:${selectedUser.email_pagos}`} style={{ color: '#0fa4de', textDecoration: 'none', fontWeight: '600' }}>{selectedUser.email_pagos}</a>
+                    </div>
+                  )}
                   {!selectedUser.telefono_pagos && !selectedUser.email_pagos && <span style={{ color: '#94A3B8', fontStyle: 'italic' }}>Sin datos de contacto</span>}
                 </div>
               </div>
@@ -425,15 +462,25 @@ export default function UserDetailModal({
               {/* Administración */}
               <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '16px', borderRadius: '14px', boxShadow: '0 2px 6px rgba(0,0,0,0.02)' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '8px' }}>
-                  <span style={{ fontSize: '16px' }}>👔</span>
+                  <BrandingVectorIcon name="briefcase" size={14} color="#4338CA" />
                   <span style={{ fontWeight: '800', fontSize: '11px', color: '#4338CA', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Administración / Dirección</span>
                 </div>
                 <div style={{ fontWeight: '800', fontSize: '14px', color: '#0F172A', marginBottom: '6px' }}>
                   {selectedUser.nombre_admin || 'Sin especificar'}
                 </div>
                 <div style={{ fontSize: '12px', color: '#475569', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-                  {selectedUser.telefono_admin && <div>📞 <strong style={{ color: '#0F172A' }}>{selectedUser.telefono_admin}</strong></div>}
-                  {selectedUser.email_admin && <div>✉️ <a href={`mailto:${selectedUser.email_admin}`} style={{ color: '#0fa4de', textDecoration: 'none', fontWeight: '600' }}>{selectedUser.email_admin}</a></div>}
+                  {selectedUser.telefono_admin && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <BrandingVectorIcon name="phone" size={11} color="#0F172A" />
+                      <strong style={{ color: '#0F172A' }}>{selectedUser.telefono_admin}</strong>
+                    </div>
+                  )}
+                  {selectedUser.email_admin && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <BrandingVectorIcon name="mail" size={11} color="#0fa4de" />
+                      <a href={`mailto:${selectedUser.email_admin}`} style={{ color: '#0fa4de', textDecoration: 'none', fontWeight: '600' }}>{selectedUser.email_admin}</a>
+                    </div>
+                  )}
                   {!selectedUser.telefono_admin && !selectedUser.email_admin && <span style={{ color: '#94A3B8', fontStyle: 'italic' }}>Sin datos de contacto</span>}
                 </div>
               </div>
@@ -444,7 +491,8 @@ export default function UserDetailModal({
           <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '20px', borderRadius: '16px', marginBottom: '20px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', overflow: 'hidden' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
               <div style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>👥</span> Usuarios con Acceso al Shop ({selectedUser.company_users?.length || 1})
+                <BrandingVectorIcon name="users" size={13} color="#0F172A" />
+                <span>Usuarios con Acceso al Shop ({selectedUser.company_users?.length || 1})</span>
               </div>
               <button
                 onClick={() => {
@@ -466,7 +514,8 @@ export default function UserDetailModal({
                   boxShadow: '0 2px 6px rgba(15, 164, 222, 0.3)'
                 }}
               >
-                ➕ Agregar Usuario a esta Empresa
+                <BrandingVectorIcon name="plus" size={12} color="#ffffff" />
+                <span>Agregar Usuario a esta Empresa</span>
               </button>
             </div>
 
@@ -511,9 +560,13 @@ export default function UserDetailModal({
                             padding: '2px 8px',
                             borderRadius: '999px',
                             fontSize: '11px',
-                            fontWeight: '700'
+                            fontWeight: '700',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '4px'
                           }}>
-                            {(u.status || 'activo') === 'activo' ? '🟢 Activo' : (u.status === 'pendiente' ? '🟡 Pendiente' : '🔴 Inactivo')}
+                            <span style={{ width: 6, height: 6, borderRadius: '50%', background: (u.status || 'activo') === 'activo' ? '#16a34a' : (u.status === 'pendiente' ? '#d97706' : '#dc2626') }}></span>
+                            {(u.status || 'activo') === 'activo' ? 'Activo' : (u.status === 'pendiente' ? 'Pendiente' : 'Inactivo')}
                           </span>
                         </td>
                         <td style={{ whiteSpace: 'nowrap', textAlign: 'center' }}>
@@ -523,10 +576,11 @@ export default function UserDetailModal({
                                 handleEditUser(u);
                                 onClose();
                               }}
-                              style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', color: '#334155', padding: '4px 8px', borderRadius: '6px', cursor: 'pointer', fontSize: '11.5px', fontWeight: '600' }}
+                              style={{ background: '#F8FAFC', border: '1px solid #CBD5E1', color: '#334155', padding: '4px 8px', borderRadius: '6px', cursor: 'pointer', fontSize: '11.5px', fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                               title="Editar este usuario"
                             >
-                              ✏️ Editar
+                              <BrandingVectorIcon name="edit" size={11} color="#334155" />
+                              <span>Editar</span>
                             </button>
                             <button
                               onClick={() => handleToggleUserStatus(u.id, (u.status || 'activo') === 'activo' ? 'inactivo' : 'activo')}
@@ -546,10 +600,10 @@ export default function UserDetailModal({
                             </button>
                             <button
                               onClick={() => handleDeleteUser(u.id, u.name)}
-                              style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', padding: '4px 7px', borderRadius: '6px', cursor: 'pointer', fontSize: '11.5px' }}
+                              style={{ background: '#FEF2F2', border: '1px solid #FECACA', color: '#DC2626', padding: '4px 7px', borderRadius: '6px', cursor: 'pointer', fontSize: '11.5px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                               title="Eliminar cuenta de usuario"
                             >
-                              🗑️
+                              <BrandingVectorIcon name="trash" size={11} color="#DC2626" />
                             </button>
                           </div>
                         </td>
@@ -564,7 +618,8 @@ export default function UserDetailModal({
           {/* Grid 5: Historial de Órdenes */}
           <div style={{ background: '#FFFFFF', border: '1px solid #E2E8F0', padding: '20px', borderRadius: '16px', boxShadow: '0 2px 8px rgba(0,0,0,0.03)', overflow: 'hidden' }}>
             <div style={{ fontSize: '13px', fontWeight: '800', color: '#0F172A', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>📦</span> Historial de Órdenes y Cotizaciones ({selectedUser.orders?.length || 0})
+              <BrandingVectorIcon name="package" size={13} color="#0F172A" />
+              <span>Historial de Órdenes y Cotizaciones ({selectedUser.orders?.length || 0})</span>
             </div>
             {selectedUser.orders && selectedUser.orders.length > 0 ? (
               <div className="crm-table-container" style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch', margin: 0, border: '1px solid #E2E8F0', borderRadius: '12px' }}>
@@ -595,8 +650,10 @@ export default function UserDetailModal({
               </div>
             ) : (
               <div style={{ textAlign: 'center', padding: '24px', background: '#F8FAFC', borderRadius: '12px', border: '1px dashed #CBD5E1', color: '#64748B', fontSize: '13px' }}>
-                <span style={{ fontSize: '24px', display: 'block', marginBottom: '6px' }}>🛒</span>
-                Este cliente aún no ha registrado órdenes de compra en la plataforma.
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '6px' }}>
+                  <BrandingVectorIcon name="shopping-cart" size={24} color="#64748B" />
+                </div>
+                <span>Este cliente aún no ha registrado órdenes de compra en la plataforma.</span>
               </div>
             )}
           </div>

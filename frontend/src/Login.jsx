@@ -275,6 +275,11 @@ function Login({ setUsuario, initialError, clearInitialError, theme, toggleTheme
         if (ecomResponse.ok && ecomData.user && ecomData.token) {
           localStorage.setItem('dacas_client_user', JSON.stringify(ecomData.user));
           localStorage.setItem('dacas_client_token', ecomData.token);
+          const targetCountry = (ecomData.user.country_code || 'AR').toUpperCase();
+          localStorage.setItem('dacas_selected_country', targetCountry);
+          try {
+            window.dispatchEvent(new CustomEvent('dacas_country_changed', { detail: { country: targetCountry } }));
+          } catch (_) {}
           navigate('/shop', { replace: true });
           return;
         } else if (ecomData.pending) {

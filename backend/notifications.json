@@ -1,5 +1,149 @@
 [
   {
+    "id": "notif-1791919873138-1a0l",
+    "category": "crm",
+    "title": "Ticket de Onboarding Generado #4",
+    "message": "Ticket en Operaciones para la Orden #undefined (B2B).",
+    "severity": "info",
+    "read": false,
+    "targetView": "crm",
+    "targetTab": null,
+    "ticketId": 4,
+    "orderId": null,
+    "actionLabel": "Abrir Ticket",
+    "roles": [
+      "admin",
+      "staff"
+    ],
+    "timestamp": "2026-10-13T19:31:13.138Z"
+  },
+  {
+    "id": "notif-1791919873138-32ug",
+    "category": "ecommerce",
+    "title": "Nuevo Pedido E-Commerce #undefined",
+    "message": "Pedido por $0 USD recibido de Cliente B2B.",
+    "severity": "success",
+    "read": false,
+    "targetView": "ecommerce",
+    "targetTab": "ordenes",
+    "ticketId": null,
+    "orderId": null,
+    "actionLabel": "Ver Pedido",
+    "roles": [
+      "admin",
+      "admin_ecommerce"
+    ],
+    "timestamp": "2026-10-13T19:31:13.138Z"
+  },
+  {
+    "id": "notif-1791904637328-b27b",
+    "category": "crm",
+    "title": "Ticket de Onboarding Generado #5",
+    "message": "Ticket en Operaciones para la Orden #undefined (B2B).",
+    "severity": "info",
+    "read": false,
+    "targetView": "crm",
+    "targetTab": null,
+    "ticketId": 5,
+    "orderId": null,
+    "actionLabel": "Abrir Ticket",
+    "roles": [
+      "admin",
+      "staff"
+    ],
+    "timestamp": "2026-10-13T15:17:17.328Z"
+  },
+  {
+    "id": "notif-1791904637328-uy49",
+    "category": "ecommerce",
+    "title": "Nuevo Pedido E-Commerce #undefined",
+    "message": "Pedido por $0 USD recibido de Cliente B2B.",
+    "severity": "success",
+    "read": false,
+    "targetView": "ecommerce",
+    "targetTab": "ordenes",
+    "ticketId": null,
+    "orderId": null,
+    "actionLabel": "Ver Pedido",
+    "roles": [
+      "admin",
+      "admin_ecommerce"
+    ],
+    "timestamp": "2026-10-13T15:17:17.328Z"
+  },
+  {
+    "id": "notif-1791904039748-llug",
+    "category": "crm",
+    "title": "Ticket de Onboarding Generado #4",
+    "message": "Ticket en Operaciones para la Orden #undefined (B2B).",
+    "severity": "info",
+    "read": false,
+    "targetView": "crm",
+    "targetTab": null,
+    "ticketId": 4,
+    "orderId": null,
+    "actionLabel": "Abrir Ticket",
+    "roles": [
+      "admin",
+      "staff"
+    ],
+    "timestamp": "2026-10-13T15:07:19.748Z"
+  },
+  {
+    "id": "notif-1791904039748-dzed",
+    "category": "ecommerce",
+    "title": "Nuevo Pedido E-Commerce #undefined",
+    "message": "Pedido por $0 USD recibido de Cliente B2B.",
+    "severity": "success",
+    "read": false,
+    "targetView": "ecommerce",
+    "targetTab": "ordenes",
+    "ticketId": null,
+    "orderId": null,
+    "actionLabel": "Ver Pedido",
+    "roles": [
+      "admin",
+      "admin_ecommerce"
+    ],
+    "timestamp": "2026-10-13T15:07:19.748Z"
+  },
+  {
+    "id": "notif-1791898275963-yvcz",
+    "category": "crm",
+    "title": "Ticket de Onboarding Generado #4",
+    "message": "Ticket en Operaciones para la Orden #undefined (B2B).",
+    "severity": "info",
+    "read": false,
+    "targetView": "crm",
+    "targetTab": null,
+    "ticketId": 4,
+    "orderId": null,
+    "actionLabel": "Abrir Ticket",
+    "roles": [
+      "admin",
+      "staff"
+    ],
+    "timestamp": "2026-10-13T13:31:15.963Z"
+  },
+  {
+    "id": "notif-1791898275963-nkos",
+    "category": "ecommerce",
+    "title": "Nuevo Pedido E-Commerce #undefined",
+    "message": "Pedido por $0 USD recibido de Cliente B2B.",
+    "severity": "success",
+    "read": false,
+    "targetView": "ecommerce",
+    "targetTab": "ordenes",
+    "ticketId": null,
+    "orderId": null,
+    "actionLabel": "Ver Pedido",
+    "roles": [
+      "admin",
+      "admin_ecommerce"
+    ],
+    "timestamp": "2026-10-13T13:31:15.963Z"
+  },
+  {
     "id": "notif-1791421083263-46tn",
     "category": "crm",
     "title": "Ticket de Onboarding Generado #4",

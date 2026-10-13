@@ -191,3 +191,30 @@ export const labelStyle = {
   letterSpacing: '0.5px',
   marginBottom: '6px',
 };
+
+export const STANDARD_PAYMENT_TERMS = [
+  { value: 'contado', label: 'Pago Contado / Contra Factura', shortLabel: 'Contado' },
+  { value: '15_dias', label: '15 días fecha de emisión de factura', shortLabel: '15 días' },
+  { value: '30_dias', label: '30 días fecha de emisión de factura', shortLabel: '30 días' },
+  { value: '45_dias', label: '45 días fecha de emisión de factura', shortLabel: '45 días' },
+  { value: '60_dias', label: '60 días fecha de emisión de factura', shortLabel: '60 días' },
+  { value: '90_dias', label: '90 días fecha de emisión de factura (Especial)', shortLabel: '90 días' },
+  { value: '120_dias', label: '120 días fecha de emisión de factura (Especial)', shortLabel: '120 días' }
+];
+
+export const getPaymentTermLabel = (termValue) => {
+  if (!termValue) return '30 días fecha de emisión de factura';
+  const valStr = String(termValue).trim().toLowerCase();
+  if (valStr === 'contado' || valStr === '0' || valStr === '0_dias') {
+    return 'Pago Contado / Contra Factura';
+  }
+  const match = STANDARD_PAYMENT_TERMS.find(t => t.value === valStr);
+  if (match) return match.label;
+
+  const numMatch = valStr.match(/^(\d+)/);
+  if (numMatch) {
+    return `${numMatch[1]} días fecha de emisión de factura`;
+  }
+  const formatted = valStr.replace(/_/g, ' ');
+  return `${formatted.charAt(0).toUpperCase() + formatted.slice(1)} fecha factura`;
+};

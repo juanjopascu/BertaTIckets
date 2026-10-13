@@ -1168,6 +1168,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                           {[
                             { id: 'hero', label: 'Banners Principales (Hero)', icon: 'layers' },
                             { id: 'brand_banners', label: 'Banners Marcas & Carruseles', icon: 'star' },
+                            { id: 'login_page', label: 'Edición Log In', icon: 'lock' },
                             { id: 'announcement', label: 'Anuncio & Barra Superior', icon: 'megaphone' },
                             { id: 'categories', label: '4 Categorías del Shop', icon: 'tag' },
                             { id: 'brands', label: 'Marcas por Categoría', icon: 'building' },
@@ -1821,6 +1822,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                             visual: `Diseño & Banners • ${{
                               hero: 'Banners Principales (Hero)',
                               brand_banners: 'Banners Marcas & Carruseles',
+                              login_page: 'Edición Log In',
                               announcement: 'Anuncio & Barra Superior',
                               categories: '4 Categorías del Shop',
                               brands: 'Marcas por Categoría',

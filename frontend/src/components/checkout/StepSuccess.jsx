@@ -87,13 +87,13 @@ export default function StepSuccess({ createdOrder, navigate }) {
               {createdOrder.end_user.nombre}
             </div>
             <div style={{ fontSize: '11.5px', color: '#64748B', marginTop: '3px', display: 'flex', flexWrap: 'wrap', gap: '14px' }}>
-              {createdOrder.end_user.direccion && <span>📍 {createdOrder.end_user.direccion}</span>}
+              {createdOrder.end_user.direccion && <span>Dirección: {createdOrder.end_user.direccion}</span>}
               {(createdOrder.end_user.ciudad || createdOrder.end_user.pais) && (
-                <span>🌎 {[createdOrder.end_user.ciudad, createdOrder.end_user.pais].filter(Boolean).join(', ')}</span>
+                <span>Ubicación: {[createdOrder.end_user.ciudad, createdOrder.end_user.pais].filter(Boolean).join(', ')}</span>
               )}
-              {createdOrder.end_user.telefono && <span>📞 {createdOrder.end_user.telefono}</span>}
-              {createdOrder.end_user.contacto && <span>👤 Contacto/CEO: <strong>{createdOrder.end_user.contacto}</strong></span>}
-              {createdOrder.end_user.website && <span>🌐 <a href={createdOrder.end_user.website.startsWith('http') ? createdOrder.end_user.website : `https://${createdOrder.end_user.website}`} target="_blank" rel="noopener noreferrer" style={{ color: '#0FA4DE', textDecoration: 'none' }}>{createdOrder.end_user.website}</a></span>}
+              {createdOrder.end_user.telefono && <span>Teléfono: {createdOrder.end_user.telefono}</span>}
+              {createdOrder.end_user.contacto && <span>Contacto/CEO: <strong>{createdOrder.end_user.contacto}</strong></span>}
+              {createdOrder.end_user.website && <span>Sitio Web: <a href={createdOrder.end_user.website.startsWith('http') ? createdOrder.end_user.website : `https://${createdOrder.end_user.website}`} target="_blank" rel="noopener noreferrer" style={{ color: '#0FA4DE', textDecoration: 'none' }}>{createdOrder.end_user.website}</a></span>}
             </div>
           </div>
         )}
@@ -143,6 +143,11 @@ export default function StepSuccess({ createdOrder, navigate }) {
             <div style={{ fontSize: '12px', color: '#64748B', marginBottom: '4px' }}>Subtotal Neto B2B: <strong>${createdOrder.subtotal || createdOrder.total} USD</strong></div>
             {parseFloat(createdOrder.discount_applied || 0) > 0 && (
               <div style={{ fontSize: '12px', color: '#10B981', marginBottom: '4px' }}>Descuentos aplicados: <strong>-${createdOrder.discount_applied} USD</strong></div>
+            )}
+            {parseFloat(createdOrder.iva_total || 0) > 0 && (
+              <div style={{ fontSize: '12px', color: '#0284C7', marginBottom: '4px' }}>
+                Total IVA (Factura A): <strong>+${parseFloat(createdOrder.iva_total).toFixed(2)} USD</strong>
+              </div>
             )}
             {parseFloat(createdOrder.percepciones_total || 0) > 0 && (
               <div style={{ fontSize: '12px', color: '#D97706', marginBottom: '4px' }}>

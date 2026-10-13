@@ -172,6 +172,38 @@ export default function CatalogTab({
     }
   };
 
+  const handleToggleVisibilityProduct = async (productId) => {
+    if (setProducts) {
+      setProducts(prev => prev.map(prod => {
+        if (prod.id === productId) {
+          const currentlyVisible = prod.is_visible !== false && prod.visible !== false && prod.status !== 'oculto';
+          const nextVisible = !currentlyVisible;
+          return {
+            ...prod,
+            is_visible: nextVisible,
+            visible: nextVisible,
+            status: nextVisible ? 'activo' : 'oculto'
+          };
+        }
+        return prod;
+      }));
+    }
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/admin/products/${productId}/toggle-visibility`, {
+        method: 'PATCH',
+        headers: getAuthHeader()
+      });
+      const data = await res.json();
+      if (!res.ok || !data.success) {
+        if (fetchProducts) fetchProducts(selectedCountryScope);
+      }
+    } catch (err) {
+      console.error('Error toggling visibility status:', err);
+      if (fetchProducts) fetchProducts(selectedCountryScope);
+    }
+  };
+
   const handleDrawerStockSave = async () => {
     if (!selectedProductDetail) return;
     setDrawerUpdatingStock(true);
@@ -213,7 +245,7 @@ export default function CatalogTab({
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error al clonar el producto');
-      alert(`✅ Producto "${productToClone.name}" clonado con éxito a ${cloneTargetCountry}!`);
+      alert(`Producto "${productToClone.name}" clonado con éxito a ${cloneTargetCountry}!`);
       setShowCloneModal(false);
       setProductToClone(null);
       if (fetchProducts) fetchProducts(selectedCountryScope);
@@ -235,7 +267,9 @@ export default function CatalogTab({
         p.sku || '',
         `$${p.price}`,
         p.promotional_price ? `$${p.promotional_price}` : '',
+        p.tax_rate !== undefined ? p.tax_rate : (p.iva !== undefined ? p.iva : 21),
         p.stock,
+        (p.is_visible !== false && p.visible !== false && p.status !== 'oculto' ? 'visible' : 'oculto'),
         p.weight || '',
         p.depth || p.length || '',
         p.width || '',
@@ -249,7 +283,7 @@ export default function CatalogTab({
         (Array.isArray(p.related_skus) ? p.related_skus.join(', ') : (p.related_ids ? products.filter(x => p.related_ids.includes(x.id)).map(x => x.sku).filter(Boolean).join(', ') : ''))
       ]),
       [
-        'ID', 'Nombre', 'Marca', 'Categoria', 'Subcategoria', 'SKU', 'Precio_USD', 'Precio_Promo_USD', 'Stock',
+        'ID', 'Nombre', 'Marca', 'Categoria', 'Subcategoria', 'SKU', 'Precio_USD', 'Precio_Promo_USD', 'IVA_%', 'Stock', 'Visibilidad',
         'Peso_kg', 'Largo_cm', 'Ancho_cm', 'Alto_cm', 'Descripcion', 'URL_Imagen', 'Caracteristicas',
         'Garantia', 'Datasheet_PDF', 'Condicion', 'Productos_Relacionados'
       ],
@@ -258,11 +292,219 @@ export default function CatalogTab({
   };
 
   // Bulk CSV Handlers
+  const CSV_HEADER_SYNONYMS = {
+    sku: ['sku', 'codigo', 'código', 'cod', 'item_code', 'part_number', 'pn'],
+    name: ['name', 'nombre', 'producto', 'titulo', 'título', 'item', 'descripcion_corta'],
+    brand: ['brand', 'marca', 'fabricante'],
+    category: ['category', 'categoria', 'categoría', 'rubro', 'familia'],
+    subcategory: ['subcategory', 'subcategoria', 'subcategoría', 'tipo_equipo', 'sub_categoria', 'subrubro'],
+    price: ['price', 'precio', 'precio_usd', 'costo', 'valor'],
+    promotional_price: ['promotional_price', 'precio_promocional', 'precio_promo_usd', 'precio_promo', 'promo_price', 'precio promo', 'oferta'],
+    iva: ['iva', 'iva_%', 'tax_rate', 'alicuota_iva', 'alícuota_iva', 'alicuota', 'porcentaje_iva', 'tasa_iva', 'impuesto_iva'],
+    stock: ['stock', 'cantidad', 'cant', 'inventario', 'existencia'],
+    visible: ['visible', 'is_visible', 'visibilidad', 'estado', 'status', 'activo'],
+    description: ['description', 'descripcion', 'descripción', 'detalle', 'cuerpo'],
+    image_url: ['image_url', 'url_imagen', 'imagen', 'foto', 'imagen_url', 'img'],
+    datasheet_url: ['datasheet_url', 'datasheet', 'datasheet_pdf', 'ficha_tecnica', 'ficha técnica', 'ficha_tecnica_url', 'link_datasheet', 'url_datasheet', 'pdf_url'],
+    related_skus: ['related_skus', 'productos_relacionados', 'skus_relacionados', 'relacionados', 'productos relacionados', 'skus relacionados', 'cross_selling', 'related'],
+    weight: ['weight', 'peso', 'peso_kg'],
+    depth: ['depth', 'largo', 'profundidad', 'largo_cm', 'profundidad_cm'],
+    width: ['width', 'ancho', 'ancho_cm'],
+    height: ['height', 'alto', 'altura', 'alto_cm', 'altura_cm'],
+    warranty: ['warranty', 'garantia', 'garantía'],
+    highlights: ['highlights', 'caracteristicas', 'características', 'caracteristicas_destacadas', 'puntos_clave'],
+    condition: ['condition', 'condicion', 'condición', 'estado_fisico']
+  };
+
+  const normalizeCSVHeaderKey = (rawHeader) => {
+    const clean = String(rawHeader || '')
+      .trim()
+      .toLowerCase()
+      .replace(/^["']|["']$/g, '')
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/[\s\-_]+/g, '_');
+
+    for (const [canonical, synList] of Object.entries(CSV_HEADER_SYNONYMS)) {
+      for (const syn of synList) {
+        const cleanSyn = syn.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[\s\-_]+/g, '_');
+        if (clean === cleanSyn || clean.startsWith(cleanSyn + '_') || clean === cleanSyn.replace(/_/g, '')) {
+          return canonical;
+        }
+      }
+    }
+    return clean;
+  };
+
+  const parseUniversalCSV = (text) => {
+    let cleanText = text || '';
+    if (cleanText.charCodeAt(0) === 0xFEFF) {
+      cleanText = cleanText.slice(1);
+    }
+
+    const linesPreview = cleanText.split(/\r?\n/).filter(l => l.trim().length > 0);
+    if (linesPreview.length === 0) return { rows: [], delimiter: ',' };
+
+    const firstLine = linesPreview[0];
+    const delimiters = [';', ',', '\t', '|'];
+    let bestDelim = ',';
+    let maxCount = -1;
+
+    for (const d of delimiters) {
+      let count = 0;
+      let inQ = false;
+      for (let j = 0; j < firstLine.length; j++) {
+        if (firstLine[j] === '"') inQ = !inQ;
+        else if (!inQ && firstLine[j] === d) count++;
+      }
+      if (count > maxCount) {
+        maxCount = count;
+        bestDelim = d;
+      }
+    }
+
+    const rows = [];
+    let currentRow = [];
+    let currentField = '';
+    let inQuotes = false;
+    let i = 0;
+
+    while (i < cleanText.length) {
+      const char = cleanText[i];
+      const nextChar = cleanText[i + 1];
+
+      if (inQuotes) {
+        if (char === '"') {
+          if (nextChar === '"') {
+            currentField += '"';
+            i += 2;
+            continue;
+          } else {
+            inQuotes = false;
+            i++;
+            continue;
+          }
+        } else {
+          currentField += char;
+          i++;
+          continue;
+        }
+      } else {
+        if (char === '"') {
+          inQuotes = true;
+          i++;
+          continue;
+        } else if (char === bestDelim) {
+          currentRow.push(currentField.trim());
+          currentField = '';
+          i++;
+          continue;
+        } else if (char === '\r') {
+          if (nextChar === '\n') {
+            i++;
+          }
+          currentRow.push(currentField.trim());
+          currentField = '';
+          if (currentRow.some(c => c.length > 0)) {
+            rows.push(currentRow);
+          }
+          currentRow = [];
+          i++;
+          continue;
+        } else if (char === '\n') {
+          currentRow.push(currentField.trim());
+          currentField = '';
+          if (currentRow.some(c => c.length > 0)) {
+            rows.push(currentRow);
+          }
+          currentRow = [];
+          i++;
+          continue;
+        } else {
+          currentField += char;
+          i++;
+          continue;
+        }
+      }
+    }
+
+    if (currentField.length > 0 || currentRow.length > 0) {
+      currentRow.push(currentField.trim());
+      if (currentRow.some(c => c.length > 0)) {
+        rows.push(currentRow);
+      }
+    }
+
+    return { rows, delimiter: bestDelim };
+  };
+
   const downloadSampleCSV = () => {
-    const headers = ['sku', 'name', 'brand', 'category', 'price', 'promotional_price', 'stock', 'description', 'image_url'];
+    const headers = [
+      'SKU',
+      'Nombre',
+      'Marca',
+      'Categoria',
+      'Subcategoria',
+      'Precio_USD',
+      'Precio_Promo_USD',
+      'IVA_%',
+      'Stock',
+      'Visibilidad',
+      'Descripcion',
+      'URL_Imagen',
+      'Datasheet_URL',
+      'Productos_Relacionados',
+      'Peso_kg',
+      'Largo_cm',
+      'Ancho_cm',
+      'Alto_cm',
+      'Garantia',
+      'Condicion'
+    ];
     const sampleRows = [
-      ['FORTI-FG-40F', 'FortiGate 40F Network Security', 'Fortinet', 'security', '499.00', '449.00', '25', 'Firewall de última generación para sucursales', 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8'],
-      ['CISCO-C9200L-24P', 'Catalyst 9200L 24 puertos PoE+', 'Cisco', 'networking', '1250.00', '', '10', 'Switch enterprise Layer 3 gestionable', 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31']
+      [
+        'FORTI-FG-40F',
+        'FortiGate 40F Network Security',
+        'Fortinet',
+        'security',
+        'Firewalls NGFW',
+        '499.00',
+        '449.00',
+        '21',
+        '25',
+        'visible',
+        'Firewall de nueva generacion con proteccion avanzada para sucursales',
+        'https://images.unsplash.com/photo-1544197150-b99a580bb7a8',
+        'https://www.fortinet.com/content/dam/fortinet/assets/data-sheets/fortigate-fortiwifi-40f-series.pdf',
+        'CISCO-C9200L-24P, MKT-ROUTER-5009',
+        '1.2',
+        '21.6',
+        '14.0',
+        '3.8',
+        '12 Meses con Soporte DACAS',
+        'Nuevo Sellado'
+      ],
+      [
+        'CISCO-C9200L-24P',
+        'Catalyst 9200L 24 puertos PoE+',
+        'Cisco',
+        'networking',
+        'Switches Enterprise',
+        '1250.00',
+        '',
+        '10.5',
+        '10',
+        'visible',
+        'Switch enterprise Layer 3 gestionable con puertos PoE+',
+        'https://images.unsplash.com/photo-1558494949-ef010cbdcc31',
+        'https://www.cisco.com/c/en/us/products/collateral/switches/catalyst-9200-series-switches/nb-06-cat9200-series-data-sheet-cte-en.pdf',
+        'FORTI-FG-40F',
+        '4.35',
+        '28.8',
+        '44.5',
+        '4.4',
+        '36 Meses Oficial Cisco',
+        'Nuevo Sellado'
+      ]
     ];
     downloadCSV(sampleRows, headers, `plantilla_carga_masiva_dacas_${selectedCountryScope || 'AR'}.csv`);
   };
@@ -273,39 +515,132 @@ export default function CatalogTab({
     setBulkError(null);
     setBulkResult(null);
 
+    const ext = file.name ? file.name.split('.').pop().toLowerCase() : '';
+    if (ext === 'xlsx' || ext === 'xls') {
+      setBulkError('El archivo seleccionado es un libro de Excel (.xlsx / .xls). Por favor ábrelo en Excel y guárdalo como archivo CSV ("Guardar como > CSV UTF-8 o delimitado por comas") para poder importarlo.');
+      setBulkData([]);
+      return;
+    }
+
     const reader = new FileReader();
     reader.onload = (e) => {
       try {
         const text = e.target.result;
-        const lines = text.split(/\r?\n/).filter(line => line.trim().length > 0);
-        if (lines.length < 2) {
-          setBulkError('El archivo CSV está vacío o no contiene filas de datos.');
+        if (!text || text.trim().length === 0) {
+          setBulkError('El archivo CSV está vacío.');
+          setBulkData([]);
           return;
         }
 
-        const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/^["']|["']$/g, ''));
+        const { rows } = parseUniversalCSV(text);
+        if (rows.length < 2) {
+          setBulkError('El archivo CSV debe contener al menos una fila de encabezados y una fila con datos.');
+          setBulkData([]);
+          return;
+        }
+
+        const rawHeaders = rows[0];
+        const normalizedHeaders = rawHeaders.map(normalizeCSVHeaderKey);
         const parsedRows = [];
 
-        for (let i = 1; i < lines.length; i++) {
-          const rawRow = lines[i];
-          const matches = rawRow.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g) || rawRow.split(',');
-          const rowObj = {};
-          headers.forEach((h, idx) => {
-            let val = matches[idx] ? matches[idx].trim().replace(/^["']|["']$/g, '') : '';
-            rowObj[h] = val;
+        for (let r = 1; r < rows.length; r++) {
+          const rowVals = rows[r];
+          if (!rowVals.some(v => v && v.trim().length > 0)) continue;
+
+          const rowObj = {
+            sku: '',
+            name: '',
+            brand: 'DACAS',
+            category: 'General',
+            subcategory: '',
+            price: '0.00',
+            promotional_price: '',
+            iva: 21,
+            tax_rate: 21,
+            stock: 0,
+            visible: true,
+            description: '',
+            image_url: '',
+            datasheet_url: '',
+            related_skus: '',
+            weight: '',
+            depth: '',
+            width: '',
+            height: '',
+            warranty: '12 Meses con RMA y Soporte DACAS',
+            highlights: '',
+            condition: 'Nuevo Sellado'
+          };
+
+          normalizedHeaders.forEach((key, colIdx) => {
+            const rawVal = rowVals[colIdx] !== undefined ? rowVals[colIdx] : '';
+            if (rawVal !== '') {
+              rowObj[key] = rawVal;
+            }
           });
-          if (rowObj.name || rowObj.sku) {
-            parsedRows.push(rowObj);
+
+          const cleanName = String(rowObj.name || '').trim();
+          const cleanSku = String(rowObj.sku || '').trim();
+
+          if (!cleanName && !cleanSku) {
+            continue;
           }
+
+          const rawPrice = String(rowObj.price || '0').replace('$', '').replace(/,/g, '.').trim();
+          const pNum = parseFloat(rawPrice);
+          rowObj.price = !isNaN(pNum) ? pNum.toFixed(2) : '0.00';
+
+          if (rowObj.promotional_price) {
+            const rawPromo = String(rowObj.promotional_price).replace('$', '').replace(/,/g, '.').trim();
+            const prNum = parseFloat(rawPromo);
+            rowObj.promotional_price = !isNaN(prNum) && prNum > 0 ? prNum.toFixed(2) : '';
+          }
+
+          if (rowObj.iva !== undefined) {
+            const rawIva = String(rowObj.iva).replace('%', '').replace(/,/g, '.').trim();
+            const ivaNum = parseFloat(rawIva);
+            rowObj.iva = !isNaN(ivaNum) ? ivaNum : 21;
+            rowObj.tax_rate = rowObj.iva;
+          } else {
+            rowObj.iva = 21;
+            rowObj.tax_rate = 21;
+          }
+
+          rowObj.stock = parseInt(String(rowObj.stock || '0').replace(/[^0-9-]/g, ''), 10) || 0;
+
+          const vStr = String(rowObj.visible !== undefined ? rowObj.visible : 'true').trim().toLowerCase();
+          const isOculto = vStr === 'oculto' || vStr === 'false' || vStr === '0' || vStr === 'no' || vStr === 'inactivo';
+          rowObj.visible = !isOculto;
+          rowObj.is_visible = !isOculto;
+          rowObj.status = !isOculto ? 'activo' : 'oculto';
+
+          if (rowObj.datasheet_url) {
+            rowObj.datasheet_url = String(rowObj.datasheet_url).trim();
+          }
+
+          if (rowObj.related_skus) {
+            rowObj.related_skus = String(rowObj.related_skus).trim();
+          }
+
+          rowObj.isValid = cleanName.length > 0;
+
+          parsedRows.push(rowObj);
+        }
+
+        if (parsedRows.length === 0) {
+          setBulkError('No se encontraron productos con Nombre o SKU en el archivo. Verifica los nombres de las columnas.');
+          setBulkData([]);
+          return;
         }
 
         setBulkData(parsedRows);
-        setBulkMode('preview');
+        setBulkError(null);
       } catch (err) {
         setBulkError('Error procesando el formato del CSV: ' + err.message);
+        setBulkData([]);
       }
     };
-    reader.readAsText(file);
+    reader.readAsText(file, 'UTF-8');
   };
 
   const handleConfirmBulkImport = async () => {
@@ -317,13 +652,14 @@ export default function CatalogTab({
       const res = await fetch(`${API_BASE_URL}/api/ecommerce/admin/products/bulk?country=${selectedCountryScope || 'AR'}`, {
         method: 'POST',
         headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ products: bulkData })
+        body: JSON.stringify({ products: bulkData, mode: bulkMode || 'upsert' })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Error en la importación masiva');
 
       setBulkResult({
-        created: data.created || bulkData.length,
+        total: bulkData.length,
+        created: data.created || 0,
         updated: data.updated || 0,
         errors: data.errors || []
       });
@@ -1024,33 +1360,33 @@ export default function CatalogTab({
         </div>
 
         {/* Barra de Filtros y Búsqueda */}
-        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '18px' }}>
+        <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center', marginBottom: '14px' }}>
           <input
             type="text"
-            placeholder="🔍 Buscar por nombre, SKU, marca..."
+            placeholder="Buscar por nombre, SKU, marca..."
             value={productSearch}
             onChange={(e) => { setProductSearch(e.target.value); setProductPage(1); }}
             style={{
               flex: '1 1 200px',
               minWidth: '160px',
-              padding: '8px 12px',
+              padding: '7px 12px',
               borderRadius: '8px',
               border: '1px solid var(--border-color)',
               background: 'var(--card-bg)',
               color: 'var(--text-main)',
-              fontSize: '0.88rem'
+              fontSize: '0.85rem'
             }}
           />
           <select
             value={selectedCategory}
             onChange={(e) => { setSelectedCategory(e.target.value); setProductPage(1); }}
             style={{
-              padding: '8px 12px',
+              padding: '7px 12px',
               borderRadius: '8px',
               border: '1px solid var(--border-color)',
               background: 'var(--card-bg)',
               color: 'var(--text-main)',
-              fontSize: '0.88rem'
+              fontSize: '0.85rem'
             }}
           >
             <option value="">Todas las categorías</option>
@@ -1060,12 +1396,12 @@ export default function CatalogTab({
             value={filterStock}
             onChange={(e) => { setFilterStock(e.target.value); setProductPage(1); }}
             style={{
-              padding: '8px 12px',
+              padding: '7px 12px',
               borderRadius: '8px',
               border: '1px solid var(--border-color)',
               background: 'var(--card-bg)',
               color: 'var(--text-main)',
-              fontSize: '0.88rem'
+              fontSize: '0.85rem'
             }}
           >
             <option value="all">Todo el Stock</option>
@@ -1074,35 +1410,40 @@ export default function CatalogTab({
           </select>
           <button
             className="nav-btn"
-            style={{ padding: '8px 14px', background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)' }}
+            style={{ padding: '7px 14px', background: 'transparent', border: '1px solid var(--border-color)', color: 'var(--text-muted)' }}
             onClick={() => { setProductSearch(''); setSelectedCategory(''); setFilterStock('all'); setProductPage(1); }}
           >
-            ✕ Limpiar
+            Limpiar
           </button>
         </div>
 
-        {/* Tabla de Productos de Alta Densidad */}
-        <div className="crm-table-container" style={{ width: '100%', overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
-          <table className="users-table crm-compact-table" style={{ width: '100%' }}>
+        {/* Tabla de Productos Condensada y Optimizada (Sin Scroll Horizontal) */}
+        <div className="crm-table-container" style={{ width: '100%', overflowX: 'hidden', boxSizing: 'border-box' }}>
+          <table className="users-table dacas-condensed-table" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', margin: 0 }}>
             <thead>
               <tr>
-                <th style={{ width: '40px', textAlign: 'center' }}>Foto</th>
-                <th style={{ width: '120px' }}>SKU</th>
-                <th>Producto</th>
-                <th>Categoría</th>
-                <th style={{ textAlign: 'right' }}>Precio USD</th>
-                <th style={{ textAlign: 'center' }}>Stock {activeCountryObj.flag} {activeCountryObj.code}</th>
-                <th style={{ textAlign: 'center', width: '90px' }}>⭐ Destacado</th>
-                <th style={{ textAlign: 'center', width: '110px' }}>Acciones</th>
+                <th style={{ width: '12%', padding: '6px 8px', fontSize: '11px', fontWeight: '800' }}>SKU</th>
+                <th style={{ width: '30%', padding: '6px 8px', fontSize: '11px', fontWeight: '800' }}>Producto</th>
+                <th style={{ width: '12%', padding: '6px 8px', fontSize: '11px', fontWeight: '800' }}>Categoría</th>
+                <th style={{ width: '6%', padding: '6px 4px', fontSize: '11px', fontWeight: '800', textAlign: 'center' }}>IVA</th>
+                <th style={{ width: '10%', padding: '6px 8px', fontSize: '11px', fontWeight: '800', textAlign: 'right' }}>Precio USD</th>
+                <th style={{ width: '8%', padding: '6px 4px', fontSize: '11px', fontWeight: '800', textAlign: 'center' }}>Stock ({activeCountryObj.code})</th>
+                <th style={{ width: '4%', padding: '6px 2px', fontSize: '11px', fontWeight: '800', textAlign: 'center' }} title="Destacado">
+                  <BrandingVectorIcon name="star" size={12} color="#f59e0b" />
+                </th>
+                <th style={{ width: '8%', padding: '6px 4px', fontSize: '11px', fontWeight: '800', textAlign: 'center' }}>Estado</th>
+                <th style={{ width: '10%', padding: '6px 6px', fontSize: '11px', fontWeight: '800', textAlign: 'center' }}>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {paginatedProducts.length === 0 ? (
                 <tr>
-                  <td colSpan={8} style={{ textAlign: 'center', padding: '36px', color: '#64748b' }}>
-                    <div style={{ fontSize: '28px', marginBottom: '8px' }}>📦</div>
-                    <div style={{ fontWeight: '700', fontSize: '14px', color: '#1e293b' }}>No se encontraron productos</div>
-                    <div style={{ fontSize: '12px' }}>Intenta cambiar los filtros de búsqueda o seleccionar otra categoría para {activeCountryObj.name}.</div>
+                  <td colSpan={9} style={{ textAlign: 'center', padding: '28px', color: '#64748b' }}>
+                    <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+                      <BrandingVectorIcon name="box" size={26} color="#94a3b8" />
+                    </div>
+                    <div style={{ fontWeight: '700', fontSize: '13px', color: '#1e293b' }}>No se encontraron productos</div>
+                    <div style={{ fontSize: '11.5px' }}>Intenta cambiar los filtros de búsqueda para {activeCountryObj.name}.</div>
                   </td>
                 </tr>
               ) : (
@@ -1114,87 +1455,81 @@ export default function CatalogTab({
                       onClick={() => setSelectedProductDetail(p)}
                       style={{
                         cursor: 'pointer',
-                        height: '42px',
+                        height: '32px',
                         transition: 'background 0.15s ease'
                       }}
-                      title="Click para ver especificaciones técnicas, packaging y ajustar stock"
+                      title="Click para ver especificaciones técnicas y ajustar stock"
                     >
-                      <td style={{ width: '40px', textAlign: 'center', padding: '4px 6px' }}>
-                        <img
-                          src={p.image_url || (p.images && p.images[0]) || 'https://placehold.co/40x40/f1f5f9/94a3b8?text=Foto'}
-                          alt={p.name}
-                          style={{ width: '32px', height: '32px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--border-color)', display: 'inline-block' }}
-                          onError={(e) => { e.target.src = 'https://placehold.co/40x40/f1f5f9/94a3b8?text=Foto'; }}
-                        />
-                      </td>
-                      <td style={{ padding: '4px 8px', whiteSpace: 'nowrap' }}>
-                        <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: '700', color: '#0369a1', background: '#f0f9ff', padding: '2px 6px', borderRadius: '4px', border: '1px solid #bae6fd' }}>
+                      <td style={{ padding: '3px 8px', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                        <span style={{ fontFamily: 'monospace', fontSize: '11px', fontWeight: '700', color: '#0369a1', background: '#f0f9ff', padding: '1px 5px', borderRadius: '4px', border: '1px solid #bae6fd' }}>
                           {p.sku || 'S/SKU'}
                         </span>
                       </td>
-                      <td style={{ padding: '4px 8px', maxWidth: '340px' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span
-                            style={{
-                              fontWeight: '600',
-                              color: 'var(--text-main)',
-                              fontSize: '12px',
-                              whiteSpace: 'nowrap',
-                              overflow: 'hidden',
-                              textOverflow: 'ellipsis',
-                              flex: 1
-                            }}
-                            title={p.name}
-                          >
-                            {p.name}
+                      <td style={{ padding: '3px 8px', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
+                        <span
+                          style={{
+                            fontWeight: '600',
+                            color: 'var(--text-main)',
+                            fontSize: '12px'
+                          }}
+                          title={p.name}
+                        >
+                          {p.name}
+                        </span>
+                        {p.brand && (
+                          <span style={{ fontSize: '10px', color: '#64748b', fontWeight: '700', background: '#f1f5f9', padding: '1px 5px', borderRadius: '3px', marginLeft: '6px' }}>
+                            {p.brand}
                           </span>
-                          {p.brand && (
-                            <span style={{ fontSize: '10px', color: '#64748b', fontWeight: '700', background: '#f1f5f9', padding: '1px 5px', borderRadius: '3px', whiteSpace: 'nowrap' }}>
-                              {p.brand}
-                            </span>
-                          )}
-                          {p.subcategory && (
-                            <span style={{ fontSize: '10px', color: '#0369a1', fontWeight: '750', background: '#e0f2fe', padding: '1px 5px', borderRadius: '3px', whiteSpace: 'nowrap' }}>
-                              {p.subcategory}
-                            </span>
-                          )}
-                        </div>
+                        )}
                       </td>
-                      <td style={{ padding: '4px 8px', whiteSpace: 'nowrap' }}>
+                      <td style={{ padding: '3px 8px', overflow: 'hidden', whiteSpace: 'nowrap', textOverflow: 'ellipsis' }}>
                         <span style={{
                           background: 'var(--pill-bg, #f1f5f9)',
                           border: '1px solid var(--border-color, #e2e8f0)',
                           color: 'var(--text-main, #334155)',
-                          fontSize: '11px',
+                          fontSize: '10.5px',
                           fontWeight: '600',
-                          padding: '2px 6px',
+                          padding: '1px 5px',
                           borderRadius: '4px',
                           textTransform: 'capitalize'
                         }}>
                           {(p.category || 'General').replace(/_/g, ' ')}
                         </span>
                       </td>
-                      <td style={{ textAlign: 'right', padding: '4px 8px', whiteSpace: 'nowrap' }}>
+                      <td style={{ textAlign: 'center', padding: '3px 4px', whiteSpace: 'nowrap' }}>
+                        <span style={{
+                          fontSize: '10.5px',
+                          fontWeight: '750',
+                          color: '#0369a1',
+                          background: '#f0f9ff',
+                          padding: '1px 4px',
+                          borderRadius: '4px',
+                          border: '1px solid #bae6fd'
+                        }}>
+                          {p.tax_rate ?? p.iva ?? 21}%
+                        </span>
+                      </td>
+                      <td style={{ textAlign: 'right', padding: '3px 8px', whiteSpace: 'nowrap' }}>
                         {p.promotional_price ? (
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '4px' }}>
-                            <span style={{ color: '#10b981', fontWeight: '800', fontSize: '12px' }}>
+                            <span style={{ color: '#10b981', fontWeight: '800', fontSize: '11.5px' }}>
                               ${Number(p.promotional_price).toFixed(2)}
                             </span>
-                            <s style={{ color: 'var(--text-muted, #94a3b8)', fontSize: '10px' }}>
+                            <s style={{ color: 'var(--text-muted, #94a3b8)', fontSize: '9.5px' }}>
                               ${Number(p.price).toFixed(2)}
                             </s>
                           </div>
                         ) : (
-                          <span style={{ fontWeight: '700', color: 'var(--text-main)', fontSize: '12px' }}>
+                          <span style={{ fontWeight: '700', color: 'var(--text-main)', fontSize: '11.5px' }}>
                             ${Number(p.price).toFixed(2)}
                           </span>
                         )}
                       </td>
-                      <td style={{ textAlign: 'center', padding: '4px 8px', whiteSpace: 'nowrap' }}>
+                      <td style={{ textAlign: 'center', padding: '3px 4px', whiteSpace: 'nowrap' }}>
                         <span style={{
-                          padding: '2px 8px',
-                          borderRadius: '12px',
-                          fontSize: '11px',
+                          padding: '1px 6px',
+                          borderRadius: '10px',
+                          fontSize: '10.5px',
                           fontWeight: '800',
                           background: Number(p.stock) > 10 ? '#dcfce7' : Number(p.stock) > 0 ? '#fef3c7' : '#fee2e2',
                           color: Number(p.stock) > 10 ? '#16a34a' : Number(p.stock) > 0 ? '#d97706' : '#dc2626',
@@ -1203,35 +1538,61 @@ export default function CatalogTab({
                           {p.stock ?? 0} u.
                         </span>
                       </td>
-                      <td style={{ textAlign: 'center', padding: '4px 6px', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
+                      <td style={{ textAlign: 'center', padding: '3px 2px', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
                         <button
                           type="button"
                           onClick={() => handleToggleFeaturedProduct(p.id)}
                           title={isFeat ? "Quitar de destacados" : "Marcar destacado"}
                           style={{
-                            background: isFeat ? '#fffbeb' : '#f8fafc',
-                            border: isFeat ? '1.5px solid #f59e0b' : '1px solid #cbd5e1',
-                            color: isFeat ? '#d97706' : '#94a3b8',
-                            borderRadius: '6px',
-                            padding: '2px 6px',
-                            fontSize: '11px',
-                            fontWeight: '700',
+                            background: isFeat ? '#fffbeb' : 'transparent',
+                            border: isFeat ? '1px solid #f59e0b' : '1px solid #cbd5e1',
+                            borderRadius: '4px',
+                            padding: '2px 4px',
                             cursor: 'pointer',
                             display: 'inline-flex',
                             alignItems: 'center',
-                            gap: '2px'
+                            justifyContent: 'center'
                           }}
                         >
-                          <span>{isFeat ? '⭐' : '☆'}</span>
+                          <BrandingVectorIcon name="star" size={11} color={isFeat ? '#f59e0b' : '#94a3b8'} />
                         </button>
                       </td>
-                      <td style={{ textAlign: 'center', padding: '4px 6px', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
-                        <div style={{ display: 'flex', justifyContent: 'center', gap: '4px' }}>
+                      <td style={{ textAlign: 'center', padding: '3px 4px', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
+                        {(() => {
+                          const isVis = p.is_visible !== false && p.visible !== false && p.status !== 'oculto';
+                          return (
+                            <button
+                              type="button"
+                              onClick={() => handleToggleVisibilityProduct(p.id)}
+                              title={isVis ? "Clic para ocultar" : "Clic para hacer visible"}
+                              style={{
+                                background: isVis ? '#ecfdf5' : '#fffbeb',
+                                border: isVis ? '1px solid #10b981' : '1px solid #f59e0b',
+                                color: isVis ? '#065f46' : '#92400e',
+                                borderRadius: '10px',
+                                padding: '1px 6px',
+                                fontSize: '10px',
+                                fontWeight: '700',
+                                cursor: 'pointer',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '3px',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              <span style={{ width: 5, height: 5, borderRadius: '50%', background: isVis ? '#10b981' : '#f59e0b', display: 'inline-block' }} />
+                              {isVis ? 'Visible' : 'Oculto'}
+                            </button>
+                          );
+                        })()}
+                      </td>
+                      <td style={{ textAlign: 'center', padding: '3px 4px', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
+                        <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', gap: '3px' }}>
                           <button
                             className="dacas-action-pill"
                             onClick={() => { setEditingProduct(p); setShowProductForm(true); }}
-                            title="Editar producto completo"
-                            style={{ padding: '2px 6px', fontSize: '11px' }}
+                            title="Editar producto"
+                            style={{ padding: '2px 4px', fontSize: '10px', width: '22px', height: '22px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                           >
                             <BrandingVectorIcon name="edit" size={11} />
                           </button>
@@ -1239,7 +1600,7 @@ export default function CatalogTab({
                             className="dacas-action-pill"
                             onClick={() => handleOpenCloneModal(p)}
                             title="Clonar a otro país"
-                            style={{ padding: '2px 6px', fontSize: '11px', background: '#f0fdf4', color: '#16a34a', borderColor: '#bbf7d0' }}
+                            style={{ padding: '2px 4px', fontSize: '10px', width: '22px', height: '22px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', background: '#f0fdf4', color: '#16a34a', borderColor: '#bbf7d0' }}
                           >
                             <BrandingVectorIcon name="copy" size={11} color="#16a34a" />
                           </button>
@@ -1247,7 +1608,7 @@ export default function CatalogTab({
                             className="dacas-action-pill danger"
                             onClick={() => handleDeleteProduct(p.id)}
                             title="Eliminar producto"
-                            style={{ padding: '2px 6px', fontSize: '11px' }}
+                            style={{ padding: '2px 4px', fontSize: '10px', width: '22px', height: '22px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}
                           >
                             <BrandingVectorIcon name="trash" size={11} />
                           </button>
@@ -1268,7 +1629,7 @@ export default function CatalogTab({
           pageSize={productPageSize}
           onPageChange={setProductPage}
           onPageSizeChange={setProductPageSize}
-          pageSizeOptions={[15, 25, 50, 100]}
+          pageSizeOptions={[25, 50, 100, 200]}
         />
 
         {/* Slide-over Drawer Detalle de Producto */}

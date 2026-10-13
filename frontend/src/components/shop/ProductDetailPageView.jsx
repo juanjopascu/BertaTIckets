@@ -341,33 +341,94 @@ export default function ProductDetailPageView({
                 )}
               </div>
 
-              {product.stock !== undefined && (
-                <span style={{
-                  position: 'absolute',
-                  top: '14px',
-                  right: '14px',
-                  background: product.stock > 0 ? '#ECFDF5' : '#FEF2F2',
-                  border: `1.5px solid ${product.stock > 0 ? '#A7F3D0' : '#FECACA'}`,
-                  color: product.stock > 0 ? '#065F46' : '#991B1B',
-                  fontSize: '11px',
-                  fontWeight: '800',
-                  padding: '4px 10px',
-                  borderRadius: '8px',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '6px',
-                  boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
-                  zIndex: 2
-                }}>
+              {product.stock !== undefined && (() => {
+                const s = parseInt(product.stock, 10) || 0;
+                if (s === 0) {
+                  return (
+                    <span style={{
+                      position: 'absolute',
+                      top: '14px',
+                      right: '14px',
+                      background: '#F0F9FF',
+                      border: '1.5px solid #BAE6FD',
+                      color: '#0369A1',
+                      fontSize: '11px',
+                      fontWeight: '800',
+                      padding: '4px 10px',
+                      borderRadius: '8px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+                      zIndex: 2
+                    }}>
+                      <span style={{
+                        width: '7px',
+                        height: '7px',
+                        borderRadius: '50%',
+                        background: '#0284C7'
+                      }} />
+                      <span>{activeCountryObj.flag} A pedido · Llega en 30/45 días</span>
+                    </span>
+                  );
+                }
+                if (s > 0 && s < 5) {
+                  return (
+                    <span style={{
+                      position: 'absolute',
+                      top: '14px',
+                      right: '14px',
+                      background: '#FFFBEB',
+                      border: '1.5px solid #FDE68A',
+                      color: '#B45309',
+                      fontSize: '11px',
+                      fontWeight: '800',
+                      padding: '4px 10px',
+                      borderRadius: '8px',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+                      zIndex: 2
+                    }}>
+                      <span style={{
+                        width: '7px',
+                        height: '7px',
+                        borderRadius: '50%',
+                        background: '#F59E0B'
+                      }} />
+                      <span>{activeCountryObj.flag} Últimos equipos</span>
+                    </span>
+                  );
+                }
+                return (
                   <span style={{
-                    width: '7px',
-                    height: '7px',
-                    borderRadius: '50%',
-                    background: product.stock > 0 ? '#10B981' : '#EF4444'
-                  }} />
-                  <span>{activeCountryObj.flag} Stock {activeCountryCode}: {product.stock > 0 ? `${product.stock} un.` : 'Sin stock'}</span>
-                </span>
-              )}
+                    position: 'absolute',
+                    top: '14px',
+                    right: '14px',
+                    background: '#ECFDF5',
+                    border: '1.5px solid #A7F3D0',
+                    color: '#065F46',
+                    fontSize: '11px',
+                    fontWeight: '800',
+                    padding: '4px 10px',
+                    borderRadius: '8px',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    boxShadow: '0 2px 6px rgba(0,0,0,0.04)',
+                    zIndex: 2
+                  }}>
+                    <span style={{
+                      width: '7px',
+                      height: '7px',
+                      borderRadius: '50%',
+                      background: '#10B981'
+                    }} />
+                    <span>{activeCountryObj.flag} Stock Disponible</span>
+                  </span>
+                );
+              })()}
 
               {/* Botón flotante para Zoom */}
               <button
@@ -718,113 +779,132 @@ export default function ProductDetailPageView({
               )}
             </div>
 
-            {/* Disponibilidad de Stock en Tiempo Real */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '10px',
-              padding: '10px 14px',
-              background: product.stock > 0 ? '#F0FDF4' : '#FEF2F2',
-              border: `1px solid ${product.stock > 0 ? '#BBF7D0' : '#FECACA'}`,
-              borderRadius: '10px',
-              marginBottom: '14px'
-            }}>
-              <span style={{
-                width: '9px',
-                height: '9px',
-                borderRadius: '50%',
-                background: product.stock > 0 ? '#10B981' : '#EF4444',
-                boxShadow: product.stock > 0 ? '0 0 6px #10B981' : 'none',
-                flexShrink: 0
-              }} />
-              <div style={{ fontSize: '12px', color: '#071524' }}>
-                {product.stock > 0 ? (
-                  <span>
-                    <strong>Stock Disponible:</strong> {product.stock} unidades listas para despacho inmediato en Centro Logístico DACAS ({activeCountryObj.name}).
-                  </span>
-                ) : (
-                  <span style={{ color: '#DC2626', fontWeight: '700' }}>
-                    Sin stock disponible en depósito local. Consultar plazo de arribo o solicitar backorder.
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* Selector de Cantidad y Agregar al Carrito */}
-            {!isLocked && (
-              <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '12px', flexWrap: 'wrap' }}>
+            {/* Disponibilidad de Stock y Plazo de Entrega */}
+            {(() => {
+              const s = parseInt(product.stock, 10) || 0;
+              return (
                 <div style={{
                   display: 'flex',
                   alignItems: 'center',
-                  background: '#F1F5F9',
+                  gap: '10px',
+                  padding: '12px 16px',
+                  background: s === 0 ? '#F0F9FF' : (s < 5 ? '#FFFBEB' : '#F0FDF4'),
+                  border: `1.5px solid ${s === 0 ? '#BAE6FD' : (s < 5 ? '#FDE68A' : '#BBF7D0')}`,
                   borderRadius: '10px',
-                  padding: '3px',
-                  border: '1.5px solid #CBD5E1'
+                  marginBottom: '14px'
                 }}>
+                  <span style={{
+                    width: '9px',
+                    height: '9px',
+                    borderRadius: '50%',
+                    background: s === 0 ? '#0284C7' : (s < 5 ? '#F59E0B' : '#10B981'),
+                    boxShadow: `0 0 6px ${s === 0 ? '#0284C7' : (s < 5 ? '#F59E0B' : '#10B981')}`,
+                    flexShrink: 0
+                  }} />
+                  <div style={{ fontSize: '12.5px', color: '#071524' }}>
+                    {s === 0 ? (
+                      <div>
+                        <strong style={{ color: '#0284c7' }}>Equipo disponible a pedido:</strong>{' '}
+                        <span style={{ fontWeight: '700', color: '#0369a1' }}>Llega en 30/45 días</span> a Centro Logístico DACAS ({activeCountryObj.name}). Podés iniciar tu orden de compra formal ahora.
+                      </div>
+                    ) : s < 5 ? (
+                      <div>
+                        <strong style={{ color: '#B45309' }}>Últimos equipos:</strong> Disponibilidad inmediata para despacho en Centro Logístico DACAS ({activeCountryObj.name}).
+                      </div>
+                    ) : (
+                      <div>
+                        <strong style={{ color: '#166534' }}>Stock Disponible:</strong> Unidades listas para despacho inmediato en Centro Logístico DACAS ({activeCountryObj.name}).
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* Selector de Cantidad y Agregar al Carrito */}
+            {!isLocked && (
+              <div style={{ marginBottom: '12px' }}>
+                <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    background: '#F1F5F9',
+                    borderRadius: '10px',
+                    padding: '3px',
+                    border: '1.5px solid #CBD5E1'
+                  }}>
+                    <button
+                      onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                      aria-label="Restar cantidad"
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        background: '#FFFFFF',
+                        border: 'none',
+                        borderRadius: '7px',
+                        cursor: 'pointer',
+                        fontWeight: '800',
+                        fontSize: '18px',
+                        color: '#071524',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                      }}
+                    >
+                      -
+                    </button>
+                    <span style={{ width: '40px', textAlign: 'center', fontWeight: '800', fontSize: '15px', color: '#071524' }}>
+                      {quantity}
+                    </span>
+                    <button
+                      onClick={() => setQuantity(prev => ((product.stock && product.stock > 0) ? Math.min(product.stock, prev + 1) : prev + 1))}
+                      aria-label="Sumar cantidad"
+                      style={{
+                        width: '36px',
+                        height: '36px',
+                        background: '#FFFFFF',
+                        border: 'none',
+                        borderRadius: '7px',
+                        cursor: 'pointer',
+                        fontWeight: '800',
+                        fontSize: '18px',
+                        color: '#071524',
+                        boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                      }}
+                    >
+                      +
+                    </button>
+                  </div>
+
                   <button
-                    onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
-                    aria-label="Restar cantidad"
+                    onClick={handleAdd}
                     style={{
-                      width: '36px',
-                      height: '36px',
-                      background: '#FFFFFF',
+                      flex: '1 1 240px',
+                      background: added ? 'linear-gradient(135deg, #10B981, #059669)' : 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                      color: '#FFFFFF',
                       border: 'none',
-                      borderRadius: '7px',
-                      cursor: 'pointer',
+                      borderRadius: '10px',
+                      padding: '12px 22px',
                       fontWeight: '800',
-                      fontSize: '18px',
-                      color: '#071524',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                      fontSize: '14px',
+                      cursor: 'pointer',
+                      boxShadow: added ? '0 4px 15px rgba(16,185,129,0.35)' : '0 4px 15px rgba(15,164,222,0.35)',
+                      transition: 'all 0.2s',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      gap: '8px'
                     }}
                   >
-                    -
-                  </button>
-                  <span style={{ width: '40px', textAlign: 'center', fontWeight: '800', fontSize: '15px', color: '#071524' }}>
-                    {quantity}
-                  </span>
-                  <button
-                    onClick={() => setQuantity(prev => (product.stock ? Math.min(product.stock, prev + 1) : prev + 1))}
-                    aria-label="Sumar cantidad"
-                    style={{
-                      width: '36px',
-                      height: '36px',
-                      background: '#FFFFFF',
-                      border: 'none',
-                      borderRadius: '7px',
-                      cursor: 'pointer',
-                      fontWeight: '800',
-                      fontSize: '18px',
-                      color: '#071524',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
-                    }}
-                  >
-                    +
+                    <BrandingVectorIcon name={added ? "check" : "shopping-cart"} size={16} color="#ffffff" />
+                    <span>{added ? '¡Agregado con éxito!' : `Agregar al Carrito · $${(parsedPrice * quantity).toFixed(2)} USD`}</span>
                   </button>
                 </div>
 
-                <button
-                  onClick={handleAdd}
-                  style={{
-                    flex: '1 1 240px',
-                    background: added ? 'linear-gradient(135deg, #10B981, #059669)' : 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
-                    color: '#FFFFFF',
-                    border: 'none',
-                    borderRadius: '10px',
-                    padding: '12px 22px',
-                    fontWeight: '800',
-                    fontSize: '14px',
-                    cursor: 'pointer',
-                    boxShadow: added ? '0 4px 15px rgba(16,185,129,0.35)' : '0 4px 15px rgba(15,164,222,0.35)',
-                    transition: 'all 0.2s',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    gap: '8px'
-                  }}
-                >
-                  <BrandingVectorIcon name={added ? "check" : "shopping-cart"} size={16} color="#ffffff" />
-                  <span>{added ? '¡Agregado con éxito!' : `Agregar al Carrito · $${(parsedPrice * quantity).toFixed(2)} USD`}</span>
-                </button>
+                {(parseInt(product.stock, 10) || 0) === 0 && (
+                  <div style={{ marginTop: '6px', fontSize: '11.5px', color: '#0284c7', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <BrandingVectorIcon name="clock" size={13} color="#0284c7" />
+                    <span>Aclaración: Este equipo se procesa a pedido y llega en 30/45 días.</span>
+                  </div>
+                )}
               </div>
             )}
 

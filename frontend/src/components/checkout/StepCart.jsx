@@ -55,12 +55,23 @@ export default function StepCart({ cart, updateQty, removeFromCart, navigate, se
                       {item.brand || 'DACAS'}
                     </span>
                     <span style={{ color: '#94A3B8', fontSize: '11px', fontWeight: '600' }}>SKU: {item.sku || `PROD-${item.id}`}</span>
+                    <span style={{ background: '#EFF6FF', color: '#1D4ED8', padding: '2px 8px', borderRadius: '6px', fontSize: '10px', fontWeight: '800' }}>
+                      IVA: {item.tax_rate ?? item.iva ?? 21}%
+                    </span>
                   </div>
                   <div style={{ fontWeight: '800', fontSize: '14px', color: '#071524', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {item.name}
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '4px' }}>
-                    <span style={{ fontSize: '12px', color: '#10B981', fontWeight: '700' }}>● En Stock para Despacho</span>
+                    {(parseInt(item.stock, 10) || 0) === 0 ? (
+                      <span style={{ fontSize: '12px', color: '#0284c7', fontWeight: '800' }}>
+                        A pedido · Llega en 30/45 días
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: '12px', color: '#10B981', fontWeight: '700' }}>
+                        ● En Stock para Despacho
+                      </span>
+                    )}
                     <span style={{ color: '#CBD5E1' }}>•</span>
                     <span style={{ fontSize: '13px', color: '#64748B' }}>${parseFloat(item.price).toFixed(2)} USD / un.</span>
                   </div>

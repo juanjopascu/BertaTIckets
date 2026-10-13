@@ -4,6 +4,13 @@ export const COLORS = ['#0fa4de', '#38bdf8', '#0284c7', '#10b981', '#f59e0b', '#
 export const PIE_COLORS = ['#0fa4de', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'];
 export const CATEGORIES = ['networking', 'infraestructura', 'comunicaciones_unificadas', 'security', 'General'];
 
+export const LATAM_COUNTRIES = [
+  'Argentina', 'Bolivia', 'Chile', 'Colombia', 'Costa Rica', 'Ecuador',
+  'El Salvador', 'España', 'Estados Unidos', 'Guatemala', 'Honduras',
+  'México', 'Nicaragua', 'Panamá', 'Paraguay', 'Perú', 'Puerto Rico',
+  'República Dominicana', 'Uruguay', 'Venezuela'
+];
+
 export const statusLabel = (s) => ({
   pending: 'Pendiente',
   procesando: '🟡 En Preparación',
@@ -26,11 +33,23 @@ export const statusStyle = (s) => {
 export const translateRuleType = (t) => ({ discount: 'Descuento', tax: 'Impuesto', shipping: 'Envío', nationalization: 'Nacionalización' }[t] || t);
 export const translateValueType = (t) => ({ percentage: '% Porcentaje', fixed: '$ Fijo' }[t] || t);
 
+export const STANDARD_PAYMENT_TERMS = [
+  { value: 'contado', label: 'Pago Contado / Contra Factura', shortLabel: 'Contado' },
+  { value: '15_dias', label: '15 días fecha de emisión de factura', shortLabel: '15 días' },
+  { value: '30_dias', label: '30 días fecha de emisión de factura', shortLabel: '30 días' },
+  { value: '45_dias', label: '45 días fecha de emisión de factura', shortLabel: '45 días' },
+  { value: '60_dias', label: '60 días fecha de emisión de factura', shortLabel: '60 días' },
+  { value: '90_dias', label: '90 días fecha de emisión de factura (Especial)', shortLabel: '90 días' },
+  { value: '120_dias', label: '120 días fecha de emisión de factura (Especial)', shortLabel: '120 días' }
+];
+
 export const initialUserForm = {
   name: '', email: '', password: '', status: 'activo', cargo: 'Encargado de Compras',
   razon_social: '', tipo_cliente: 'Reseller / Integrador IT', direccion_legal: '', localidad: '', codigo_postal: '', ciudad: '', country_id: '', phone: '', fecha_limite_facturacion: '', web: '',
   cuenta_corriente_habilitada: false,
   cuenta_corriente_limite: 0,
+  dias_termino_pago: '30',
+  terminos_pago: ['30_dias'],
   report_to_country_id: '', vendedor: '', direccion_entrega: '', localidad_entrega: '', codigo_postal_entrega: '', ciudad_entrega: '', pais_entrega_id: '', tipo_iva: '', numero_nit: '',
   nombre_compras: '', telefono_compras: '', email_compras: '',
   nombre_pagos: '', telefono_pagos: '', email_pagos: '',
@@ -51,15 +70,23 @@ export const initialUserForm = {
 
 
 export const downloadCSV = (rows, headers, filename) => {
-  const escape = (str) => `"${String(str).replace(/"/g, '""')}"`;
-  const csv = "data:text/csv;charset=utf-8,\uFEFF"
-    + [headers.map(escape).join(','), ...rows.map(r => r.map(escape).join(','))].join('\n');
+  const escape = (str) => {
+    if (str === null || str === undefined) return '""';
+    return `"${String(str).replace(/"/g, '""')}"`;
+  };
+  const content = '\uFEFF' + [
+    headers.map(escape).join(','),
+    ...rows.map(r => r.map(escape).join(','))
+  ].join('\r\n');
+  const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
-  link.setAttribute('href', encodeURI(csv));
+  link.setAttribute('href', url);
   link.setAttribute('download', filename);
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 };
 
 
@@ -204,11 +231,59 @@ export const sanitizeVisualConfig = (config) => {
     custom: carouselList[1] || {}
   };
 
+  const defaultLoginPage = {
+    badgeText: 'Portal Privado B2B - Acceso Restringido',
+    title: 'Distribución Mayorista IT & Ciberseguridad',
+    description: 'Plataforma corporativa de abastecimiento tecnológico exclusiva para Canales, Integradores y Resellers autorizados en América Latina y Estados Unidos.',
+    footerText: 'DACAS Mayorista Oficial • Conectividad, Ciberseguridad & Data Centers',
+    features: [
+      {
+        id: 'feat_1',
+        icon: 'globe',
+        title: '12 Países con Stock Local',
+        desc: 'Acceda a inventario en tiempo real y facturación oficial en moneda local según su sede.',
+        enabled: true
+      },
+      {
+        id: 'feat_2',
+        icon: 'credit-card',
+        title: 'Condiciones Comerciales & Crédito',
+        desc: 'Precios mayoristas protegidos, margen de canal y gestión de cuenta corriente con verificación B2B.',
+        enabled: true
+      },
+      {
+        id: 'feat_3',
+        icon: 'truck',
+        title: 'Despacho Inmediato & Retiro HUB',
+        desc: 'Envíos asegurados y retiros en centros logísticos oficiales con trazabilidad integral.',
+        enabled: true
+      },
+      {
+        id: 'feat_4',
+        icon: 'check-circle',
+        title: 'Garantía Oficial Directa del Fabricante',
+        desc: 'Soporte postventa certificado, canalización de RMA y gestión técnica de licencias enterprise.',
+        enabled: true
+      }
+    ]
+  };
+
+  const loginPage = {
+    badgeText: config.loginPage?.badgeText || defaultLoginPage.badgeText,
+    title: config.loginPage?.title || defaultLoginPage.title,
+    description: config.loginPage?.description || defaultLoginPage.description,
+    footerText: config.loginPage?.footerText || defaultLoginPage.footerText,
+    features: Array.isArray(config.loginPage?.features) && config.loginPage.features.length > 0
+      ? config.loginPage.features
+      : defaultLoginPage.features
+  };
+
   return {
     ...config,
     heroSlides: sanitizedSlides,
     brandBanners,
-    homeCarousels
+    homeCarousels,
+    loginPage
   };
 };
 

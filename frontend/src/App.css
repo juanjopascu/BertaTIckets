@@ -2816,3 +2816,43 @@ button:not(.btn-submit):not(.logout-btn):not(.btn-delete) {
   border: 1px solid var(--border-color) !important;
   font-weight: 600 !important;
 }
+
+/* High-Density Condensed Product Catalog Table */
+.dacas-condensed-table {
+  width: 100% !important;
+  table-layout: fixed !important;
+  border-collapse: collapse !important;
+  margin: 0 !important;
+}
+
+.dacas-condensed-table th {
+  padding: 6px 8px !important;
+  font-size: 0.72rem !important;
+  font-weight: 800 !important;
+  white-space: nowrap !important;
+  letter-spacing: 0.02em !important;
+  height: 28px !important;
+}
+
+.dacas-condensed-table td {
+  padding: 3px 8px !important;
+  font-size: 0.76rem !important;
+  line-height: 1.25 !important;
+  vertical-align: middle !important;
+  height: 30px !important;
+}
+
+.dacas-condensed-table tr {
+  height: 30px !important;
+}
+
+.dacas-condensed-table tr:hover td {
+  background: rgba(15, 164, 222, 0.04) !important;
+}
+
+.dacas-condensed-table td span {
+  padding: 1px 5px !important;
+  font-size: 0.72rem !important;
+  border-radius: 4px !important;
+}
+
