@@ -1,5 +1,24 @@
 [
   {
+    "id": 405,
+    "timestamp": "2026-10-13T17:12:02.823Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Juan Pascuzzi\" (jpascuzzi@dacas.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Juan Pascuzzi",
+      "email": "jpascuzzi@dacas.com",
+      "rol": "admin",
+      "id": 5
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "5f8c34de884079ff3b1190042e5d9cc36f3130aea3dd6e769b0919b3477b38b1"
+    }
+  },
+  {
     "id": 404,
     "timestamp": "2026-10-09T21:24:38.601Z",
     "origen": "auth",
