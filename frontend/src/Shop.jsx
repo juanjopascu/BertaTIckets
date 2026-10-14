@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import DOMPurify from "dompurify";
 import BrandingVectorIcon from "./BrandingVectorIcon";
-import { API_BASE_URL } from "./apiConfig";
+import { API_BASE_URL, getProductImageUrl } from "./apiConfig";
 
 import {
   MOCK_PRODUCTS,
@@ -545,26 +545,30 @@ function ShopMain() {
           // Normalize images property and filter disallowed brands, hidden products, and partner whitelists
           const normalized = data
             .filter((p) => {
-              if (!p.brand || DISALLOWED_BRANDS.includes(p.brand.toLowerCase())) return false;
               if (p.is_visible === false || p.visible === false || p.status === 'oculto') return false;
-              if (clientAllowedUpper && !clientAllowedUpper.includes(String(p.brand).trim().toUpperCase())) {
+              if (p.brand && DISALLOWED_BRANDS.includes(p.brand.toLowerCase())) return false;
+              if (clientAllowedUpper && p.brand && !clientAllowedUpper.includes(String(p.brand).trim().toUpperCase())) {
                 return false;
               }
               return true;
             })
             .map((p) => {
-              const mainImg = p.image_url || (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : '');
+              const pBrand = (p.brand && String(p.brand).trim()) || 'DACAS';
+              const rawMainImg = p.image_url || (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : '');
+              const mainImg = getProductImageUrl(rawMainImg);
               const secImgs = Array.isArray(p.secondary_images) ? p.secondary_images : [];
               let combined = [];
-              if (mainImg) combined.push(mainImg);
+              if (rawMainImg) combined.push(mainImg);
               secImgs.forEach((img) => {
-                if (img && !combined.includes(img)) combined.push(img);
+                const resolved = getProductImageUrl(img);
+                if (resolved && !combined.includes(resolved)) combined.push(resolved);
               });
               if (combined.length === 0 && Array.isArray(p.images) && p.images.length > 0) {
-                combined = p.images;
+                combined = p.images.map(getProductImageUrl);
               }
               return {
                 ...p,
+                brand: pBrand,
                 image_url: mainImg,
                 images: combined
               };
@@ -581,7 +585,7 @@ function ShopMain() {
       : null;
 
     const cleanMocks = MOCK_PRODUCTS.filter((p) => {
-      if (!p.brand || DISALLOWED_BRANDS.includes(p.brand.toLowerCase())) return false;
+      if (p.brand && DISALLOWED_BRANDS.includes(p.brand.toLowerCase())) return false;
       if (clientAllowedUpper && !clientAllowedUpper.includes(String(p.brand).trim().toUpperCase())) {
         return false;
       }

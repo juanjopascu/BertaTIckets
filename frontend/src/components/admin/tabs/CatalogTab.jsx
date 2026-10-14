@@ -259,33 +259,31 @@ export default function CatalogTab({
   const exportProductsCSV = () => {
     downloadCSV(
       products.map(p => [
-        p.id,
+        p.sku || '',
         p.name,
-        p.brand || '',
+        p.brand || 'DACAS',
         p.category || 'General',
         p.subcategory || '',
-        p.sku || '',
-        `$${p.price}`,
-        p.promotional_price ? `$${p.promotional_price}` : '',
+        p.price || '0.00',
+        p.promotional_price || '',
         p.tax_rate !== undefined ? p.tax_rate : (p.iva !== undefined ? p.iva : 21),
-        p.stock,
+        p.stock !== undefined ? p.stock : 0,
         (p.is_visible !== false && p.visible !== false && p.status !== 'oculto' ? 'visible' : 'oculto'),
+        p.description || '',
+        p.image_url || '',
+        p.datasheet_url || '',
+        (Array.isArray(p.related_skus) ? p.related_skus.join(', ') : (p.related_ids ? products.filter(x => p.related_ids.includes(x.id)).map(x => x.sku).filter(Boolean).join(', ') : '')),
         p.weight || '',
         p.depth || p.length || '',
         p.width || '',
         p.height || '',
-        p.description || '',
-        p.image_url || '',
-        (Array.isArray(p.highlights) ? p.highlights.join(' | ') : (p.highlights || '')),
         p.warranty || '12 Meses con RMA y Soporte DACAS',
-        p.datasheet_url || '',
-        p.condition || 'Nuevo Sellado',
-        (Array.isArray(p.related_skus) ? p.related_skus.join(', ') : (p.related_ids ? products.filter(x => p.related_ids.includes(x.id)).map(x => x.sku).filter(Boolean).join(', ') : ''))
+        p.condition || 'Nuevo Sellado'
       ]),
       [
-        'ID', 'Nombre', 'Marca', 'Categoria', 'Subcategoria', 'SKU', 'Precio_USD', 'Precio_Promo_USD', 'IVA_%', 'Stock', 'Visibilidad',
-        'Peso_kg', 'Largo_cm', 'Ancho_cm', 'Alto_cm', 'Descripcion', 'URL_Imagen', 'Caracteristicas',
-        'Garantia', 'Datasheet_PDF', 'Condicion', 'Productos_Relacionados'
+        'SKU', 'Nombre', 'Marca', 'Categoria', 'Subcategoria', 'Precio_USD', 'Precio_Promo_USD', 'IVA_%', 'Stock', 'Visibilidad',
+        'Descripcion', 'URL_Imagen', 'Datasheet_URL', 'Productos_Relacionados', 'Peso_kg', 'Largo_cm', 'Ancho_cm', 'Alto_cm',
+        'Garantia', 'Condicion'
       ],
       `catalogo_productos_${selectedCountryScope || 'all'}_${new Date().toISOString().split('T')[0]}.csv`
     );
@@ -293,18 +291,18 @@ export default function CatalogTab({
 
   // Bulk CSV Handlers
   const CSV_HEADER_SYNONYMS = {
-    sku: ['sku', 'codigo', 'código', 'cod', 'item_code', 'part_number', 'pn'],
-    name: ['name', 'nombre', 'producto', 'titulo', 'título', 'item', 'descripcion_corta'],
-    brand: ['brand', 'marca', 'fabricante'],
-    category: ['category', 'categoria', 'categoría', 'rubro', 'familia'],
+    sku: ['sku', 'codigo', 'código', 'cod', 'item_code', 'part_number', 'partnumber', 'p_n', 'pn', 'modelo', 'model'],
+    name: ['name', 'nombre', 'producto', 'product', 'titulo', 'título', 'item', 'descripcion_corta', 'desc'],
+    brand: ['brand', 'marca', 'fabricante', 'manufacturer'],
+    promotional_price: ['promotional_price', 'precio_promocional', 'precio_promo_usd', 'precio_promo', 'promo_price', 'precio promo', 'oferta', 'promo'],
+    price: ['price', 'precio', 'precio_usd', 'costo', 'valor', 'pvp', 'precio_lista', 'lista', 'usd', 'unit_price', 'precio_unitario'],
+    category: ['category', 'categoria', 'categoría', 'rubro', 'familia', 'seccion', 'sección'],
     subcategory: ['subcategory', 'subcategoria', 'subcategoría', 'tipo_equipo', 'sub_categoria', 'subrubro'],
-    price: ['price', 'precio', 'precio_usd', 'costo', 'valor'],
-    promotional_price: ['promotional_price', 'precio_promocional', 'precio_promo_usd', 'precio_promo', 'promo_price', 'precio promo', 'oferta'],
     iva: ['iva', 'iva_%', 'tax_rate', 'alicuota_iva', 'alícuota_iva', 'alicuota', 'porcentaje_iva', 'tasa_iva', 'impuesto_iva'],
-    stock: ['stock', 'cantidad', 'cant', 'inventario', 'existencia'],
+    stock: ['stock', 'cantidad', 'cant', 'qty', 'inventario', 'existencia', 'unidades'],
     visible: ['visible', 'is_visible', 'visibilidad', 'estado', 'status', 'activo'],
     description: ['description', 'descripcion', 'descripción', 'detalle', 'cuerpo'],
-    image_url: ['image_url', 'url_imagen', 'imagen', 'foto', 'imagen_url', 'img'],
+    image_url: ['image_url', 'url_imagen', 'imagen', 'foto', 'imagen_url', 'img', 'image', 'picture', 'url_foto'],
     datasheet_url: ['datasheet_url', 'datasheet', 'datasheet_pdf', 'ficha_tecnica', 'ficha técnica', 'ficha_tecnica_url', 'link_datasheet', 'url_datasheet', 'pdf_url'],
     related_skus: ['related_skus', 'productos_relacionados', 'skus_relacionados', 'relacionados', 'productos relacionados', 'skus relacionados', 'cross_selling', 'related'],
     weight: ['weight', 'peso', 'peso_kg'],
@@ -322,12 +320,23 @@ export default function CatalogTab({
       .toLowerCase()
       .replace(/^["']|["']$/g, '')
       .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/[\s\-_]+/g, '_');
+      .replace(/[\s\-_/.]+/g, '_')
+      .replace(/^_+|_+$/g, '');
 
+    // 1. Coincidencia exacta de sinónimos
     for (const [canonical, synList] of Object.entries(CSV_HEADER_SYNONYMS)) {
       for (const syn of synList) {
-        const cleanSyn = syn.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[\s\-_]+/g, '_');
-        if (clean === cleanSyn || clean.startsWith(cleanSyn + '_') || clean === cleanSyn.replace(/_/g, '')) {
+        const cleanSyn = syn.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[\s\-_/.]+/g, '_');
+        if (clean === cleanSyn || clean === cleanSyn.replace(/_/g, '')) {
+          return canonical;
+        }
+      }
+    }
+    // 2. Coincidencia por prefijo (promotional_price se evalúa antes de price)
+    for (const [canonical, synList] of Object.entries(CSV_HEADER_SYNONYMS)) {
+      for (const syn of synList) {
+        const cleanSyn = syn.normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[\s\-_/.]+/g, '_');
+        if (clean.startsWith(cleanSyn + '_') || cleanSyn.startsWith(clean + '_')) {
           return canonical;
         }
       }
@@ -579,16 +588,63 @@ export default function CatalogTab({
             }
           });
 
-          const cleanName = String(rowObj.name || '').trim();
-          const cleanSku = String(rowObj.sku || '').trim();
+          // Sanitizaciones defensivas por si las columnas vienen desfasadas en el CSV
+          // 1. Si la categoría contiene una URL de imagen, moverla a image_url
+          if (/^https?:\/\//i.test(rowObj.category) || (typeof rowObj.category === 'string' && rowObj.category.includes('/uploads/'))) {
+            if (!rowObj.image_url) rowObj.image_url = rowObj.category;
+            rowObj.category = 'General';
+          }
+          if (/^https?:\/\//i.test(rowObj.subcategory) || (typeof rowObj.subcategory === 'string' && rowObj.subcategory.includes('/uploads/'))) {
+            if (!rowObj.image_url) rowObj.image_url = rowObj.subcategory;
+            rowObj.subcategory = '';
+          }
+
+          let cleanName = String(rowObj.name || '').trim();
+          let cleanSku = String(rowObj.sku || '').trim();
+
+          // 2. Si cleanName está vacío pero hay cleanSku largo, podría ser que el nombre vino en SKU
+          if (!cleanName && cleanSku && cleanSku.length > 15) {
+            cleanName = cleanSku;
+            cleanSku = '';
+          }
 
           if (!cleanName && !cleanSku) {
             continue;
+          }
+          if (!cleanName) {
+            cleanName = `Producto ${cleanSku}`;
+          }
+
+          // 3. Si la marca está vacía o es DACAS por defecto, inferir del nombre
+          if (!rowObj.brand || rowObj.brand === 'DACAS') {
+            const nLower = cleanName.toLowerCase();
+            const KNOWN_BRANDS = ['fortinet', 'cisco', 'mikrotik', 'vertiv', 'aruba', 'avaya', 'audiocodes', 'panduit', 'eaton', 'allied telesis', 'ubiquiti', 'dell', 'poly', 'juniper', 'huawei', 'tp-link', 'tplink'];
+            const matched = KNOWN_BRANDS.find(b => nLower.includes(b));
+            if (matched) {
+              rowObj.brand = matched.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+              if (rowObj.brand === 'Tplink' || rowObj.brand === 'Tp-link') rowObj.brand = 'TP-Link';
+            } else {
+              rowObj.brand = 'DACAS';
+            }
           }
 
           const rawPrice = String(rowObj.price || '0').replace('$', '').replace(/,/g, '.').trim();
           const pNum = parseFloat(rawPrice);
           rowObj.price = !isNaN(pNum) ? pNum.toFixed(2) : '0.00';
+
+          // 4. Si el SKU es un importe decimal (ej: "449.00") y el precio estaba en 0.00
+          if (/^\d+\.\d{2}$/.test(cleanSku) && (rowObj.price === '0.00' || !rowObj.price)) {
+            rowObj.price = parseFloat(cleanSku).toFixed(2);
+            cleanSku = '';
+          }
+
+          // 5. Si no hay SKU, generar uno legible
+          if (!cleanSku) {
+            const autoPrefix = cleanName.split(/\s+/).slice(0, 2).map(w => w.replace(/[^a-zA-Z0-9]/g, '').slice(0, 3).toUpperCase()).filter(Boolean).join('-');
+            cleanSku = (autoPrefix ? autoPrefix + '-' : 'DAC-') + Math.random().toString(36).substring(2, 6).toUpperCase();
+          }
+          rowObj.sku = cleanSku;
+          rowObj.name = cleanName;
 
           if (rowObj.promotional_price) {
             const rawPromo = String(rowObj.promotional_price).replace('$', '').replace(/,/g, '.').trim();

@@ -5799,9 +5799,7 @@ router.post('/upload', authenticateToken, requireAdmin, upload.array('files', 15
     if (!req.files || req.files.length === 0) {
       return res.status(400).json({ error: 'No se subieron archivos' });
     }
-    const host = req.get('host');
-    const protocol = req.protocol;
-    const urls = req.files.map(file => `${protocol}://${host}/uploads/${file.filename}`);
+    const urls = req.files.map(file => `/uploads/${file.filename}`);
     res.json({
       success: true,
       urls: urls,
@@ -5811,7 +5809,7 @@ router.post('/upload', authenticateToken, requireAdmin, upload.array('files', 15
         originalname: f.originalname,
         size: f.size,
         mimetype: f.mimetype,
-        url: `${protocol}://${host}/uploads/${f.filename}`
+        url: `/uploads/${f.filename}`
       }))
     });
   } catch (error) {
@@ -5870,7 +5868,7 @@ router.post('/admin/products', authenticateToken, requireAdmin, async (req, res)
     let result;
     if (isPgConnected) {
       const {
-        name, description, price, stock, image_url,
+        name, description, price, stock, image_url, secondary_images = [],
         brand = '', category = 'General', subcategory = '', sku = '',
         promotional_price = null, weight = '', depth = '', width = '', height = '',
         highlights = '', warranty = '12 Meses con RMA y Soporte DACAS',
@@ -5878,15 +5876,18 @@ router.post('/admin/products', authenticateToken, requireAdmin, async (req, res)
       } = productPayload;
       const cleanName = String(name || '').trim();
       const cleanDescription = normalizeProductDescription(description);
+      const cleanBrand = String(brand || '').trim() || 'DACAS';
+      const cleanCategory = String(category || '').trim() || 'General';
+      const secImgs = JSON.stringify(Array.isArray(secondary_images) ? secondary_images : (Array.isArray(productPayload.images) ? productPayload.images.slice(1) : []));
       result = await pool.query(
         `INSERT INTO ecommerce_products (
-          name, description, price, stock, image_url, country_code, country_id,
+          name, description, price, stock, image_url, secondary_images, country_code, country_id,
           brand, category, subcategory, sku, promotional_price, weight, depth, width, height,
           highlights, warranty, datasheet_url, condition, related_skus, is_visible, visible, status
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24) RETURNING *`,
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25) RETURNING *`,
         [
-          cleanName, cleanDescription, price, stock, image_url, targetCountry.code, targetCountry.id,
-          brand, category, subcategory, sku, promotional_price, weight, depth, width, height,
+          cleanName, cleanDescription, price, stock, image_url, secImgs, targetCountry.code, targetCountry.id,
+          cleanBrand, cleanCategory, subcategory, sku, promotional_price, weight, depth, width, height,
           highlights, warranty, datasheet_url, condition, JSON.stringify(related_skus),
           is_visible, is_visible, status
         ]
@@ -5973,12 +5974,45 @@ router.post(['/admin/products/bulk-upload', '/admin/products/bulk'], authenticat
       }
       const status = is_visible ? 'activo' : 'oculto';
 
-      const brand = String(item.brand || item.marca || item.Marca || '').trim();
-      const category = String(item.category || item.categoria || item.Categoría || 'General').trim() || 'General';
-      const subcategory = String(item.subcategory || item.subcategoria || item.Subcategoria || item.subcategoría || item.Subcategoría || item.tipo_equipo || item.Tipo_Equipo || '').trim();
-      const sku = String(item.sku || item.SKU || item.codigo || item.Código || '').trim();
-      const description = String(item.description || item.descripcion || item.Descripción || '').trim();
-      const image_url = String(item.image_url || item.imagen || item.Imagen || item.foto || '').trim();
+      let brand = String(item.brand || item.marca || item.Marca || '').trim();
+      let category = String(item.category || item.categoria || item.Categoría || 'General').trim() || 'General';
+      let subcategory = String(item.subcategory || item.subcategoria || item.Subcategoria || item.subcategoría || item.Subcategoría || item.tipo_equipo || item.Tipo_Equipo || '').trim();
+      let sku = String(item.sku || item.SKU || item.codigo || item.Código || '').trim();
+      const description = String(item.description || item.descripcion || item.Descripción || `<p>${name}</p>`).trim();
+      let image_url = String(item.image_url || item.imagen || item.Imagen || item.foto || '').trim();
+
+      // AUTO-CORRECCIONES DEFENSIVAS ANTE CSVs CON COLUMNAS DESFASADAS
+      // 1. Si la categoría recibida es una URL web o de imagen, mover a image_url y restaurar General
+      if (/^https?:\/\//i.test(category) || category.includes('/uploads/')) {
+        if (!image_url) image_url = category;
+        category = 'General';
+      }
+      if (/^https?:\/\//i.test(subcategory) || subcategory.includes('/uploads/')) {
+        if (!image_url) image_url = subcategory;
+        subcategory = '';
+      }
+      // 2. Si el SKU es un importe numérico decimal (ej: "449.00") y el precio estaba en 0.00
+      if (/^\d+\.\d{2}$/.test(sku) && (price === '0.00' || !price)) {
+        sku = 'DAC-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+      }
+      // 3. Si no hay marca, inferirla automáticamente del nombre del producto o usar DACAS
+      if (!brand) {
+        const nLower = name.toLowerCase();
+        const KNOWN_BRANDS = ['fortinet', 'cisco', 'mikrotik', 'vertiv', 'aruba', 'avaya', 'audiocodes', 'panduit', 'eaton', 'allied telesis', 'ubiquiti', 'dell', 'poly', 'juniper', 'huawei', 'tp-link', 'tplink'];
+        const matched = KNOWN_BRANDS.find(b => nLower.includes(b));
+        if (matched) {
+          brand = matched.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+          if (brand === 'Tplink' || brand === 'Tp-link') brand = 'TP-Link';
+        } else {
+          brand = 'DACAS';
+        }
+      }
+      // 4. Si no hay SKU, generar uno único y legible
+      if (!sku) {
+        const autoPrefix = name.split(/\s+/).slice(0, 2).map(w => w.replace(/[^a-zA-Z0-9]/g, '').slice(0, 3).toUpperCase()).filter(Boolean).join('-');
+        sku = (autoPrefix ? autoPrefix + '-' : 'DAC-') + Math.random().toString(36).substring(2, 6).toUpperCase();
+      }
+
       const weight = item.weight !== undefined ? String(item.weight).replace(',', '.').replace(/[^0-9.]/g, '').trim() : (item.peso !== undefined ? String(item.peso).replace(',', '.').replace(/[^0-9.]/g, '').trim() : '');
       const depth = item.depth !== undefined ? String(item.depth).replace(',', '.').replace(/[^0-9.]/g, '').trim() : (item.largo !== undefined ? String(item.largo).replace(',', '.').replace(/[^0-9.]/g, '').trim() : (item.profundidad !== undefined ? String(item.profundidad).replace(',', '.').replace(/[^0-9.]/g, '').trim() : ''));
       const width = item.width !== undefined ? String(item.width).replace(',', '.').replace(/[^0-9.]/g, '').trim() : (item.ancho !== undefined ? String(item.ancho).replace(',', '.').replace(/[^0-9.]/g, '').trim() : '');
@@ -6185,24 +6219,28 @@ router.put('/admin/products/:id', authenticateToken, requireAdmin, async (req, r
     let result;
     if (isPgConnected) {
       const {
-        name, description, price, stock, image_url, brand, category, subcategory, sku, promotional_price,
+        name, description, price, stock, image_url, secondary_images, brand, category, subcategory, sku, promotional_price,
         weight, depth, width, height, highlights, warranty, datasheet_url, condition, related_ids, related_skus
       } = req.body;
       const is_visible = req.body.is_visible !== undefined ? Boolean(req.body.is_visible) : (req.body.visible !== undefined ? Boolean(req.body.visible) : (req.body.status !== 'oculto'));
       const status = req.body.status || (is_visible ? 'activo' : 'oculto');
       const cleanName = String(name || '').trim();
       const cleanDescription = normalizeProductDescription(description);
+      const cleanBrand = String(brand !== undefined ? brand : '').trim() || 'DACAS';
+      const cleanCategory = String(category !== undefined ? category : 'General').trim() || 'General';
+      const secImgs = JSON.stringify(Array.isArray(secondary_images) ? secondary_images : (Array.isArray(req.body.images) ? req.body.images.slice(1) : []));
+
       result = await pool.query(
         `UPDATE ecommerce_products 
-         SET name = $1, description = $2, price = $3, stock = $4, image_url = $5,
-             brand = $6, category = $7, sku = $8, promotional_price = $9, weight = $10,
-             depth = $11, width = $12, height = $13, highlights = $14, warranty = $15,
-             datasheet_url = $16, condition = $17, related_ids = $18, related_skus = $19,
-             subcategory = $20, is_visible = $21, visible = $22, status = $23
-         WHERE id = $24 RETURNING *`,
+         SET name = $1, description = $2, price = $3, stock = $4, image_url = $5, secondary_images = $6,
+             brand = $7, category = $8, sku = $9, promotional_price = $10, weight = $11,
+             depth = $12, width = $13, height = $14, highlights = $15, warranty = $16,
+             datasheet_url = $17, condition = $18, related_ids = $19, related_skus = $20,
+             subcategory = $21, is_visible = $22, visible = $23, status = $24
+         WHERE id = $25 RETURNING *`,
         [
-          cleanName, cleanDescription, price, stock, image_url,
-          brand, category, sku, promotional_price, weight,
+          cleanName, cleanDescription, price, stock, image_url, secImgs,
+          cleanBrand, cleanCategory, sku, promotional_price, weight,
           depth, width, height, highlights, warranty,
           datasheet_url, condition, JSON.stringify(related_ids || []), JSON.stringify(related_skus || []),
           subcategory || '',

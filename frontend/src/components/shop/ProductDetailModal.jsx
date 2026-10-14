@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import DOMPurify from 'dompurify';
 import BrandingVectorIcon from '../../BrandingVectorIcon';
+import { getProductImageUrl } from '../../apiConfig';
 
 /* ─── POP-UP MODAL WITH INTERACTIVE PHOTO CAROUSEL & DETAILS ─── */
 export default function ProductDetailModal({ product, clientUser, onOpenAuth, onClose, onAddToCart }) {
-  const mainImage = product.image_url || (Array.isArray(product.images) && product.images[0]) || '';
-  const images = (Array.isArray(product.images) && product.images.length > 0)
-    ? (mainImage && !product.images.includes(mainImage) ? [mainImage, ...product.images] : product.images)
-    : (mainImage ? [mainImage] : []);
+  const rawMainImage = product.image_url || (Array.isArray(product.images) && product.images[0]) || '';
+  const mainImage = getProductImageUrl(rawMainImage);
+  const rawImages = (Array.isArray(product.images) && product.images.length > 0)
+    ? (rawMainImage && !product.images.includes(rawMainImage) ? [rawMainImage, ...product.images] : product.images)
+    : (rawMainImage ? [rawMainImage] : []);
+  const images = rawImages.map(getProductImageUrl);
 
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [quantity, setQuantity] = useState(1);

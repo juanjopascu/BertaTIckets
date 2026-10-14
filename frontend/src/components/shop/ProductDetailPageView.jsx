@@ -3,6 +3,7 @@ import DOMPurify from 'dompurify';
 import BrandingVectorIcon from '../../BrandingVectorIcon';
 import ProductCarousel from './ProductCarousel';
 import { DACAS_COUNTRIES, CATEGORIES } from './shopCatalogData';
+import { getProductImageUrl } from '../../apiConfig';
 
 /* ─── PRODUCT DETAIL PAGE VIEW (PÁGINA DEDICADA DE PRODUCTO) ─── */
 export default function ProductDetailPageView({
@@ -24,10 +25,12 @@ export default function ProductDetailPageView({
   })();
   const activeCountryObj = selectedCountryObj || DACAS_COUNTRIES.find((c) => c.code === activeCountryCode) || DACAS_COUNTRIES[1] || { flag: '🇦🇷', name: 'Argentina' };
 
-  const mainImage = product.image_url || (Array.isArray(product.images) && product.images[0]) || '';
-  const images = (Array.isArray(product.images) && product.images.length > 0)
-    ? (mainImage && !product.images.includes(mainImage) ? [mainImage, ...product.images] : product.images)
-    : (mainImage ? [mainImage] : []);
+  const rawMainImage = product.image_url || (Array.isArray(product.images) && product.images[0]) || '';
+  const mainImage = getProductImageUrl(rawMainImage);
+  const rawImages = (Array.isArray(product.images) && product.images.length > 0)
+    ? (rawMainImage && !product.images.includes(rawMainImage) ? [rawMainImage, ...product.images] : product.images)
+    : (rawMainImage ? [rawMainImage] : []);
+  const images = rawImages.map(getProductImageUrl);
 
   const [activeImageIdx, setActiveImageIdx] = useState(0);
   const [quantity, setQuantity] = useState(1);

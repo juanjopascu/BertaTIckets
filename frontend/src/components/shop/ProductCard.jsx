@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import BrandingVectorIcon from '../../BrandingVectorIcon';
 import { DACAS_COUNTRIES } from './shopCatalogData';
+import { getProductImageUrl } from '../../apiConfig';
 
 function getCleanDescription(desc) {
   if (desc == null) return '';
@@ -31,10 +32,12 @@ export default function ProductCard({
     try { return localStorage.getItem('dacas_selected_country') || 'AR'; } catch { return 'AR'; }
   })();
   const activeCountryObj = selectedCountryObj || DACAS_COUNTRIES.find((c) => c.code === activeCountryCode) || DACAS_COUNTRIES[1] || { flag: '🇦🇷', name: 'Argentina' };
-  const mainImage = product.image_url || (Array.isArray(product.images) && product.images[0]) || '';
-  const images = (Array.isArray(product.images) && product.images.length > 0)
-    ? (mainImage && !product.images.includes(mainImage) ? [mainImage, ...product.images] : product.images)
-    : (mainImage ? [mainImage] : []);
+  const rawMainImage = product.image_url || (Array.isArray(product.images) && product.images[0]) || '';
+  const mainImage = getProductImageUrl(rawMainImage);
+  const rawImages = (Array.isArray(product.images) && product.images.length > 0)
+    ? (rawMainImage && !product.images.includes(rawMainImage) ? [rawMainImage, ...product.images] : product.images)
+    : (rawMainImage ? [rawMainImage] : []);
+  const images = rawImages.map(getProductImageUrl);
   const isLocked = !clientUser || product.is_locked || product.price === null || product.price === undefined;
 
   return (
