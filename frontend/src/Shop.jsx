@@ -925,11 +925,11 @@ function ShopMain() {
       }
       const q = search.toLowerCase().trim();
       const matchSearch = !search ||
-        (p.name && p.name.toLowerCase().includes(q)) ||
-        (p.description && p.description.toLowerCase().includes(q)) ||
-        (p.sku && p.sku.toLowerCase().includes(q)) ||
-        (p.brand && p.brand.toLowerCase().includes(q)) ||
-        (p.subcategory && p.subcategory.toLowerCase().includes(q));
+        (p.name && typeof p.name === 'string' && p.name.toLowerCase().includes(q)) ||
+        (p.description && (typeof p.description === 'string' ? p.description : JSON.stringify(p.description)).toLowerCase().includes(q)) ||
+        (p.sku && typeof p.sku === 'string' && p.sku.toLowerCase().includes(q)) ||
+        (p.brand && typeof p.brand === 'string' && p.brand.toLowerCase().includes(q)) ||
+        (p.subcategory && typeof p.subcategory === 'string' && p.subcategory.toLowerCase().includes(q));
       const matchCat = isProductInCat(p, activeCategory);
       const matchBrand = !selectedBrand || selectedBrand === 'all' || (p.brand && p.brand.toLowerCase() === selectedBrand.toLowerCase());
       const matchSubcat = !selectedSubcategory || selectedSubcategory === 'all' ||
@@ -1088,34 +1088,6 @@ function ShopMain() {
             <span style={{ fontSize: '15px', lineHeight: 1 }}>{selectedCountryObj.flag}</span>
             <span>Tienda {selectedCountryObj.name}</span>
           </div>
-
-          {/* Botón Home */}
-          <button
-            type="button"
-            onClick={handleGoHome}
-            style={{
-              background: activeNavTab === 'home' ? '#E0F2FE' : '#F8FAFC',
-              border: '1.5px solid',
-              borderColor: activeNavTab === 'home' ? '#0fa4de' : '#E2E8F0',
-              borderRadius: '999px',
-              padding: '8px 16px',
-              cursor: 'pointer',
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              color: '#0fa4de',
-              fontSize: '13px',
-              fontWeight: '800',
-              flexShrink: 0,
-              boxShadow: '0 1px 3px rgba(0,0,0,0.04)',
-              transition: 'all 0.15s ease'
-            }}
-            title="Ir a Inicio"
-          >
-            <BrandingVectorIcon name="home" size={15} color="#0fa4de" />
-            <span>Inicio</span>
-          </button>
-
           {/* Search Bar */}
           <form style={{ flex: 1, minWidth: 0, position: 'relative' }} onSubmit={(e) => e.preventDefault()}>
             <input

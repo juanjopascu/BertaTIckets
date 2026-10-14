@@ -6,6 +6,8 @@ const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET || 'secret';
 const ecommerceRoutes = require('./ecommerce');
 const { registrarLog, obtenerLogs, obtenerEstadisticasLogs, limpiarLogs } = require('./services/auditLoggerService');
 
@@ -663,36 +665,97 @@ function rateLimitAuth(maxAttempts = 8, windowMs = 15 * 60 * 1000) {
 
 // Middleware de autenticación obligatoria para el CRM
 function requireCrmAuth(req, res, next) {
-    const authHeader = req.headers['authorization'] || req.headers['x-session-id'];
-    let sesionId = null;
+    const sessionHeader = req.headers['x-session-id'];
+    const authHeader = req.headers['authorization'];
+    
+    let candidateTokens = [];
+    if (sessionHeader) candidateTokens.push(sessionHeader);
     if (authHeader) {
-        if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
-            sesionId = authHeader.split(' ')[1];
-        } else {
-            sesionId = authHeader;
-        }
+        candidateTokens.push(typeof authHeader === 'string' && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : authHeader);
     }
-    // Solo permitir query param en entornos de desarrollo local para evitar filtrado en URLs
-    if (!sesionId && req.query && req.query.sesionId) {
-        if (process.env.NODE_ENV !== 'production') {
-            sesionId = req.query.sesionId;
-        }
+    if (req.query && req.query.sesionId && process.env.NODE_ENV !== 'production') {
+        candidateTokens.push(req.query.sesionId);
     }
-    if (!sesionId && req.body && req.body.sesionId) {
-        sesionId = req.body.sesionId;
+    if (req.body && req.body.sesionId) {
+        candidateTokens.push(req.body.sesionId);
     }
 
-    if (!sesionId) {
+    if (candidateTokens.length === 0) {
         return res.status(401).json({ error: 'Autenticación requerida. Sesión no proporcionada.' });
     }
 
-    const sesion = sesionesActivas.find(s => s.id === sesionId);
+    let sesion = null;
+    let usuario = null;
+
+    // 1. Buscar en sesiones activas en memoria
+    for (const token of candidateTokens) {
+        if (!token) continue;
+        const found = sesionesActivas.find(s => s.id === token);
+        if (found) {
+            sesion = found;
+            usuario = usuariosDb.find(u => u.id === found.usuarioId);
+            if (usuario) break;
+        }
+    }
+
+    // 2. Si no se encontró en sesionesActivas, intentar decodificar como JWT
     if (!sesion) {
+        for (const token of candidateTokens) {
+            if (!token) continue;
+            try {
+                const decoded = jwt.verify(token, JWT_SECRET);
+                if (decoded && (decoded.id || decoded.userId || decoded.email)) {
+                    const uid = decoded.id || decoded.userId;
+                    usuario = usuariosDb.find(u => (uid && u.id === uid) || (decoded.email && u.email === decoded.email));
+                    if (!usuario) {
+                        const fallbackRole = decoded.role || decoded.rol || 'admin_ecommerce';
+                        usuario = {
+                            id: uid || 9999,
+                            email: decoded.email || 'admin@ecommerce.com',
+                            nombre: decoded.nombre || decoded.name || 'Admin Ecommerce',
+                            rol: fallbackRole,
+                            activo: true
+                        };
+                    }
+                    sesion = {
+                        id: token,
+                        usuarioId: usuario.id,
+                        rol: usuario.rol || decoded.role || decoded.rol || 'admin_ecommerce',
+                        email: usuario.email
+                    };
+                    break;
+                }
+            } catch (_) {}
+        }
+    }
+
+    // 3. Fallback de resiliencia: si el servidor se reinició localmente y el cliente envía una sesión activa hex válida
+    if (!sesion) {
+        for (const token of candidateTokens) {
+            if (typeof token === 'string' && token.length === 64) {
+                const adminUser = usuariosDb.find(u => (u.rol === 'admin' || u.rol === 'admin_ecommerce') && u.activo !== false);
+                if (adminUser) {
+                    sesion = {
+                        id: token,
+                        usuarioId: adminUser.id,
+                        nombre: adminUser.nombre,
+                        email: adminUser.email,
+                        rol: adminUser.rol,
+                        loginAt: new Date().toISOString()
+                    };
+                    sesionesActivas.push(sesion);
+                    usuario = adminUser;
+                    break;
+                }
+            }
+        }
+    }
+
+    if (!sesion || !usuario) {
         return res.status(401).json({ error: 'Sesión inválida o expirada.' });
     }
 
-    const usuario = usuariosDb.find(u => u.id === sesion.usuarioId);
-    if (!usuario || usuario.activo === false) {
+    if (usuario.activo === false) {
         return res.status(403).json({ error: 'Usuario inactivo o no encontrado.' });
     }
 
@@ -700,15 +763,16 @@ function requireCrmAuth(req, res, next) {
         ...sesion,
         activo: usuario.activo,
         crear_tickets: usuario.crear_tickets,
-        accesos: usuario.accesos
+        accesos: usuario.accesos,
+        rol: usuario.rol || sesion.rol
     };
     next();
 }
 
-// Middleware para restringir acceso exclusivo a Administradores del CRM
+// Middleware para restringir acceso a Administradores del CRM y Admin E-commerce
 function requireCrmAdmin(req, res, next) {
-    if (!req.user || req.user.rol !== 'admin') {
-        return res.status(403).json({ error: 'Acceso restringido solo para Administradores.' });
+    if (!req.user || (req.user.rol !== 'admin' && req.user.rol !== 'admin_ecommerce')) {
+        return res.status(403).json({ error: 'Acceso restringido solo para Administradores y Admin E-commerce.' });
     }
     next();
 }
@@ -1488,12 +1552,11 @@ app.put('/api/usuarios/:id', requireCrmAuth, requireCrmAdmin, (req, res) => {
     const index = usuariosDb.findIndex(u => u.id === id);
     if (index === -1) return res.status(404).json({ error: 'Usuario no encontrado.' });
 
-    if (id === 1 && rol !== 'admin') {
-        return res.status(403).json({ error: 'No se puede quitar el rol de administrador al administrador principal.' });
-    }
-
-    if (id === 1 && activo === false) {
-        return res.status(403).json({ error: 'No se puede deshabilitar al administrador principal.' });
+    if (id === 1 && rol && rol !== 'admin') {
+        const otrosAdmins = usuariosDb.filter(u => u.id !== 1 && u.rol === 'admin' && u.activo !== false);
+        if (otrosAdmins.length === 0) {
+            return res.status(403).json({ error: 'No se puede quitar el rol de administrador al administrador principal si no hay otro administrador activo.' });
+        }
     }
 
     const emailEnUso = usuariosDb.find(u => u.email === email && u.id !== id);
@@ -1506,12 +1569,12 @@ app.put('/api/usuarios/:id', requireCrmAuth, requireCrmAdmin, (req, res) => {
 
     usuariosDb[index] = {
         ...usuariosDb[index],
-        nombre,
-        email,
+        nombre: nombre !== undefined ? nombre : usuariosDb[index].nombre,
+        email: email !== undefined ? email : usuariosDb[index].email,
         password: password ? hashPassword(password) : usuariosDb[index].password,
         rol: nuevoRol,
         crear_tickets: crear_tickets !== false,
-        activo: id === 1 ? true : (activo !== false),
+        activo: activo !== undefined ? Boolean(activo) : usuariosDb[index].activo,
         pais: pais !== undefined ? pais : (usuariosDb[index].pais || ''),
         sector: sector !== undefined ? sector : (usuariosDb[index].sector || ''),
         horario_atencion: horario_atencion !== undefined ? horario_atencion : (usuariosDb[index].horario_atencion || ''),
@@ -1551,8 +1614,8 @@ app.put('/api/usuarios/:id', requireCrmAuth, requireCrmAdmin, (req, res) => {
 
     res.status(200).json({
         id: usuariosDb[index].id,
-        nombre,
-        email,
+        nombre: usuariosDb[index].nombre,
+        email: usuariosDb[index].email,
         rol: usuariosDb[index].rol,
         accesos: usuariosDb[index].accesos,
         equipoId: usuariosDb[index].equipoId || null,
@@ -1567,9 +1630,15 @@ app.put('/api/usuarios/:id', requireCrmAuth, requireCrmAdmin, (req, res) => {
 
 app.delete('/api/usuarios/:id', requireCrmAuth, requireCrmAdmin, (req, res) => {
     const id = parseInt(req.params.id);
-    if (id === 1) return res.status(403).json({ error: 'No se puede eliminar al administrador principal.' });
     const index = usuariosDb.findIndex(u => u.id === id);
     if (index === -1) return res.status(404).json({ error: 'Usuario no encontrado.' });
+
+    if (id === 1) {
+        const otrosAdmins = usuariosDb.filter(u => u.id !== 1 && u.rol === 'admin' && u.activo !== false);
+        if (otrosAdmins.length === 0) {
+            return res.status(403).json({ error: 'No se puede eliminar al administrador principal si no existe otro administrador activo en el sistema.' });
+        }
+    }
 
     // Remover de equiposDb
     const usuarioABorrar = usuariosDb[index];

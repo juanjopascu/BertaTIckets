@@ -1112,6 +1112,16 @@ function saveProductsToFile() {
   return productsWriteInFlight;
 }
 
+function normalizeProductDescription(desc) {
+  if (desc == null) return '';
+  if (typeof desc === 'string') return desc;
+  if (typeof desc === 'object') {
+    const val = desc.es || desc.plain || desc.text || desc.html || desc.en || Object.values(desc).find(v => typeof v === 'string') || '';
+    return typeof val === 'string' ? val : '';
+  }
+  return String(desc);
+}
+
 function loadProductsFromFile(defaultProducts) {
   try {
     if (fs.existsSync(PRODUCTS_FILE)) {
@@ -1123,6 +1133,7 @@ function loadProductsFromFile(defaultProducts) {
           const isVis = p.is_visible !== undefined ? Boolean(p.is_visible) : (p.visible !== undefined ? Boolean(p.visible) : (p.status !== 'oculto'));
           return {
             ...p,
+            description: normalizeProductDescription(p.description),
             is_visible: isVis,
             visible: isVis,
             status: p.status || (isVis ? 'activo' : 'oculto'),
@@ -3306,6 +3317,7 @@ router.get('/products', async (req, res) => {
       const prodIva = parseFloat(p.tax_rate !== undefined ? p.tax_rate : (p.iva !== undefined ? p.iva : 21.00)) || 21.00;
       return {
         ...p,
+        description: normalizeProductDescription(p.description),
         ...pricing,
         is_visible: isProductVisible,
         visible: isProductVisible,
@@ -3375,6 +3387,7 @@ router.get('/products/:id', async (req, res) => {
     const prodIva = parseFloat(prod.tax_rate !== undefined ? prod.tax_rate : (prod.iva !== undefined ? prod.iva : 21.00)) || 21.00;
     res.json({
       ...prod,
+      description: normalizeProductDescription(prod.description),
       ...pricing,
       is_visible: isProductVisible,
       visible: isProductVisible,
@@ -5852,6 +5865,8 @@ router.post('/admin/products', authenticateToken, requireAdmin, async (req, res)
       country_code: targetCountry.code,
       country_id: targetCountry.id
     };
+    productPayload.name = String(productPayload.name || '').trim();
+    productPayload.description = normalizeProductDescription(productPayload.description);
     let result;
     if (isPgConnected) {
       const {
@@ -5861,6 +5876,8 @@ router.post('/admin/products', authenticateToken, requireAdmin, async (req, res)
         highlights = '', warranty = '12 Meses con RMA y Soporte DACAS',
         datasheet_url = '', condition = 'Nuevo Sellado', related_skus = []
       } = productPayload;
+      const cleanName = String(name || '').trim();
+      const cleanDescription = normalizeProductDescription(description);
       result = await pool.query(
         `INSERT INTO ecommerce_products (
           name, description, price, stock, image_url, country_code, country_id,
@@ -5868,7 +5885,7 @@ router.post('/admin/products', authenticateToken, requireAdmin, async (req, res)
           highlights, warranty, datasheet_url, condition, related_skus, is_visible, visible, status
         ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24) RETURNING *`,
         [
-          name, description, price, stock, image_url, targetCountry.code, targetCountry.id,
+          cleanName, cleanDescription, price, stock, image_url, targetCountry.code, targetCountry.id,
           brand, category, subcategory, sku, promotional_price, weight, depth, width, height,
           highlights, warranty, datasheet_url, condition, JSON.stringify(related_skus),
           is_visible, is_visible, status
@@ -6163,6 +6180,8 @@ router.post(['/admin/products/bulk-upload', '/admin/products/bulk'], authenticat
 router.put('/admin/products/:id', authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
+    req.body.name = String(req.body.name || '').trim();
+    req.body.description = normalizeProductDescription(req.body.description);
     let result;
     if (isPgConnected) {
       const {
@@ -6171,6 +6190,8 @@ router.put('/admin/products/:id', authenticateToken, requireAdmin, async (req, r
       } = req.body;
       const is_visible = req.body.is_visible !== undefined ? Boolean(req.body.is_visible) : (req.body.visible !== undefined ? Boolean(req.body.visible) : (req.body.status !== 'oculto'));
       const status = req.body.status || (is_visible ? 'activo' : 'oculto');
+      const cleanName = String(name || '').trim();
+      const cleanDescription = normalizeProductDescription(description);
       result = await pool.query(
         `UPDATE ecommerce_products 
          SET name = $1, description = $2, price = $3, stock = $4, image_url = $5,
@@ -6180,7 +6201,7 @@ router.put('/admin/products/:id', authenticateToken, requireAdmin, async (req, r
              subcategory = $20, is_visible = $21, visible = $22, status = $23
          WHERE id = $24 RETURNING *`,
         [
-          name, description, price, stock, image_url,
+          cleanName, cleanDescription, price, stock, image_url,
           brand, category, sku, promotional_price, weight,
           depth, width, height, highlights, warranty,
           datasheet_url, condition, JSON.stringify(related_ids || []), JSON.stringify(related_skus || []),

@@ -2,6 +2,20 @@ import React, { useState } from 'react';
 import BrandingVectorIcon from '../../BrandingVectorIcon';
 import { DACAS_COUNTRIES } from './shopCatalogData';
 
+function getCleanDescription(desc) {
+  if (desc == null) return '';
+  let str = '';
+  if (typeof desc === 'string') {
+    str = desc;
+  } else if (typeof desc === 'object') {
+    const val = desc.es || desc.plain || desc.text || desc.html || desc.en || Object.values(desc).find(v => typeof v === 'string') || '';
+    str = typeof val === 'string' ? val : '';
+  } else {
+    str = String(desc);
+  }
+  return str ? str.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : '';
+}
+
 export default function ProductCard({
   product,
   clientUser,
@@ -261,7 +275,7 @@ export default function ProductCard({
               overflow: 'hidden'
             }}
           >
-            {product.description ? product.description.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim() : ''}
+            {getCleanDescription(product.description)}
           </div>
         </div>
 

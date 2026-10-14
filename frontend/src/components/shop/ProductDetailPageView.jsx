@@ -979,8 +979,12 @@ export default function ProductDetailPageView({
             }}
             dangerouslySetInnerHTML={{
               __html: DOMPurify.sanitize(
-                product.description ||
-                `<p>${product.name}</p>`
+                (typeof product.description === 'string'
+                  ? product.description
+                  : (product.description && typeof product.description === 'object'
+                      ? (product.description.es || product.description.html || product.description.plain || product.description.text || product.description.en || '')
+                      : (product.description != null ? String(product.description) : ''))) ||
+                `<p>${product.name || ''}</p>`
               )
             }}
           />

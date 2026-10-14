@@ -423,7 +423,16 @@ export default function ProductDetailModal({ product, clientUser, onOpenAuth, on
                   overflowY: 'auto',
                   paddingRight: '6px'
                 }}
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(product.description || '<p>Sin descripción detallada.</p>') }}
+                dangerouslySetInnerHTML={{
+                  __html: DOMPurify.sanitize(
+                    (typeof product.description === 'string'
+                      ? product.description
+                      : (product.description && typeof product.description === 'object'
+                          ? (product.description.es || product.description.html || product.description.plain || product.description.text || product.description.en || '')
+                          : (product.description != null ? String(product.description) : ''))) ||
+                    '<p>Sin descripción detallada.</p>'
+                  )
+                }}
               />
             </div>
 

@@ -23,6 +23,7 @@ import CheckoutTab from './components/admin/tabs/CheckoutTab';
 import VisualTab from './components/admin/tabs/VisualTab';
 import ErpTab from './components/admin/tabs/ErpTab';
 import AiBotTab from './components/admin/tabs/AiBotTab';
+import AdminUsuarios from './AdminUsuarios';
 
 // Modals
 import UserDetailModal from './components/admin/modals/UserDetailModal';
@@ -216,6 +217,7 @@ function EcommerceLayoutWrapper({
                 { id: 'users', label: 'Clientes Mayoristas', icon: 'users', badge: (users || []).filter(u => u.status === 'pendiente').length },
                 { id: 'orders', label: 'Órdenes de Compra', icon: 'file-text' },
                 { id: 'reportes', label: 'Reportería & Métricas', icon: 'bar-chart' },
+                { id: 'logs', label: 'Logs & Auditoría', icon: 'file-text' },
                 { id: 'envios', label: 'Métodos de Envío', icon: 'truck' },
                 { id: 'pagos', label: 'Métodos de Pago', icon: 'credit-card' },
                 { id: 'visual', label: 'Diseño & Banners', icon: 'palette' },
@@ -519,6 +521,7 @@ function EcommerceLayoutWrapper({
                         users: activeUsersSub === 'end_users' ? 'Clientes • Catálogo de End Users' : 'Clientes Mayoristas',
                         orders: 'Órdenes de Compra',
                         reportes: 'Reportería & Métricas',
+                        logs: 'Bitácora de Logs & Auditoría Integral',
                         envios: 'Métodos de Envío',
                         pagos: 'Métodos de Pago',
                         pagos_envios: 'Pagos y Envíos',
@@ -544,8 +547,7 @@ function EcommerceLayoutWrapper({
               <NotificationBell
                 usuario={typeof usuario !== 'undefined' ? usuario : { rol: 'admin_ecommerce', nombre: 'Admin E-Commerce' }}
                 onNavigate={(targetView) => {
-                  if (targetView === 'erp') window.location.href = '/admin/erp';
-                  else if (targetView === 'crm') window.location.href = '/';
+                  if (targetView === 'crm') window.location.href = '/';
                 }}
               />
               {activeTab === 'reportes' && (
@@ -575,16 +577,39 @@ function AdminEcommerce({
   onUsersSubTabChange: externalOnUsersSubTabChange,
   countryScope: externalCountryScope,
   onCountryScopeChange: externalOnCountryScopeChange,
-  onBack
+  onBack,
+  usuario: propUsuario
 }) {
   const navigate = useNavigate();
-  const [internalActiveTab, setInternalActiveTab] = useState('products');
+
+  const usuario = propUsuario || (() => {
+    try {
+      const u = localStorage.getItem('usuario') || localStorage.getItem('dacas_user') || localStorage.getItem('dacas_client_user');
+      return u ? JSON.parse(u) : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  const [internalActiveTab, setInternalActiveTab] = useState(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const tabParam = params.get('tab');
+      if (tabParam) return tabParam;
+    } catch {}
+    return 'products';
+  });
   const [internalVisualSubTab, setInternalVisualSubTab] = useState('hero');
   const [internalUsersSubTab, setInternalUsersSubTab] = useState('clients');
   const activeTab = externalActiveTab !== undefined ? externalActiveTab : internalActiveTab;
   const setActiveTab = (tab) => {
     setInternalActiveTab(tab);
     if (externalOnTabChange) externalOnTabChange(tab);
+    try {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tab);
+      window.history.replaceState({}, '', url.toString());
+    } catch {}
   };
 
   const visualSubTab = externalVisualSubTab !== undefined ? externalVisualSubTab : internalVisualSubTab;
@@ -737,7 +762,7 @@ function AdminEcommerce({
       const url = code && code !== 'all'
         ? `${API_BASE_URL}/api/ecommerce/admin/orders?country=${code}`
         : `${API_BASE_URL}/api/ecommerce/admin/orders`;
-      const res = await fetch(url);
+      const res = await fetch(url, { headers: getAuthHeader() });
       const data = await res.json();
       setOrders(Array.isArray(data) ? data : []);
     } catch {
@@ -1098,9 +1123,54 @@ function AdminEcommerce({
     const paidCount = orders.filter(o => o.status === 'paid' || o.status === 'completed' || o.status === 'entregado').length;
     const pendingCount = orders.filter(o => o.status === 'pending' || o.status === 'procesando').length;
     const cancelledCount = orders.filter(o => o.status === 'cancelled').length;
-    const lowStock = products.filter(p => Number(p.stock) <= 5).length;
+    const lowStock = products.filter(p => Number(p.stock) <= 15).length;
     const convRate = users.length > 0 ? ((orders.length / users.length) * 100).toFixed(1) : 0;
     const aov = validOrders.length > 0 ? (totalRev / validOrders.length).toFixed(2) : 0;
+
+    const ordersByStatus = [
+      { name: 'Pagado', value: paidCount },
+      { name: 'Pendiente', value: pendingCount },
+      { name: 'Cancelado', value: cancelledCount },
+    ].filter(i => i.value > 0);
+
+    const revenueByDay = (() => {
+      const map = {};
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date(Date.now() - 86400000 * i);
+        const key = d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
+        map[key] = { day: key, ingresos: 0, ordenes: 0 };
+      }
+      orders.forEach(o => {
+        if (!o.created_at) return;
+        const d = new Date(o.created_at);
+        const key = d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit' });
+        if (map[key]) {
+          map[key].ordenes++;
+          if (o.status === 'paid' || o.status === 'completed' || o.status === 'entregado') {
+            map[key].ingresos += parseFloat(o.total || 0);
+          }
+        }
+      });
+      return Object.values(map);
+    })();
+
+    const productRevenue = products.slice(0, 15).map(p => ({
+      name: p.name && p.name.length > 20 ? p.name.substring(0, 18) + '…' : (p.name || 'Prod'),
+      precio: parseFloat(p.price || 0),
+      stock: parseInt(p.stock || 0, 10),
+    }));
+
+    const salesByCountry = (() => {
+      const map = {};
+      orders.forEach(o => {
+        if (o.status === 'paid' || o.status === 'completed' || o.status === 'entregado') {
+          const cName = o.country_name || o.country_code || 'Global';
+          if (!map[cName]) map[cName] = { name: cName, value: 0 };
+          map[cName].value += parseFloat(o.total || 0);
+        }
+      });
+      return Object.values(map).sort((a,b) => b.value - a.value);
+    })();
 
     return {
       totalRevenue: totalRev,
@@ -1110,7 +1180,11 @@ function AdminEcommerce({
       cancelledOrders: cancelledCount,
       lowStockProducts: lowStock,
       conversionRate: convRate,
-      avgOrderValue: aov
+      avgOrderValue: aov,
+      ordersByStatus,
+      revenueByDay,
+      productRevenue,
+      salesByCountry
     };
   }, [orders, products, users]);
 
@@ -1212,7 +1286,7 @@ function AdminEcommerce({
         selectedCountryScope={selectedCountryScope}
         handleCountryScopeChange={handleCountryScopeChange}
         users={users}
-        usuario={{ rol: 'admin_ecommerce', nombre: 'Admin E-Commerce' }}
+        usuario={usuario || { rol: 'admin_ecommerce', nombre: 'Admin E-Commerce' }}
         visualSubTab={visualSubTab}
         setVisualSubTab={setVisualSubTab}
         usersSubTab={activeUsersSub}
@@ -1311,8 +1385,23 @@ function AdminEcommerce({
             avgOrderValue={analyticsData.avgOrderValue}
             products={products}
             lowStockProducts={analyticsData.lowStockProducts}
+            revenueByDay={analyticsData.revenueByDay}
+            salesByCountry={analyticsData.salesByCountry}
+            ordersByStatus={analyticsData.ordersByStatus}
+            productRevenue={analyticsData.productRevenue}
             activeCountryObj={activeCountryObj}
           />
+        )}
+
+        {/* 5.1 LOGS & AUDITORÍA INTEGRAL TAB */}
+        {activeTab === 'logs' && (
+          <div style={{ animation: 'fadeIn 0.25s ease-out' }}>
+            <AdminUsuarios
+              usuario={usuario}
+              embedded={true}
+              initialTab="logs"
+            />
+          </div>
         )}
 
         {/* 6. CHECKOUT: ENVÍOS & PAGOS */}

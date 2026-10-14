@@ -292,13 +292,6 @@ const AVAILABLE_WIDGETS = [
     desc: 'Volumen total, estado de atención, SLA de primera respuesta y tickets urgentes.'
   },
   {
-    id: 'erp_financial',
-    title: 'Pulso Financiero DACAS ERP (OneWorld)',
-    category: 'Finanzas & Facturación',
-    icon: 'activity',
-    desc: 'Facturación YTD, cuentas a cobrar A/R, facturas pendientes A/P y liquidez empresarial.'
-  },
-  {
     id: 'department_load',
     title: 'Distribución Operativa por Departamento',
     category: 'Operaciones',
@@ -330,7 +323,6 @@ const AVAILABLE_WIDGETS = [
 
 const DEFAULT_ENABLED_WIDGETS = [
   'tickets_live',
-  'erp_financial',
   'department_load',
   'ecommerce_pulse',
   'currency_converter',
@@ -987,92 +979,6 @@ export default function HomeCommandCenter({
               </div>
               <div style={{ width: '100%', height: '8px', background: 'var(--border-color, #e2e8f0)', borderRadius: '4px', overflow: 'hidden' }}>
                 <div style={{ width: '98.4%', height: '100%', background: 'linear-gradient(90deg, #10b981 0%, #0fa4de 100%)', borderRadius: '4px' }} />
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ── WIDGET 2: PULSO FINANCIERO ERP DACAS ── */}
-        {enabledWidgets.includes('erp_financial') && (
-          <div style={{
-            background: 'var(--card-bg, #ffffff)',
-            border: '1px solid var(--border-color, #e2e8f0)',
-            borderRadius: '18px',
-            padding: '20px',
-            boxShadow: 'var(--shadow-sm, 0 2px 10px rgba(0,0,0,0.03))'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <BrandingVectorIcon name="activity" size={18} color="var(--primary, #0fa4de)" />
-                <h4 style={{ margin: 0, fontSize: '0.96rem', fontWeight: '800', color: 'var(--text-main, #071524)' }}>
-                  Salud Financiera DACAS ERP (OneWorld)
-                </h4>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button
-                  type="button"
-                  onClick={() => setActiveAdminView && setActiveAdminView('erp')}
-                  style={{
-                    background: 'var(--pill-bg, #f1f5f9)',
-                    border: '1px solid var(--border-color, #cbd5e1)',
-                    color: 'var(--primary, #0fa4de)',
-                    borderRadius: '6px',
-                    padding: '3px 8px',
-                    fontSize: '0.72rem',
-                    fontWeight: '800',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Abrir ERP →
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveAdminView && setActiveAdminView('reporteria-general')}
-                  style={{
-                    background: 'rgba(15, 164, 222, 0.1)',
-                    border: '1px solid rgba(15, 164, 222, 0.3)',
-                    color: '#0fa4de',
-                    borderRadius: '6px',
-                    padding: '3px 8px',
-                    fontSize: '0.72rem',
-                    fontWeight: '800',
-                    cursor: 'pointer'
-                  }}
-                  title="Ver Reportería General 360°"
-                >
-                  Reportería 360° →
-                </button>
-                <button
-                  type="button"
-                  onClick={() => removeWidget('erp_financial', 'Pulso Financiero ERP')}
-                  style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
-                  title="Ocultar este widget"
-                >
-                  <BrandingVectorIcon name="x" size={14} color="currentColor" />
-                </button>
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-              <div style={{ background: 'var(--pill-bg, #f8fafc)', padding: '12px 14px', borderRadius: '12px' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '700' }}>FACTURACIÓN YTD</span>
-                <div style={{ fontSize: '1.25rem', fontWeight: '900', color: 'var(--text-main)', marginTop: '2px' }}>$6,100,000 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>USD</span></div>
-                <span style={{ fontSize: '0.72rem', color: '#10b981', fontWeight: '700' }}>↑ 18.2% vs año anterior</span>
-              </div>
-              <div style={{ background: 'var(--pill-bg, #f8fafc)', padding: '12px 14px', borderRadius: '12px' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '700' }}>CUENTAS POR COBRAR (A/R)</span>
-                <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#0284c7', marginTop: '2px' }}>$34,200 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>USD</span></div>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '600' }}>Cobranzas Net 30/60</span>
-              </div>
-              <div style={{ background: 'var(--pill-bg, #f8fafc)', padding: '12px 14px', borderRadius: '12px' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '700' }}>CUENTAS POR PAGAR (A/P)</span>
-                <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#d97706', marginTop: '2px' }}>$145,000 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>USD</span></div>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '600' }}>Facturas Proveedor</span>
-              </div>
-              <div style={{ background: 'var(--pill-bg, #f8fafc)', padding: '12px 14px', borderRadius: '12px' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: '700' }}>TESORERÍA EN BANCOS</span>
-                <div style={{ fontSize: '1.25rem', fontWeight: '900', color: '#10b981', marginTop: '2px' }}>$2,480,500 <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>USD</span></div>
-                <span style={{ fontSize: '0.72rem', color: '#10b981', fontWeight: '700' }}>Liquidez disponible</span>
               </div>
             </div>
           </div>
