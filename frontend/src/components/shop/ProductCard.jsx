@@ -180,7 +180,7 @@ export default function ProductCard({
           {/* Header tags: Brand, SKU & Discount Rule */}
           <div style={{ minHeight: '34px', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start', gap: '3px', marginBottom: '6px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '5px', flexWrap: 'nowrap', overflow: 'hidden' }}>
-              {product.brand && (
+              {product.brand && product.brand !== '[]' && product.brand !== 'null' && !String(product.brand).startsWith('[') && (
                 <span style={{
                   fontSize: '10px',
                   fontWeight: '800',
@@ -196,7 +196,7 @@ export default function ProductCard({
                   {product.brand}
                 </span>
               )}
-              {product.subcategory && (
+              {product.subcategory && product.subcategory !== '[]' && product.subcategory !== 'null' && !String(product.subcategory).startsWith('[') && (
                 <span style={{
                   fontSize: '10px',
                   fontWeight: '750',
@@ -211,7 +211,7 @@ export default function ProductCard({
                   {product.subcategory}
                 </span>
               )}
-              {product.sku && (
+              {product.sku && product.sku !== '[]' && !String(product.sku).startsWith('[') && (
                 <span style={{ fontSize: '11px', fontWeight: '700', color: '#64748B', letterSpacing: '0.04em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   SKU: {product.sku}
                 </span>

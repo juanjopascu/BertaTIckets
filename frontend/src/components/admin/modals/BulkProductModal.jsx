@@ -64,10 +64,10 @@ export default function BulkProductModal({
             </div>
             <div>
               <h2 style={{ margin: 0, fontSize: '1.3rem', fontWeight: '900', color: '#ffffff', letterSpacing: '-0.02em' }}>
-                Carga Masiva de Productos (CSV)
+                Carga Masiva de Productos (Excel / CSV)
               </h2>
               <p style={{ margin: '3px 0 0', fontSize: '12.5px', color: '#94A3B8' }}>
-                Importa o actualiza múltiples productos a tu catálogo B2B de forma masiva
+                Importa o actualiza miles de productos a tu catálogo B2B mediante planillas Excel (.xlsx / .xls) o CSV
               </p>
             </div>
           </div>
@@ -201,10 +201,10 @@ export default function BulkProductModal({
             ) : (
               <div>
                 <strong style={{ color: '#0F172A', fontSize: '14.5px', display: 'block' }}>
-                  Arrastra y suelta tu archivo .CSV aquí
+                  Arrastra y suelta tu archivo Excel (.xlsx / .xls) o .CSV aquí
                 </strong>
                 <span style={{ color: '#64748B', fontSize: '12.5px', marginTop: '4px', display: 'block' }}>
-                  o haz clic para buscarlo en tu equipo (delimitado por coma, punto y coma o tabulador)
+                  o haz clic para buscarlo en tu equipo (compatible con libros de Excel y CSVs delimitados por coma o punto y coma)
                 </span>
               </div>
             )}

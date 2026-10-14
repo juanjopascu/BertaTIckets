@@ -113,6 +113,8 @@ rawPool.connect()
         ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS tags JSONB DEFAULT '[]'::jsonb;
         ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS allowed_brands JSONB DEFAULT '[]'::jsonb;
         ALTER TABLE ecommerce_pricing_rules ADD COLUMN IF NOT EXISTS target_client_tag VARCHAR(100);
+        CREATE INDEX IF NOT EXISTS idx_ecommerce_products_sku ON ecommerce_products(sku);
+        CREATE INDEX IF NOT EXISTS idx_ecommerce_products_country ON ecommerce_products(country_code);
       `);
     } catch (_) {}
     client.release();
@@ -2530,6 +2532,34 @@ function executeInMemoryQuery(sql, params = []) {
     if (typeof params[0] === 'object' && params[0] !== null) {
       pData = params[0];
       id = parseInt(params[1]);
+    } else if (params.length === 25) {
+      id = parseInt(params[24]);
+      pData = {
+        name: params[0],
+        description: params[1],
+        price: params[2],
+        stock: params[3],
+        image_url: params[4],
+        secondary_images: params[5],
+        brand: params[6],
+        category: params[7],
+        sku: params[8],
+        promotional_price: params[9],
+        weight: params[10],
+        depth: params[11],
+        width: params[12],
+        height: params[13],
+        highlights: params[14],
+        warranty: params[15],
+        datasheet_url: params[16],
+        condition: params[17],
+        related_ids: params[18],
+        related_skus: params[19],
+        subcategory: params[20],
+        is_visible: params[21],
+        visible: params[22],
+        status: params[23]
+      };
     } else {
       id = parseInt(params[params.length - 1]);
       pData = {
@@ -2562,6 +2592,30 @@ function executeInMemoryQuery(sql, params = []) {
     const idx = inMem.products.findIndex(p => p.id === id);
     if (idx !== -1) {
       const current = inMem.products[idx];
+
+      // Sanitizar defensivamente secondary_images si viene como string JSON
+      if (typeof pData.secondary_images === 'string') {
+        try { pData.secondary_images = JSON.parse(pData.secondary_images); } catch (_) { pData.secondary_images = []; }
+      }
+      // Proteger que brand, subcategory o sku no acepten strings JSON arrays como "[]"
+      if (typeof pData.brand === 'string') {
+        const b = pData.brand.trim();
+        if (b === '[]' || b === 'null' || b === 'undefined' || b.startsWith('[')) {
+          pData.brand = current.brand || 'DACAS';
+        }
+      }
+      if (typeof pData.subcategory === 'string') {
+        const sc = pData.subcategory.trim();
+        if (sc === '[]' || sc === 'null' || sc.startsWith('[')) {
+          pData.subcategory = '';
+        }
+      }
+      if (typeof pData.sku === 'string') {
+        const s = pData.sku.trim();
+        if (['networking', 'security', 'infraestructura', 'comunicaciones_unificadas', 'General', '[]'].includes(s) || s.startsWith('[')) {
+          pData.sku = current.sku || s;
+        }
+      }
       const mainImg = (pData.image_url !== undefined && pData.image_url !== '') ? pData.image_url : (current.image_url || '');
       const secImgs = Array.isArray(pData.secondary_images) ? pData.secondary_images : (current.secondary_images || []);
       const allImgs = Array.isArray(pData.images) && pData.images.length > 0
@@ -5936,20 +5990,56 @@ router.post(['/admin/products/bulk-upload', '/admin/products/bulk'], authenticat
     let updatedCount = 0;
     const errors = [];
 
+    // Pre-index existing products to avoid thousands of individual round-trip DB queries
+    const existingMapBySku = new Map();
+    const memSkuMap = new Map();
+    const memNameMap = new Map();
+
+    if (isPgConnected) {
+      const allSkusInBatch = items
+        .map(it => String(it.sku || it.SKU || it.codigo || it.Código || '').trim())
+        .filter(s => s && s.toLowerCase() !== 's/sku');
+      if (allSkusInBatch.length > 0) {
+        try {
+          const skuChecks = await pool.query('SELECT id, sku FROM ecommerce_products WHERE sku = ANY($1)', [allSkusInBatch]);
+          for (const row of skuChecks.rows) {
+            if (row.sku) existingMapBySku.set(row.sku.toLowerCase(), row.id);
+          }
+        } catch (_) {}
+      }
+    } else {
+      inMem.products.forEach(p => {
+        if (p.sku) memSkuMap.set(p.sku.toLowerCase(), p);
+        if (p.name) memNameMap.set(p.name.toLowerCase(), p);
+      });
+    }
+
     for (let i = 0; i < items.length; i++) {
       const item = items[i];
       const rowNum = i + 1;
       
-      const name = String(item.name || item.nombre || item.Producto || '').trim();
+      let name = String(item.name || item.nombre || item.Producto || item.product || item.descripcion || item.description || '').trim();
+      let sku = String(item.sku || item.SKU || item.codigo || item.Código || item.part_number || item.pn || '').trim();
+
+      // Si el nombre no vino pero hay SKU largo o con guión, o viceversa
+      if (!name && sku) {
+        name = `Producto ${sku}`;
+      }
       if (!name) {
         errors.push(`Fila ${rowNum}: El nombre del producto es obligatorio.`);
         continue;
       }
 
-      const rawPrice = item.price !== undefined ? item.price : (item.precio !== undefined ? item.precio : '0.00');
-      const cleanPrice = String(rawPrice).replace('$', '').replace(/,/g, '.').trim();
-      const priceNum = parseFloat(cleanPrice);
-      const price = isNaN(priceNum) ? '0.00' : priceNum.toFixed(2);
+      let rawPrice = item.price !== undefined ? item.price : (item.precio !== undefined ? item.precio : '0.00');
+      let cleanPrice = String(rawPrice).replace('$', '').replace(/,/g, '.').trim();
+      let priceNum = parseFloat(cleanPrice);
+      let price = isNaN(priceNum) ? '0.00' : priceNum.toFixed(2);
+
+      // Si el SKU es un importe numérico decimal (ej: "449.00") y el precio estaba en 0.00
+      if (/^\$?\d+(\.\d{1,2})?$/.test(sku) && (price === '0.00' || !price)) {
+        price = parseFloat(sku.replace('$', '')).toFixed(2);
+        sku = '';
+      }
 
       const rawPromoPrice = item.promotional_price !== undefined ? item.promotional_price : (item.precio_promocional !== undefined ? item.precio_promocional : null);
       let promotional_price = null;
@@ -5977,7 +6067,6 @@ router.post(['/admin/products/bulk-upload', '/admin/products/bulk'], authenticat
       let brand = String(item.brand || item.marca || item.Marca || '').trim();
       let category = String(item.category || item.categoria || item.Categoría || 'General').trim() || 'General';
       let subcategory = String(item.subcategory || item.subcategoria || item.Subcategoria || item.subcategoría || item.Subcategoría || item.tipo_equipo || item.Tipo_Equipo || '').trim();
-      let sku = String(item.sku || item.SKU || item.codigo || item.Código || '').trim();
       const description = String(item.description || item.descripcion || item.Descripción || `<p>${name}</p>`).trim();
       let image_url = String(item.image_url || item.imagen || item.Imagen || item.foto || '').trim();
 
@@ -5991,12 +6080,9 @@ router.post(['/admin/products/bulk-upload', '/admin/products/bulk'], authenticat
         if (!image_url) image_url = subcategory;
         subcategory = '';
       }
-      // 2. Si el SKU es un importe numérico decimal (ej: "449.00") y el precio estaba en 0.00
-      if (/^\d+\.\d{2}$/.test(sku) && (price === '0.00' || !price)) {
-        sku = 'DAC-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-      }
-      // 3. Si no hay marca, inferirla automáticamente del nombre del producto o usar DACAS
-      if (!brand) {
+
+      // 2. Si no hay marca o vino corrupta con "[]", inferirla automáticamente del nombre
+      if (!brand || brand === '[]' || brand === 'null' || brand.startsWith('[')) {
         const nLower = name.toLowerCase();
         const KNOWN_BRANDS = ['fortinet', 'cisco', 'mikrotik', 'vertiv', 'aruba', 'avaya', 'audiocodes', 'panduit', 'eaton', 'allied telesis', 'ubiquiti', 'dell', 'poly', 'juniper', 'huawei', 'tp-link', 'tplink'];
         const matched = KNOWN_BRANDS.find(b => nLower.includes(b));
@@ -6007,10 +6093,17 @@ router.post(['/admin/products/bulk-upload', '/admin/products/bulk'], authenticat
           brand = 'DACAS';
         }
       }
-      // 4. Si no hay SKU, generar uno único y legible
-      if (!sku) {
-        const autoPrefix = name.split(/\s+/).slice(0, 2).map(w => w.replace(/[^a-zA-Z0-9]/g, '').slice(0, 3).toUpperCase()).filter(Boolean).join('-');
-        sku = (autoPrefix ? autoPrefix + '-' : 'DAC-') + Math.random().toString(36).substring(2, 6).toUpperCase();
+
+      // 3. Si no hay SKU o vino como "S/SKU", extraer del nombre o generar uno legible
+      if (!sku || sku.toUpperCase() === 'S/SKU') {
+        const skuMatch = name.match(/^([A-Z0-9][A-Z0-9_.-]{2,25})\s*[-–—:]\s*(.+)$/i);
+        if (skuMatch) {
+          sku = skuMatch[1].trim();
+        } else {
+          const autoBrand = brand && brand !== 'DACAS' ? brand.slice(0, 4).toUpperCase().replace(/[^A-Z0-9]/g, '') : 'DAC';
+          const autoWords = name.split(/\s+/).slice(0, 2).map(w => w.replace(/[^a-zA-Z0-9]/g, '').slice(0, 3).toUpperCase()).filter(Boolean).join('');
+          sku = `${autoBrand}-${autoWords || 'PROD'}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+        }
       }
 
       const weight = item.weight !== undefined ? String(item.weight).replace(',', '.').replace(/[^0-9.]/g, '').trim() : (item.peso !== undefined ? String(item.peso).replace(',', '.').replace(/[^0-9.]/g, '').trim() : '');
@@ -6034,17 +6127,9 @@ router.post(['/admin/products/bulk-upload', '/admin/products/bulk'], authenticat
         : (typeof rawRelated === 'string' && rawRelated.trim() ? rawRelated.split(/[,;|]/).map(s => s.trim()).filter(Boolean) : []);
 
       if (isPgConnected) {
-        let existing = null;
-        if (sku) {
-          const skuCheck = await pool.query('SELECT * FROM ecommerce_products WHERE sku = $1', [sku]);
-          if (skuCheck.rows.length > 0) existing = skuCheck.rows[0];
-        }
-        if (!existing && name) {
-          const nameCheck = await pool.query('SELECT * FROM ecommerce_products WHERE LOWER(name) = LOWER($1)', [name]);
-          if (nameCheck.rows.length > 0) existing = nameCheck.rows[0];
-        }
+        let existingId = sku ? existingMapBySku.get(sku.toLowerCase()) : null;
 
-        if (existing && mode === 'upsert') {
+        if (existingId && mode === 'upsert') {
           await pool.query(
             `UPDATE ecommerce_products 
              SET name = $1, brand = $2, category = $3, sku = $4, description = $5, price = $6, promotional_price = $7, stock = $8, image_url = COALESCE(NULLIF($9, ''), image_url),
@@ -6054,25 +6139,25 @@ router.post(['/admin/products/bulk-upload', '/admin/products/bulk'], authenticat
                  related_skus = $18, subcategory = COALESCE(NULLIF($19, ''), subcategory),
                  is_visible = $20, visible = $21, status = $22, tax_rate = $23, iva = $24
              WHERE id = $25`,
-            [name, brand, category, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height, highlights, warranty, datasheet_url, condition, JSON.stringify(related_skus), subcategory, is_visible, is_visible, status, tax_rate, tax_rate, existing.id]
+            [name, brand, category, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height, highlights, warranty, datasheet_url, condition, JSON.stringify(related_skus), subcategory, is_visible, is_visible, status, tax_rate, tax_rate, existingId]
           );
           updatedCount++;
         } else {
-          await pool.query(
+          const insertRes = await pool.query(
             `INSERT INTO ecommerce_products (name, brand, category, subcategory, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height, highlights, warranty, datasheet_url, condition, related_skus, is_visible, visible, status, country_code, country_id, tax_rate, iva) 
-             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26)`,
+             VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26) RETURNING id`,
             [name, brand, category, subcategory, sku, description, price, promotional_price, stock, image_url, weight, depth, width, height, highlights, warranty, datasheet_url, condition, JSON.stringify(related_skus), is_visible, is_visible, status, targetCountry.code, targetCountry.id, tax_rate, tax_rate]
           );
+          if (sku && insertRes.rows.length > 0) {
+            existingMapBySku.set(sku.toLowerCase(), insertRes.rows[0].id);
+          }
           createdCount++;
         }
       } else {
         // In-Memory store
-        let existing = null;
-        if (sku) {
-          existing = inMem.products.find(p => p.sku && p.sku.toLowerCase() === sku.toLowerCase());
-        }
+        let existing = sku ? memSkuMap.get(sku.toLowerCase()) : null;
         if (!existing && name) {
-          existing = inMem.products.find(p => p.name && p.name.toLowerCase() === name.toLowerCase());
+          existing = memNameMap.get(name.toLowerCase());
         }
 
         if (existing && mode === 'upsert') {
@@ -6166,6 +6251,8 @@ router.post(['/admin/products/bulk-upload', '/admin/products/bulk'], authenticat
             created_at: new Date().toISOString()
           };
           inMem.products.push(newProduct);
+          if (sku) memSkuMap.set(sku.toLowerCase(), newProduct);
+          if (name) memNameMap.set(name.toLowerCase(), newProduct);
 
           if (Array.isArray(inMem.product_stock)) {
             inMem.product_stock.push({

@@ -553,7 +553,21 @@ function ShopMain() {
               return true;
             })
             .map((p) => {
-              const pBrand = (p.brand && String(p.brand).trim()) || 'DACAS';
+              let pBrand = (p.brand && String(p.brand).trim()) || 'DACAS';
+              if (pBrand === '[]' || pBrand === 'null' || pBrand.startsWith('[')) pBrand = 'DACAS';
+
+              let pSubcategory = (p.subcategory && String(p.subcategory).trim()) || '';
+              if (pSubcategory === '[]' || pSubcategory === 'null' || pSubcategory.startsWith('[')) pSubcategory = '';
+
+              let pSku = (p.sku && String(p.sku).trim()) || '';
+              if (pSku === '[]' || pSku.startsWith('[')) pSku = '';
+              if (['networking', 'security', 'infraestructura', 'comunicaciones_unificadas', 'General'].includes(pSku)) {
+                if (p.name && p.name.includes('AP22')) pSku = 'R4W02A-AP22';
+                else if (p.name && p.name.includes('60F')) pSku = 'FG-60F-BDL';
+                else if (p.name && p.name.includes('CRS328')) pSku = 'CRS328-24P-4S';
+                else pSku = `DAC-${p.id}`;
+              }
+
               const rawMainImg = p.image_url || (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : '');
               const mainImg = getProductImageUrl(rawMainImg);
               const secImgs = Array.isArray(p.secondary_images) ? p.secondary_images : [];
@@ -569,6 +583,8 @@ function ShopMain() {
               return {
                 ...p,
                 brand: pBrand,
+                subcategory: pSubcategory,
+                sku: pSku,
                 image_url: mainImg,
                 images: combined
               };

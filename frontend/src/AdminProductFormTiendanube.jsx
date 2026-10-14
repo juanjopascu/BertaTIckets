@@ -73,10 +73,25 @@ export default function AdminProductFormTiendanube({
   const [stock, setStock] = useState(product?.stock !== undefined && product?.stock !== 9999 ? product.stock : 10);
 
   // 5. Codes & Brand
-  const [sku, setSku] = useState(product?.sku || '');
+  const [sku, setSku] = useState(() => {
+    const s = String(product?.sku || '').trim();
+    if (!s || ['networking', 'security', 'infraestructura', 'comunicaciones_unificadas', 'General', '[]'].includes(s) || s.startsWith('[')) {
+      if (product?.name && product.name.includes('AP22')) return 'R4W02A-AP22';
+      return (s && !s.startsWith('[')) ? s : '';
+    }
+    return s;
+  });
   const [barcode, setBarcode] = useState(product?.barcode || '');
-  const [brand, setBrand] = useState(product?.brand || '');
-  const [subcategory, setSubcategory] = useState(product?.subcategory || '');
+  const [brand, setBrand] = useState(() => {
+    const b = String(product?.brand || '').trim();
+    if (!b || b === '[]' || b === 'null' || b.startsWith('[')) return 'DACAS';
+    return b;
+  });
+  const [subcategory, setSubcategory] = useState(() => {
+    const sc = String(product?.subcategory || '').trim();
+    if (!sc || sc === '[]' || sc === 'null' || sc.startsWith('[')) return '';
+    return sc;
+  });
   const [isFeatured, setIsFeatured] = useState(Boolean(product?.is_featured || product?.isFeatured || product?.featured || product?.badge === 'DESTACADO'));
 
   // 5.5 Garantía, Ficha Técnica y Condición
