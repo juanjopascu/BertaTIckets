@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import BrandingVectorIcon from '../../../BrandingVectorIcon';
 import PaginationBar from '../PaginationBar';
-import { initialUserForm, API_BASE_URL, STANDARD_PAYMENT_TERMS, LATAM_COUNTRIES } from '../adminHelpers';
+import { initialUserForm, API_BASE_URL, STANDARD_PAYMENT_TERMS, LATAM_COUNTRIES, AVAILABLE_BRANDS, SUGGESTED_CLIENT_TAGS } from '../adminHelpers';
 
 export default function UsersTab({
   users = [],
@@ -31,32 +31,62 @@ export default function UsersTab({
   const [userFormSection, setUserFormSection] = useState(1);
   const [error, setError] = useState(null);
 
-  // --- SUB-VISTA: Clientes Mayoristas vs Catálogo de End Users ---
-  const [activeSubView, setActiveSubView] = useState('clients'); // 'clients' | 'end_users'
+  // --- TAGS & MARCAS AUTORIZADAS ---
+  const [newTagInput, setNewTagInput] = useState('');
+  const [brandSearch, setBrandSearch] = useState('');
+  const [customBrandInput, setCustomBrandInput] = useState('');
 
-  // --- END USERS STATE ---
-  const [endUsers, setEndUsers] = useState([]);
-  const [endUsersLoading, setEndUsersLoading] = useState(false);
-  const [endUserSearch, setEndUserSearch] = useState('');
-  const [selectedEndUserClientFilter, setSelectedEndUserClientFilter] = useState('Todos');
-  const [selectedEndUserCountryFilter, setSelectedEndUserCountryFilter] = useState('Todos');
-  const [expandedClientEndUsers, setExpandedClientEndUsers] = useState({});
+  const handleAddTag = (tagToAdd) => {
+    const clean = (tagToAdd || newTagInput).trim();
+    if (!clean) return;
+    const currentTags = Array.isArray(userForm.tags) ? userForm.tags : [];
+    if (!currentTags.some(t => t.toLowerCase() === clean.toLowerCase())) {
+      setUserForm(prev => ({ ...prev, tags: [...currentTags, clean] }));
+    }
+    setNewTagInput('');
+  };
 
-  // Modal de End User (Alta / Edición)
-  const [showEndUserModal, setShowEndUserModal] = useState(false);
-  const [endUserModalMode, setEndUserModalMode] = useState('new');
-  const [currentEndUser, setCurrentEndUser] = useState({
-    id: null,
-    user_id: '',
-    company_name: '',
-    nombre: '',
-    direccion: '',
-    ciudad: '',
-    pais: 'Argentina',
-    telefono: '',
-    contacto: '',
-    website: ''
-  });
+  const handleRemoveTag = (tagToRemove) => {
+    const currentTags = Array.isArray(userForm.tags) ? userForm.tags : [];
+    setUserForm(prev => ({ ...prev, tags: currentTags.filter(t => t !== tagToRemove) }));
+  };
+
+  const handleToggleBrand = (brand) => {
+    const currentBrands = Array.isArray(userForm.allowed_brands) ? userForm.allowed_brands : [];
+    if (currentBrands.includes(brand)) {
+      setUserForm(prev => ({ ...prev, allowed_brands: currentBrands.filter(b => b !== brand) }));
+    } else {
+      setUserForm(prev => ({ ...prev, allowed_brands: [...currentBrands, brand] }));
+    }
+  };
+
+  const handleSetAllBrands = () => {
+    setUserForm(prev => ({ ...prev, allowed_brands: [] }));
+  };
+
+  const handleSelectAllBrandsList = () => {
+    setUserForm(prev => ({ ...prev, allowed_brands: [...AVAILABLE_BRANDS] }));
+  };
+
+  const handleClearSelectedBrands = () => {
+    setUserForm(prev => ({ ...prev, allowed_brands: [] }));
+  };
+
+  const handleApplyBrandPreset = (presetBrands) => {
+    const currentBrands = Array.isArray(userForm.allowed_brands) ? userForm.allowed_brands : [];
+    const merged = Array.from(new Set([...currentBrands, ...presetBrands]));
+    setUserForm(prev => ({ ...prev, allowed_brands: merged }));
+  };
+
+  const handleAddCustomBrand = () => {
+    const clean = customBrandInput.trim();
+    if (!clean) return;
+    const currentBrands = Array.isArray(userForm.allowed_brands) ? userForm.allowed_brands : [];
+    if (!currentBrands.some(b => b.toLowerCase() === clean.toLowerCase())) {
+      setUserForm(prev => ({ ...prev, allowed_brands: [...currentBrands, clean] }));
+    }
+    setCustomBrandInput('');
+  };
 
   // Dropdown de acciones flotante
   const [openActionDropdown, setOpenActionDropdown] = useState(null);
@@ -319,6 +349,18 @@ export default function UsersTab({
         .map(t => String(t).replace('_dias', '').replace('contado', '0'))
         .join(', ');
 
+      let rawTags = data.tags !== undefined ? data.tags : u.tags;
+      if (typeof rawTags === 'string') {
+        try { rawTags = JSON.parse(rawTags); } catch (_) { rawTags = []; }
+      }
+      safeData.tags = Array.isArray(rawTags) ? rawTags : [];
+
+      let rawBrands = data.allowed_brands !== undefined ? data.allowed_brands : u.allowed_brands;
+      if (typeof rawBrands === 'string') {
+        try { rawBrands = JSON.parse(rawBrands); } catch (_) { rawBrands = []; }
+      }
+      safeData.allowed_brands = Array.isArray(rawBrands) ? rawBrands : [];
+
       setUserForm(safeData);
       setEditingUser(u);
       setUserCreateMode('existing_company');
@@ -360,6 +402,8 @@ export default function UsersTab({
       payload.cuenta_corriente_limite = (userForm.cuenta_corriente_limite !== '' && userForm.cuenta_corriente_limite !== null && userForm.cuenta_corriente_limite !== undefined)
         ? (parseFloat(userForm.cuenta_corriente_limite) || 0)
         : 0;
+      payload.tags = Array.isArray(userForm.tags) ? userForm.tags : [];
+      payload.allowed_brands = Array.isArray(userForm.allowed_brands) ? userForm.allowed_brands : [];
       let termsToSave = [];
       if (userForm.dias_termino_pago !== undefined && userForm.dias_termino_pago !== null && String(userForm.dias_termino_pago).trim() !== '') {
         const parts = String(userForm.dias_termino_pago).split(',').map(s => s.trim()).filter(Boolean);
@@ -415,201 +459,11 @@ export default function UsersTab({
         headers,
         body: JSON.stringify({ status: newStatus })
       });
-      if (!res.ok) throw new Error((await res.json()).error || 'Error al cambiar estado');
       if (fetchUsers) fetchUsers();
     } catch (err) {
       alert(err.message);
     }
   };
-
-  // ── END USERS API & EXPORT HANDLERS ──
-  const fetchEndUsers = useCallback(async () => {
-    try {
-      setEndUsersLoading(true);
-      const headers = getAuthHeader ? getAuthHeader() : {};
-      const res = await fetch(`${API_BASE_URL}/api/ecommerce/admin/erp/end-users`, { headers });
-      if (res.ok) {
-        const data = await res.json();
-        setEndUsers(Array.isArray(data) ? data : []);
-      }
-    } catch (e) {
-      console.error('Error fetching end users', e);
-    } finally {
-      setEndUsersLoading(false);
-    }
-  }, [getAuthHeader]);
-
-  useEffect(() => {
-    fetchEndUsers();
-  }, [fetchEndUsers]);
-
-  const handleOpenNewEndUserModal = (client = null) => {
-    setEndUserModalMode('new');
-    const defaultClient = client || users[0];
-    setCurrentEndUser({
-      id: null,
-      user_id: defaultClient ? defaultClient.id : '',
-      company_name: defaultClient ? (defaultClient.razon_social || defaultClient.name) : 'Empresa Cliente',
-      nombre: '',
-      direccion: '',
-      ciudad: '',
-      pais: defaultClient?.country_name || activeCountryObj?.name || 'Argentina',
-      telefono: '',
-      contacto: '',
-      website: ''
-    });
-    setShowEndUserModal(true);
-  };
-
-  const handleOpenEditEndUserModal = (eu) => {
-    setEndUserModalMode('edit');
-    setCurrentEndUser({ ...eu });
-    setShowEndUserModal(true);
-  };
-
-  const handleSaveEndUser = async (e) => {
-    e.preventDefault();
-    if (!currentEndUser.nombre || !currentEndUser.nombre.trim()) {
-      alert('Por favor complete el Nombre del End User');
-      return;
-    }
-    try {
-      const headers = getAuthHeader ? getAuthHeader() : { 'Content-Type': 'application/json' };
-      const matchedClient = users.find(u => u.id === Number(currentEndUser.user_id));
-      const payload = {
-        ...currentEndUser,
-        user_id: currentEndUser.user_id ? Number(currentEndUser.user_id) : (matchedClient?.id || 1),
-        company_name: matchedClient ? (matchedClient.razon_social || matchedClient.name) : (currentEndUser.company_name || 'Empresa Cliente')
-      };
-      const res = await fetch(`${API_BASE_URL}/api/ecommerce/admin/erp/end-users`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          ...(getAuthHeader ? getAuthHeader() : {})
-        },
-        body: JSON.stringify(payload)
-      });
-      if (!res.ok) {
-        const errData = await res.json();
-        throw new Error(errData.error || 'Error al guardar End User');
-      }
-      setShowEndUserModal(false);
-      fetchEndUsers();
-    } catch (err) {
-      alert(err.message);
-    }
-  };
-
-  const handleDeleteEndUser = async (id) => {
-    if (!window.confirm(`¿Confirma eliminar el End User #${id}?`)) return;
-    try {
-      const headers = getAuthHeader ? getAuthHeader() : {};
-      const res = await fetch(`${API_BASE_URL}/api/ecommerce/admin/erp/end-users/${id}`, {
-        method: 'DELETE',
-        headers
-      });
-      if (!res.ok) throw new Error('Error al eliminar End User');
-      fetchEndUsers();
-    } catch (err) {
-      alert(err.message);
-    }
-  };
-
-  const exportEndUsersCsv = (listToExport = endUsers, filename = 'End_Users_DACAS.csv') => {
-    if (!listToExport || listToExport.length === 0) {
-      alert('No hay End Users para exportar');
-      return;
-    }
-    const headers = [
-      'ID',
-      'End User / Razon Social',
-      'Cliente Mayorista (Reseller)',
-      'Email Mayorista',
-      'Pais',
-      'Ciudad',
-      'Direccion',
-      'Contacto / Responsable',
-      'Telefono',
-      'Sitio Web',
-      'Fecha Registro'
-    ];
-    const rows = listToExport.map(eu => [
-      eu.id,
-      `"${(eu.nombre || '').replace(/"/g, '""')}"`,
-      `"${(eu.client_name || eu.company_name || 'Sin Asignar').replace(/"/g, '""')}"`,
-      `"${(eu.client_email || '').replace(/"/g, '""')}"`,
-      `"${(eu.pais || '').replace(/"/g, '""')}"`,
-      `"${(eu.ciudad || '').replace(/"/g, '""')}"`,
-      `"${(eu.direccion || '').replace(/"/g, '""')}"`,
-      `"${(eu.contacto || '').replace(/"/g, '""')}"`,
-      `"${(eu.telefono || '').replace(/"/g, '""')}"`,
-      `"${(eu.website || '').replace(/"/g, '""')}"`,
-      `"${eu.created_at ? new Date(eu.created_at).toLocaleDateString() : ''}"`
-    ]);
-    const csvContent = '\uFEFF' + [headers.join(';'), ...rows.map(r => r.join(';'))].join('\r\n');
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', filename);
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const getClientEndUsers = useCallback((client) => {
-    if (!client) return [];
-    return endUsers.filter(eu => {
-      if (eu.user_id && eu.user_id === client.id) return true;
-      if (eu.client_id && eu.client_id === client.id) return true;
-      if (eu.company_name && client.razon_social && eu.company_name.trim().toLowerCase() === client.razon_social.trim().toLowerCase()) return true;
-      if (eu.company_name && client.name && eu.company_name.trim().toLowerCase() === client.name.trim().toLowerCase()) return true;
-      return false;
-    });
-  }, [endUsers]);
-
-  const distinctClientList = useMemo(() => {
-    const list = [];
-    const seen = new Set();
-    users.forEach(u => {
-      const name = (u.razon_social || u.name || '').trim();
-      if (name && !seen.has(name.toLowerCase())) {
-        seen.add(name.toLowerCase());
-        const count = endUsers.filter(eu => eu.user_id === u.id || (eu.company_name && eu.company_name.trim().toLowerCase() === name.toLowerCase())).length;
-        list.push({ id: u.id, name, count });
-      }
-    });
-    return list;
-  }, [users, endUsers]);
-
-  const filteredEndUsers = useMemo(() => {
-    let list = [...endUsers];
-    if (selectedEndUserCountryFilter && selectedEndUserCountryFilter !== 'Todos') {
-      list = list.filter(eu => String(eu.pais).toLowerCase() === selectedEndUserCountryFilter.toLowerCase());
-    }
-    if (selectedEndUserClientFilter && selectedEndUserClientFilter !== 'Todos') {
-      const filterId = Number(selectedEndUserClientFilter);
-      list = list.filter(eu => {
-        if (eu.user_id && eu.user_id === filterId) return true;
-        if (eu.client_id && eu.client_id === filterId) return true;
-        const matched = users.find(u => u.id === filterId);
-        if (matched && eu.company_name && matched.razon_social && eu.company_name.toLowerCase() === matched.razon_social.toLowerCase()) return true;
-        return false;
-      });
-    }
-    if (endUserSearch && endUserSearch.trim()) {
-      const q = endUserSearch.trim().toLowerCase();
-      list = list.filter(eu =>
-        (eu.nombre && eu.nombre.toLowerCase().includes(q)) ||
-        (eu.company_name && eu.company_name.toLowerCase().includes(q)) ||
-        (eu.client_name && eu.client_name.toLowerCase().includes(q)) ||
-        (eu.ciudad && eu.ciudad.toLowerCase().includes(q)) ||
-        (eu.contacto && eu.contacto.toLowerCase().includes(q)) ||
-        (eu.telefono && eu.telefono.toLowerCase().includes(q))
-      );
-    }
-    return list;
-  }, [endUsers, selectedEndUserCountryFilter, selectedEndUserClientFilter, endUserSearch, users]);
 
   return (
     <section className="board-section">
@@ -654,139 +508,8 @@ export default function UsersTab({
         </div>
       </div>
 
-      {/* Selector de Sub-Vista: Clientes Mayoristas vs Catálogo de End Users */}
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        background: '#f8fafc',
-        border: '1px solid #e2e8f0',
-        padding: '6px',
-        borderRadius: '12px',
-        marginBottom: '16px',
-        flexWrap: 'wrap',
-        gap: '8px'
-      }}>
-        <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
-          <button
-            type="button"
-            onClick={() => setActiveSubView('clients')}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '9px',
-              border: 'none',
-              background: activeSubView === 'clients' ? 'linear-gradient(135deg, #0fa4de, #0284c7)' : 'transparent',
-              color: activeSubView === 'clients' ? '#ffffff' : '#475569',
-              fontWeight: activeSubView === 'clients' ? '800' : '600',
-              fontSize: '12.5px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: activeSubView === 'clients' ? '0 2px 8px rgba(15, 164, 222, 0.25)' : 'none',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            <BrandingVectorIcon name="users" size={14} color={activeSubView === 'clients' ? '#ffffff' : '#0284c7'} />
-            <span>Directorio Clientes Mayoristas</span>
-            <span style={{
-              background: activeSubView === 'clients' ? 'rgba(255,255,255,0.25)' : '#e2e8f0',
-              color: activeSubView === 'clients' ? '#ffffff' : '#0f172a',
-              fontSize: '10.5px',
-              fontWeight: '800',
-              padding: '1px 7px',
-              borderRadius: '999px'
-            }}>
-              {countryScopedUsers.length}
-            </span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setActiveSubView('end_users')}
-            style={{
-              padding: '8px 16px',
-              borderRadius: '9px',
-              border: 'none',
-              background: activeSubView === 'end_users' ? 'linear-gradient(135deg, #0fa4de, #0284c7)' : 'transparent',
-              color: activeSubView === 'end_users' ? '#ffffff' : '#475569',
-              fontWeight: activeSubView === 'end_users' ? '800' : '600',
-              fontSize: '12.5px',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              boxShadow: activeSubView === 'end_users' ? '0 2px 8px rgba(15, 164, 222, 0.25)' : 'none',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            <BrandingVectorIcon name="briefcase" size={14} color={activeSubView === 'end_users' ? '#ffffff' : '#0284c7'} />
-            <span>Catálogo & Matriz de End Users</span>
-            <span style={{
-              background: activeSubView === 'end_users' ? 'rgba(255,255,255,0.25)' : '#e2e8f0',
-              color: activeSubView === 'end_users' ? '#ffffff' : '#0f172a',
-              fontSize: '10.5px',
-              fontWeight: '800',
-              padding: '1px 7px',
-              borderRadius: '999px'
-            }}>
-              {endUsers.length}
-            </span>
-          </button>
-        </div>
-
-        {/* Acciones Rápidas de End Users */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <button
-            type="button"
-            onClick={() => exportEndUsersCsv(endUsers, 'End_Users_DACAS.csv')}
-            style={{
-              background: '#ffffff',
-              color: '#0284c7',
-              border: '1.5px solid #bae6fd',
-              padding: '7px 13px',
-              borderRadius: '8px',
-              fontSize: '12px',
-              fontWeight: '700',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              boxShadow: '0 2px 6px rgba(2, 132, 199, 0.08)'
-            }}
-            title="Descargar listado maestro de End Users en formato CSV / Excel"
-          >
-            <BrandingVectorIcon name="download" size={13} color="#0284c7" />
-            <span>Exportar End Users (CSV)</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => handleOpenNewEndUserModal()}
-            style={{
-              background: '#f0fdf4',
-              color: '#16a34a',
-              border: '1.5px solid #bbf7d0',
-              padding: '7px 13px',
-              borderRadius: '8px',
-              fontSize: '12px',
-              fontWeight: '700',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px'
-            }}
-          >
-            <BrandingVectorIcon name="plus" size={13} color="#16a34a" />
-            <span>+ Nuevo End User</span>
-          </button>
-        </div>
-      </div>
-
       {/* Country Scope Notice */}
-      {activeSubView === 'clients' && (
-        <>
-          <div style={{
+      <div style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -1370,6 +1093,507 @@ export default function UsersTab({
                     </div>
                   )}
                 </div>
+
+                {/* SUB-SECCIÓN: TAGS / ETIQUETAS DEL CLIENTE */}
+                <div style={{ gridColumn: '1 / -1', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #e2e8f0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <BrandingVectorIcon name="layers" size={14} color="#7c3aed" />
+                      <label style={{ fontSize: '12px', fontWeight: '800', color: '#1e293b' }}>
+                        Tags y Etiquetas de Segmentación (Reglas de Precio & Cupones)
+                      </label>
+                    </div>
+                  </div>
+                  <p style={{ margin: '0 0 10px', fontSize: '11.5px', color: '#64748b' }}>
+                    Asigna etiquetas a este cliente para habilitar cupones dirigidos o reglas dinámicas de descuento basadas en su nivel o vertical.
+                  </p>
+
+                  {/* Tags actuales */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '10px', minHeight: '28px', alignItems: 'center' }}>
+                    {Array.isArray(userForm.tags) && userForm.tags.length > 0 ? (
+                      userForm.tags.map(tag => (
+                        <span
+                          key={tag}
+                          style={{
+                            background: '#f5f3ff',
+                            border: '1px solid #ddd6fe',
+                            color: '#7c3aed',
+                            fontSize: '11px',
+                            fontWeight: '750',
+                            padding: '3px 8px',
+                            borderRadius: '6px',
+                            display: 'inline-flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          {tag}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveTag(tag)}
+                            style={{
+                              background: 'transparent',
+                              border: 'none',
+                              color: '#7c3aed',
+                              cursor: 'pointer',
+                              padding: 0,
+                              fontSize: '12px',
+                              lineHeight: 1
+                            }}
+                          >
+                            ✕
+                          </button>
+                        </span>
+                      ))
+                    ) : (
+                      <span style={{ fontSize: '11.5px', color: '#94a3b8', fontStyle: 'italic' }}>
+                        Sin etiquetas asignadas. Escribe o selecciona una abajo.
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Input para agregar tag nuevo */}
+                  <div style={{ display: 'flex', gap: '8px', maxWidth: '420px', marginBottom: '10px' }}>
+                    <input
+                      type="text"
+                      value={newTagInput}
+                      onChange={(e) => setNewTagInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') {
+                          e.preventDefault();
+                          handleAddTag();
+                        }
+                      }}
+                      placeholder="Nueva etiqueta (ej. Partner Platinum, VIP)..."
+                      style={{
+                        flex: 1,
+                        padding: '7px 10px',
+                        borderRadius: '7px',
+                        border: '1px solid #cbd5e1',
+                        fontSize: '12px'
+                      }}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleAddTag()}
+                      style={{
+                        padding: '7px 14px',
+                        borderRadius: '7px',
+                        border: 'none',
+                        background: '#7c3aed',
+                        color: '#ffffff',
+                        fontWeight: '750',
+                        fontSize: '11.5px',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      + Agregar
+                    </button>
+                  </div>
+
+                  {/* Sugerencias rápidas */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                    <span style={{ fontSize: '11px', color: '#64748b', fontWeight: '700' }}>Sugerencias:</span>
+                    {SUGGESTED_CLIENT_TAGS.map(tag => {
+                      const isAdded = Array.isArray(userForm.tags) && userForm.tags.includes(tag);
+                      return (
+                        <button
+                          key={tag}
+                          type="button"
+                          onClick={() => handleAddTag(tag)}
+                          disabled={isAdded}
+                          style={{
+                            border: isAdded ? '1px solid #e2e8f0' : '1px dashed #cbd5e1',
+                            background: isAdded ? '#f8fafc' : '#ffffff',
+                            color: isAdded ? '#94a3b8' : '#475569',
+                            fontSize: '10.5px',
+                            fontWeight: '600',
+                            padding: '2px 7px',
+                            borderRadius: '5px',
+                            cursor: isAdded ? 'default' : 'pointer'
+                          }}
+                        >
+                          {isAdded ? `✓ ${tag}` : `+ ${tag}`}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* SUB-SECCIÓN: MARCAS AUTORIZADAS / WHITELIST (REDESIGN MODERNO FULL-WIDTH) */}
+                <div style={{
+                  gridColumn: '1 / -1',
+                  marginTop: '20px',
+                  padding: '20px',
+                  background: '#f8fafc',
+                  border: '1.5px solid #e2e8f0',
+                  borderRadius: '12px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '16px'
+                }}>
+                  {/* Encabezado con badge y estado */}
+                  <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                    <div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{
+                          width: '28px',
+                          height: '28px',
+                          borderRadius: '8px',
+                          background: '#eff6ff',
+                          color: '#0284c7',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          border: '1px solid #bfdbfe'
+                        }}>
+                          <BrandingVectorIcon name="shield" size={15} color="#0284c7" />
+                        </div>
+                        <h4 style={{ margin: 0, fontSize: '13.5px', fontWeight: '800', color: '#0f172a' }}>
+                          Marcas Autorizadas (Partner Brands / Whitelist de Catálogo)
+                        </h4>
+                      </div>
+                      <p style={{ margin: '4px 0 0', fontSize: '11.5px', color: '#64748b' }}>
+                        Determina exactamente qué marcas de fabricantes puede visualizar y comprar este cliente en el catálogo mayorista.
+                      </p>
+                    </div>
+
+                    <div style={{
+                      padding: '4px 10px',
+                      borderRadius: '8px',
+                      fontSize: '11.5px',
+                      fontWeight: '800',
+                      background: (!Array.isArray(userForm.allowed_brands) || userForm.allowed_brands.length === 0) ? '#eff6ff' : '#fef3c7',
+                      color: (!Array.isArray(userForm.allowed_brands) || userForm.allowed_brands.length === 0) ? '#0369a1' : '#92400e',
+                      border: `1px solid ${(!Array.isArray(userForm.allowed_brands) || userForm.allowed_brands.length === 0) ? '#bfdbfe' : '#fde68a'}`,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px'
+                    }}>
+                      <span style={{
+                        width: '8px',
+                        height: '8px',
+                        borderRadius: '50%',
+                        background: (!Array.isArray(userForm.allowed_brands) || userForm.allowed_brands.length === 0) ? '#0284c7' : '#d97706'
+                      }} />
+                      {(!Array.isArray(userForm.allowed_brands) || userForm.allowed_brands.length === 0)
+                        ? 'Acceso Total: Todas las marcas permitidas'
+                        : `${userForm.allowed_brands.length} marca(s) autorizada(s)`}
+                    </div>
+                  </div>
+
+                  {/* Tarjetas interactivas de modo (Acceso Total vs Restringido) */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
+                    {/* Modo 1: Acceso Total */}
+                    <div
+                      onClick={handleSetAllBrands}
+                      style={{
+                        padding: '12px 14px',
+                        borderRadius: '10px',
+                        border: (!Array.isArray(userForm.allowed_brands) || userForm.allowed_brands.length === 0)
+                          ? '2px solid #0284c7'
+                          : '1px solid #cbd5e1',
+                        background: (!Array.isArray(userForm.allowed_brands) || userForm.allowed_brands.length === 0)
+                          ? '#f0f9ff'
+                          : '#ffffff',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name="brand_mode"
+                        checked={!Array.isArray(userForm.allowed_brands) || userForm.allowed_brands.length === 0}
+                        onChange={handleSetAllBrands}
+                        style={{ width: '18px', height: '18px', accentColor: '#0284c7', cursor: 'pointer' }}
+                      />
+                      <div>
+                        <div style={{ fontSize: '12.5px', fontWeight: '800', color: '#0f172a' }}>
+                          Acceso Total (Catálogo Completo)
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#64748b' }}>
+                          El cliente puede ver y comprar todas las marcas comercializadas por DACAS sin restricción.
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Modo 2: Restringido */}
+                    <div
+                      onClick={() => {
+                        if (!Array.isArray(userForm.allowed_brands) || userForm.allowed_brands.length === 0) {
+                          setUserForm(prev => ({ ...prev, allowed_brands: ['Aruba'] }));
+                        }
+                      }}
+                      style={{
+                        padding: '12px 14px',
+                        borderRadius: '10px',
+                        border: (Array.isArray(userForm.allowed_brands) && userForm.allowed_brands.length > 0)
+                          ? '2px solid #d97706'
+                          : '1px solid #cbd5e1',
+                        background: (Array.isArray(userForm.allowed_brands) && userForm.allowed_brands.length > 0)
+                          ? '#fffbeb'
+                          : '#ffffff',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '12px',
+                        transition: 'all 0.15s ease'
+                      }}
+                    >
+                      <input
+                        type="radio"
+                        name="brand_mode"
+                        checked={Array.isArray(userForm.allowed_brands) && userForm.allowed_brands.length > 0}
+                        onChange={() => {
+                          if (!Array.isArray(userForm.allowed_brands) || userForm.allowed_brands.length === 0) {
+                            setUserForm(prev => ({ ...prev, allowed_brands: ['Aruba'] }));
+                          }
+                        }}
+                        style={{ width: '18px', height: '18px', accentColor: '#d97706', cursor: 'pointer' }}
+                      />
+                      <div>
+                        <div style={{ fontSize: '12.5px', fontWeight: '800', color: '#0f172a' }}>
+                          Acceso Restringido (Partner Whitelist)
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#64748b' }}>
+                          El cliente solo puede ver y comprar los productos de las marcas marcadas abajo.
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Panel de Marcas si está en modo restringido */}
+                  {Array.isArray(userForm.allowed_brands) && userForm.allowed_brands.length > 0 && (
+                    <div style={{
+                      background: '#ffffff',
+                      borderRadius: '10px',
+                      border: '1px solid #e2e8f0',
+                      padding: '14px',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '12px'
+                    }}>
+                      {/* Barra de Filtro y Atajos Rápidos */}
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '10px' }}>
+                        {/* Buscador de Marca */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '240px', flex: 1 }}>
+                          <div style={{ position: 'relative', width: '100%', maxWidth: '320px' }}>
+                            <input
+                              type="text"
+                              value={brandSearch}
+                              onChange={e => setBrandSearch(e.target.value)}
+                              placeholder="Filtrar marcas (ej: Fortinet, Aruba, Cisco)..."
+                              style={{
+                                width: '100%',
+                                padding: '7px 28px 7px 10px',
+                                borderRadius: '7px',
+                                border: '1px solid #cbd5e1',
+                                fontSize: '12px',
+                                color: '#1e293b'
+                              }}
+                            />
+                            {brandSearch && (
+                              <button
+                                type="button"
+                                onClick={() => setBrandSearch('')}
+                                style={{
+                                  position: 'absolute',
+                                  right: '6px',
+                                  top: '50%',
+                                  transform: 'translateY(-50%)',
+                                  background: 'transparent',
+                                  border: 'none',
+                                  color: '#94a3b8',
+                                  cursor: 'pointer',
+                                  padding: '2px',
+                                  fontSize: '12px'
+                                }}
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Botones de acción masiva */}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+                          <button
+                            type="button"
+                            onClick={handleSelectAllBrandsList}
+                            style={{
+                              padding: '5px 10px',
+                              borderRadius: '6px',
+                              border: '1px solid #bfdbfe',
+                              background: '#eff6ff',
+                              color: '#0284c7',
+                              fontSize: '11px',
+                              fontWeight: '750',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            + Seleccionar Todas ({AVAILABLE_BRANDS.length})
+                          </button>
+                          <button
+                            type="button"
+                            onClick={handleClearSelectedBrands}
+                            style={{
+                              padding: '5px 10px',
+                              borderRadius: '6px',
+                              border: '1px solid #e2e8f0',
+                              background: '#f8fafc',
+                              color: '#64748b',
+                              fontSize: '11px',
+                              fontWeight: '700',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            ✕ Limpiar Selección
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Atajos por vertical / categoría */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap', paddingTop: '4px', borderTop: '1px dashed #f1f5f9' }}>
+                        <span style={{ fontSize: '10.5px', color: '#64748b', fontWeight: '700' }}>Presets por Vertical:</span>
+                        {[
+                          { label: 'Networking', brands: ['Aruba', 'Cisco', 'MikroTik', 'Ubiquiti', 'Grandstream', 'Nexxt'] },
+                          { label: 'Ciberseguridad', brands: ['Fortinet', 'Sophos', 'SonicWall', 'Radware', 'Infoblox', 'AlgoSec', 'Barracuda', 'Imperva'] },
+                          { label: 'Infraestructura & Energía', brands: ['APC', 'Vertiv', 'Eaton', 'Gabitel', 'Panduit', 'CommScope', 'Furukawa'] },
+                          { label: 'Comunicaciones / Voz', brands: ['Avaya', 'AudioCodes', 'Grandstream', 'Poly', 'Yealink'] }
+                        ].map(preset => (
+                          <button
+                            key={preset.label}
+                            type="button"
+                            onClick={() => handleApplyBrandPreset(preset.brands)}
+                            style={{
+                              padding: '3px 8px',
+                              borderRadius: '6px',
+                              border: '1px solid #cbd5e1',
+                              background: '#ffffff',
+                              color: '#334155',
+                              fontSize: '10.5px',
+                              fontWeight: '600',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            + {preset.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      {/* Input para agregar marca personalizada */}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', maxWidth: '420px', paddingTop: '4px' }}>
+                        <input
+                          type="text"
+                          value={customBrandInput}
+                          onChange={e => setCustomBrandInput(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleAddCustomBrand();
+                            }
+                          }}
+                          placeholder="Otra marca fuera de lista (ej: Dell, Palo Alto)..."
+                          style={{
+                            flex: 1,
+                            padding: '6px 10px',
+                            borderRadius: '6px',
+                            border: '1px solid #cbd5e1',
+                            fontSize: '11.5px'
+                          }}
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddCustomBrand}
+                          style={{
+                            padding: '6px 12px',
+                            borderRadius: '6px',
+                            border: 'none',
+                            background: '#0284c7',
+                            color: '#ffffff',
+                            fontWeight: '750',
+                            fontSize: '11px',
+                            cursor: 'pointer',
+                            whiteSpace: 'nowrap'
+                          }}
+                        >
+                          + Añadir Marca
+                        </button>
+                      </div>
+
+                      {/* Grid de checkboxes de marcas */}
+                      <div style={{
+                        display: 'grid',
+                        gridTemplateColumns: 'repeat(auto-fill, minmax(145px, 1fr))',
+                        gap: '6px',
+                        background: '#f8fafc',
+                        padding: '10px',
+                        borderRadius: '8px',
+                        border: '1px solid #e2e8f0',
+                        maxHeight: '260px',
+                        overflowY: 'auto'
+                      }}>
+                        {(() => {
+                          const allAvailableBrands = Array.from(new Set([
+                            ...AVAILABLE_BRANDS,
+                            ...(Array.isArray(userForm.allowed_brands) ? userForm.allowed_brands : [])
+                          ])).sort((a, b) => a.localeCompare(b));
+
+                          const filtered = allAvailableBrands.filter(b =>
+                            b.toLowerCase().includes((brandSearch || '').toLowerCase().trim())
+                          );
+
+                          if (filtered.length === 0) {
+                            return (
+                              <div style={{ gridColumn: '1 / -1', padding: '16px', textAlign: 'center', color: '#64748b', fontSize: '11.5px' }}>
+                                No se encontraron marcas que coincidan con &quot;{brandSearch}&quot;. Puedes agregarla como personalizada arriba.
+                              </div>
+                            );
+                          }
+
+                          return filtered.map(brand => {
+                            const isChecked = Array.isArray(userForm.allowed_brands) && userForm.allowed_brands.includes(brand);
+                            return (
+                              <label
+                                key={brand}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  background: isChecked ? '#eff6ff' : '#ffffff',
+                                  border: `1.5px solid ${isChecked ? '#0284c7' : '#e2e8f0'}`,
+                                  boxShadow: isChecked ? '0 1px 3px rgba(2, 132, 199, 0.12)' : 'none',
+                                  padding: '6px 9px',
+                                  borderRadius: '6px',
+                                  fontSize: '11.5px',
+                                  fontWeight: isChecked ? '800' : '600',
+                                  color: isChecked ? '#0369a1' : '#334155',
+                                  cursor: 'pointer',
+                                  userSelect: 'none',
+                                  transition: 'all 0.12s ease'
+                                }}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => handleToggleBrand(brand)}
+                                  style={{ cursor: 'pointer', accentColor: '#0284c7' }}
+                                />
+                                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {brand}
+                                </span>
+                              </label>
+                            );
+                          });
+                        })()}
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -1630,21 +1854,22 @@ export default function UsersTab({
         <table className="users-table crm-compact-table dacas-condensed-table" style={{ width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: '11.5px', margin: 0 }}>
           <thead>
             <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left' }}>
-              <th style={{ width: '5%', padding: '6px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', whiteSpace: 'nowrap' }}>ID</th>
-              <th style={{ width: '22%', padding: '6px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569' }}>Empresa / Razón Social</th>
-              <th style={{ width: '17%', padding: '6px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569' }}>Contacto & Email</th>
-              <th style={{ width: '10%', padding: '6px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569' }}>CUIT / NIT</th>
-              <th style={{ width: '12%', padding: '6px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569' }}>Cuenta Corriente</th>
-              <th style={{ width: '9%', padding: '6px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569' }}>Segmento</th>
-              <th style={{ width: '10%', padding: '6px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569' }}>End Users</th>
-              <th style={{ width: '7%', padding: '6px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569' }}>Estado</th>
-              <th style={{ width: '8%', padding: '6px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', textAlign: 'center' }}>Acciones</th>
+              <th style={{ width: '4%', padding: '6px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', whiteSpace: 'nowrap' }}>ID</th>
+              <th style={{ width: '17%', padding: '6px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569' }}>Empresa / Razón Social</th>
+              <th style={{ width: '14%', padding: '6px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569' }}>Contacto & Email</th>
+              <th style={{ width: '9%', padding: '6px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569' }}>CUIT / NIT</th>
+              <th style={{ width: '10%', padding: '6px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569' }}>Cuenta Corriente</th>
+              <th style={{ width: '8%', padding: '6px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569' }}>Segmento</th>
+              <th style={{ width: '13%', padding: '6px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569' }}>Tags / Etiquetas</th>
+              <th style={{ width: '13%', padding: '6px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569' }}>Marcas Autorizadas</th>
+              <th style={{ width: '6%', padding: '6px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569' }}>Estado</th>
+              <th style={{ width: '6%', padding: '6px 8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.03em', fontWeight: '750', color: '#475569', textAlign: 'center' }}>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {paginatedUsers.length === 0 ? (
               <tr>
-                <td colSpan={9} style={{ textAlign: 'center', padding: '36px', color: '#64748b' }}>
+                <td colSpan={10} style={{ textAlign: 'center', padding: '36px', color: '#64748b' }}>
                   <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
                     <BrandingVectorIcon name="users" size={28} color="#94a3b8" />
                   </div>
@@ -1658,8 +1883,8 @@ export default function UsersTab({
                 const isInactive = u.status === 'inactivo';
                 const companyKey = (u.razon_social || u.name || '').trim().toLowerCase();
                 const sameCompanyCount = users.filter(x => (x.razon_social || x.name || '').trim().toLowerCase() === companyKey).length;
-                const clientEUs = getClientEndUsers(u);
-                const isEuExpanded = Boolean(expandedClientEndUsers[u.id]);
+                const clientTags = Array.isArray(u.tags) ? u.tags : [];
+                const clientBrands = Array.isArray(u.allowed_brands) ? u.allowed_brands : [];
                 
                 return (
                   <React.Fragment key={u.id}>
@@ -1667,7 +1892,7 @@ export default function UsersTab({
                       onClick={() => openUserModal && openUserModal(u)}
                       style={{
                         borderBottom: '1px solid var(--border-color-subtle, #f1f5f9)',
-                        background: isPending ? 'rgba(245, 158, 11, 0.04)' : (isEuExpanded ? '#f0f9ff' : 'transparent'),
+                        background: isPending ? 'rgba(245, 158, 11, 0.04)' : 'transparent',
                         cursor: 'pointer',
                         height: '30px',
                         transition: 'background 0.15s ease'
@@ -1785,31 +2010,69 @@ export default function UsersTab({
                       })()}
                     </td>
 
-                    {/* COLUMNA END USERS DESPLEGABLE */}
-                    <td style={{ padding: '3px 8px', verticalAlign: 'middle', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        onClick={() => toggleClientEndUsers(u.id)}
-                        title={clientEUs.length > 0 ? `Ver los ${clientEUs.length} End Users de este cliente` : 'Sin End Users. Click para gestionar.'}
-                        style={{
-                          background: isEuExpanded ? '#0284c7' : (clientEUs.length > 0 ? '#eff6ff' : '#f8fafc'),
-                          color: isEuExpanded ? '#ffffff' : (clientEUs.length > 0 ? '#0284c7' : '#64748b'),
-                          border: `1px solid ${isEuExpanded ? '#0284c7' : (clientEUs.length > 0 ? '#bfdbfe' : '#e2e8f0')}`,
-                          padding: '2px 7px',
-                          borderRadius: '6px',
-                          fontSize: '10px',
+                    {/* COLUMNA TAGS / ETIQUETAS */}
+                    <td style={{ padding: '3px 8px', verticalAlign: 'middle', overflow: 'hidden' }}>
+                      {clientTags.length > 0 ? (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', maxHeight: '24px', overflow: 'hidden' }}>
+                          {clientTags.map(tag => (
+                            <span
+                              key={tag}
+                              style={{
+                                background: '#f5f3ff',
+                                color: '#7c3aed',
+                                border: '1px solid #ddd6fe',
+                                padding: '1px 5px',
+                                borderRadius: '4px',
+                                fontSize: '9px',
+                                fontWeight: '750',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span style={{ color: '#94a3b8', fontSize: '10px' }}>-</span>
+                      )}
+                    </td>
+
+                    {/* COLUMNA MARCAS AUTORIZADAS */}
+                    <td style={{ padding: '3px 8px', verticalAlign: 'middle', overflow: 'hidden' }}>
+                      {clientBrands.length > 0 ? (
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '3px', maxHeight: '24px', overflow: 'hidden' }}>
+                          {clientBrands.map(brand => (
+                            <span
+                              key={brand}
+                              style={{
+                                background: '#fef3c7',
+                                color: '#b45309',
+                                border: '1px solid #fde68a',
+                                padding: '1px 5px',
+                                borderRadius: '4px',
+                                fontSize: '9px',
+                                fontWeight: '750',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              {brand}
+                            </span>
+                          ))}
+                        </div>
+                      ) : (
+                        <span style={{
+                          background: '#f0fdf4',
+                          color: '#15803d',
+                          border: '1px solid #bbf7d0',
+                          padding: '1px 5px',
+                          borderRadius: '4px',
+                          fontSize: '9px',
                           fontWeight: '750',
-                          display: 'inline-flex',
-                          alignItems: 'center',
-                          gap: '4px',
-                          cursor: 'pointer',
-                          transition: 'all 0.15s ease'
-                        }}
-                      >
-                        <BrandingVectorIcon name="users" size={10} color={isEuExpanded ? '#ffffff' : (clientEUs.length > 0 ? '#0284c7' : '#64748b')} />
-                        <span>{clientEUs.length} End User{clientEUs.length === 1 ? '' : 's'}</span>
-                        <span style={{ fontSize: '8px', opacity: 0.85 }}>{isEuExpanded ? '▲' : '▼'}</span>
-                      </button>
+                          whiteSpace: 'nowrap'
+                        }}>
+                          Todas
+                        </span>
+                      )}
                     </td>
 
                     <td style={{ padding: '3px 8px', verticalAlign: 'middle', whiteSpace: 'nowrap' }}>
@@ -2066,188 +2329,7 @@ export default function UsersTab({
                     </td>
                   </tr>
 
-                  {/* DESPLEGABLE EN LÍNEA: END USERS DE ESTE CLIENTE */}
-                  {isEuExpanded && (
-                    <tr style={{ background: '#f8fafc', borderBottom: '2px solid #cbd5e1' }}>
-                      <td colSpan={9} style={{ padding: '12px 18px', background: 'linear-gradient(180deg, #f0f9ff 0%, #f8fafc 100%)' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px', flexWrap: 'wrap', gap: '8px' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <div style={{ width: '28px', height: '28px', borderRadius: '7px', background: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                              <BrandingVectorIcon name="users" size={14} color="#0284c7" />
-                            </div>
-                            <div>
-                              <div style={{ fontWeight: '800', fontSize: '13px', color: '#0f172a' }}>
-                                End Users vinculados a {u.razon_social || u.name}
-                              </div>
-                              <div style={{ fontSize: '11px', color: '#64748b' }}>
-                                Clientes finales registrados para asignación y licenciamiento de compras mayoristas.
-                              </div>
-                            </div>
-                          </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            {clientEUs.length > 0 && (
-                              <button
-                                type="button"
-                                onClick={() => exportEndUsersCsv(clientEUs, `end_users_${(u.razon_social || u.name || 'cliente').replace(/\s+/g, '_')}.csv`)}
-                                style={{
-                                  display: 'inline-flex',
-                                  alignItems: 'center',
-                                  gap: '6px',
-                                  background: '#ffffff',
-                                  color: '#0284c7',
-                                  border: '1px solid #bae6fd',
-                                  padding: '5px 10px',
-                                  borderRadius: '7px',
-                                  fontSize: '11px',
-                                  fontWeight: '700',
-                                  cursor: 'pointer'
-                                }}
-                              >
-                                <BrandingVectorIcon name="download" size={11} color="#0284c7" />
-                                Exportar CSV ({clientEUs.length})
-                              </button>
-                            )}
-                            <button
-                              type="button"
-                              onClick={() => handleOpenNewEndUserModal(u)}
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '6px',
-                                background: '#0284c7',
-                                color: '#ffffff',
-                                border: 'none',
-                                padding: '5px 11px',
-                                borderRadius: '7px',
-                                fontSize: '11px',
-                                fontWeight: '750',
-                                cursor: 'pointer'
-                              }}
-                            >
-                              <BrandingVectorIcon name="plus" size={11} color="#ffffff" />
-                              + Asociar End User
-                            </button>
-                          </div>
-                        </div>
-
-                        {clientEUs.length === 0 ? (
-                          <div style={{ background: '#ffffff', border: '1px dashed #cbd5e1', borderRadius: '8px', padding: '16px', textAlign: 'center', color: '#64748b' }}>
-                            <div style={{ fontSize: '12px', fontWeight: '600', color: '#334155', marginBottom: '4px' }}>
-                              Este cliente mayorista aún no tiene End Users asignados
-                            </div>
-                            <div style={{ fontSize: '11px', marginBottom: '8px' }}>
-                              Haz click en "+ Asociar End User" para registrar una empresa cliente final para las órdenes de {u.razon_social || u.name}.
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => handleOpenNewEndUserModal(u)}
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '5px',
-                                background: '#f0f9ff',
-                                color: '#0284c7',
-                                border: '1px solid #bae6fd',
-                                padding: '5px 12px',
-                                borderRadius: '6px',
-                                fontSize: '11px',
-                                fontWeight: '700',
-                                cursor: 'pointer'
-                              }}
-                            >
-                              <BrandingVectorIcon name="plus" size={11} color="#0284c7" />
-                              Registrar Primer End User
-                            </button>
-                          </div>
-                        ) : (
-                          <div style={{ background: '#ffffff', borderRadius: '8px', border: '1px solid #e2e8f0', overflow: 'hidden' }}>
-                            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
-                              <thead>
-                                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', color: '#475569', textAlign: 'left', fontWeight: '750' }}>
-                                  <th style={{ padding: '6px 10px', width: '6%' }}>ID</th>
-                                  <th style={{ padding: '6px 10px', width: '28%' }}>End User / Razón Social</th>
-                                  <th style={{ padding: '6px 10px', width: '14%' }}>Tax ID / CUIT</th>
-                                  <th style={{ padding: '6px 10px', width: '12%' }}>País / Ciudad</th>
-                                  <th style={{ padding: '6px 10px', width: '24%' }}>Contacto & Email</th>
-                                  <th style={{ padding: '6px 10px', width: '16%', textAlign: 'center' }}>Acciones</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                {clientEUs.map((eu, idx) => (
-                                  <tr key={eu.id || idx} style={{ borderBottom: idx === clientEUs.length - 1 ? 'none' : '1px solid #f1f5f9' }}>
-                                    <td style={{ padding: '6px 10px', color: '#0284c7', fontWeight: '800' }}>#{eu.id}</td>
-                                    <td style={{ padding: '6px 10px' }}>
-                                      <div style={{ fontWeight: '700', color: '#0f172a' }}>{eu.name || eu.company_name}</div>
-                                      {eu.industry && <div style={{ fontSize: '10px', color: '#64748b' }}>{eu.industry}</div>}
-                                    </td>
-                                    <td style={{ padding: '6px 10px', fontFamily: 'monospace', color: '#475569' }}>
-                                      {eu.tax_id || eu.cuit || eu.rut || '-'}
-                                    </td>
-                                    <td style={{ padding: '6px 10px', color: '#334155' }}>
-                                      <span style={{ fontWeight: '600' }}>{eu.country || activeCountry}</span>
-                                      {eu.city && <span style={{ color: '#64748b' }}> • {eu.city}</span>}
-                                    </td>
-                                    <td style={{ padding: '6px 10px' }}>
-                                      <div style={{ color: '#0f172a', fontWeight: '600' }}>{eu.contact_name || eu.contact_person || '-'}</div>
-                                      <div style={{ color: '#0284c7', fontSize: '10.5px' }}>{eu.email || '-'}</div>
-                                      {eu.phone && <div style={{ color: '#64748b', fontSize: '10px' }}>Tel: {eu.phone}</div>}
-                                    </td>
-                                    <td style={{ padding: '6px 10px', textAlign: 'center' }}>
-                                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                                        <button
-                                          type="button"
-                                          onClick={() => handleOpenEditEndUserModal(eu)}
-                                          title="Editar datos del End User"
-                                          style={{
-                                            background: '#f0f9ff',
-                                            border: '1px solid #bae6fd',
-                                            color: '#0284c7',
-                                            borderRadius: '5px',
-                                            padding: '2px 7px',
-                                            fontSize: '10px',
-                                            fontWeight: '700',
-                                            cursor: 'pointer',
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            gap: '3px'
-                                          }}
-                                        >
-                                          <BrandingVectorIcon name="edit" size={10} color="#0284c7" />
-                                          Editar
-                                        </button>
-                                        <button
-                                          type="button"
-                                          onClick={() => handleDeleteEndUser(eu.id)}
-                                          title="Eliminar End User"
-                                          style={{
-                                            background: '#fef2f2',
-                                            border: '1px solid #fecaca',
-                                            color: '#dc2626',
-                                            borderRadius: '5px',
-                                            padding: '2px 7px',
-                                            fontSize: '10px',
-                                            fontWeight: '700',
-                                            cursor: 'pointer',
-                                            display: 'inline-flex',
-                                            alignItems: 'center',
-                                            gap: '3px'
-                                          }}
-                                        >
-                                          <BrandingVectorIcon name="trash" size={10} color="#dc2626" />
-                                          Eliminar
-                                        </button>
-                                      </div>
-                                    </td>
-                                  </tr>
-                                ))}
-                              </tbody>
-                            </table>
-                          </div>
-                        )}
-                      </td>
-                    </tr>
-                  )}
-                </React.Fragment>
+                  </React.Fragment>
               );
             })
           )}
@@ -2264,647 +2346,6 @@ export default function UsersTab({
             onPageSizeChange={setUserPageSize}
             pageSizeOptions={[25, 50, 100, 200]}
           />
-        </>
-      )}
-
-      {/* SUB-VISTA 2: CATÁLOGO INTEGRAL DE END USERS */}
-      {activeSubView === 'end_users' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {/* BARRA DE FILTROS ESPECÍFICOS DE END USERS */}
-          <div style={{
-            background: '#ffffff',
-            borderRadius: '12px',
-            border: '1px solid #e2e8f0',
-            padding: '14px 18px',
-            boxShadow: '0 1px 3px rgba(0,0,0,0.03)',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '12px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '12px' }}>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#0f172a' }}>
-                  Matriz Multinacional de End Users ({filteredEndUsers.length})
-                </h3>
-                <p style={{ margin: '2px 0 0 0', fontSize: '11.5px', color: '#64748b' }}>
-                  Clientes finales registrados por integradores y canales para licenciamiento, RMA y órdenes B2B.
-                </p>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button
-                  type="button"
-                  onClick={() => exportEndUsersCsv(filteredEndUsers, 'matriz_end_users_filtrados.csv')}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    background: '#ffffff',
-                    color: '#0284c7',
-                    border: '1px solid #bae6fd',
-                    padding: '7px 14px',
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                    fontWeight: '700',
-                    cursor: 'pointer',
-                    boxShadow: '0 1px 2px rgba(0,0,0,0.04)'
-                  }}
-                >
-                  <BrandingVectorIcon name="download" size={13} color="#0284c7" />
-                  Exportar CSV ({filteredEndUsers.length})
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleOpenNewEndUserModal()}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '6px',
-                    background: '#0284c7',
-                    color: '#ffffff',
-                    border: 'none',
-                    padding: '7px 14px',
-                    borderRadius: '8px',
-                    fontSize: '12px',
-                    fontWeight: '750',
-                    cursor: 'pointer',
-                    boxShadow: '0 1px 2px rgba(2,132,199,0.25)'
-                  }}
-                >
-                  <BrandingVectorIcon name="plus" size={13} color="#ffffff" />
-                  + Nuevo End User
-                </button>
-              </div>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '12px', alignItems: 'center', paddingTop: '8px', borderTop: '1px solid #f1f5f9' }}>
-              {/* DESPLEGABLE: FILTRAR POR CLIENTE MAYORISTA */}
-              <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: '750', color: '#475569', marginBottom: '4px' }}>
-                  Cliente Mayorista Vinculado:
-                </label>
-                <select
-                  value={selectedEndUserClientFilter}
-                  onChange={(e) => setSelectedEndUserClientFilter(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '7px 10px',
-                    borderRadius: '7px',
-                    border: '1px solid #cbd5e1',
-                    fontSize: '12px',
-                    color: '#0f172a',
-                    background: '#ffffff',
-                    fontWeight: '600'
-                  }}
-                >
-                  <option value="ALL">Todos los Clientes Mayoristas ({endUsers.length})</option>
-                  {distinctClientList.map(item => (
-                    <option key={item.key} value={item.key}>
-                      {item.label} ({item.count} End User{item.count === 1 ? '' : 's'})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* DESPLEGABLE: FILTRAR POR PAÍS */}
-              <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: '750', color: '#475569', marginBottom: '4px' }}>
-                  País de Operación:
-                </label>
-                <select
-                  value={selectedEndUserCountryFilter}
-                  onChange={(e) => setSelectedEndUserCountryFilter(e.target.value)}
-                  style={{
-                    width: '100%',
-                    padding: '7px 10px',
-                    borderRadius: '7px',
-                    border: '1px solid #cbd5e1',
-                    fontSize: '12px',
-                    color: '#0f172a',
-                    background: '#ffffff',
-                    fontWeight: '600'
-                  }}
-                >
-                  <option value="ALL">Todos los Países ({endUsers.length})</option>
-                  {LATAM_COUNTRIES.map(c => {
-                    const countInCountry = endUsers.filter(eu => (eu.country || '').toUpperCase() === c.code).length;
-                    return (
-                      <option key={c.code} value={c.code}>
-                        {c.name} ({countInCountry})
-                      </option>
-                    );
-                  })}
-                </select>
-              </div>
-
-              {/* BÚSQUEDA DE TEXTO */}
-              <div>
-                <label style={{ display: 'block', fontSize: '11px', fontWeight: '750', color: '#475569', marginBottom: '4px' }}>
-                  Búsqueda por Nombre, Tax ID o Contacto:
-                </label>
-                <div style={{ position: 'relative' }}>
-                  <input
-                    type="text"
-                    value={endUserSearch}
-                    onChange={(e) => setEndUserSearch(e.target.value)}
-                    placeholder="Buscar End User..."
-                    style={{
-                      width: '100%',
-                      padding: '7px 10px 7px 30px',
-                      borderRadius: '7px',
-                      border: '1px solid #cbd5e1',
-                      fontSize: '12px',
-                      color: '#0f172a',
-                      background: '#ffffff',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                  <div style={{ position: 'absolute', left: '9px', top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
-                    <BrandingVectorIcon name="search" size={13} color="#94a3b8" />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* TABLA PRINCIPAL DE END USERS */}
-          <div className="crm-table-container" style={{ width: '100%', overflowX: 'auto', borderRadius: '12px', border: '1px solid #e2e8f0', background: '#ffffff' }}>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11.5px', tableLayout: 'fixed' }}>
-              <thead>
-                <tr style={{ background: '#f8fafc', borderBottom: '1px solid #e2e8f0', textAlign: 'left', fontWeight: '750', color: '#475569' }}>
-                  <th style={{ width: '5%', padding: '8px 10px' }}>ID</th>
-                  <th style={{ width: '22%', padding: '8px 10px' }}>End User / Razón Social</th>
-                  <th style={{ width: '20%', padding: '8px 10px' }}>Cliente Mayorista Vinculado</th>
-                  <th style={{ width: '11%', padding: '8px 10px' }}>Tax ID / CUIT</th>
-                  <th style={{ width: '12%', padding: '8px 10px' }}>País & Ciudad</th>
-                  <th style={{ width: '18%', padding: '8px 10px' }}>Contacto & Email</th>
-                  <th style={{ width: '12%', padding: '8px 10px', textAlign: 'center' }}>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {endUsersLoading ? (
-                  <tr>
-                    <td colSpan={7} style={{ textAlign: 'center', padding: '36px', color: '#64748b' }}>
-                      <div style={{ fontWeight: '700', fontSize: '13px' }}>Cargando catálogo de End Users...</div>
-                    </td>
-                  </tr>
-                ) : filteredEndUsers.length === 0 ? (
-                  <tr>
-                    <td colSpan={7} style={{ textAlign: 'center', padding: '36px', color: '#64748b' }}>
-                      <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
-                        <BrandingVectorIcon name="users" size={28} color="#94a3b8" />
-                      </div>
-                      <div style={{ fontWeight: '700', fontSize: '14px', color: '#1e293b' }}>No se encontraron End Users</div>
-                      <div style={{ fontSize: '12px', marginTop: '4px' }}>
-                        No hay registros que coincidan con los filtros seleccionados.
-                      </div>
-                    </td>
-                  </tr>
-                ) : (
-                  filteredEndUsers.map((eu, idx) => (
-                    <tr
-                      key={eu.id || idx}
-                      style={{
-                        borderBottom: '1px solid #f1f5f9',
-                        transition: 'background 0.15s ease',
-                        cursor: 'default'
-                      }}
-                    >
-                      <td style={{ padding: '6px 10px', fontWeight: '800', color: '#0284c7' }}>
-                        #{eu.id}
-                      </td>
-
-                      <td style={{ padding: '6px 10px' }}>
-                        <div style={{ fontWeight: '750', color: '#0f172a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={eu.name || eu.company_name}>
-                          {eu.name || eu.company_name}
-                        </div>
-                        {eu.industry && (
-                          <div style={{ fontSize: '10px', color: '#64748b' }}>
-                            {eu.industry}
-                          </div>
-                        )}
-                      </td>
-
-                      <td style={{ padding: '6px 10px' }}>
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px', background: '#f0f9ff', border: '1px solid #bae6fd', padding: '2px 8px', borderRadius: '6px', maxWidth: '100%' }}>
-                          <BrandingVectorIcon name="building" size={10} color="#0284c7" />
-                          <span style={{ fontSize: '11px', fontWeight: '700', color: '#0369a1', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                            {eu.client_name || eu.company_name || 'Sin Asignar'}
-                          </span>
-                        </div>
-                      </td>
-
-                      <td style={{ padding: '6px 10px', fontFamily: 'monospace', color: '#475569', fontWeight: '600' }}>
-                        {eu.tax_id || eu.cuit || eu.rut || '-'}
-                      </td>
-
-                      <td style={{ padding: '6px 10px' }}>
-                        <div style={{ fontWeight: '700', color: '#0f172a' }}>{eu.country || '-'}</div>
-                        <div style={{ fontSize: '10.5px', color: '#64748b' }}>{eu.city || eu.address || '-'}</div>
-                      </td>
-
-                      <td style={{ padding: '6px 10px' }}>
-                        <div style={{ fontWeight: '650', color: '#0f172a' }}>{eu.contact_name || eu.contact_person || '-'}</div>
-                        <div style={{ color: '#0284c7', fontSize: '10.5px' }}>{eu.email || '-'}</div>
-                        {eu.phone && <div style={{ color: '#64748b', fontSize: '10px' }}>Tel: {eu.phone}</div>}
-                      </td>
-
-                      <td style={{ padding: '6px 10px', textAlign: 'center' }}>
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
-                          <button
-                            type="button"
-                            onClick={() => handleOpenEditEndUserModal(eu)}
-                            title="Editar End User"
-                            style={{
-                              background: '#f0f9ff',
-                              border: '1px solid #bae6fd',
-                              color: '#0284c7',
-                              borderRadius: '5px',
-                              padding: '3px 8px',
-                              fontSize: '10.5px',
-                              fontWeight: '700',
-                              cursor: 'pointer',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}
-                          >
-                            <BrandingVectorIcon name="edit" size={10} color="#0284c7" />
-                            Editar
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleDeleteEndUser(eu.id)}
-                            title="Eliminar End User"
-                            style={{
-                              background: '#fef2f2',
-                              border: '1px solid #fecaca',
-                              color: '#dc2626',
-                              borderRadius: '5px',
-                              padding: '3px 8px',
-                              fontSize: '10.5px',
-                              fontWeight: '750',
-                              cursor: 'pointer',
-                              display: 'inline-flex',
-                              alignItems: 'center',
-                              gap: '4px'
-                            }}
-                          >
-                            <BrandingVectorIcon name="trash" size={10} color="#dc2626" />
-                            Eliminar
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      )}
-
-      {/* MODAL CREAR / EDITAR END USER */}
-      {showEndUserModal && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          background: 'rgba(15, 23, 42, 0.65)',
-          backdropFilter: 'blur(3px)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 10000,
-          padding: '16px'
-        }}>
-          <div style={{
-            background: '#ffffff',
-            borderRadius: '14px',
-            width: '100%',
-            maxWidth: '560px',
-            maxHeight: '90vh',
-            overflowY: 'auto',
-            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.08)',
-            border: '1px solid #e2e8f0',
-            boxSizing: 'border-box'
-          }}>
-            <div style={{ padding: '16px 20px', borderBottom: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <div style={{ width: '32px', height: '32px', borderRadius: '8px', background: '#e0f2fe', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <BrandingVectorIcon name="users" size={16} color="#0284c7" />
-                </div>
-                <div>
-                  <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#0f172a' }}>
-                    {endUserModalMode === 'edit' ? 'Editar End User' : 'Registrar Nuevo End User'}
-                  </h3>
-                  <p style={{ margin: 0, fontSize: '11px', color: '#64748b' }}>
-                    Ficha de cliente final para licenciamiento corporativo y órdenes B2B
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowEndUserModal(false)}
-                style={{
-                  background: '#f1f5f9',
-                  border: 'none',
-                  borderRadius: '6px',
-                  width: '28px',
-                  height: '28px',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}
-              >
-                <BrandingVectorIcon name="x" size={14} color="#64748b" />
-              </button>
-            </div>
-
-            <form onSubmit={handleSaveEndUser} style={{ padding: '20px' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-                {/* CLIENTE MAYORISTA VINCULADO */}
-                <div>
-                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '750', color: '#334155', marginBottom: '4px' }}>
-                    Cliente Mayorista / Reseller Vinculado *
-                  </label>
-                  <select
-                    value={currentEndUser.user_id || ''}
-                    onChange={(e) => {
-                      const uid = e.target.value;
-                      const selectedU = users.find(u => String(u.id) === String(uid));
-                      setCurrentEndUser(prev => ({
-                        ...prev,
-                        user_id: uid,
-                        client_name: selectedU ? (selectedU.razon_social || selectedU.name) : prev.client_name,
-                        client_email: selectedU ? selectedU.email : prev.client_email,
-                        country: prev.country || selectedU?.country || activeCountry
-                      }));
-                    }}
-                    required
-                    style={{
-                      width: '100%',
-                      padding: '8px 10px',
-                      borderRadius: '7px',
-                      border: '1px solid #cbd5e1',
-                      fontSize: '12px',
-                      background: '#ffffff',
-                      color: '#0f172a',
-                      fontWeight: '600'
-                    }}
-                  >
-                    <option value="">-- Seleccione el Cliente Mayorista --</option>
-                    {users.map(u => (
-                      <option key={u.id} value={u.id}>
-                        #{u.id} - {u.razon_social || u.name} ({u.email})
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                {/* RAZÓN SOCIAL / NOMBRE DEL END USER */}
-                <div>
-                  <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '750', color: '#334155', marginBottom: '4px' }}>
-                    Razón Social / Nombre del End User *
-                  </label>
-                  <input
-                    type="text"
-                    required
-                    value={currentEndUser.name || ''}
-                    onChange={(e) => setCurrentEndUser(prev => ({ ...prev, name: e.target.value }))}
-                    placeholder="Ej. Hospital Metropolitano S.A., Banco del Sur..."
-                    style={{
-                      width: '100%',
-                      padding: '8px 10px',
-                      borderRadius: '7px',
-                      border: '1px solid #cbd5e1',
-                      fontSize: '12px',
-                      boxSizing: 'border-box'
-                    }}
-                  />
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  {/* TAX ID / CUIT */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '750', color: '#334155', marginBottom: '4px' }}>
-                      Tax ID / CUIT / NIT / RUT
-                    </label>
-                    <input
-                      type="text"
-                      value={currentEndUser.tax_id || ''}
-                      onChange={(e) => setCurrentEndUser(prev => ({ ...prev, tax_id: e.target.value }))}
-                      placeholder="Ej. 30-71122334-9"
-                      style={{
-                        width: '100%',
-                        padding: '8px 10px',
-                        borderRadius: '7px',
-                        border: '1px solid #cbd5e1',
-                        fontSize: '12px',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                  </div>
-
-                  {/* PAÍS */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '750', color: '#334155', marginBottom: '4px' }}>
-                      País de Operación *
-                    </label>
-                    <select
-                      value={currentEndUser.country || activeCountry}
-                      onChange={(e) => setCurrentEndUser(prev => ({ ...prev, country: e.target.value }))}
-                      required
-                      style={{
-                        width: '100%',
-                        padding: '8px 10px',
-                        borderRadius: '7px',
-                        border: '1px solid #cbd5e1',
-                        fontSize: '12px',
-                        background: '#ffffff'
-                      }}
-                    >
-                      {LATAM_COUNTRIES.map(c => (
-                        <option key={c.code} value={c.code}>{c.name}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  {/* CIUDAD */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '750', color: '#334155', marginBottom: '4px' }}>
-                      Ciudad
-                    </label>
-                    <input
-                      type="text"
-                      value={currentEndUser.city || ''}
-                      onChange={(e) => setCurrentEndUser(prev => ({ ...prev, city: e.target.value }))}
-                      placeholder="Ej. Buenos Aires, Santiago, Bogotá"
-                      style={{
-                        width: '100%',
-                        padding: '8px 10px',
-                        borderRadius: '7px',
-                        border: '1px solid #cbd5e1',
-                        fontSize: '12px',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                  </div>
-
-                  {/* DIRECCIÓN */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '750', color: '#334155', marginBottom: '4px' }}>
-                      Dirección Física
-                    </label>
-                    <input
-                      type="text"
-                      value={currentEndUser.address || ''}
-                      onChange={(e) => setCurrentEndUser(prev => ({ ...prev, address: e.target.value }))}
-                      placeholder="Ej. Av. Corrientes 1234, Piso 5"
-                      style={{
-                        width: '100%',
-                        padding: '8px 10px',
-                        borderRadius: '7px',
-                        border: '1px solid #cbd5e1',
-                        fontSize: '12px',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  {/* CONTACTO */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '750', color: '#334155', marginBottom: '4px' }}>
-                      Persona de Contacto
-                    </label>
-                    <input
-                      type="text"
-                      value={currentEndUser.contact_name || ''}
-                      onChange={(e) => setCurrentEndUser(prev => ({ ...prev, contact_name: e.target.value }))}
-                      placeholder="Ej. Ing. Martín Gómez"
-                      style={{
-                        width: '100%',
-                        padding: '8px 10px',
-                        borderRadius: '7px',
-                        border: '1px solid #cbd5e1',
-                        fontSize: '12px',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                  </div>
-
-                  {/* EMAIL */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '750', color: '#334155', marginBottom: '4px' }}>
-                      Email de Contacto
-                    </label>
-                    <input
-                      type="email"
-                      value={currentEndUser.email || ''}
-                      onChange={(e) => setCurrentEndUser(prev => ({ ...prev, email: e.target.value }))}
-                      placeholder="contacto@enduser.com"
-                      style={{
-                        width: '100%',
-                        padding: '8px 10px',
-                        borderRadius: '7px',
-                        border: '1px solid #cbd5e1',
-                        fontSize: '12px',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-                  {/* TELÉFONO */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '750', color: '#334155', marginBottom: '4px' }}>
-                      Teléfono
-                    </label>
-                    <input
-                      type="text"
-                      value={currentEndUser.phone || ''}
-                      onChange={(e) => setCurrentEndUser(prev => ({ ...prev, phone: e.target.value }))}
-                      placeholder="+54 11 4321-9876"
-                      style={{
-                        width: '100%',
-                        padding: '8px 10px',
-                        borderRadius: '7px',
-                        border: '1px solid #cbd5e1',
-                        fontSize: '12px',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                  </div>
-
-                  {/* INDUSTRIA / SEGMENTO */}
-                  <div>
-                    <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '750', color: '#334155', marginBottom: '4px' }}>
-                      Industria / Sector
-                    </label>
-                    <input
-                      type="text"
-                      value={currentEndUser.industry || ''}
-                      onChange={(e) => setCurrentEndUser(prev => ({ ...prev, industry: e.target.value }))}
-                      placeholder="Ej. Salud, Banca, Gobierno, Retail"
-                      style={{
-                        width: '100%',
-                        padding: '8px 10px',
-                        borderRadius: '7px',
-                        border: '1px solid #cbd5e1',
-                        fontSize: '12px',
-                        boxSizing: 'border-box'
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px', marginTop: '20px', paddingTop: '14px', borderTop: '1px solid #e2e8f0' }}>
-                <button
-                  type="button"
-                  onClick={() => setShowEndUserModal(false)}
-                  style={{
-                    padding: '8px 16px',
-                    borderRadius: '7px',
-                    border: '1px solid #cbd5e1',
-                    background: '#ffffff',
-                    fontSize: '12px',
-                    fontWeight: '600',
-                    color: '#475569',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  style={{
-                    padding: '8px 20px',
-                    borderRadius: '7px',
-                    border: 'none',
-                    background: '#0284c7',
-                    fontSize: '12px',
-                    fontWeight: '750',
-                    color: '#ffffff',
-                    cursor: 'pointer',
-                    boxShadow: '0 1px 3px rgba(2,132,199,0.3)'
-                  }}
-                >
-                  {endUserModalMode === 'edit' ? 'Guardar Cambios' : 'Registrar End User'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
     </section>
   );
 }

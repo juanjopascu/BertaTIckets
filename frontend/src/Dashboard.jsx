@@ -238,6 +238,8 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
   const [ecommerceSubTab, setEcommerceSubTab] = useState('products');
   const [visualSubTab, setVisualSubTab] = useState('hero');
   const [isVisualExpanded, setIsVisualExpanded] = useState(true);
+  const [usersSubTab, setUsersSubTab] = useState('clients');
+  const [isUsersExpanded, setIsUsersExpanded] = useState(true);
   const [ecommerceCountryScope, setEcommerceCountryScope] = useState(() => {
     try {
       const saved = localStorage.getItem('dacas_admin_country_scope');
@@ -1089,6 +1091,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                   { id: 'n8n_bot', label: 'Bot n8n B2B', icon: 'bot' },
                   { id: 'apli', label: 'Conexión Apli', icon: 'zap' }
                 ].map(item => {
+                  const isUsersItem = item.id === 'users';
                   const isSelected = ecommerceSubTab === item.id;
                   const isVisualItem = item.id === 'visual';
 
@@ -1103,6 +1106,14 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                             } else {
                               setEcommerceSubTab('visual');
                               setIsVisualExpanded(true);
+                            }
+                          } else if (isUsersItem) {
+                            if (ecommerceSubTab === 'users') {
+                              setIsUsersExpanded(prev => !prev);
+                            } else {
+                              setEcommerceSubTab('users');
+                              setIsUsersExpanded(true);
+                              setUsersSubTab('clients');
                             }
                           } else {
                             setEcommerceSubTab(item.id);
@@ -1132,14 +1143,17 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                           <span>{item.label}</span>
                         </div>
 
-                        {isVisualItem && (
+                        {(isVisualItem || isUsersItem) && (
                           <span
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
                               opacity: 0.9,
                               transition: 'transform 0.2s ease',
-                              transform: (isSelected && isVisualExpanded) ? 'rotate(180deg)' : 'rotate(0deg)'
+                              transform: (
+                                (isVisualItem && isSelected && isVisualExpanded) ||
+                                (isUsersItem && isSelected && isUsersExpanded)
+                              ) ? 'rotate(180deg)' : 'rotate(0deg)'
                             }}
                           >
                             <BrandingVectorIcon
@@ -1150,6 +1164,58 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                           </span>
                         )}
                       </button>
+
+                      {/* Submenú desplegable dentro de Clientes Mayoristas */}
+                      {isUsersItem && isSelected && isUsersExpanded && (
+                        <div
+                          style={{
+                            display: 'flex',
+                            flexDirection: 'column',
+                            gap: '3px',
+                            marginLeft: '14px',
+                            paddingLeft: '10px',
+                            borderLeft: '2px solid rgba(15, 164, 222, 0.35)',
+                            marginTop: '4px',
+                            marginBottom: '6px'
+                          }}
+                        >
+                          {[
+                            { id: 'clients', label: 'Directorio Clientes', icon: 'users' },
+                            { id: 'end_users', label: 'End Users (Finales)', icon: 'briefcase' }
+                          ].map(sub => {
+                            const isSubActive = usersSubTab === sub.id;
+                            return (
+                              <button
+                                key={sub.id}
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setEcommerceSubTab('users');
+                                  setUsersSubTab(sub.id);
+                                }}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '8px',
+                                  padding: '7px 10px',
+                                  fontSize: '0.80rem',
+                                  borderRadius: '8px',
+                                  fontWeight: isSubActive ? '800' : '600',
+                                  background: isSubActive ? 'rgba(15, 164, 222, 0.12)' : 'transparent',
+                                  color: isSubActive ? '#0284c7' : 'var(--text-main, #475569)',
+                                  border: isSubActive ? '1px solid rgba(15, 164, 222, 0.3)' : '1px solid transparent',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.12s ease',
+                                  textAlign: 'left'
+                                }}
+                              >
+                                <BrandingVectorIcon name={sub.icon} size={13} color={isSubActive ? '#0284c7' : '#64748b'} />
+                                <span>{sub.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
 
                       {/* Submenú desplegable dentro de Diseño & Banners */}
                       {isVisualItem && isSelected && isVisualExpanded && (
@@ -1814,6 +1880,7 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                             countries: 'Países y Sedes',
                             rules: 'Cupones & Reglas',
                             users: 'Clientes Mayoristas',
+                            end_users: 'End Users (Clientes Finales)',
                             orders: 'Órdenes de Compra',
                             reportes: 'Reportería & Métricas',
                             envios: 'Métodos de Envío',
@@ -1922,6 +1989,8 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                   onTabChange={setEcommerceSubTab}
                   visualSubTab={visualSubTab}
                   onVisualSubTabChange={setVisualSubTab}
+                  usersSubTab={usersSubTab}
+                  onUsersSubTabChange={setUsersSubTab}
                   countryScope={ecommerceCountryScope}
                   onCountryScopeChange={handleEcommerceCountryChange}
                   onBack={() => {

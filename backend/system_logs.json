@@ -1,5 +1,650 @@
 [
   {
+    "id": 484,
+    "timestamp": "2026-10-14T14:12:59.625Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "55800f5897c1f91da24dfaa03dc8612d170571de8601544218e515463e6e8a46"
+    }
+  },
+  {
+    "id": 483,
+    "timestamp": "2026-10-14T14:00:18.725Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 482,
+    "timestamp": "2026-10-14T13:59:25.345Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 481,
+    "timestamp": "2026-10-14T13:58:05.047Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "ce6b1faf0c216b0de2dd11fc00c78657010fdf795bb6bb6e6c8a13517c42f5b8"
+    }
+  },
+  {
+    "id": 480,
+    "timestamp": "2026-10-14T13:43:01.681Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "3a83b98f6aa6e483b1cc94710a1381c1c019cc4344f3f3960f3ce79f92e6515c"
+    }
+  },
+  {
+    "id": 479,
+    "timestamp": "2026-10-14T13:42:35.704Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "1e9d8a166b033662f4fe7a05f72c36d2a925a59537e64b1991981a44d25c1f95"
+    }
+  },
+  {
+    "id": 478,
+    "timestamp": "2026-10-14T13:41:35.249Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 477,
+    "timestamp": "2026-10-14T13:41:35.108Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 476,
+    "timestamp": "2026-10-14T13:41:35.071Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "edd4c046a33e012fc12f2af2d08b263823ac59c81757790e6395e2d523470080"
+    }
+  },
+  {
+    "id": 475,
+    "timestamp": "2026-10-14T13:39:42.473Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "418f801819b5100c17686525b89779dca30a359e568508c49a5679431944c2ef"
+    }
+  },
+  {
+    "id": 474,
+    "timestamp": "2026-10-14T13:35:35.705Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "21d2bb345a2f68980208db1a8bc304e162aed6bfe303db57e8f5116456edc52b"
+    }
+  },
+  {
+    "id": 473,
+    "timestamp": "2026-10-14T02:43:31.161Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"admin@dacas.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {
+      "emailIntentado": "admin@dacas.com"
+    }
+  },
+  {
+    "id": 472,
+    "timestamp": "2026-10-14T02:38:46.278Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"admin@dacas.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {
+      "emailIntentado": "admin@dacas.com"
+    }
+  },
+  {
+    "id": 471,
+    "timestamp": "2026-10-14T01:58:11.326Z",
+    "origen": "ecommerce",
+    "tipo": "SUCCESS",
+    "accion": "ORDEN_SHOP_CREADA",
+    "descripcion": "Pedido mayorista #1090 registrado por \"Usuario Demo\" por USD $2329.73.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "orderId": 1090,
+      "total": "2329.73",
+      "payment_method": "Transferencia Bancaria Inmediata (CBU / SWIFT)",
+      "itemsCount": 1
+    }
+  },
+  {
+    "id": 470,
+    "timestamp": "2026-10-14T01:57:57.024Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Vertiv Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA (SKU: GXT5-3000IRT2UXLE, Cat: infraestructura, USD $1935.00).",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 4,
+      "productName": "Sistema UPS Online Doble Conversión Vertiv Liebert GXT5 3kVA",
+      "sku": "GXT5-3000IRT2UXLE",
+      "brand": "Vertiv",
+      "price": "1935.00",
+      "category": "infraestructura",
+      "timestamp": "2026-10-14T01:57:57.023Z"
+    }
+  },
+  {
+    "id": 469,
+    "timestamp": "2026-10-14T01:57:46.301Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 468,
+    "timestamp": "2026-10-14T01:53:35.180Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Admin E-commerce\" (admin.ecommerce@dacas.com) con rol \"admin_ecommerce\".",
+    "usuario": {
+      "nombre": "Admin E-commerce",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "admin_ecommerce",
+      "id": 6
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "c10452bc3c62b217d4c71009af48c2437c5a63d1a87df660ae07997bff5c781e"
+    }
+  },
+  {
+    "id": 467,
+    "timestamp": "2026-10-14T01:52:19.551Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Admin E-commerce\" (admin.ecommerce@dacas.com) con rol \"admin_ecommerce\".",
+    "usuario": {
+      "nombre": "Admin E-commerce",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "admin_ecommerce",
+      "id": 6
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "aded1322fd12fa4620f64ee6929c66cec2194b13a4127872c625d65ce66e97a8"
+    }
+  },
+  {
+    "id": 466,
+    "timestamp": "2026-10-14T01:43:52.158Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Admin E-commerce\" (admin.ecommerce@dacas.com) con rol \"admin_ecommerce\".",
+    "usuario": {
+      "nombre": "Admin E-commerce",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "admin_ecommerce",
+      "id": 6
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "8f20fc833f81f6bebb3ed757e3c4b743e176b7d31f4e24c16f3e2da645b62795"
+    }
+  },
+  {
+    "id": 465,
+    "timestamp": "2026-10-14T01:43:10.660Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #4 (\"undefined\" / undefined) actualizado",
+    "usuario": {
+      "nombre": "admin.ecommerce@dacas.com",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "4"
+    }
+  },
+  {
+    "id": 464,
+    "timestamp": "2026-10-14T01:43:10.645Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Admin E-commerce\" (admin.ecommerce@dacas.com) con rol \"admin_ecommerce\".",
+    "usuario": {
+      "nombre": "Admin E-commerce",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "admin_ecommerce",
+      "id": 6
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "9c6c09fd6cce00212641f188cb73407ac28704827726a750accdb6d7de2456bc"
+    }
+  },
+  {
+    "id": 463,
+    "timestamp": "2026-10-14T01:42:55.413Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Admin E-commerce\" (admin.ecommerce@dacas.com) con rol \"admin_ecommerce\".",
+    "usuario": {
+      "nombre": "Admin E-commerce",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "admin_ecommerce",
+      "id": 6
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "3f6defc4fb124d23ecd3219d531e3ec76cf3420e1cd0b3648d668c3d8efd5b20"
+    }
+  },
+  {
+    "id": 462,
+    "timestamp": "2026-10-14T01:39:20.985Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Admin E-commerce\" (admin.ecommerce@dacas.com) con rol \"admin_ecommerce\".",
+    "usuario": {
+      "nombre": "Admin E-commerce",
+      "email": "admin.ecommerce@dacas.com",
+      "rol": "admin_ecommerce",
+      "id": 6
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "5a3b4db6b3586bb9deadf3eb65395947ff02364fd4d880b23ca277e8bd502c8e"
+    }
+  },
+  {
+    "id": 461,
+    "timestamp": "2026-10-14T01:37:01.156Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"admin@dacas.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {
+      "emailIntentado": "admin@dacas.com"
+    }
+  },
+  {
+    "id": 460,
+    "timestamp": "2026-10-14T01:34:13.097Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "b0256a102ccd70b30202c5ee2ac88b3965e9cd6e584027ef1dea9a2b2ed3913e"
+    }
+  },
+  {
+    "id": 459,
+    "timestamp": "2026-10-14T01:33:25.643Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "7e4506181b429b3186b509957b225976962c9a3caac63b84d46865ee9088c559"
+    }
+  },
+  {
+    "id": 458,
+    "timestamp": "2026-10-14T00:39:06.921Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
+    "id": 457,
+    "timestamp": "2026-10-13T23:34:05.516Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "a227e4ac0d9a4e8e775f3063ecda3deef98e291dce6a34a46b7a6640f3a35ce5"
+    }
+  },
+  {
+    "id": 456,
+    "timestamp": "2026-10-13T23:33:42.301Z",
+    "origen": "auth",
+    "tipo": "WARNING",
+    "accion": "LOGIN_FALLIDO",
+    "descripcion": "Intento de acceso no autorizado con correo \"admin@dacas.com\".",
+    "usuario": {
+      "nombre": "Sistema / Visitante",
+      "email": "sistema@dacas.com",
+      "rol": "system"
+    },
+    "ip": "::1",
+    "detalles": {
+      "emailIntentado": "admin@dacas.com"
+    }
+  },
+  {
+    "id": 455,
+    "timestamp": "2026-10-13T23:33:16.789Z",
+    "origen": "ecommerce",
+    "tipo": "WARNING",
+    "accion": "CARRITO_ABANDONADO",
+    "descripcion": "Carrito B2B con 1 producto(s) por total USD $680,00 abandonado sin concretar compra.",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "sessionId": "CART-1791934396789",
+      "itemsCount": 1,
+      "total": 680,
+      "moneda": "USD",
+      "trigger": "cart_filled_pending",
+      "itemsSummary": "1x Avaya Sistema de Videoconferencia Avaya Collaboration Bar B109 ($680.00)",
+      "items": [
+        {
+          "id": 5,
+          "name": "Sistema de Videoconferencia Avaya Collaboration Bar B109",
+          "brand": "Avaya",
+          "sku": "AVAYA-B109-CONF",
+          "qty": 1,
+          "price": 680,
+          "subtotal": 680
+        }
+      ],
+      "timestamp": "2026-10-13T23:33:16.789Z"
+    }
+  },
+  {
+    "id": 454,
+    "timestamp": "2026-10-13T23:33:16.619Z",
+    "origen": "auth",
+    "tipo": "SECURITY",
+    "accion": "LOGIN_EXITOSO",
+    "descripcion": "Inicio de sesión exitoso de \"Administrador\" (admin@crm.com) con rol \"admin\".",
+    "usuario": {
+      "nombre": "Administrador",
+      "email": "admin@crm.com",
+      "rol": "admin",
+      "id": 1
+    },
+    "ip": "::1",
+    "detalles": {
+      "metodo": "credenciales_directas",
+      "sesionId": "2abf76d9b3d6ebd77fee89bb519de93b1289c36d56c9ca66ecf8c0c8c6654c0a"
+    }
+  },
+  {
+    "id": 453,
+    "timestamp": "2026-10-13T21:18:08.583Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "PRODUCTO_VISITADO",
+    "descripcion": "Inspección de ficha técnica: Fortinet Switch Administrable Fortinet FortiSwitch 124E PoE+ (SKU: FS-124E-POE-AR, Cat: networking, USD $524.80).",
+    "usuario": {
+      "id": 1,
+      "nombre": "Usuario Demo",
+      "email": "demo@dacas.com",
+      "rol": "cliente"
+    },
+    "ip": "::1",
+    "detalles": {
+      "productId": 9,
+      "productName": "Switch Administrable Fortinet FortiSwitch 124E PoE+",
+      "sku": "FS-124E-POE-AR",
+      "brand": "Fortinet",
+      "price": "524.80",
+      "category": "networking",
+      "timestamp": "2026-10-13T21:18:08.583Z"
+    }
+  },
+  {
+    "id": 452,
+    "timestamp": "2026-10-13T21:17:03.060Z",
+    "origen": "ecommerce",
+    "tipo": "INFO",
+    "accion": "ECOMMERCE_CLIENTE_MODIFICADO",
+    "descripcion": "Cliente / Usuario #1 (\"Usuario Demo\" / demo@dacas.com) actualizado",
+    "usuario": {
+      "nombre": "admin@crm.com",
+      "email": "admin@crm.com",
+      "rol": "user"
+    },
+    "ip": "::1",
+    "detalles": {
+      "userId": "1",
+      "razon_social": "Empresa Demo S.A.",
+      "email": "demo@dacas.com"
+    }
+  },
+  {
     "id": 451,
     "timestamp": "2026-10-13T20:58:34.980Z",
     "origen": "auth",

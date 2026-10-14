@@ -65,8 +65,50 @@ export const initialUserForm = {
     salta: { enabled: false, alicuota: 0.0, vigencia: '2019-08-01' },
     misiones: { enabled: false, alicuota: 0.0, vigencia: '2023-05-01' },
     tucuman: { enabled: false, alicuota: 0.0, coef: 0.0, vigencia: '2025-06-01' }
-  }
+  },
+  tags: [],
+  allowed_brands: []
 };
+
+export const AVAILABLE_BRANDS = [
+  'AlgoSec',
+  'APC',
+  'Aruba',
+  'AudioCodes',
+  'Avaya',
+  'Avocent',
+  'Barracuda',
+  'Cisco',
+  'CommScope',
+  'Eaton',
+  'F5 Networks',
+  'Fortinet',
+  'Gabitel',
+  'Grandstream',
+  'Hikvision',
+  'Hitachi Vantara',
+  'Imperva',
+  'Infoblox',
+  'MikroTik',
+  'Nexxt',
+  'NSFOCUS',
+  'Panduit',
+  'Radware',
+  'Siemon',
+  'Silver Peak',
+  'SonicWall',
+  'Sophos',
+  'Tripp Lite',
+  'Ubiquiti',
+  'Veracode',
+  'Vertiv',
+  'Vicarius',
+  'Viewtinet'
+];
+
+export const SUGGESTED_CLIENT_TAGS = [
+  'Partner Platinum', 'Partner Gold', 'Partner Silver', 'VIP', 'Gobierno', 'Educación', 'Telco / ISP', 'Ciberseguridad', 'Revendedor Tier 1'
+];
 
 
 export const downloadCSV = (rows, headers, filename) => {

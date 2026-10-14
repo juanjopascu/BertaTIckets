@@ -230,9 +230,39 @@ export default function UserDetailModal({
                     )}
                   </div>
                 </div>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '2px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '7px' }}>
                   <span style={{ color: '#64748B', fontWeight: '600' }}>Límite Facturación:</span>
                   <strong style={{ color: '#0F172A', fontWeight: '700' }}>{selectedUser.fecha_limite_facturacion ? new Date(selectedUser.fecha_limite_facturacion).toLocaleDateString() : '—'}</strong>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #F1F5F9', paddingBottom: '7px' }}>
+                  <span style={{ color: '#64748B', fontWeight: '600' }}>Tags / Etiquetas:</span>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', justifyContent: 'flex-end', maxWidth: '65%' }}>
+                    {Array.isArray(selectedUser.tags) && selectedUser.tags.length > 0 ? (
+                      selectedUser.tags.map(t => (
+                        <span key={t} style={{ background: '#f5f3ff', color: '#7c3aed', border: '1px solid #ddd6fe', padding: '1px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '750' }}>
+                          {t}
+                        </span>
+                      ))
+                    ) : (
+                      <span style={{ color: '#94a3b8', fontSize: '11px', fontStyle: 'italic' }}>Sin tags asignados</span>
+                    )}
+                  </div>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '2px' }}>
+                  <span style={{ color: '#64748B', fontWeight: '600' }}>Marcas Autorizadas:</span>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', justifyContent: 'flex-end', maxWidth: '65%' }}>
+                    {Array.isArray(selectedUser.allowed_brands) && selectedUser.allowed_brands.length > 0 ? (
+                      selectedUser.allowed_brands.map(b => (
+                        <span key={b} style={{ background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a', padding: '1px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '750' }}>
+                          {b}
+                        </span>
+                      ))
+                    ) : (
+                      <span style={{ background: '#dcfce7', color: '#166534', border: '1px solid #86efac', padding: '1px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: '750' }}>
+                        Todas las marcas
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

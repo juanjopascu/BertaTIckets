@@ -6,30 +6,43 @@ window.fetch = async function(resource, init = {}) {
   const headers = new Headers(options.headers || {});
 
   try {
-    const savedUser = localStorage.getItem('usuario');
-    const user = savedUser ? JSON.parse(savedUser) : null;
-    
-    // Attach CRM active session ID
-    if (user && user.sesionId) {
-      if (!headers.has('x-session-id')) {
-        headers.set('x-session-id', user.sesionId);
-      }
+    const urlStr = typeof resource === 'string' ? resource : (resource?.url || '');
+    const isClientShopRequest = urlStr.includes('/api/ecommerce/products') || 
+                                urlStr.includes('/api/ecommerce/client') || 
+                                urlStr.includes('/api/ecommerce/auth/me') ||
+                                urlStr.includes('/api/ecommerce/track');
+
+    const clientToken = localStorage.getItem('dacas_client_token') || localStorage.getItem('shop_token');
+
+    if (isClientShopRequest && clientToken) {
       if (!headers.has('Authorization')) {
-        headers.set('Authorization', `Bearer ${user.sesionId}`);
+        headers.set('Authorization', `Bearer ${clientToken}`);
       }
     } else {
-      // Attach E-commerce client / admin JWT if present
-      const authToken = 
-        localStorage.getItem('dacas_client_token') ||
-        localStorage.getItem('shop_token') ||
-        localStorage.getItem('dacas_admin_token') ||
-        localStorage.getItem('ecommerce_token') ||
-        localStorage.getItem('crm_token') ||
-        localStorage.getItem('token') ||
-        (typeof sessionStorage !== 'undefined' ? (sessionStorage.getItem('token') || sessionStorage.getItem('sessionId')) : null);
+      const savedUser = localStorage.getItem('usuario');
+      const user = savedUser ? JSON.parse(savedUser) : null;
+      
+      // Attach CRM active session ID
+      if (user && user.sesionId) {
+        if (!headers.has('x-session-id')) {
+          headers.set('x-session-id', user.sesionId);
+        }
+        if (!headers.has('Authorization')) {
+          headers.set('Authorization', `Bearer ${user.sesionId}`);
+        }
+      } else {
+        // Attach E-commerce client / admin JWT if present
+        const authToken = 
+          clientToken ||
+          localStorage.getItem('dacas_admin_token') ||
+          localStorage.getItem('ecommerce_token') ||
+          localStorage.getItem('crm_token') ||
+          localStorage.getItem('token') ||
+          (typeof sessionStorage !== 'undefined' ? (sessionStorage.getItem('token') || sessionStorage.getItem('sessionId')) : null);
 
-      if (authToken && !headers.has('Authorization')) {
-        headers.set('Authorization', `Bearer ${authToken}`);
+        if (authToken && !headers.has('Authorization')) {
+          headers.set('Authorization', `Bearer ${authToken}`);
+        }
       }
     }
   } catch (e) {

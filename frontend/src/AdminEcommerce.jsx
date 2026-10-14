@@ -16,6 +16,7 @@ import {
 import CatalogTab from './components/admin/tabs/CatalogTab';
 import PricingRulesTab from './components/admin/tabs/PricingRulesTab';
 import UsersTab from './components/admin/tabs/UsersTab';
+import EndUsersTab from './components/admin/tabs/EndUsersTab';
 import OrdersTab from './components/admin/tabs/OrdersTab';
 import AnalyticsTab from './components/admin/tabs/AnalyticsTab';
 import CheckoutTab from './components/admin/tabs/CheckoutTab';
@@ -41,9 +42,15 @@ function EcommerceLayoutWrapper({
   usuario,
   visualSubTab = 'hero',
   setVisualSubTab,
+  usersSubTab: propUsersSubTab,
+  setUsersSubTab: propSetUsersSubTab,
   children
 }) {
   const [isVisualExpanded, setIsVisualExpanded] = useState(true);
+  const [isUsersExpanded, setIsUsersExpanded] = useState(true);
+  const [internalUsersSubTab, setInternalUsersSubTab] = useState('clients');
+  const activeUsersSub = propUsersSubTab || internalUsersSubTab;
+  const setActiveUsersSub = propSetUsersSubTab || setInternalUsersSubTab;
   if (embedded) {
     return (
       <main className="crm-main-embedded" style={{ width: '100%', maxWidth: '100%', padding: 0, margin: 0 }}>
@@ -215,7 +222,8 @@ function EcommerceLayoutWrapper({
                 { id: 'n8n_bot', label: 'Bot n8n B2B', icon: 'bot' },
                 { id: 'apli', label: 'Conexión Apli', icon: 'zap' }
               ].map(item => {
-                const isSelected = activeTab === item.id;
+                const isUsersItem = item.id === 'users';
+                const isSelected = activeTab === item.id || (isUsersItem && activeTab === 'end_users');
                 const isVisualItem = item.id === 'visual';
 
                 return (
@@ -229,6 +237,14 @@ function EcommerceLayoutWrapper({
                           } else {
                             setActiveTab('visual');
                             setIsVisualExpanded(true);
+                          }
+                        } else if (isUsersItem) {
+                          if (activeTab === 'users' || activeTab === 'end_users') {
+                            setIsUsersExpanded(prev => !prev);
+                          } else {
+                            setActiveTab('users');
+                            setIsUsersExpanded(true);
+                            if (setActiveUsersSub) setActiveUsersSub('clients');
                           }
                         } else {
                           setActiveTab(item.id);
@@ -272,14 +288,17 @@ function EcommerceLayoutWrapper({
                           </span>
                         )}
 
-                        {isVisualItem && (
+                        {(isVisualItem || isUsersItem) && (
                           <span
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
                               opacity: 0.9,
                               transition: 'transform 0.2s ease',
-                              transform: (isSelected && isVisualExpanded) ? 'rotate(180deg)' : 'rotate(0deg)'
+                              transform: (
+                                (isVisualItem && isSelected && isVisualExpanded) ||
+                                (isUsersItem && isSelected && isUsersExpanded)
+                              ) ? 'rotate(180deg)' : 'rotate(0deg)'
                             }}
                           >
                             <BrandingVectorIcon
@@ -291,6 +310,78 @@ function EcommerceLayoutWrapper({
                         )}
                       </div>
                     </button>
+
+                    {/* Submenú desplegable dentro del módulo Clientes */}
+                    {isUsersItem && isSelected && isUsersExpanded && (
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '2px',
+                          marginLeft: '12px',
+                          paddingLeft: '8px',
+                          borderLeft: '2px solid rgba(15, 164, 222, 0.35)',
+                          marginTop: '3px',
+                          marginBottom: '4px'
+                        }}
+                      >
+                        {[
+                          { id: 'clients', label: 'Directorio Clientes', icon: 'users', badge: (users || []).filter(u => u.status === 'pendiente').length },
+                          { id: 'end_users', label: 'End Users (Finales)', icon: 'briefcase' }
+                        ].map(sub => {
+                          const isSubActive = (activeTab === 'end_users' && sub.id === 'end_users') ||
+                                              (activeTab === 'users' && activeUsersSub === sub.id && activeTab !== 'end_users');
+                          return (
+                            <button
+                              key={sub.id}
+                              type="button"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (sub.id === 'end_users') {
+                                  setActiveTab('end_users');
+                                  if (setActiveUsersSub) setActiveUsersSub('end_users');
+                                } else {
+                                  setActiveTab('users');
+                                  if (setActiveUsersSub) setActiveUsersSub('clients');
+                                }
+                              }}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'space-between',
+                                padding: '6px 8px',
+                                fontSize: '0.80rem',
+                                borderRadius: '7px',
+                                fontWeight: isSubActive ? '800' : '600',
+                                background: isSubActive ? 'rgba(15, 164, 222, 0.12)' : 'transparent',
+                                color: isSubActive ? '#0284c7' : 'var(--text-main, #475569)',
+                                border: isSubActive ? '1px solid rgba(15, 164, 222, 0.3)' : '1px solid transparent',
+                                cursor: 'pointer',
+                                transition: 'all 0.12s ease',
+                                textAlign: 'left'
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <BrandingVectorIcon name={sub.icon} size={12} color={isSubActive ? '#0284c7' : '#64748b'} />
+                                <span>{sub.label}</span>
+                              </div>
+                              {sub.badge > 0 && (
+                                <span style={{
+                                  background: '#f59e0b',
+                                  color: '#ffffff',
+                                  fontSize: '9.5px',
+                                  fontWeight: '800',
+                                  padding: '1px 5px',
+                                  borderRadius: '999px'
+                                }}>
+                                  {sub.badge}
+                                </span>
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
 
                     {/* Submenú desplegable dentro del módulo Diseño & Banners */}
                     {isVisualItem && isSelected && isVisualExpanded && (
@@ -425,7 +516,7 @@ function EcommerceLayoutWrapper({
                         brands: 'Marcas',
                         countries: 'Países y Sedes',
                         rules: 'Cupones & Reglas',
-                        users: 'Clientes Mayoristas',
+                        users: activeUsersSub === 'end_users' ? 'Clientes • Catálogo de End Users' : 'Clientes Mayoristas',
                         orders: 'Órdenes de Compra',
                         reportes: 'Reportería & Métricas',
                         envios: 'Métodos de Envío',
@@ -480,6 +571,8 @@ function AdminEcommerce({
   onTabChange: externalOnTabChange,
   visualSubTab: externalVisualSubTab,
   onVisualSubTabChange: externalOnVisualSubTabChange,
+  usersSubTab: externalUsersSubTab,
+  onUsersSubTabChange: externalOnUsersSubTabChange,
   countryScope: externalCountryScope,
   onCountryScopeChange: externalOnCountryScopeChange,
   onBack
@@ -487,6 +580,7 @@ function AdminEcommerce({
   const navigate = useNavigate();
   const [internalActiveTab, setInternalActiveTab] = useState('products');
   const [internalVisualSubTab, setInternalVisualSubTab] = useState('hero');
+  const [internalUsersSubTab, setInternalUsersSubTab] = useState('clients');
   const activeTab = externalActiveTab !== undefined ? externalActiveTab : internalActiveTab;
   const setActiveTab = (tab) => {
     setInternalActiveTab(tab);
@@ -497,6 +591,12 @@ function AdminEcommerce({
   const setVisualSubTab = (subTab) => {
     setInternalVisualSubTab(subTab);
     if (externalOnVisualSubTabChange) externalOnVisualSubTabChange(subTab);
+  };
+
+  const activeUsersSub = externalUsersSubTab !== undefined ? externalUsersSubTab : internalUsersSubTab;
+  const setActiveUsersSub = (subTab) => {
+    setInternalUsersSubTab(subTab);
+    if (externalOnUsersSubTabChange) externalOnUsersSubTabChange(subTab);
   };
 
   // Primary Key Country Scope
@@ -1115,6 +1215,8 @@ function AdminEcommerce({
         usuario={{ rol: 'admin_ecommerce', nombre: 'Admin E-Commerce' }}
         visualSubTab={visualSubTab}
         setVisualSubTab={setVisualSubTab}
+        usersSubTab={activeUsersSub}
+        setUsersSubTab={setActiveUsersSub}
       >
         {error && <div style={{ color: 'red', marginBottom: '20px' }}>{error}</div>}
 
@@ -1156,7 +1258,7 @@ function AdminEcommerce({
         )}
 
         {/* 3. USERS / CLIENTES MAYORISTAS TAB */}
-        {activeTab === 'users' && (
+        {activeTab === 'users' && activeUsersSub !== 'end_users' && (
           <UsersTab
             users={users}
             countries={countries}
@@ -1171,6 +1273,18 @@ function AdminEcommerce({
             onClearEditingUserTarget={() => setEditingUserTarget(null)}
             addUserCompanyTarget={addUserCompanyTarget}
             onClearAddUserCompanyTarget={() => setAddUserCompanyTarget(null)}
+            activeSubView={activeUsersSub}
+            setActiveSubView={setActiveUsersSub}
+          />
+        )}
+
+        {/* 3.1 END USERS / CLIENTES FINALES TAB */}
+        {(activeTab === 'end_users' || (activeTab === 'users' && activeUsersSub === 'end_users')) && (
+          <EndUsersTab
+            users={users}
+            countries={countries}
+            activeCountryObj={activeCountryObj}
+            getAuthHeader={getAuthHeader}
           />
         )}
 

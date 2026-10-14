@@ -110,6 +110,9 @@ rawPool.connect()
         ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS cuenta_corriente_habilitada BOOLEAN DEFAULT false;
         ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS cuenta_corriente_limite NUMERIC(12, 2) DEFAULT 0;
         ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS terminos_pago JSONB DEFAULT '["30_dias"]'::jsonb;
+        ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS tags JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE ecommerce_users ADD COLUMN IF NOT EXISTS allowed_brands JSONB DEFAULT '[]'::jsonb;
+        ALTER TABLE ecommerce_pricing_rules ADD COLUMN IF NOT EXISTS target_client_tag VARCHAR(100);
       `);
     } catch (_) {}
     client.release();
@@ -1223,6 +1226,8 @@ const inMem = {
       cuenta_corriente_habilitada: true,
       cuenta_corriente_limite: 15000,
       terminos_pago: ['30_dias', '60_dias'],
+      tags: ['Partner Platinum', 'VIP', 'Ciberseguridad'],
+      allowed_brands: [],
       created_at: new Date().toISOString()
     },
     {
@@ -1255,6 +1260,8 @@ const inMem = {
       cuenta_corriente_habilitada: true,
       cuenta_corriente_limite: 0,
       terminos_pago: ['30_dias'],
+      tags: ['Partner Gold', 'Networking'],
+      allowed_brands: ['Fortinet', 'MikroTik', 'Aruba'],
       created_at: new Date(Date.now() - 3600000).toISOString()
     },
     {
@@ -1289,6 +1296,8 @@ const inMem = {
       cuenta_corriente_habilitada: true,
       cuenta_corriente_limite: 10000,
       terminos_pago: ['30_dias', '60_dias'],
+      tags: ['Partner Silver', 'VIP'],
+      allowed_brands: [],
       created_at: new Date(Date.now() - 7200000).toISOString()
     },
     {
@@ -1323,6 +1332,8 @@ const inMem = {
         misiones: { enabled: false, alicuota: 0.0, vigencia: '2023-05-01' },
         tucuman: { enabled: false, alicuota: 0.0, coef: 0.0, vigencia: '2025-06-01' }
       },
+      tags: ['Telco / ISP'],
+      allowed_brands: ['MikroTik', 'Ubiquiti'],
       created_at: new Date(Date.now() - 86400000 * 4).toISOString()
     },
     {
@@ -1357,6 +1368,8 @@ const inMem = {
         misiones: { enabled: false, alicuota: 0.0, vigencia: '2023-05-01' },
         tucuman: { enabled: false, alicuota: 0.0, coef: 0.0, vigencia: '2025-06-01' }
       },
+      tags: ['Revendedor Tier 1'],
+      allowed_brands: ['Fortinet', 'Vertiv', 'Hikvision'],
       created_at: new Date(Date.now() - 86400000 * 7).toISOString()
     },
     {
@@ -2835,11 +2848,33 @@ async function resolveOptionalRequester(req) {
     try {
       const decoded = jwt.verify(bearer, JWT_SECRET);
       isAdmin = isAdminRole(decoded);
-      const userRes = await pool.query('SELECT * FROM ecommerce_users WHERE id = $1', [decoded.id]);
-      if (userRes.rows.length > 0 && (userRes.rows[0].status || 'activo') === 'activo') {
-        user = userRes.rows[0];
+      if (isPgConnected) {
+        const userRes = await pool.query('SELECT * FROM ecommerce_users WHERE id = $1', [decoded.id]);
+        if (userRes.rows.length > 0 && (userRes.rows[0].status || 'activo') === 'activo') {
+          user = userRes.rows[0];
+        }
+      } else {
+        const found = inMem.users.find(u => u.id === decoded.id || u.email === decoded.email);
+        if (found && (found.status || 'activo') === 'activo') {
+          user = found;
+        }
+      }
+      if (!user && decoded && decoded.id) {
+        user = {
+          id: decoded.id,
+          email: decoded.email,
+          name: decoded.name,
+          razon_social: decoded.razon_social,
+          tags: Array.isArray(decoded.tags) ? decoded.tags : [],
+          allowed_brands: Array.isArray(decoded.allowed_brands) ? decoded.allowed_brands : []
+        };
       }
     } catch (_) { /* token invalido: se trata como anonimo */ }
+  }
+
+  if (user) {
+    user.tags = Array.isArray(user.tags) ? user.tags : (typeof user.tags === 'string' ? JSON.parse(user.tags || '[]') : []);
+    user.allowed_brands = Array.isArray(user.allowed_brands) ? user.allowed_brands : (typeof user.allowed_brands === 'string' ? JSON.parse(user.allowed_brands || '[]') : []);
   }
 
   if (!isAdmin && router.validateSession) {
@@ -2996,14 +3031,10 @@ router.post('/auth/login', async (req, res) => {
         });
       }
 
-      const accessToken = jwt.sign(
-        { id: user.id, email: user.email, name: user.name, razon_social: user.razon_social }, 
-        JWT_SECRET, 
-        { expiresIn: '24h' }
-      );
-
       const safeUser = { ...user };
       delete safeUser.password_hash;
+      safeUser.tags = Array.isArray(user.tags) ? user.tags : (typeof user.tags === 'string' ? JSON.parse(user.tags || '[]') : []);
+      safeUser.allowed_brands = Array.isArray(user.allowed_brands) ? user.allowed_brands : (typeof user.allowed_brands === 'string' ? JSON.parse(user.allowed_brands || '[]') : []);
       safeUser.cuit = safeUser.numero_nit || safeUser.cuit || '30-12345678-9';
       safeUser.tipo_iva = safeUser.tipo_iva || 'IVA Responsable Inscripto';
       safeUser.tipo_factura = safeUser.tipo_factura || 'Factura A (Responsable Inscripto)';
@@ -3015,6 +3046,19 @@ router.post('/auth/login', async (req, res) => {
       safeUser.country_code = targetCountry.code;
       safeUser.country_name = targetCountry.name;
 
+      const accessToken = jwt.sign(
+        { 
+          id: user.id, 
+          email: user.email, 
+          name: user.name, 
+          razon_social: user.razon_social,
+          tags: safeUser.tags,
+          allowed_brands: safeUser.allowed_brands
+        }, 
+        JWT_SECRET, 
+        { expiresIn: '24h' }
+      );
+
       res.json({ 
         token: accessToken, 
         user: safeUser
@@ -3022,6 +3066,35 @@ router.post('/auth/login', async (req, res) => {
     } else {
       res.status(401).json({ error: 'Credenciales inválidas. Verifique su email y contraseña.' });
     }
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Endpoint para obtener perfil actualizado del cliente autenticado
+router.get('/auth/me', optionalAuthToken, async (req, res) => {
+  try {
+    if (!req.user || !req.user.id) {
+      return res.status(401).json({ error: 'No autenticado' });
+    }
+    let user = null;
+    if (isPgConnected) {
+      const result = await pool.query('SELECT * FROM ecommerce_users WHERE id = $1', [req.user.id]);
+      user = result.rows[0];
+    } else {
+      user = inMem.users.find(u => u.id === req.user.id || u.email === req.user.email);
+    }
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+    const safeUser = { ...user };
+    delete safeUser.password_hash;
+    safeUser.tags = Array.isArray(user.tags) ? user.tags : (typeof user.tags === 'string' ? JSON.parse(user.tags || '[]') : []);
+    safeUser.allowed_brands = Array.isArray(user.allowed_brands) ? user.allowed_brands : (typeof user.allowed_brands === 'string' ? JSON.parse(user.allowed_brands || '[]') : []);
+    safeUser.cuenta_corriente_habilitada = Boolean(user.cuenta_corriente_habilitada);
+    safeUser.cuenta_corriente_limite = user.cuenta_corriente_limite !== undefined ? parseFloat(user.cuenta_corriente_limite) : (parseFloat(user.limite_credito) || 0);
+    safeUser.terminos_pago = parsePaymentTerms(user.terminos_pago);
+    res.json({ user: safeUser });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -3080,6 +3153,14 @@ function calculateCustomProductPrice(product, user, allRules) {
       return false;
     }
 
+    // Dimension: Tag de Cliente (if specified)
+    if (r.target_client_tag && r.target_client_tag !== 'all' && String(r.target_client_tag).trim() !== '') {
+      const userTags = Array.isArray(user.tags) ? user.tags.map(t => String(t).trim().toLowerCase()) : [];
+      if (!userTags.includes(String(r.target_client_tag).trim().toLowerCase())) {
+        return false;
+      }
+    }
+
     // Dimension: País (if specified and rule doesn't target a specific user)
     if (!r.user_id && r.country_id && parseInt(r.country_id) !== parseInt(user.country_id)) {
       return false;
@@ -3092,9 +3173,9 @@ function calculateCustomProductPrice(product, user, allRules) {
 
     return true;
   }).sort((a, b) => {
-    // Specific client rules get top priority boost (+1000), specific product rules get (+500)
-    const prioA = (parseInt(a.priority) || 0) + (a.user_id ? 1000 : 0) + (a.product_id ? 500 : 0);
-    const prioB = (parseInt(b.priority) || 0) + (b.user_id ? 1000 : 0) + (b.product_id ? 500 : 0);
+    // Specific client rules get top priority boost (+1000), specific product rules get (+500), tag rules (+250)
+    const prioA = (parseInt(a.priority) || 0) + (a.user_id ? 1000 : 0) + (a.product_id ? 500 : 0) + (a.target_client_tag ? 250 : 0);
+    const prioB = (parseInt(b.priority) || 0) + (b.user_id ? 1000 : 0) + (b.product_id ? 500 : 0) + (b.target_client_tag ? 250 : 0);
     return prioB - prioA;
   });
 
@@ -3121,6 +3202,7 @@ function calculateCustomProductPrice(product, user, allRules) {
         summary: [
           topRule.user_id ? 'Tarifa Especial Cliente' : null,
           topRule.tipo_cliente ? topRule.tipo_cliente : null,
+          topRule.target_client_tag ? `Tag: ${topRule.target_client_tag}` : null,
           topRule.brand ? topRule.brand : null,
           topRule.value_type === 'percentage' ? `-${ruleVal}%` : `-$${ruleVal}`
         ].filter(Boolean).join(' · ')
@@ -3183,6 +3265,14 @@ router.get('/products', async (req, res) => {
     const includeHidden = isAdmin && req.query.include_hidden === 'true';
     if (!includeHidden) {
       sourceProducts = sourceProducts.filter(p => p.is_visible !== false && p.visible !== false && p.status !== 'oculto');
+    }
+
+    // Restricción de marcas por cliente mayorista (Partner Brands Whitelist)
+    // Si el cliente tiene marcas asignadas, únicamente podrá visualizar productos de esas marcas
+    const shouldFilterBrands = user && Array.isArray(user.allowed_brands) && user.allowed_brands.length > 0 && req.query.admin_bypass_brands !== 'true';
+    if (shouldFilterBrands) {
+      const allowedUpper = user.allowed_brands.map(b => String(b).trim().toUpperCase());
+      sourceProducts = sourceProducts.filter(p => p.brand && allowedUpper.includes(String(p.brand).trim().toUpperCase()));
     }
 
     const formatted = sourceProducts.map(p => {
@@ -3258,6 +3348,15 @@ router.get('/products/:id', async (req, res) => {
     const isProductVisible = prod.is_visible !== false && prod.visible !== false && prod.status !== 'oculto';
     if (!isProductVisible && !isAdmin) {
       return res.status(404).json({ error: 'Producto no disponible o no encontrado' });
+    }
+
+    // Validar autorización de marcas partner para el cliente
+    const shouldCheckBrand = user && Array.isArray(user.allowed_brands) && user.allowed_brands.length > 0 && req.query.admin_bypass_brands !== 'true';
+    if (shouldCheckBrand) {
+      const allowedUpper = user.allowed_brands.map(b => String(b).trim().toUpperCase());
+      if (!prod.brand || !allowedUpper.includes(String(prod.brand).trim().toUpperCase())) {
+        return res.status(403).json({ error: 'No tienes autorización de marca partner para acceder a este producto' });
+      }
     }
 
     const rulesRes = await pool.query('SELECT * FROM ecommerce_pricing_rules WHERE is_active = true');
@@ -4448,11 +4547,42 @@ router.get('/admin/erp/end-users', authenticateToken, requireAdmin, async (req, 
     }
     const enrichedList = list.map(eu => {
       const parentUser = allUsers.find(u => u.id === eu.user_id || (eu.company_name && u.razon_social && u.razon_social.toLowerCase() === eu.company_name.toLowerCase()));
+      const parentName = parentUser ? (parentUser.razon_social || parentUser.name) : (eu.company_name || 'Sin Asignar');
+      const euName = eu.nombre || eu.name || 'Cliente Final';
+      const euCountry = eu.pais || eu.country || 'Argentina';
+      const euCity = eu.ciudad || eu.city || '';
+      const euAddress = eu.direccion || eu.address || '';
+      const euContact = eu.contacto || eu.contact_name || '';
+      const euTaxId = eu.cuit || eu.tax_id || eu.rut || '';
+      const euPhone = eu.telefono || eu.phone || '';
+      const euEmail = eu.email || (eu.website ? `contacto@${eu.website.replace(/^https?:\/\/(www\.)?/, '')}` : '');
+      const euIndustry = eu.industry || eu.rubro || 'Enterprise';
+
       return {
         ...eu,
-        client_name: parentUser ? (parentUser.razon_social || parentUser.name) : (eu.company_name || 'Sin Asignar'),
+        id: eu.id,
+        nombre: euName,
+        name: euName,
+        company_name: parentName,
+        client_name: parentName,
         client_email: parentUser ? parentUser.email : null,
-        client_id: parentUser ? parentUser.id : (eu.user_id || null)
+        client_id: parentUser ? parentUser.id : (eu.user_id || null),
+        user_id: parentUser ? parentUser.id : (eu.user_id || null),
+        cuit: euTaxId,
+        tax_id: euTaxId,
+        pais: euCountry,
+        country: euCountry,
+        ciudad: euCity,
+        city: euCity,
+        direccion: euAddress,
+        address: euAddress,
+        contacto: euContact,
+        contact_name: euContact,
+        telefono: euPhone,
+        phone: euPhone,
+        email: euEmail,
+        industry: euIndustry,
+        website: eu.website || ''
       };
     });
     res.json(enrichedList);
@@ -5314,6 +5444,29 @@ router.post('/coupons/validate', optionalAuthToken, async (req, res) => {
       }
     }
 
+    // Validar Tag / Etiqueta de Cliente
+    if (couponRule.target_client_tag && couponRule.target_client_tag !== 'all' && String(couponRule.target_client_tag).trim()) {
+      let clientTags = [];
+      if (effectiveUserId) {
+        if (isPgConnected) {
+          const uRes = await pool.query('SELECT tags FROM ecommerce_users WHERE id = $1', [effectiveUserId]);
+          if (uRes.rows.length > 0 && uRes.rows[0].tags) {
+            clientTags = Array.isArray(uRes.rows[0].tags) ? uRes.rows[0].tags : (typeof uRes.rows[0].tags === 'string' ? JSON.parse(uRes.rows[0].tags) : []);
+          }
+        } else {
+          const u = inMem.users.find(user => user.id === effectiveUserId);
+          if (u && u.tags) clientTags = u.tags;
+        }
+      }
+      const hasTag = clientTags.some(t => String(t).trim().toLowerCase() === String(couponRule.target_client_tag).trim().toLowerCase());
+      if (!hasTag) {
+        return res.status(403).json({
+          valid: false,
+          error: `Este cupón es exclusivo para clientes con la etiqueta / tag "${couponRule.target_client_tag}".`
+        });
+      }
+    }
+
     // 5. Validar País de Destino
     if (couponRule.country_id) {
       const targetCountryId = parseInt(country_id) || (req.user ? parseInt(req.user.country_id) : null);
@@ -5462,15 +5615,16 @@ router.post('/admin/rules', authenticateToken, requireAdmin, async (req, res) =>
       min_order_amount,
       valid_until,
       usage_limit,
-      times_used
+      times_used,
+      target_client_tag
     } = req.body;
 
     const query = `
       INSERT INTO ecommerce_pricing_rules (
         name, rule_type, value_type, value, tipo_cliente, country_id, brand, product_id, user_id, priority, is_active,
-        coupon_code, min_order_amount, valid_until, usage_limit, times_used
+        coupon_code, min_order_amount, valid_until, usage_limit, times_used, target_client_tag
       )
-      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16) RETURNING *
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17) RETURNING *
     `;
     const values = [
       name, 
@@ -5488,10 +5642,39 @@ router.post('/admin/rules', authenticateToken, requireAdmin, async (req, res) =>
       min_order_amount ? parseFloat(min_order_amount) : null,
       valid_until || null,
       usage_limit ? parseInt(usage_limit) : null,
-      times_used ? parseInt(times_used) : 0
+      times_used ? parseInt(times_used) : 0,
+      target_client_tag ? String(target_client_tag).trim() : null
     ];
-    const result = await pool.query(query, values);
-    res.status(201).json(result.rows[0]);
+    let createdRule;
+    if (isPgConnected) {
+      const result = await pool.query(query, values);
+      createdRule = result.rows[0];
+    } else {
+      const newId = inMem.pricing_rules.length ? Math.max(...inMem.pricing_rules.map(r => r.id)) + 1 : 1;
+      createdRule = {
+        id: newId,
+        name,
+        rule_type: rule_type || 'discount',
+        value_type: value_type || 'percentage',
+        value,
+        tipo_cliente: tipo_cliente || null,
+        country_id: country_id ? parseInt(country_id) : null,
+        brand: brand || null,
+        product_id: product_id ? parseInt(product_id) : null,
+        user_id: user_id ? parseInt(user_id) : null,
+        priority: priority ? parseInt(priority) : 0,
+        is_active: is_active !== false,
+        coupon_code: coupon_code ? String(coupon_code).trim().toUpperCase() : null,
+        min_order_amount: min_order_amount ? parseFloat(min_order_amount) : null,
+        valid_until: valid_until || null,
+        usage_limit: usage_limit ? parseInt(usage_limit) : null,
+        times_used: times_used ? parseInt(times_used) : 0,
+        target_client_tag: target_client_tag ? String(target_client_tag).trim() : null,
+        created_at: new Date().toISOString()
+      };
+      inMem.pricing_rules.push(createdRule);
+    }
+    res.status(201).json(createdRule);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -5516,14 +5699,15 @@ router.put('/admin/rules/:id', authenticateToken, requireAdmin, async (req, res)
       min_order_amount,
       valid_until,
       usage_limit,
-      times_used
+      times_used,
+      target_client_tag
     } = req.body;
 
     const query = `
       UPDATE ecommerce_pricing_rules 
       SET name=$1, rule_type=$2, value_type=$3, value=$4, tipo_cliente=$5, country_id=$6, brand=$7, product_id=$8, user_id=$9, priority=$10, is_active=$11,
-          coupon_code=$12, min_order_amount=$13, valid_until=$14, usage_limit=$15, times_used=$16 
-      WHERE id=$17 RETURNING *
+          coupon_code=$12, min_order_amount=$13, valid_until=$14, usage_limit=$15, times_used=$16, target_client_tag=$17
+      WHERE id=$18 RETURNING *
     `;
     const values = [
       name, 
@@ -5542,10 +5726,40 @@ router.put('/admin/rules/:id', authenticateToken, requireAdmin, async (req, res)
       valid_until || null,
       usage_limit ? parseInt(usage_limit) : null,
       times_used !== undefined ? parseInt(times_used) : 0,
+      target_client_tag ? String(target_client_tag).trim() : null,
       id
     ];
-    const result = await pool.query(query, values);
-    res.json(result.rows[0]);
+    let updatedRule;
+    if (isPgConnected) {
+      const result = await pool.query(query, values);
+      updatedRule = result.rows[0];
+    } else {
+      const idx = inMem.pricing_rules.findIndex(r => r.id === parseInt(id));
+      if (idx !== -1) {
+        inMem.pricing_rules[idx] = {
+          ...inMem.pricing_rules[idx],
+          name,
+          rule_type: rule_type || 'discount',
+          value_type: value_type || 'percentage',
+          value,
+          tipo_cliente: tipo_cliente || null,
+          country_id: country_id ? parseInt(country_id) : null,
+          brand: brand || null,
+          product_id: product_id ? parseInt(product_id) : null,
+          user_id: user_id ? parseInt(user_id) : null,
+          priority: priority ? parseInt(priority) : 0,
+          is_active: is_active !== false,
+          coupon_code: coupon_code ? String(coupon_code).trim().toUpperCase() : null,
+          min_order_amount: min_order_amount ? parseFloat(min_order_amount) : null,
+          valid_until: valid_until || null,
+          usage_limit: usage_limit ? parseInt(usage_limit) : null,
+          times_used: times_used !== undefined ? parseInt(times_used) : inMem.pricing_rules[idx].times_used,
+          target_client_tag: target_client_tag ? String(target_client_tag).trim() : null
+        };
+        updatedRule = inMem.pricing_rules[idx];
+      }
+    }
+    res.json(updatedRule);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -6486,6 +6700,8 @@ router.get('/admin/users', authenticateToken, requireAdmin, async (req, res) => 
       sanitized.cuenta_corriente_habilitada = Boolean(sanitized.cuenta_corriente_habilitada);
       sanitized.cuenta_corriente_limite = parseFloat(sanitized.cuenta_corriente_limite || sanitized.limite_credito || 0);
       sanitized.terminos_pago = parsePaymentTerms(sanitized.terminos_pago);
+      sanitized.tags = Array.isArray(sanitized.tags) ? sanitized.tags : (typeof sanitized.tags === 'string' ? JSON.parse(sanitized.tags || '[]') : []);
+      sanitized.allowed_brands = Array.isArray(sanitized.allowed_brands) ? sanitized.allowed_brands : (typeof sanitized.allowed_brands === 'string' ? JSON.parse(sanitized.allowed_brands || '[]') : []);
       return sanitized;
     });
 
@@ -6507,19 +6723,22 @@ router.post('/admin/users', authenticateToken, requireAdmin, async (req, res) =>
     const data = req.body;
     const password = data.password || '123456';
     const hashedPassword = await bcrypt.hash(password, 10);
-    const parsedTerms = parsePaymentTerms(data.terminos_pago);
+    const parsedTags = Array.isArray(data.tags) ? data.tags : (typeof data.tags === 'string' ? JSON.parse(data.tags || '[]') : []);
+    const parsedAllowedBrands = Array.isArray(data.allowed_brands) ? data.allowed_brands : (typeof data.allowed_brands === 'string' ? JSON.parse(data.allowed_brands || '[]') : []);
     
     const query = `
       INSERT INTO ecommerce_users (
         name, email, password_hash, razon_social, tipo_cliente, direccion_legal, localidad, codigo_postal, ciudad, country_id, phone, fecha_limite_facturacion, web,
         report_to_country_id, vendedor, direccion_entrega, localidad_entrega, codigo_postal_entrega, ciudad_entrega, pais_entrega_id, tipo_iva, numero_nit,
         nombre_compras, telefono_compras, email_compras, nombre_pagos, telefono_pagos, email_pagos, nombre_admin, telefono_admin, email_admin,
-        email_factura_electronica, email_contacto_compras, email_cotizaciones_automaticas, address, company, cuenta_corriente_habilitada, cuenta_corriente_limite, terminos_pago
+        email_factura_electronica, email_contacto_compras, email_cotizaciones_automaticas, address, company, cuenta_corriente_habilitada, cuenta_corriente_limite, terminos_pago,
+        tags, allowed_brands
       ) VALUES (
         $1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13,
         $14, $15, $16, $17, $18, $19, $20, $21, $22,
         $23, $24, $25, $26, $27, $28, $29, $30, $31,
-        $32, $33, $34, $35, $36, $37, $38, $39
+        $32, $33, $34, $35, $36, $37, $38, $39,
+        $40, $41
       ) RETURNING id, name, email
     `;
     const values = [
@@ -6528,17 +6747,44 @@ router.post('/admin/users', authenticateToken, requireAdmin, async (req, res) =>
       data.nombre_compras, data.telefono_compras, data.email_compras, data.nombre_pagos, data.telefono_pagos, data.email_pagos, data.nombre_admin, data.telefono_admin, data.email_admin,
       data.email_factura_electronica, data.email_contacto_compras, data.email_cotizaciones_automaticas, data.address, data.company, Boolean(data.cuenta_corriente_habilitada),
       parseFloat(data.cuenta_corriente_limite) || 0,
-      JSON.stringify(parsedTerms)
+      JSON.stringify(parsedTerms),
+      JSON.stringify(parsedTags),
+      JSON.stringify(parsedAllowedBrands)
     ];
     
-    const result = await pool.query(query, values);
-    const createdUser = result.rows[0];
+    let createdUser;
+    if (isPgConnected) {
+      const result = await pool.query(query, values);
+      createdUser = result.rows[0];
+    } else {
+      const newId = inMem.users.length ? Math.max(...inMem.users.map(u => u.id)) + 1 : 1;
+      createdUser = {
+        id: newId,
+        name: data.name,
+        email: data.email,
+        razon_social: data.razon_social,
+        tipo_cliente: data.tipo_cliente,
+        country_id: data.country_id || null,
+        phone: data.phone,
+        numero_nit: data.numero_nit,
+        status: data.status || 'activo',
+        cuenta_corriente_habilitada: Boolean(data.cuenta_corriente_habilitada),
+        cuenta_corriente_limite: parseFloat(data.cuenta_corriente_limite) || 0,
+        terminos_pago: parsedTerms,
+        tags: parsedTags,
+        allowed_brands: parsedAllowedBrands,
+        created_at: new Date().toISOString()
+      };
+      inMem.users.unshift(createdUser);
+    }
     if (createdUser) {
       const idx = inMem.users.findIndex(u => u.id === createdUser.id || u.email === data.email);
       if (idx !== -1) {
         inMem.users[idx].cuenta_corriente_habilitada = Boolean(data.cuenta_corriente_habilitada);
         inMem.users[idx].cuenta_corriente_limite = parseFloat(data.cuenta_corriente_limite) || 0;
         inMem.users[idx].terminos_pago = parsedTerms;
+        inMem.users[idx].tags = parsedTags;
+        inMem.users[idx].allowed_brands = parsedAllowedBrands;
         inMem.users[idx].iibb_jurisdiccion = data.iibb_jurisdiccion || '901 - Capital Federal';
         inMem.users[idx].iibb_tipo = data.iibb_tipo || 'C.M.';
         inMem.users[idx].iibb_numero = data.iibb_numero || data.numero_nit || '';
@@ -6552,7 +6798,7 @@ router.post('/admin/users', authenticateToken, requireAdmin, async (req, res) =>
         };
       }
     }
-    res.status(201).json(result.rows[0]);
+    res.status(201).json(createdUser);
   } catch (error) {
     if (error.code === '23505') return res.status(400).json({ error: 'Email already exists' });
     res.status(500).json({ error: error.message });
@@ -6617,6 +6863,8 @@ router.get('/admin/users/:id', authenticateToken, requireAdmin, async (req, res)
     userClean.cuenta_corriente_limite = parseFloat(userClean.cuenta_corriente_limite || userClean.limite_credito || 0);
     const inMemUser = inMem.users.find(u => u.id === parseInt(id));
     userClean.terminos_pago = parsePaymentTerms(userClean.terminos_pago || (inMemUser ? inMemUser.terminos_pago : null));
+    userClean.tags = Array.isArray(userClean.tags) ? userClean.tags : (typeof userClean.tags === 'string' ? JSON.parse(userClean.tags || '[]') : (inMemUser?.tags || []));
+    userClean.allowed_brands = Array.isArray(userClean.allowed_brands) ? userClean.allowed_brands : (typeof userClean.allowed_brands === 'string' ? JSON.parse(userClean.allowed_brands || '[]') : (inMemUser?.allowed_brands || []));
 
     res.json({
       ...userClean,
@@ -6633,13 +6881,16 @@ router.put('/admin/users/:id', authenticateToken, requireAdmin, async (req, res)
     const { id } = req.params;
     const data = req.body;
     const parsedTerms = parsePaymentTerms(data.terminos_pago);
+    const parsedTags = Array.isArray(data.tags) ? data.tags : (typeof data.tags === 'string' ? JSON.parse(data.tags || '[]') : []);
+    const parsedAllowedBrands = Array.isArray(data.allowed_brands) ? data.allowed_brands : (typeof data.allowed_brands === 'string' ? JSON.parse(data.allowed_brands || '[]') : []);
     
     let query = `
       UPDATE ecommerce_users SET 
         name = $1, email = $2, razon_social = $3, tipo_cliente = $4, direccion_legal = $5, localidad = $6, codigo_postal = $7, ciudad = $8, country_id = $9, phone = $10, fecha_limite_facturacion = $11, web = $12,
         report_to_country_id = $13, vendedor = $14, direccion_entrega = $15, localidad_entrega = $16, codigo_postal_entrega = $17, ciudad_entrega = $18, pais_entrega_id = $19, tipo_iva = $20, numero_nit = $21,
         nombre_compras = $22, telefono_compras = $23, email_compras = $24, nombre_pagos = $25, telefono_pagos = $26, email_pagos = $27, nombre_admin = $28, telefono_admin = $29, email_admin = $30,
-        email_factura_electronica = $31, email_contacto_compras = $32, email_cotizaciones_automaticas = $33, address = $34, company = $35, cargo = $36, cuenta_corriente_habilitada = $37, cuenta_corriente_limite = $38, terminos_pago = $39
+        email_factura_electronica = $31, email_contacto_compras = $32, email_cotizaciones_automaticas = $33, address = $34, company = $35, cargo = $36, cuenta_corriente_habilitada = $37, cuenta_corriente_limite = $38, terminos_pago = $39,
+        tags = $40, allowed_brands = $41
     `;
     let values = [
       data.name, data.email, data.razon_social, data.tipo_cliente, data.direccion_legal, data.localidad, data.codigo_postal, data.ciudad, data.country_id || null, data.phone, data.fecha_limite_facturacion || null, data.web,
@@ -6648,27 +6899,38 @@ router.put('/admin/users/:id', authenticateToken, requireAdmin, async (req, res)
       data.email_factura_electronica, data.email_contacto_compras, data.email_cotizaciones_automaticas, data.address, data.company, data.cargo || 'Contacto / Usuario',
       Boolean(data.cuenta_corriente_habilitada),
       parseFloat(data.cuenta_corriente_limite) || 0,
-      JSON.stringify(parsedTerms)
+      JSON.stringify(parsedTerms),
+      JSON.stringify(parsedTags),
+      JSON.stringify(parsedAllowedBrands)
     ];
     
     // Update password if provided
     if (data.password) {
         const hashedPassword = await bcrypt.hash(data.password, 10);
-        query += `, password_hash = $40 WHERE id = $41 RETURNING id, email, name`;
+        query += `, password_hash = $42 WHERE id = $43 RETURNING id, email, name`;
         values.push(hashedPassword, id);
     } else {
-        query += ` WHERE id = $40 RETURNING id, email, name`;
+        query += ` WHERE id = $42 RETURNING id, email, name`;
         values.push(id);
     }
 
-    const result = await pool.query(query, values);
+    let result;
+    if (isPgConnected) {
+      result = await pool.query(query, values);
+    }
 
     // Actualizar campos de percepciones IIBB y CC en memoria y en resultado
     const idx = inMem.users.findIndex(u => u.id === parseInt(id));
     if (idx !== -1) {
+      if (data.name !== undefined) inMem.users[idx].name = data.name;
+      if (data.email !== undefined) inMem.users[idx].email = data.email;
+      if (data.razon_social !== undefined) inMem.users[idx].razon_social = data.razon_social;
+      if (data.tipo_cliente !== undefined) inMem.users[idx].tipo_cliente = data.tipo_cliente;
       if (data.cuenta_corriente_habilitada !== undefined) inMem.users[idx].cuenta_corriente_habilitada = Boolean(data.cuenta_corriente_habilitada);
       if (data.cuenta_corriente_limite !== undefined) inMem.users[idx].cuenta_corriente_limite = parseFloat(data.cuenta_corriente_limite) || 0;
       if (data.terminos_pago !== undefined) inMem.users[idx].terminos_pago = parsedTerms;
+      if (data.tags !== undefined) inMem.users[idx].tags = parsedTags;
+      if (data.allowed_brands !== undefined) inMem.users[idx].allowed_brands = parsedAllowedBrands;
       if (data.iibb_jurisdiccion !== undefined) inMem.users[idx].iibb_jurisdiccion = data.iibb_jurisdiccion;
       if (data.iibb_tipo !== undefined) inMem.users[idx].iibb_tipo = data.iibb_tipo;
       if (data.iibb_numero !== undefined) inMem.users[idx].iibb_numero = data.iibb_numero;
@@ -6685,11 +6947,13 @@ router.put('/admin/users/:id', authenticateToken, requireAdmin, async (req, res)
       req,
       detalles: { userId: id, razon_social: data.razon_social, email: data.email }
     });
-    const updatedUser = inMem.users.find(u => u.id === parseInt(id)) || result.rows[0];
+    const updatedUser = inMem.users.find(u => u.id === parseInt(id)) || (result && result.rows ? result.rows[0] : {});
     const userClean = { ...updatedUser };
     delete userClean.password_hash;
     userClean.cuenta_corriente_habilitada = Boolean(userClean.cuenta_corriente_habilitada);
     userClean.cuenta_corriente_limite = parseFloat(userClean.cuenta_corriente_limite || 0);
+    userClean.tags = parsedTags;
+    userClean.allowed_brands = parsedAllowedBrands;
     res.json(userClean);
   } catch (error) {
     if (error.code === '23505') return res.status(400).json({ error: 'Email already exists' });

@@ -1,36 +1,161 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import BrandingVectorIcon from '../../../BrandingVectorIcon';
 import PaginationBar from '../PaginationBar';
+import { API_BASE_URL, SUGGESTED_CLIENT_TAGS } from '../adminHelpers';
+
+const defaultInitialRuleForm = {
+  name: '',
+  rule_type: 'discount',
+  value_type: 'percentage',
+  value: '',
+  country_id: '',
+  brand: '',
+  product_id: '',
+  user_id: '',
+  tipo_cliente: '',
+  target_client_tag: '',
+  priority: 10,
+  is_active: true,
+  is_coupon: false,
+  coupon_code: '',
+  min_order_amount: '',
+  valid_until: '',
+  usage_limit: '',
+  times_used: 0
+};
 
 export default function PricingRulesTab({
-  countryScopedRules = [],
-  filteredRules = [],
-  paginatedRules = [],
-  ruleFilterType = 'all',
-  setRuleFilterType,
+  countryScopedRules: propCountryScopedRules = [],
+  filteredRules: propFilteredRules = [],
+  paginatedRules: propPaginatedRules = [],
+  ruleFilterType: propRuleFilterType,
+  setRuleFilterType: propSetRuleFilterType,
   activeCountryObj = { code: 'AR', name: 'Argentina', flag: '🇦🇷' },
   selectedCountryScope,
   dacasCountriesList = [],
-  showRuleForm,
-  setShowRuleForm,
-  editingRule,
-  setEditingRule,
-  ruleForm,
-  setRuleForm,
-  initialRuleForm,
-  handleRuleSubmit,
-  resetRuleForm,
-  handleEditRule,
-  handleDeleteRule,
+  showRuleForm: propShowRuleForm,
+  setShowRuleForm: propSetShowRuleForm,
+  editingRule: propEditingRule,
+  setEditingRule: propSetEditingRule,
+  ruleForm: propRuleForm,
+  setRuleForm: propSetRuleForm,
+  initialRuleForm = defaultInitialRuleForm,
+  handleRuleSubmit: propHandleRuleSubmit,
+  resetRuleForm: propResetRuleForm,
+  handleEditRule: propHandleEditRule,
+  handleDeleteRule: propHandleDeleteRule,
   countries = [],
   users = [],
   products = [],
   clientTypes = [],
-  rulePage = 1,
-  setRulePage,
-  rulePageSize = 25,
-  setRulePageSize
+  rulePage: propRulePage,
+  setRulePage: propSetRulePage,
+  rulePageSize: propRulePageSize,
+  setRulePageSize: propSetRulePageSize,
+  fetchRules,
+  getAuthHeader
 }) {
+  const [localShowRuleForm, setLocalShowRuleForm] = useState(false);
+  const [localEditingRule, setLocalEditingRule] = useState(null);
+  const [localRuleForm, setLocalRuleForm] = useState(defaultInitialRuleForm);
+  const [localRuleFilterType, setLocalRuleFilterType] = useState('all');
+  const [localRulePage, setLocalRulePage] = useState(1);
+  const [localRulePageSize, setLocalRulePageSize] = useState(25);
+
+  const showRuleForm = propShowRuleForm !== undefined ? propShowRuleForm : localShowRuleForm;
+  const setShowRuleForm = propSetShowRuleForm || setLocalShowRuleForm;
+  const editingRule = propEditingRule !== undefined ? propEditingRule : localEditingRule;
+  const setEditingRule = propSetEditingRule || setLocalEditingRule;
+  const ruleForm = propRuleForm || localRuleForm;
+  const setRuleForm = propSetRuleForm || setLocalRuleForm;
+  const ruleFilterType = propRuleFilterType || localRuleFilterType;
+  const setRuleFilterType = propSetRuleFilterType || setLocalRuleFilterType;
+  const rulePage = propRulePage || localRulePage;
+  const setRulePage = propSetRulePage || setLocalRulePage;
+  const rulePageSize = propRulePageSize || localRulePageSize;
+  const setRulePageSize = propSetRulePageSize || setLocalRulePageSize;
+
+  const handleRuleSubmit = propHandleRuleSubmit || (async (e) => {
+    e.preventDefault();
+    try {
+      const payload = {
+        ...ruleForm,
+        value: parseFloat(ruleForm.value) || 0,
+        priority: parseInt(ruleForm.priority) || 0,
+        country_id: ruleForm.country_id ? parseInt(ruleForm.country_id) : null,
+        product_id: ruleForm.product_id ? parseInt(ruleForm.product_id) : null,
+        user_id: ruleForm.user_id ? parseInt(ruleForm.user_id) : null,
+        min_order_amount: ruleForm.min_order_amount ? parseFloat(ruleForm.min_order_amount) : null,
+        usage_limit: ruleForm.usage_limit ? parseInt(ruleForm.usage_limit) : null,
+        coupon_code: ruleForm.is_coupon && ruleForm.coupon_code ? String(ruleForm.coupon_code).trim().toUpperCase() : null,
+        target_client_tag: ruleForm.target_client_tag ? String(ruleForm.target_client_tag).trim() : null
+      };
+      const url = editingRule ? `${API_BASE_URL}/api/ecommerce/admin/rules/${editingRule.id}` : `${API_BASE_URL}/api/ecommerce/admin/rules`;
+      const method = editingRule ? 'PUT' : 'POST';
+      const headers = { 'Content-Type': 'application/json', ...(getAuthHeader ? getAuthHeader() : {}) };
+      const res = await fetch(url, { method, headers, body: JSON.stringify(payload) });
+      if (res.ok) {
+        setShowRuleForm(false);
+        setEditingRule(null);
+        if (fetchRules) fetchRules();
+      }
+    } catch (err) {
+      console.error('Error saving rule:', err);
+    }
+  });
+
+  const resetRuleForm = propResetRuleForm || (() => {
+    setShowRuleForm(false);
+    setEditingRule(null);
+    setRuleForm(defaultInitialRuleForm);
+  });
+
+  const handleEditRule = propHandleEditRule || ((r) => {
+    setEditingRule(r);
+    setRuleForm({
+      ...r,
+      is_coupon: !!r.coupon_code,
+      coupon_code: r.coupon_code || '',
+      country_id: r.country_id ? String(r.country_id) : '',
+      brand: r.brand || '',
+      product_id: r.product_id ? String(r.product_id) : '',
+      user_id: r.user_id ? String(r.user_id) : '',
+      tipo_cliente: r.tipo_cliente || '',
+      target_client_tag: r.target_client_tag || '',
+      priority: r.priority || 10,
+      min_order_amount: r.min_order_amount || '',
+      valid_until: r.valid_until ? r.valid_until.split('T')[0] : '',
+      usage_limit: r.usage_limit || ''
+    });
+    setShowRuleForm(true);
+  });
+
+  const handleDeleteRule = propHandleDeleteRule || (async (id) => {
+    if (!window.confirm('¿Seguro que deseas eliminar esta regla o cupón?')) return;
+    try {
+      const headers = { ...(getAuthHeader ? getAuthHeader() : {}) };
+      const res = await fetch(`${API_BASE_URL}/api/ecommerce/admin/rules/${id}`, { method: 'DELETE', headers });
+      if (res.ok && fetchRules) fetchRules();
+    } catch (err) {
+      console.error('Error deleting rule:', err);
+    }
+  });
+
+  const countryScopedRules = propCountryScopedRules;
+  const filteredRules = useMemo(() => {
+    if (propFilteredRules.length > 0 && propRuleFilterType) return propFilteredRules;
+    return countryScopedRules.filter(r => {
+      if (ruleFilterType === 'coupons') return !!r.coupon_code && String(r.coupon_code).trim() !== '';
+      if (ruleFilterType === 'rules') return !r.coupon_code || String(r.coupon_code).trim() === '';
+      return true;
+    });
+  }, [countryScopedRules, propFilteredRules, propRuleFilterType, ruleFilterType]);
+
+  const paginatedRules = useMemo(() => {
+    if (propPaginatedRules.length > 0 && propRulePage) return propPaginatedRules;
+    const start = (rulePage - 1) * rulePageSize;
+    return filteredRules.slice(start, start + rulePageSize);
+  }, [filteredRules, propPaginatedRules, propRulePage, rulePage, rulePageSize]);
   return (
     <section className="board-section">
       {/* Header & Sub-filter bar */}
@@ -423,6 +548,27 @@ export default function PricingRulesTab({
                 </select>
               </div>
 
+              {/* DIMENSIÓN 6: TAG / ETIQUETA DE CLIENTE */}
+              <div className="form-group">
+                <label style={{ color: '#334155', fontWeight: '700', fontSize: '12.5px' }}>🏷️ Tag / Etiqueta de Cliente (Opcional)</label>
+                <input
+                  type="text"
+                  value={ruleForm.target_client_tag || ''}
+                  onChange={e => setRuleForm({ ...ruleForm, target_client_tag: e.target.value })}
+                  placeholder="Ej: Partner Platinum, VIP, Gobierno..."
+                  list="client-tags-suggestions-rules"
+                  style={{ color: '#0F172A', background: '#FFFFFF', border: '1px solid #CBD5E1', padding: '10px 14px', borderRadius: '10px', fontSize: '13px', fontWeight: '600' }}
+                />
+                <datalist id="client-tags-suggestions-rules">
+                  {(SUGGESTED_CLIENT_TAGS || []).map(tag => (
+                    <option key={tag} value={tag} />
+                  ))}
+                </datalist>
+                <span style={{ fontSize: '11px', color: '#64748b', marginTop: '3px' }}>
+                  Aplica únicamente a clientes que tengan asignada esta etiqueta en su ficha.
+                </span>
+              </div>
+
               {/* CONDICIONES DE CUPÓN: MONTO MÍNIMO */}
               {ruleForm.is_coupon && (
                 <div className="form-group">
@@ -678,6 +824,10 @@ export default function PricingRulesTab({
                       {r.user_razon_social || r.user_email ? (
                         <span style={{ background: '#F1F5F9', color: '#0F172A', padding: '1px 6px', borderRadius: '4px', fontWeight: '700', fontSize: '10.5px' }} title={r.user_razon_social || r.user_email}>
                           👤 {r.user_razon_social || r.user_email}
+                        </span>
+                      ) : r.target_client_tag ? (
+                        <span style={{ background: '#F5F3FF', color: '#7C3AED', border: '1px solid #DDD6FE', padding: '1px 6px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '800' }}>
+                          🏷️ {r.target_client_tag}
                         </span>
                       ) : r.tipo_cliente ? (
                         <span style={{ background: '#F8FAFC', color: '#475569', padding: '1px 5px', borderRadius: '4px', fontSize: '10.5px', fontWeight: '600' }}>

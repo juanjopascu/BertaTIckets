@@ -299,6 +299,24 @@ function ShopMain() {
     return () => window.removeEventListener('storage', handleAuthSync);
   }, []);
 
+  // Sincronizar datos frescos del perfil del cliente (marcas autorizadas y tags) desde el backend
+  useEffect(() => {
+    const token = localStorage.getItem('dacas_client_token');
+    if (token) {
+      fetch(`${API_BASE_URL}/api/ecommerce/auth/me`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      })
+        .then(res => res.ok ? res.json() : null)
+        .then(data => {
+          if (data?.user) {
+            setClientUser(data.user);
+            localStorage.setItem('dacas_client_user', JSON.stringify(data.user));
+          }
+        })
+        .catch(() => {});
+    }
+  }, []);
+
   const userCountryCode = (
     clientUser?.country_code ||
     (clientUser?.country_id === 4 ? 'CL' : clientUser?.country_id === 5 ? 'CO' : 'AR') ||
@@ -520,9 +538,20 @@ function ShopMain() {
       const res = await fetch(`${API_BASE_URL}/api/ecommerce/products?country=${activeCode}`, { headers });
       if (res.ok) {
         const data = await res.json();
-          // Normalize images property and filter disallowed brands & hidden products
+          const clientAllowedUpper = Array.isArray(clientUser?.allowed_brands) && clientUser.allowed_brands.length > 0
+            ? clientUser.allowed_brands.map(b => String(b).trim().toUpperCase())
+            : null;
+
+          // Normalize images property and filter disallowed brands, hidden products, and partner whitelists
           const normalized = data
-            .filter((p) => (!p.brand || !DISALLOWED_BRANDS.includes(p.brand.toLowerCase())) && p.is_visible !== false && p.visible !== false && p.status !== 'oculto')
+            .filter((p) => {
+              if (!p.brand || DISALLOWED_BRANDS.includes(p.brand.toLowerCase())) return false;
+              if (p.is_visible === false || p.visible === false || p.status === 'oculto') return false;
+              if (clientAllowedUpper && !clientAllowedUpper.includes(String(p.brand).trim().toUpperCase())) {
+                return false;
+              }
+              return true;
+            })
             .map((p) => {
               const mainImg = p.image_url || (Array.isArray(p.images) && p.images.length > 0 ? p.images[0] : '');
               const secImgs = Array.isArray(p.secondary_images) ? p.secondary_images : [];
@@ -547,7 +576,17 @@ function ShopMain() {
     } catch (_) { }
 
     // Fallback to rich DACAS mock with lock simulation if no clientUser
-    const cleanMocks = MOCK_PRODUCTS.filter((p) => !p.brand || !DISALLOWED_BRANDS.includes(p.brand.toLowerCase()));
+    const clientAllowedUpper = Array.isArray(clientUser?.allowed_brands) && clientUser.allowed_brands.length > 0
+      ? clientUser.allowed_brands.map(b => String(b).trim().toUpperCase())
+      : null;
+
+    const cleanMocks = MOCK_PRODUCTS.filter((p) => {
+      if (!p.brand || DISALLOWED_BRANDS.includes(p.brand.toLowerCase())) return false;
+      if (clientAllowedUpper && !clientAllowedUpper.includes(String(p.brand).trim().toUpperCase())) {
+        return false;
+      }
+      return true;
+    });
     const token = localStorage.getItem('dacas_client_token');
     if (!token) {
       setProducts(cleanMocks.map((p) => ({ ...p, price: null, promotional_price: null, is_locked: true })));
@@ -855,6 +894,10 @@ function ShopMain() {
 
   // Marcas Oficiales para el Slide / Rail de la Home
   const featuredBrandKeys = useMemo(() => {
+    const clientAllowedUpper = Array.isArray(clientUser?.allowed_brands) && clientUser.allowed_brands.length > 0
+      ? clientUser.allowed_brands.map(b => String(b).trim().toUpperCase())
+      : null;
+
     const defaultKeys = ['fortinet', 'vertiv', 'mikrotik', 'aruba', 'avaya', 'audiocodes', 'panduit', 'eaton'];
     const keysSet = new Set(defaultKeys);
     if (visualSettings?.brandCustomInfo) {
@@ -864,13 +907,22 @@ function ShopMain() {
         }
       });
     }
-    return Array.from(keysSet).filter(k => isBrandAllowedInCountry(k, 'all', selectedCountryCode));
-  }, [visualSettings, selectedCountryCode, isBrandAllowedInCountry]);
+    return Array.from(keysSet)
+      .filter(k => isBrandAllowedInCountry(k, 'all', selectedCountryCode))
+      .filter(k => !clientAllowedUpper || clientAllowedUpper.includes(String(k).trim().toUpperCase()));
+  }, [visualSettings, selectedCountryCode, isBrandAllowedInCountry, clientUser]);
 
   // Catálogo completo filtrado y ordenado para miles de productos
   const sortedAndFilteredProducts = useMemo(() => {
+    const clientAllowedUpper = Array.isArray(clientUser?.allowed_brands) && clientUser.allowed_brands.length > 0
+      ? clientUser.allowed_brands.map(b => String(b).trim().toUpperCase())
+      : null;
+
     let list = products.filter((p) => {
       if (p.brand && DISALLOWED_BRANDS.includes(p.brand.toLowerCase())) return false;
+      if (clientAllowedUpper && p.brand && !clientAllowedUpper.includes(String(p.brand).trim().toUpperCase())) {
+        return false;
+      }
       const q = search.toLowerCase().trim();
       const matchSearch = !search ||
         (p.name && p.name.toLowerCase().includes(q)) ||
@@ -893,7 +945,7 @@ function ShopMain() {
       list = [...list].sort((a, b) => (a.name || '').localeCompare(b.name || ''));
     }
     return list;
-  }, [products, search, activeCategory, selectedBrand, selectedSubcategory, catalogSort]);
+  }, [products, search, activeCategory, selectedBrand, selectedSubcategory, catalogSort, clientUser]);
 
   // Subcategorías dinámicas disponibles para la marca seleccionada en el país actual
   const availableSubcategoriesForBrand = useMemo(() => {
