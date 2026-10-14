@@ -779,23 +779,25 @@ export default function CatalogTab({
     }
   };
 
-  const handleConfirmBulkImport = async () => {
-    if (!bulkData || bulkData.length === 0) return;
+  const handleConfirmBulkImport = async (productsToImport, customMode) => {
+    const dataToSend = productsToImport || bulkData;
+    if (!dataToSend || dataToSend.length === 0) return;
     setBulkLoading(true);
     setBulkError(null);
 
+    const modeToSend = customMode || bulkMode || 'upsert';
     const CHUNK_SIZE = 250;
     let totalCreated = 0;
     let totalUpdated = 0;
     const accumulatedErrors = [];
 
     try {
-      for (let i = 0; i < bulkData.length; i += CHUNK_SIZE) {
-        const chunk = bulkData.slice(i, i + CHUNK_SIZE);
+      for (let i = 0; i < dataToSend.length; i += CHUNK_SIZE) {
+        const chunk = dataToSend.slice(i, i + CHUNK_SIZE);
         const res = await fetch(`${API_BASE_URL}/api/ecommerce/admin/products/bulk?country=${selectedCountryScope || 'AR'}`, {
           method: 'POST',
           headers: { ...getAuthHeader(), 'Content-Type': 'application/json' },
-          body: JSON.stringify({ products: chunk, mode: bulkMode || 'upsert' })
+          body: JSON.stringify({ products: chunk, mode: modeToSend })
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Error en la importación masiva');
@@ -807,7 +809,7 @@ export default function CatalogTab({
       }
 
       setBulkResult({
-        total: bulkData.length,
+        total: dataToSend.length,
         created: totalCreated,
         updated: totalUpdated,
         errors: accumulatedErrors
@@ -2233,6 +2235,7 @@ export default function CatalogTab({
           setBulkData={setBulkData}
           setBulkFile={setBulkFile}
           setBulkResult={setBulkResult}
+          selectedCountryScope={selectedCountryScope}
         />
       </section>
     );
