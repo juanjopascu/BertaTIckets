@@ -304,11 +304,22 @@ export default function CatalogTab({
     ],
     brand: ['brand', 'marca', 'fabricante', 'manufacturer', 'vendor', 'linea', 'línea'],
     promotional_price: ['promotional_price', 'precio_promocional', 'precio_promo_usd', 'precio_promo', 'promo_price', 'precio promo', 'oferta', 'promo'],
-    price: ['price', 'precio', 'precio_usd', 'costo', 'valor', 'pvp', 'precio_lista', 'lista', 'usd', 'unit_price', 'precio_unitario', 'p_unit', 'importe'],
+    price: [
+      'price', 'precio', 'precio_usd', 'costo', 'costo_usd', 'valor', 'pvp', 'precio_lista', 'lista',
+      'usd', 'unit_price', 'precio_unitario', 'p_unit', 'importe',
+      'u$s', 'u$d', 'dolares', 'dólares', 'mayorista', 'precio_mayorista',
+      'reseller', 'precio_reseller', 'distribuidor', 'precio_distribuidor',
+      'gremio', 'precio_gremio', 'canal', 'precio_canal', 'partner', 'precio_partner',
+      'neto', 'precio_neto', 'final', 'precio_final', 'fob'
+    ],
     category: ['category', 'categoria', 'categoría', 'rubro', 'familia', 'seccion', 'sección', 'departamento'],
     subcategory: ['subcategory', 'subcategoria', 'subcategoría', 'tipo_equipo', 'sub_categoria', 'subrubro'],
     iva: ['iva', 'iva_%', 'tax_rate', 'alicuota_iva', 'alícuota_iva', 'alicuota', 'porcentaje_iva', 'tasa_iva', 'impuesto_iva'],
-    stock: ['stock', 'cantidad', 'cant', 'qty', 'inventario', 'existencia', 'unidades', 'disponible', 'disp'],
+    stock: [
+      'stock', 'cantidad', 'cant', 'qty', 'inventario', 'existencia', 'existencias',
+      'unidades', 'disponible', 'disp', 'disponibilidad', 'stock_ar', 'stock_local',
+      'stock_dacas', 'stock_bsas', 'stock_miami', 'unidades_disponibles'
+    ],
     visible: ['visible', 'is_visible', 'visibilidad', 'estado', 'status', 'activo'],
     description: ['description', 'descripcion', 'descripción', 'detalle', 'cuerpo', 'observaciones'],
     image_url: ['image_url', 'url_imagen', 'imagen', 'foto', 'imagen_url', 'img', 'image', 'picture', 'url_foto', 'enlace_imagen'],
@@ -636,18 +647,33 @@ export default function CatalogTab({
             cleanName = cleanDesc.length > 120 ? cleanDesc.slice(0, 120) : cleanDesc;
           }
 
-          // Si no hay SKU pero el nombre empieza con un código delimitado (ej: "CRS328-24P-4S - Switch...")
-          if (!cleanSku && cleanName) {
-            const codeMatch = cleanName.match(/^([A-Z0-9][A-Z0-9_.-]{2,25})\s*[-–—:]\s*(.+)$/i);
-            if (codeMatch) {
-              cleanSku = codeMatch[1].trim();
-              cleanName = codeMatch[2].trim();
+          // Si no hay SKU o vino como S/SKU, extraer del título del producto
+          if (!cleanSku || cleanSku.toUpperCase() === 'S/SKU') {
+            // Caso 1: Nombre con Marca conocida + Modelo + Guión (ej: "Allied Telesis XS916MXS - Switch Inteligente...")
+            const brandCodeMatch = cleanName.match(/^(?:Allied Telesis|Fortinet|Cisco|Aruba|MikroTik|Vertiv|Avaya|Panduit|Eaton|AudioCodes|SonicWall|Ubiquiti|Poly)\s+([A-Z0-9][A-Z0-9/_.-]{2,25})\s*[-–—:]\s*(.+)$/i);
+            if (brandCodeMatch) {
+              cleanSku = brandCodeMatch[1].trim();
+            } else {
+              // Caso 2: Código directo al inicio seguido de guión (ej: "CRS328-24P-4S - Switch...")
+              const directCodeMatch = cleanName.match(/^([A-Z0-9][A-Z0-9/_.-]{2,25})\s*[-–—:]\s*(.+)$/i);
+              if (directCodeMatch) {
+                cleanSku = directCodeMatch[1].trim();
+              }
             }
           }
 
-          // Si el SKU parece un importe numérico/moneda (ej: "449.00") y el precio estaba en 0.00
-          const rawPriceClean = String(rowObj.price || '0').replace('$', '').replace(/,/g, '.').trim();
+          // Parseo robusto de precio con tolerancia a formatos U$S, comas y puntos
+          let rawPriceClean = String(rowObj.price || '0').trim().replace(/^(?:U\$S|USD|U\$D|\$|ARS)\s*/i, '').replace(/\s*(?:USD|U\$S)\s*$/i, '').trim();
+          if (/^\d{1,3}(?:\.\d{3})+(?:,\d+)?$/.test(rawPriceClean)) {
+            rawPriceClean = rawPriceClean.replace(/\./g, '').replace(',', '.');
+          } else if (/^\d+(?:,\d{1,2})$/.test(rawPriceClean)) {
+            rawPriceClean = rawPriceClean.replace(',', '.');
+          } else {
+            rawPriceClean = rawPriceClean.replace(/,/g, '');
+          }
           let pNum = parseFloat(rawPriceClean);
+
+          // Si el SKU parece un importe numérico/moneda (ej: "449.00") y el precio estaba en 0.00
           if ((isNaN(pNum) || pNum === 0) && /^\$?\d+(\.\d{1,2})?$/.test(cleanSku)) {
             pNum = parseFloat(cleanSku.replace('$', ''));
             cleanSku = '';
@@ -664,6 +690,20 @@ export default function CatalogTab({
               if (rowObj.brand === 'Tplink' || rowObj.brand === 'Tp-link') rowObj.brand = 'TP-Link';
             } else {
               rowObj.brand = 'DACAS';
+            }
+          }
+
+          // Auto-categorización inteligente si vino como General
+          if (!rowObj.category || rowObj.category === 'General') {
+            const nLower = cleanName.toLowerCase();
+            if (nLower.includes('switch') || nLower.includes('router') || nLower.includes('wi-fi') || nLower.includes('wifi') || nLower.includes('access point') || nLower.includes('conmutador')) {
+              rowObj.category = 'networking';
+            } else if (nLower.includes('firewall') || nLower.includes('seguridad') || nLower.includes('fortigate') || nLower.includes('licencia') || nLower.includes('antivirus')) {
+              rowObj.category = 'security';
+            } else if (nLower.includes('ups') || nLower.includes('bateria') || nLower.includes('pdu') || nLower.includes('rack') || nLower.includes('servidor') || nLower.includes('gxt') || nLower.includes('energia')) {
+              rowObj.category = 'infraestructura';
+            } else if (nLower.includes('telefono') || nLower.includes('videoconferencia') || nLower.includes('poly') || nLower.includes('auricular') || nLower.includes('camara') || nLower.includes('avaya')) {
+              rowObj.category = 'comunicaciones_unificadas';
             }
           }
 

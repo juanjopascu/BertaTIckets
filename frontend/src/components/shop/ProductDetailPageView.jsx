@@ -877,35 +877,65 @@ export default function ProductDetailPageView({
                     </button>
                   </div>
 
-                  <button
-                    onClick={handleAdd}
-                    style={{
-                      flex: '1 1 240px',
-                      background: added ? 'linear-gradient(135deg, #10B981, #059669)' : 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
-                      color: '#FFFFFF',
-                      border: 'none',
-                      borderRadius: '10px',
-                      padding: '12px 22px',
-                      fontWeight: '800',
-                      fontSize: '14px',
-                      cursor: 'pointer',
-                      boxShadow: added ? '0 4px 15px rgba(16,185,129,0.35)' : '0 4px 15px rgba(15,164,222,0.35)',
-                      transition: 'all 0.2s',
-                      display: 'inline-flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      gap: '8px'
-                    }}
-                  >
-                    <BrandingVectorIcon name={added ? "check" : "shopping-cart"} size={16} color="#ffffff" />
-                    <span>{added ? '¡Agregado con éxito!' : `Agregar al Carrito · $${(parsedPrice * quantity).toFixed(2)} USD`}</span>
-                  </button>
+                  {(parseInt(product.stock, 10) || 0) <= 0 ? (
+                    <button
+                      onClick={() => {
+                        const phone = '5491141103300';
+                        const msg = encodeURIComponent(`Hola DACAS, deseo consultar disponibilidad y plazo de entrega para el producto: ${product.name} (SKU: ${product.sku || 'N/A'}).`);
+                        window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+                      }}
+                      style={{
+                        flex: '1 1 240px',
+                        background: 'linear-gradient(135deg, #0369a1, #0284c7)',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        borderRadius: '10px',
+                        padding: '12px 22px',
+                        fontWeight: '800',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                        boxShadow: '0 4px 15px rgba(2, 132, 199, 0.35)',
+                        transition: 'all 0.2s',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <BrandingVectorIcon name="message-circle" size={16} color="#ffffff" />
+                      <span>Consultar Disponibilidad</span>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleAdd}
+                      style={{
+                        flex: '1 1 240px',
+                        background: added ? 'linear-gradient(135deg, #10B981, #059669)' : 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                        color: '#FFFFFF',
+                        border: 'none',
+                        borderRadius: '10px',
+                        padding: '12px 22px',
+                        fontWeight: '800',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                        boxShadow: added ? '0 4px 15px rgba(16,185,129,0.35)' : '0 4px 15px rgba(15,164,222,0.35)',
+                        transition: 'all 0.2s',
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px'
+                      }}
+                    >
+                      <BrandingVectorIcon name={added ? "check" : "shopping-cart"} size={16} color="#ffffff" />
+                      <span>{added ? '¡Agregado con éxito!' : `Agregar al Carrito · $${(parsedPrice * quantity).toFixed(2)} USD`}</span>
+                    </button>
+                  )}
                 </div>
 
                 {(parseInt(product.stock, 10) || 0) === 0 && (
                   <div style={{ marginTop: '6px', fontSize: '11.5px', color: '#0284c7', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '5px' }}>
                     <BrandingVectorIcon name="clock" size={13} color="#0284c7" />
-                    <span>Aclaración: Este equipo se procesa a pedido y llega en 30/45 días.</span>
+                    <span>Este equipo se comercializa a pedido. Consulta tiempo de arribo y reserva con tu asesor comercial.</span>
                   </div>
                 )}
               </div>

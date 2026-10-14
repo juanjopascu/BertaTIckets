@@ -471,55 +471,87 @@ export default function ProductDetailModal({ product, clientUser, onOpenAuth, on
               ) : (
                 <>
                   <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
-                    {/* Quantity Controls */}
-                    <div style={{ display: 'flex', alignItems: 'center', background: '#F1F5F9', borderRadius: '12px', padding: '4px', border: '1px solid #CBD5E1' }}>
+                    {(parseInt(product.stock, 10) || 0) <= 0 ? (
                       <button
-                        onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
-                        style={{ width: '36px', height: '36px', background: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '800', fontSize: '16px', color: '#071524' }}
+                        onClick={() => {
+                          const phone = '5491141103300';
+                          const msg = encodeURIComponent(`Hola DACAS, deseo consultar disponibilidad y plazo de entrega para el producto: ${product.name} (SKU: ${product.sku || 'N/A'}).`);
+                          window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+                        }}
+                        style={{
+                          flex: 1,
+                          background: 'linear-gradient(135deg, #0369a1, #0284c7)',
+                          color: '#fff',
+                          border: 'none',
+                          borderRadius: '14px',
+                          padding: '14px 24px',
+                          fontWeight: '800',
+                          fontSize: '15px',
+                          cursor: 'pointer',
+                          boxShadow: '0 4px 15px rgba(2, 132, 199, 0.4)',
+                          transition: 'all 0.2s',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          gap: '8px'
+                        }}
                       >
-                        -
+                        <BrandingVectorIcon name="message-circle" size={17} color="#ffffff" />
+                        <span>Consultar Disponibilidad</span>
                       </button>
-                      <span style={{ width: '40px', textAlign: 'center', fontWeight: '800', fontSize: '15px', color: '#071524' }}>
-                        {quantity}
-                      </span>
-                      <button
-                        onClick={() => setQuantity(prev => ((product.stock && product.stock > 0) ? Math.min(product.stock, prev + 1) : prev + 1))}
-                        style={{ width: '36px', height: '36px', background: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '800', fontSize: '16px', color: '#071524' }}
-                      >
-                        +
-                      </button>
-                    </div>
+                    ) : (
+                      <>
+                        {/* Quantity Controls */}
+                        <div style={{ display: 'flex', alignItems: 'center', background: '#F1F5F9', borderRadius: '12px', padding: '4px', border: '1px solid #CBD5E1' }}>
+                          <button
+                            onClick={() => setQuantity(prev => Math.max(1, prev - 1))}
+                            style={{ width: '36px', height: '36px', background: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '800', fontSize: '16px', color: '#071524' }}
+                          >
+                            -
+                          </button>
+                          <span style={{ width: '40px', textAlign: 'center', fontWeight: '800', fontSize: '15px', color: '#071524' }}>
+                            {quantity}
+                          </span>
+                          <button
+                            onClick={() => setQuantity(prev => ((product.stock && product.stock > 0) ? Math.min(product.stock, prev + 1) : prev + 1))}
+                            style={{ width: '36px', height: '36px', background: '#FFFFFF', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: '800', fontSize: '16px', color: '#071524' }}
+                          >
+                            +
+                          </button>
+                        </div>
 
-                    {/* Add to Cart Button */}
-                    <button
-                      onClick={handleAdd}
-                      style={{
-                        flex: 1,
-                        background: added ? 'linear-gradient(135deg, #10B981, #059669)' : 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
-                        color: '#fff',
-                        border: 'none',
-                        borderRadius: '14px',
-                        padding: '14px 24px',
-                        fontWeight: '800',
-                        fontSize: '15px',
-                        cursor: 'pointer',
-                        boxShadow: added ? '0 4px 15px rgba(16,185,129,0.4)' : '0 4px 15px rgba(15,164,222,0.4)',
-                        transition: 'all 0.2s',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        gap: '8px'
-                      }}
-                    >
-                      <BrandingVectorIcon name={added ? "check" : "shopping-cart"} size={16} color="#ffffff" />
-                      <span>{added ? '¡Agregado al Carrito!' : `Agregar al Carrito · $${(parseFloat(product.price || 0) * quantity).toFixed(2)}`}</span>
-                    </button>
+                        {/* Add to Cart Button */}
+                        <button
+                          onClick={handleAdd}
+                          style={{
+                            flex: 1,
+                            background: added ? 'linear-gradient(135deg, #10B981, #059669)' : 'linear-gradient(135deg, #0fa4de 0%, #0284c7 100%)',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '14px',
+                            padding: '14px 24px',
+                            fontWeight: '800',
+                            fontSize: '15px',
+                            cursor: 'pointer',
+                            boxShadow: added ? '0 4px 15px rgba(16,185,129,0.4)' : '0 4px 15px rgba(15,164,222,0.4)',
+                            transition: 'all 0.2s',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '8px'
+                          }}
+                        >
+                          <BrandingVectorIcon name={added ? "check" : "shopping-cart"} size={16} color="#ffffff" />
+                          <span>{added ? '¡Agregado al Carrito!' : `Agregar al Carrito · $${(parseFloat(product.price || 0) * quantity).toFixed(2)}`}</span>
+                        </button>
+                      </>
+                    )}
                   </div>
 
                   {(parseInt(product.stock, 10) || 0) === 0 && (
                     <div style={{ marginTop: '8px', fontSize: '11.5px', color: '#0284c7', fontWeight: '700', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '5px' }}>
                       <BrandingVectorIcon name="clock" size={13} color="#0284c7" />
-                      <span>Aclaración: Este equipo se procesa a pedido y llega en 30/45 días.</span>
+                      <span>Este equipo se comercializa a pedido. Consulta tiempo de arribo y reserva con tu asesor comercial.</span>
                     </div>
                   )}
                 </>

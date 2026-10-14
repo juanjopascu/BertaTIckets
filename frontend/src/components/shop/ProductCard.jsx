@@ -347,6 +347,36 @@ export default function ProductCard({
               <BrandingVectorIcon name="lock" size={12} color="#38bdf8" />
               <span>Ver Precio B2B</span>
             </button>
+          ) : (parseInt(product.stock, 10) || 0) <= 0 ? (
+            <button
+              id={`consult-stock-${product.id}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                const phone = '5491141103300';
+                const msg = encodeURIComponent(`Hola DACAS, deseo consultar disponibilidad y plazo de entrega para el producto: ${product.name} (SKU: ${product.sku || 'N/A'}).`);
+                window.open(`https://wa.me/${phone}?text=${msg}`, '_blank');
+              }}
+              style={{
+                background: 'linear-gradient(135deg, #0369a1, #0284c7)',
+                color: '#fff',
+                border: 'none',
+                borderRadius: '10px',
+                padding: '7px 11px',
+                fontWeight: '750',
+                fontSize: '11px',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                whiteSpace: 'nowrap',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px',
+                boxShadow: '0 2px 8px rgba(2, 132, 199, 0.22)'
+              }}
+              title="Consultar disponibilidad por WhatsApp con un asesor comercial DACAS"
+            >
+              <BrandingVectorIcon name="message-circle" size={12} color="#FFFFFF" />
+              <span>Consultar Disponibilidad</span>
+            </button>
           ) : (
             <button
               id={`add-to-cart-${product.id}`}

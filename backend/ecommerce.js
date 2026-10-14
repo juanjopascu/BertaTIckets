@@ -6094,15 +6094,34 @@ router.post(['/admin/products/bulk-upload', '/admin/products/bulk'], authenticat
         }
       }
 
-      // 3. Si no hay SKU o vino como "S/SKU", extraer del nombre o generar uno legible
+      // 3. Si no hay SKU o vino como "S/SKU", extraer del nombre
       if (!sku || sku.toUpperCase() === 'S/SKU') {
-        const skuMatch = name.match(/^([A-Z0-9][A-Z0-9_.-]{2,25})\s*[-–—:]\s*(.+)$/i);
-        if (skuMatch) {
-          sku = skuMatch[1].trim();
+        const brandCodeMatch = name.match(/^(?:Allied Telesis|Fortinet|Cisco|Aruba|MikroTik|Vertiv|Avaya|Panduit|Eaton|AudioCodes|SonicWall|Ubiquiti|Poly)\s+([A-Z0-9][A-Z0-9/_.-]{2,25})\s*[-–—:]\s*(.+)$/i);
+        if (brandCodeMatch) {
+          sku = brandCodeMatch[1].trim();
         } else {
-          const autoBrand = brand && brand !== 'DACAS' ? brand.slice(0, 4).toUpperCase().replace(/[^A-Z0-9]/g, '') : 'DAC';
-          const autoWords = name.split(/\s+/).slice(0, 2).map(w => w.replace(/[^a-zA-Z0-9]/g, '').slice(0, 3).toUpperCase()).filter(Boolean).join('');
-          sku = `${autoBrand}-${autoWords || 'PROD'}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+          const skuMatch = name.match(/^([A-Z0-9][A-Z0-9/_.-]{2,25})\s*[-–—:]\s*(.+)$/i);
+          if (skuMatch) {
+            sku = skuMatch[1].trim();
+          } else {
+            const autoBrand = brand && brand !== 'DACAS' ? brand.slice(0, 4).toUpperCase().replace(/[^A-Z0-9]/g, '') : 'DAC';
+            const autoWords = name.split(/\s+/).slice(0, 2).map(w => w.replace(/[^a-zA-Z0-9]/g, '').slice(0, 3).toUpperCase()).filter(Boolean).join('');
+            sku = `${autoBrand}-${autoWords || 'PROD'}-${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+          }
+        }
+      }
+
+      // 4. Auto-categorización inteligente si vino como General
+      if (!category || category === 'General') {
+        const nLower = name.toLowerCase();
+        if (nLower.includes('switch') || nLower.includes('router') || nLower.includes('wi-fi') || nLower.includes('wifi') || nLower.includes('access point') || nLower.includes('conmutador')) {
+          category = 'networking';
+        } else if (nLower.includes('firewall') || nLower.includes('seguridad') || nLower.includes('fortigate') || nLower.includes('licencia') || nLower.includes('antivirus')) {
+          category = 'security';
+        } else if (nLower.includes('ups') || nLower.includes('bateria') || nLower.includes('pdu') || nLower.includes('rack') || nLower.includes('servidor') || nLower.includes('gxt') || nLower.includes('energia')) {
+          category = 'infraestructura';
+        } else if (nLower.includes('telefono') || nLower.includes('videoconferencia') || nLower.includes('poly') || nLower.includes('auricular') || nLower.includes('camara') || nLower.includes('avaya')) {
+          category = 'comunicaciones_unificadas';
         }
       }
 
