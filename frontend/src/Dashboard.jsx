@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import TicketModal from './TicketModal';
 import AdminPersonalizacion from './AdminPersonalizacion';
-import AdminEcommerce, { DACAS_COUNTRIES_LIST } from './AdminEcommerce';
+import { DACAS_COUNTRIES_LIST } from './countriesConfig';
 import Reportes from './Reportes';
 import AdminDepartamentos from './AdminDepartamentos';
 import AdminEstados from './AdminEstados';
@@ -219,8 +219,6 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
   const [ecommerceSubTab, setEcommerceSubTab] = useState('products');
   const [visualSubTab, setVisualSubTab] = useState('hero');
   const [isVisualExpanded, setIsVisualExpanded] = useState(true);
-  const [usersSubTab, setUsersSubTab] = useState('clients');
-  const [isUsersExpanded, setIsUsersExpanded] = useState(true);
   const [ecommerceCountryScope, setEcommerceCountryScope] = useState(() => {
     try {
       const saved = localStorage.getItem('dacas_admin_country_scope');
@@ -1071,7 +1069,6 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                   { id: 'n8n_bot', label: 'Bot n8n B2B', icon: 'bot' },
                   { id: 'apli', label: 'Conexión Apli', icon: 'zap' }
                 ].map(item => {
-                  const isUsersItem = item.id === 'users';
                   const isSelected = ecommerceSubTab === item.id;
                   const isVisualItem = item.id === 'visual';
 
@@ -1086,14 +1083,6 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                             } else {
                               setEcommerceSubTab('visual');
                               setIsVisualExpanded(true);
-                            }
-                          } else if (isUsersItem) {
-                            if (ecommerceSubTab === 'users') {
-                              setIsUsersExpanded(prev => !prev);
-                            } else {
-                              setEcommerceSubTab('users');
-                              setIsUsersExpanded(true);
-                              setUsersSubTab('clients');
                             }
                           } else {
                             setEcommerceSubTab(item.id);
@@ -1123,17 +1112,14 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                           <span>{item.label}</span>
                         </div>
 
-                        {(isVisualItem || isUsersItem) && (
+                        {isVisualItem && (
                           <span
                             style={{
                               display: 'inline-flex',
                               alignItems: 'center',
                               opacity: 0.9,
                               transition: 'transform 0.2s ease',
-                              transform: (
-                                (isVisualItem && isSelected && isVisualExpanded) ||
-                                (isUsersItem && isSelected && isUsersExpanded)
-                              ) ? 'rotate(180deg)' : 'rotate(0deg)'
+                              transform: (isSelected && isVisualExpanded) ? 'rotate(180deg)' : 'rotate(0deg)'
                             }}
                           >
                             <BrandingVectorIcon
@@ -1144,58 +1130,6 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                           </span>
                         )}
                       </button>
-
-                      {/* Submenú desplegable dentro de Clientes Mayoristas */}
-                      {isUsersItem && isSelected && isUsersExpanded && (
-                        <div
-                          style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '3px',
-                            marginLeft: '14px',
-                            paddingLeft: '10px',
-                            borderLeft: '2px solid rgba(15, 164, 222, 0.35)',
-                            marginTop: '4px',
-                            marginBottom: '6px'
-                          }}
-                        >
-                          {[
-                            { id: 'clients', label: 'Directorio Clientes', icon: 'users' },
-                            { id: 'end_users', label: 'End Users (Finales)', icon: 'briefcase' }
-                          ].map(sub => {
-                            const isSubActive = usersSubTab === sub.id;
-                            return (
-                              <button
-                                key={sub.id}
-                                type="button"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setEcommerceSubTab('users');
-                                  setUsersSubTab(sub.id);
-                                }}
-                                style={{
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '8px',
-                                  padding: '7px 10px',
-                                  fontSize: '0.80rem',
-                                  borderRadius: '8px',
-                                  fontWeight: isSubActive ? '800' : '600',
-                                  background: isSubActive ? 'rgba(15, 164, 222, 0.12)' : 'transparent',
-                                  color: isSubActive ? '#0284c7' : 'var(--text-main, #475569)',
-                                  border: isSubActive ? '1px solid rgba(15, 164, 222, 0.3)' : '1px solid transparent',
-                                  cursor: 'pointer',
-                                  transition: 'all 0.12s ease',
-                                  textAlign: 'left'
-                                }}
-                              >
-                                <BrandingVectorIcon name={sub.icon} size={13} color={isSubActive ? '#0284c7' : '#64748b'} />
-                                <span>{sub.label}</span>
-                              </button>
-                            );
-                          })}
-                        </div>
-                      )}
 
                       {/* Submenú desplegable dentro de Diseño & Banners */}
                       {isVisualItem && isSelected && isVisualExpanded && (
@@ -1214,7 +1148,6 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                           {[
                             { id: 'hero', label: 'Banners Principales (Hero)', icon: 'layers' },
                             { id: 'brand_banners', label: 'Banners Marcas & Carruseles', icon: 'star' },
-                            { id: 'login_page', label: 'Edición Log In', icon: 'lock' },
                             { id: 'announcement', label: 'Anuncio & Barra Superior', icon: 'megaphone' },
                             { id: 'categories', label: '4 Categorías del Shop', icon: 'tag' },
                             { id: 'brands', label: 'Marcas por Categoría', icon: 'building' },
@@ -1826,7 +1759,6 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                             countries: 'Países y Sedes',
                             rules: 'Cupones & Reglas',
                             users: 'Clientes Mayoristas',
-                            end_users: 'End Users (Clientes Finales)',
                             orders: 'Órdenes de Compra',
                             reportes: 'Reportería & Métricas',
                             logs: 'Bitácora de Logs & Auditoría Integral',
@@ -1836,7 +1768,6 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                             visual: `Diseño & Banners • ${{
                               hero: 'Banners Principales (Hero)',
                               brand_banners: 'Banners Marcas & Carruseles',
-                              login_page: 'Edición Log In',
                               announcement: 'Anuncio & Barra Superior',
                               categories: '4 Categorías del Shop',
                               brands: 'Marcas por Categoría',
@@ -1929,23 +1860,56 @@ function Dashboard({ usuario, setUsuario, theme, toggleTheme }) {
                 />
               )}
               {activeAdminView === 'ecommerce' && (
-                <AdminEcommerce
-                  embedded={true}
-                  hideTopBars={true}
-                  usuario={usuario}
-                  activeTab={ecommerceSubTab}
-                  onTabChange={setEcommerceSubTab}
-                  visualSubTab={visualSubTab}
-                  onVisualSubTabChange={setVisualSubTab}
-                  usersSubTab={usersSubTab}
-                  onUsersSubTabChange={setUsersSubTab}
-                  countryScope={ecommerceCountryScope}
-                  onCountryScopeChange={handleEcommerceCountryChange}
-                  onBack={() => {
-                    setActiveAdminView(null);
-                    setIsMaximized(false);
-                  }}
-                />
+                <div style={{ padding: '32px', textAlign: 'center', background: '#F8FAFC', borderRadius: '16px', border: '1px solid #E2E8F0', margin: '20px' }}>
+                  <div style={{ fontSize: '48px', marginBottom: '16px' }}>🛒</div>
+                  <h3 style={{ margin: '0 0 12px', color: '#1E293B', fontSize: '20px', fontWeight: '800' }}>
+                    Módulo E-Commerce & ERP Desacoplado
+                  </h3>
+                  <p style={{ maxWidth: '520px', margin: '0 auto 24px', color: '#64748B', fontSize: '14px', lineHeight: '1.6' }}>
+                    El catálogo mayorista, checkout, reglas impositivas y ERP NetSuite OneWorld ahora se ejecutan de forma independiente en su propio servicio.
+                  </p>
+                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'center' }}>
+                    <a
+                      href={`http://${typeof window !== 'undefined' ? window.location.hostname : 'localhost'}:5174/admin?ssoSession=${encodeURIComponent(usuario?.sesionId || '')}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{
+                        display: 'inline-flex',
+                        alignItems: 'center',
+                        gap: '8px',
+                        background: '#0FA4DE',
+                        color: '#FFFFFF',
+                        padding: '10px 20px',
+                        borderRadius: '10px',
+                        fontWeight: '700',
+                        fontSize: '14px',
+                        textDecoration: 'none',
+                        boxShadow: '0 4px 12px rgba(15,164,222,0.3)'
+                      }}
+                    >
+                      Abrir Admin E-Commerce (Puerto 5174) ↗
+                    </a>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setActiveAdminView(null);
+                        setIsMaximized(false);
+                      }}
+                      style={{
+                        background: '#FFFFFF',
+                        border: '1px solid #CBD5E1',
+                        color: '#475569',
+                        padding: '10px 18px',
+                        borderRadius: '10px',
+                        fontWeight: '600',
+                        fontSize: '14px',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      Volver a Tickets
+                    </button>
+                  </div>
+                </div>
               )}
               {activeAdminView === 'reportes' && <Reportes embedded={true} />}
               {activeAdminView === 'departamentos' && <AdminDepartamentos embedded={true} />}

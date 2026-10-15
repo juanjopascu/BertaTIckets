@@ -1,0 +1,14 @@
+{
+  "name": "berta-tickets",
+  "version": "1.0.0",
+  "description": "DACAS Enterprise CRM & Mesa de Ayuda de Tickets",
+  "scripts": {
+    "dev": "node scripts/dev.js",
+    "dev:backend": "cd backend && node server.js",
+    "dev:frontend": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build"
+  },
+  "keywords": ["crm", "tickets", "helpdesk", "dacas"],
+  "author": "DACAS Enterprise",
+  "license": "ISC"
+}

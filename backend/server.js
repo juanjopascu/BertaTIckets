@@ -1,14 +1,21 @@
-require('dotenv').config();
+const path = require('path');
+require('dotenv').config({ path: path.join(__dirname, '.env') });
 const express = require('express');
 const cors = require('cors');
 const multer = require('multer');
-const path = require('path');
 const fs = require('fs');
 const crypto = require('crypto');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const JWT_SECRET = process.env.JWT_SECRET || 'secret';
-const ecommerceRoutes = require('./ecommerce');
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET) {
+    throw new Error('FATAL: JWT_SECRET debe estar definido en el .env del servicio CRM.');
+}
+const INTERNAL_SERVICE_KEY = process.env.INTERNAL_SERVICE_KEY;
+if (!INTERNAL_SERVICE_KEY) {
+    throw new Error('FATAL: INTERNAL_SERVICE_KEY debe estar definido en el .env del servicio CRM.');
+}
+const ecommerceApiClient = require('./services/ecommerceApiClient');
 const { registrarLog, obtenerLogs, obtenerEstadisticasLogs, limpiarLogs } = require('./services/auditLoggerService');
 
 function hashPassword(password) {
@@ -3090,44 +3097,224 @@ ${itemsSummary || '• 1 x Ítem de Hardware / Licenciamiento'}
     return nuevoCliente;
 }
 
-// Conectar callback con el router de ecommerce
 const notificationService = require('./services/notificationService');
 
-ecommerceRoutes.onOrderCreated = (order) => {
-    const ticket = createOperacionesTicketForOrder(order);
+// Comparación en tiempo constante para evitar ataques de timing sobre la clave interna
+function isValidServiceKey(key) {
+    if (typeof key !== 'string') return false;
+    const provided = Buffer.from(key);
+    const expected = Buffer.from(INTERNAL_SERVICE_KEY);
+    return provided.length === expected.length && crypto.timingSafeEqual(provided, expected);
+}
+
+// Middleware de autenticación para APIs internas (Service-to-Service)
+function requireInternalKey(req, res, next) {
+    if (!isValidServiceKey(req.headers['x-service-key'])) {
+        return res.status(403).json({ success: false, error: 'Acceso no autorizado: clave de servicio interno inválida' });
+    }
+    next();
+}
+
+// ==============================================================================
+// RUTAS INTERNAS PARA CONSUMO DESDE EL E-COMMERCE (API / JSON)
+// ==============================================================================
+
+/**
+ * POST /api/internal/orders/created
+ * El E-commerce notifica una orden nueva: se abre el ticket de Operaciones y se notifica.
+ * Payload: { order, user, orderItems, billingInfo, shippingInfo, paymentMethod, trackingNumber, poNumber }
+ */
+app.post('/api/internal/orders/created', requireInternalKey, (req, res) => {
+    const payload = req.body || {};
+    const order = payload.order;
+    if (!order || order.id === undefined || order.id === null) {
+        return res.status(400).json({ success: false, error: 'El payload debe incluir order.id' });
+    }
+
     try {
-        notificationService.addNotification({
-            category: 'ecommerce',
-            title: `Nuevo Pedido E-Commerce #${order.id}`,
-            message: `Pedido por $${order.total || '0'} USD recibido de ${order.user_name || order.user_company || 'Cliente B2B'}.`,
-            severity: 'success',
-            targetView: 'ecommerce',
-            targetTab: 'ordenes',
-            orderId: order.id,
-            actionLabel: 'Ver Pedido',
-            roles: ['admin', 'admin_ecommerce']
+        const ticket = createOperacionesTicketForOrder(payload);
+        const clientLabel = payload.billingInfo?.empresa || payload.user?.empresa || payload.user?.name || 'Cliente B2B';
+
+        try {
+            notificationService.addNotification({
+                category: 'ecommerce',
+                title: `Nuevo Pedido E-Commerce #${order.id}`,
+                message: `Pedido por $${order.total || '0'} USD recibido de ${clientLabel}.`,
+                severity: 'success',
+                targetView: 'ecommerce',
+                targetTab: 'ordenes',
+                orderId: order.id,
+                actionLabel: 'Ver Pedido',
+                roles: ['admin', 'admin_ecommerce']
+            });
+            if (ticket) {
+                notificationService.addNotification({
+                    category: 'crm',
+                    title: `Ticket de Onboarding Generado #${ticket.id}`,
+                    message: `Ticket en Operaciones para la Orden #${order.id} (${clientLabel}).`,
+                    severity: 'info',
+                    targetView: 'crm',
+                    ticketId: ticket.id,
+                    actionLabel: 'Abrir Ticket',
+                    roles: ['admin', 'staff']
+                });
+            }
+        } catch (notifyError) {
+            console.error('Error notificando nueva orden:', notifyError);
+        }
+
+        return res.status(201).json({
+            success: true,
+            data: ticket ? { id: ticket.id, departamento: ticket.departamento, estado: ticket.estado_embudo } : null
         });
-        if (ticket) {
+    } catch (err) {
+        console.error('Error en /api/internal/orders/created:', err);
+        registrarLog({
+            origen: 'crm',
+            tipo: 'ERROR',
+            accion: 'TICKET_ORDEN_FALLIDO',
+            descripcion: `No se pudo crear el ticket de Operaciones para la orden #${order.id}: ${err.message}`,
+            req,
+            detalles: { orderId: order.id }
+        });
+        return res.status(500).json({ success: false, error: 'No se pudo crear el ticket de la orden' });
+    }
+});
+
+/**
+ * POST /api/internal/sessions/validate
+ * Valida un sesionId emitido por el CRM. Solo busca sesiones activas reales (sin fallbacks).
+ */
+app.post('/api/internal/sessions/validate', requireInternalKey, (req, res) => {
+    const { sesionId } = req.body || {};
+    if (!sesionId || typeof sesionId !== 'string') {
+        return res.status(400).json({ success: false, error: 'sesionId requerido' });
+    }
+    const sesion = sesionesActivas.find(s => s.id === sesionId);
+    const usuario = sesion ? usuariosDb.find(u => u.id === sesion.usuarioId) : null;
+    if (!sesion || !usuario || usuario.activo === false) {
+        return res.status(404).json({ success: false, error: 'Sesión inexistente o expirada' });
+    }
+    return res.json({
+        success: true,
+        data: { usuarioId: usuario.id, email: usuario.email, nombre: usuario.nombre, rol: usuario.rol }
+    });
+});
+
+/**
+ * POST /api/internal/tickets/create
+ * Permite que el E-commerce solicite la creación de un ticket de postventa, RMA o consulta
+ */
+app.post('/api/internal/tickets/create', requireInternalKey, (req, res) => {
+    try {
+        const { orderId, clientEmail, issueType, description, sku } = req.body || {};
+        if (!clientEmail) {
+            return res.status(400).json({ success: false, error: 'clientEmail es obligatorio' });
+        }
+        const rmaRef = orderId || `RMA-${Date.now()}`;
+        const items = sku ? [{ sku, name: `Item reportado: ${sku}`, quantity: 1, price: 0 }] : [];
+
+        // createOperacionesTicketForOrder espera el payload envuelto { order, user, ... }
+        const ticket = createOperacionesTicketForOrder({
+            order: { id: rmaRef, total: 0, po_number: `RMA-${rmaRef}`, tracking_number: 'N/A', shipping_method: 'Postventa / RMA' },
+            user: { name: clientEmail.split('@')[0], email: clientEmail },
+            orderItems: items,
+            billingInfo: { contacto_email: clientEmail },
+            shippingInfo: { shipping_method: 'Postventa / RMA' },
+            paymentMethod: 'N/A',
+            trackingNumber: 'N/A',
+            poNumber: `RMA-${rmaRef}`
+        });
+        if (ticket && description) {
+            ticket.comentario = `${description}\n\n[Tipo de Incidente: ${issueType || 'RMA'}]`;
+        }
+
+        try {
             notificationService.addNotification({
                 category: 'crm',
-                title: `Ticket de Onboarding Generado #${ticket.id}`,
-                message: `Ticket en Operaciones para la Orden #${order.id} (${order.user_company || order.user_name || 'B2B'}).`,
+                title: `Ticket RMA Generado #${ticket.id}`,
+                message: `Solicitud de postventa recibida desde E-Commerce para la orden #${orderId}.`,
                 severity: 'info',
                 targetView: 'crm',
                 ticketId: ticket.id,
-                actionLabel: 'Abrir Ticket',
+                actionLabel: 'Ver Ticket',
                 roles: ['admin', 'staff']
             });
-        }
-    } catch (e) {
-        console.error('Error notificando nueva orden:', e);
-    }
-    return ticket;
-};
+        } catch (_) {}
 
-ecommerceRoutes.validateSession = (sesionId) => {
-    return sesionesActivas.find(s => s.id === sesionId) || null;
-};
+        return res.status(201).json({
+            success: true,
+            data: {
+                ticketId: ticket.id,
+                numero: ticket.id,
+                departamento: ticket.departamento,
+                estado: ticket.estado_embudo
+            }
+        });
+    } catch (err) {
+        console.error('Error en /api/internal/tickets/create:', err);
+        return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+/**
+ * GET /api/internal/tickets/by-customer
+ * Permite que el portal de cliente de E-Commerce consulte los tickets abiertos
+ */
+app.get('/api/internal/tickets/by-customer', requireInternalKey, (req, res) => {
+    try {
+        const { email } = req.query;
+        if (!email) {
+            return res.status(400).json({ success: false, error: 'Parámetro email requerido' });
+        }
+        const tickets = clientesDb.filter(t => 
+            (t.email_usuario && t.email_usuario.toLowerCase() === email.toLowerCase()) ||
+            (t.creado_por && t.creado_por.toLowerCase() === email.toLowerCase())
+        );
+        return res.json({
+            success: true,
+            data: tickets.map(t => ({
+                id: t.id,
+                nombre_cliente: t.nombre_cliente,
+                departamento: t.departamento,
+                estado: t.estado_embudo,
+                fecha_creacion: t.fecha_creacion,
+                prioridad: t.prioridad || 'Media'
+            }))
+        });
+    } catch (err) {
+        return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+/**
+ * GET /api/crm/integration/customer-orders
+ * Permite a los agentes del CRM consultar compras del cliente en E-Commerce
+ */
+app.get('/api/crm/integration/customer-orders', requireCrmAuth, async (req, res) => {
+    try {
+        const { email } = req.query;
+        if (!email) return res.status(400).json({ success: false, error: 'Email requerido' });
+        const ordersData = await ecommerceApiClient.obtenerComprasCliente(email);
+        res.json(ordersData);
+    } catch (err) {
+        res.status(502).json({ success: false, error: 'No se pudo consultar el servicio de E-Commerce: ' + err.message });
+    }
+});
+
+/**
+ * GET /api/crm/integration/verify-warranty
+ * Permite a los agentes del CRM verificar número de serie en E-Commerce
+ */
+app.get('/api/crm/integration/verify-warranty', requireCrmAuth, async (req, res) => {
+    try {
+        const { sku, serial } = req.query;
+        const warrantyData = await ecommerceApiClient.verificarGarantiaProducto(sku, serial);
+        res.json(warrantyData);
+    } catch (err) {
+        res.status(502).json({ success: false, error: 'No se pudo consultar garantía en E-Commerce: ' + err.message });
+    }
+});
 
 // ── RUTAS DE NOTIFICACIONES MULTI-SISTEMA (ERP, CRM, E-COMMERCE) ──
 app.get('/api/notifications', (req, res) => {
@@ -3180,8 +3367,10 @@ app.delete('/api/notifications/:id', (req, res) => {
     res.json({ success: ok });
 });
 
-// Montar rutas de E-commerce
-app.use('/api/ecommerce', ecommerceRoutes);
+// Endpoint de salud del CRM
+app.get('/health', (req, res) => {
+    res.json({ service: 'DACAS CRM & Helpdesk Service', status: 'OK', port });
+});
 
 app.listen(port, () => {
     console.log(`🚀 Servidor backend ejecutándose (En Memoria) en http://localhost:${port}`);

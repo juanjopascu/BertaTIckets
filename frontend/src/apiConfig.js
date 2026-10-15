@@ -6,16 +6,4 @@ export const API_BASE_URL = typeof window !== 'undefined' && window.location.pro
   ? ''
   : `http://${typeof window !== 'undefined' ? window.location.hostname : 'localhost'}:3001`;
 
-export const getProductImageUrl = (url) => {
-  if (!url) return '';
-  const str = String(url).trim();
-  if (!str) return '';
-  if (str.includes('/uploads/')) {
-    const parts = str.split('/uploads/');
-    const filename = parts[parts.length - 1];
-    return `${API_BASE_URL}/uploads/${filename}`;
-  }
-  return str;
-};
-
 export default API_BASE_URL;

@@ -6,4 +6,3 @@ dist-ssr/
 .env
 .env.local
 .env.*.local
-backend/*.json.tmp
